@@ -1,7 +1,15 @@
 ![Amua logo](https://github.com/zward/amua/blob/gh-pages/images/logo_48.png)
 ## Welcome to Amua 
 
-Amua is an open source modeling framework.  “Amua” is Swahili for “decide” or “solve”.  Amua provides a common user interface (UI) for developing various types of models.  Models can be run in Amua or exported to other programming languages, thus allowing conceptual models to be separated from any particular implementation.  This approach allows a language-agnostic approach to modeling, and ensures maximum flexibility.  The user interface for Amua also provides an intuitive way to create and visualize models.  Amua can be used as a teaching tool, or by advanced researchers seeking a unified modeling framework.  The software is written in Java and can be used on any operating system with a Java Virtual Machine installed.
+Amua is an open source modeling framework.  From the Swahili word for "decide"/"solve", Amua is designed to be:
+* **Transparent**: The graphical user interface provides an intuitive way to develop and document models.  As an open source framework, the underlying code is always available.
+* **Flexible**: Models can be run in Amua or [exported](https://github.com/zward/Amua/wiki/Import-Export) to other programming languages.  This allows conceptual models to be separated from any particular implementation, making it easy to change model platforms.
+* **Accessible**:  Amua is free software and can be used as a teaching tool, or by researchers seeking a unified modeling framework.  The software is lightweight and can be used on any operating system with a Java Virtual Machine installed.
 
+Model types:
+* [Decision Trees](https://github.com/zward/Amua/wiki/Decision-Trees)
+* Markov Models (forthcoming)
+* Discrete Event Simulation (planned)
+* Microsimulation Models (planned)
 
 ![Screenshot](https://github.com/zward/amua/blob/gh-pages/images/screenTree.png)
