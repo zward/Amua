@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/exp4j-0.4.7.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jfreechart-1.0.19/lib/jfreechart-1.0.19.jar" sourcepath="C:/Users/zward/Dropbox/Java Packages/jfreechart-1.0.19/source"/>
+	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jfreechart-1.0.19/lib/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/commons-math3-3.6.1-bin/commons-math3-3.6.1/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/SurfacePlot.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
