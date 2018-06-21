@@ -8,8 +8,8 @@ Amua is an open source modeling framework.  From the Swahili word for "decide"/"
 
 Model types:
 * [Decision Trees](https://github.com/zward/Amua/wiki/Decision-Trees)
-* Markov Models (forthcoming)
+* [Markov Models](https://github.com/zward/Amua/wiki/Markov-Models)
 * Discrete Event Simulation (planned)
 * Microsimulation Models (planned)
 
-![Screenshot](https://github.com/zward/amua/blob/gh-pages/images/screenTree.png)
+![Screenshot](https://github.com/zward/amua/blob/gh-pages/images/screenMarkov.png)
