@@ -10,6 +10,6 @@ Model types:
 * [Decision Trees](https://github.com/zward/Amua/wiki/Decision-Trees)
 * [Markov Models](https://github.com/zward/Amua/wiki/Markov-Models)
 * Discrete Event Simulation (planned)
-* Microsimulation Models (planned)
+* Microsimulation Models (multi-method) (planned)
 
 ![Screenshot](https://github.com/zward/amua/blob/gh-pages/images/screenMarkov.png)
