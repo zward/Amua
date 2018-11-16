@@ -24,12 +24,12 @@ public class SurfaceModel implements ISurfacePlotModel
 {
 	double data[][][];
 
-	float xMin=Float.POSITIVE_INFINITY, xMax=Float.NEGATIVE_INFINITY, xStep=0;
-	float yMin=Float.POSITIVE_INFINITY, yMax=Float.NEGATIVE_INFINITY, yStep=0;
-	float zMin=Float.POSITIVE_INFINITY, zMax=Float.NEGATIVE_INFINITY;
-	String xLabel, yLabel, zLabel;
+	public float xMin=Float.POSITIVE_INFINITY, xMax=Float.NEGATIVE_INFINITY, xStep=0;
+	public float yMin=Float.POSITIVE_INFINITY, yMax=Float.NEGATIVE_INFINITY, yStep=0;
+	public float zMin=Float.POSITIVE_INFINITY, zMax=Float.NEGATIVE_INFINITY;
+	public String xLabel, yLabel, zLabel;
 	int curStrategy=0;
-	int intervals=50;
+	public int intervals=50;
 
 	public SurfaceModel(double data[][][],int curStrategy,int intervals,double xMin,double xMax,double yMin,double yMax,String xLabel, String yLabel, String zLabel){
 		this.data=data;

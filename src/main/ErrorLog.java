@@ -22,12 +22,13 @@ import java.util.Date;
 
 
 public class ErrorLog{
-	String version="0.0.1";
-	String systemInfo[][];
-	ArrayList<String> errors;
+	public String version;
+	public String systemInfo[][];
+	public ArrayList<String> errors;
 
 	//Constructor
-	public ErrorLog(){
+	public ErrorLog(String curVersion){
+		version=curVersion;
 		systemInfo=new String[24][2];
 		systemInfo[0][0]="Java Runtime Environment version";
 		systemInfo[0][1]=System.getProperty("java.version");

@@ -17,41 +17,35 @@
  */
 
 package main;
-import java.util.Date;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
-@XmlRootElement(name="Metadata")
-public class Metadata{
-	String version;
+import math.Numeric;
+
+@XmlRootElement(name="Variable")
+public class Variable{
+	@XmlElement public String name;
+	@XmlElement public String initValue; //initial value
+	//@XmlElement public String expression;
+	@XmlElement public String notes;
 	
-	@XmlElement public String author;
-	@XmlElement public String dateCreated;
-	@XmlElement public String versionCreated;
-	@XmlElement public String modifier;
-	@XmlElement public String dateModified;
-	@XmlElement public String versionModified;
+	//@XmlTransient public boolean locked=false;
+	@XmlTransient public boolean valid=true;
+	@XmlTransient public Numeric value;
 	
 	//Constructor
-	public Metadata(){ //no-arg constructor for xml binding
-		
+	public Variable(){
+
 	}
-	
-	public Metadata(String version){
-		this.version=version;
-	}
-	
-	public void update(){
-		if(author==null){ //Create
-			author=System.getProperty("user.name");
-			dateCreated=(new Date()+"");
-			versionCreated=version;	
-		}
-		else{ //Modify
-			modifier=System.getProperty("user.name");
-			dateModified=(new Date()+"");
-			versionModified=version;
-		}
+
+	public Variable copy(){
+		Variable copyVar=new Variable();
+		copyVar.name=name;
+		copyVar.initValue=initValue;
+		//copyVar.expression=expression;
+		copyVar.notes=notes;
+		copyVar.value=value;
+		return(copyVar);
 	}
 }
