@@ -1,0 +1,840 @@
+/**
+ * Amua - An open source modeling framework.
+ * Copyright (C) 2017 Zachary J. Ward
+ *
+ * This file is part of Amua. Amua is free software: you can redistribute
+ * it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * Amua is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Amua.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package gui;
+
+import javax.swing.JFrame;
+import java.awt.Dialog.ModalityType;
+
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.awt.event.ActionEvent;
+import javax.swing.JPanel;
+import javax.swing.border.EtchedBorder;
+import javax.swing.JTextField;
+import javax.swing.JSeparator;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.SystemColor;
+
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+
+import base.AmuaModel;
+import main.DimInfo;
+import main.Metadata;
+
+import javax.swing.JTabbedPane;
+import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
+
+/**
+ *
+ */
+public class frmProperties {
+
+	/**
+	 * JFrame for form
+	 */
+	public JDialog frmProperties;
+	AmuaModel myModel;
+	DimInfo dimInfo;
+	JTabbedPane tabbedPane;
+	
+	//Metadata
+	JLabel lblName;
+	JLabel lblModel;
+	JLabel lblIcon;
+	JLabel lblDispAuthor;
+	JLabel lblDispCreated;
+	JLabel lblDispVCreated;
+	JLabel lblDispModifer;	
+	JLabel lblDispModified; 
+	JLabel lblVModified; 
+	
+	//Analysis
+	DefaultTableModel modelDimensions;
+	private JTable tableDimensions;
+	JComboBox<String> comboAnalysis;
+	
+	//Simulation
+	JComboBox comboSimType;
+	JLabel lblCohortSize;
+	private JTextField textCohortSize;
+	JCheckBox chckbxCRN;
+	private JTextField textCRNSeed;
+	
+	//Markov
+	private JTextField textMarkovMaxCycles;
+	JCheckBox chckbxHalfcycleCorrection;
+	JCheckBox chckbxDiscount;
+	DefaultTableModel modelDiscountRates;
+	private JTable tableDiscountRates;
+	private analysisTable tableAnalysis;
+	JLabel lblDiscountStartCycle;
+	private JTextField textDiscountStartCycle;
+	
+	/**
+	 *  Default Constructor
+	 */
+	public frmProperties(AmuaModel myModel) {
+		this.myModel=myModel;
+		this.dimInfo=myModel.dimInfo;
+		initialize();
+		lblName.setText(myModel.name);
+		displayMetadata(myModel.meta);
+		displayAnalysisSettings();
+		displaySimSettings();
+		if(myModel.type==1){
+			displayMarkovSettings();
+		}
+	}
+
+	/**
+	 * Initializes the contents of the frame, including ActionListeners for the Combo-boxes and buttons on the form.
+	 */
+	private void initialize() {
+		try{
+			frmProperties = new JDialog();
+			frmProperties.getContentPane().setBackground(SystemColor.control);
+			frmProperties.setModalityType(ModalityType.APPLICATION_MODAL);
+			frmProperties.setTitle("Amua - Properties");
+			frmProperties.setResizable(false);
+			frmProperties.setBounds(100, 100, 466, 332);
+			frmProperties.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			frmProperties.getContentPane().setLayout(null);
+
+			JButton btnOk = new JButton("OK");
+			btnOk.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					//Validate dimensions
+					boolean close=true;
+					//Ensure unqiue
+					int numDimensions=tableDimensions.getRowCount();
+					ArrayList<String> dimNames=new ArrayList<String>();
+					ArrayList<String> dimSymbols=new ArrayList<String>();
+					ArrayList<Integer> decimals=new ArrayList<Integer>();
+					ArrayList<Double> dimDiscount=new ArrayList<Double>();
+					for(int i=0; i<numDimensions; i++){
+						String curName=(String) tableDimensions.getValueAt(i,0);
+						String curSymbol=(String) tableDimensions.getValueAt(i,1);
+						String curDecimal=(String) tableDimensions.getValueAt(i, 2);
+						if(curName==null){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, curName+"Please enter a valid dimension name!");
+						}
+						else if(dimNames.contains(curName)){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, curName+" is already defined!");
+						}
+						else{
+							dimNames.add(curName);
+						}
+						
+						if(curSymbol==null){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, curName+"Please enter a valid dimension symbol!");
+						}
+						else if(dimSymbols.contains(curSymbol)){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, curSymbol+ "is already defined!");
+						}
+						else{
+							dimSymbols.add(curSymbol);
+						}
+						
+						if(curDecimal==null){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, curName+"Please enter decimal places!");
+						}
+						else{
+							//Try to convert to integer
+							int curDec=0;
+							try{
+								curDec=Integer.parseInt(curDecimal);
+							} catch(Exception er){
+								close=false;
+								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid integer for decimal places!");
+							}
+							if(close==true){ //Integer entered
+								if(curDec<0){
+									close=false;
+									JOptionPane.showMessageDialog(frmProperties, "Please enter a valid integer!");
+								}
+								else{
+									decimals.add(curDec);
+								}
+							}
+						}
+					}
+					
+					//Check analysis settings
+					int costDim=-1, effectDim=-1;
+					double WTP=0;
+					if(comboAnalysis.getSelectedIndex()>0){
+						String strCostDim=(String) tableAnalysis.getValueAt(0, 1);
+						String strEffectDim=(String) tableAnalysis.getValueAt(1, 1);
+						costDim=getDimIndex(strCostDim);
+						effectDim=getDimIndex(strEffectDim);
+						if(costDim==effectDim){
+							close=false;
+							if(comboAnalysis.getSelectedIndex()==1){ //CEA
+								JOptionPane.showMessageDialog(frmProperties, "Cost and Effect must be different!");
+							}
+							else if(comboAnalysis.getSelectedIndex()==2){ //BCA
+								JOptionPane.showMessageDialog(frmProperties, "Cost and Benefit must be different!");
+							}
+						}
+						if(comboAnalysis.getSelectedIndex()==1){ //CEA
+							String strBase=(String)tableAnalysis.getValueAt(2, 1);
+							int baseIndex=getScenarioIndex(strBase);
+							if(baseIndex==-1){
+								close=false;
+								JOptionPane.showMessageDialog(frmProperties, "Please choose a baseline scenario!");
+							}
+							else{
+								myModel.dimInfo.baseScenario=baseIndex;
+							}
+						}
+						else if(comboAnalysis.getSelectedIndex()==2){ //BCA
+							try{
+								String strWTP=(String) tableAnalysis.getValueAt(3, 1);
+								WTP=Double.parseDouble(strWTP.replaceAll(",",""));
+							} catch(Exception er){
+								close=false;
+								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid willingness-to-pay!");
+							}
+						}
+					}
+					
+					//Check simulation settings
+					myModel.simType=comboSimType.getSelectedIndex();
+					if(myModel.simType==0){ //Cohort
+						if(myModel.type==1){ //Markov model
+							try{
+								String text=textCohortSize.getText().replaceAll(",",""); //remove commas
+								myModel.cohortSize=Integer.parseInt(text);
+								if(myModel.cohortSize<=0){
+									close=false;
+									JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
+								}
+							} catch(Exception er){
+								close=false;
+								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
+							}
+						}
+					}
+					else if(myModel.simType==1){ //Monte Carlo
+						try{
+							String text=textCohortSize.getText().replaceAll(",",""); //remove commas
+							myModel.cohortSize=Integer.parseInt(text);
+							if(myModel.cohortSize<=0){
+								close=false;
+								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Monte Carlo simulations!");
+							}
+						} catch(Exception er){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Monte Carlo simulations!");
+						}
+						
+						myModel.CRN=chckbxCRN.isSelected(); //CRN
+						if(myModel.CRN){ //get seed
+							try{
+								String text=textCRNSeed.getText().replaceAll(",",""); //remove commas
+								myModel.crnSeed=Integer.parseInt(text);
+							} catch(Exception er){
+								close=false;
+								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid CRN seed!");
+							}
+						}
+					}
+					
+					//Check Markov settings
+					if(myModel.type==1){
+						try{
+							String text=textMarkovMaxCycles.getText().replaceAll(",",""); //remove commas
+							myModel.markov.maxCycles=Integer.parseInt(text);
+						} catch(Exception er){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of max cycles!");
+						}
+						
+						myModel.markov.halfCycleCorrection=chckbxHalfcycleCorrection.isSelected();
+						
+						//discount rates
+						if(chckbxDiscount.isSelected()){
+							try{
+								int test=Integer.parseInt(textDiscountStartCycle.getText());
+							} catch(Exception er){
+								close=false;
+								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount start cycle ("+textDiscountStartCycle.getText()+")");
+							
+							}
+							
+							for(int i=0; i<numDimensions; i++){
+								try{
+									double test=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
+									dimDiscount.add(test);
+								} catch(Exception er){
+									close=false;
+									JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount rate ("+tableDiscountRates.getValueAt(i, 0)+")");
+								}
+							}
+						}
+						
+					}
+					
+					if(close==true){ //Apply changes and close
+						//dimensions
+						dimInfo.dimNames=new String[numDimensions]; dimInfo.dimSymbols=new String[numDimensions];
+						dimInfo.decimals=new int[numDimensions];
+						for(int i=0; i<numDimensions; i++){
+							dimInfo.dimNames[i]=dimNames.get(i);
+							dimInfo.dimSymbols[i]=dimSymbols.get(i);
+							dimInfo.decimals[i]=decimals.get(i);
+						}
+						myModel.updateDimensions();
+						
+						//analysis type
+						dimInfo.analysisType=comboAnalysis.getSelectedIndex();
+						dimInfo.costDim=costDim;
+						dimInfo.effectDim=effectDim;
+						dimInfo.WTP=WTP;
+						
+						//markov settings
+						if(myModel.type==1){
+							myModel.markov.discountRewards=chckbxDiscount.isSelected();
+							if(myModel.markov.discountRewards==true){
+								myModel.markov.discountStartCycle=Integer.parseInt(textDiscountStartCycle.getText());
+								myModel.markov.discountRates=new double[numDimensions];
+								for(int i=0; i<numDimensions; i++){
+									myModel.markov.discountRates[i]=dimDiscount.get(i);
+								}
+							}
+						}
+
+						frmProperties.dispose();
+					}
+				}
+			});
+			btnOk.setBounds(262, 252, 90, 28);
+			frmProperties.getContentPane().add(btnOk);
+
+			JButton btnCancel = new JButton("Cancel");
+			btnCancel.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmProperties.dispose();
+				}
+			});
+			btnCancel.setBounds(364, 252, 90, 28);
+			frmProperties.getContentPane().add(btnCancel);
+
+			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			tabbedPane.setBounds(6, 6, 448, 234);
+			frmProperties.getContentPane().add(tabbedPane);
+
+			JPanel panel = new JPanel();
+			tabbedPane.addTab("General", null, panel, null);
+			panel.setBackground(SystemColor.window);
+			panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			panel.setLayout(null);
+
+			JLabel lblModelName = new JLabel("Model Name:");
+			lblModelName.setBounds(6, 8, 73, 16);
+			panel.add(lblModelName);
+			
+			lblName = new JLabel("[Name]");
+			lblName.setBounds(120, 8, 325, 16);
+			panel.add(lblName);
+			
+			JLabel lblAuthor = new JLabel("Created by:");
+			lblAuthor.setBounds(6, 56, 66, 16);
+			panel.add(lblAuthor);
+
+			lblDispAuthor = new JLabel("[Author]");
+			lblDispAuthor.setBounds(120, 56, 325, 16);
+			panel.add(lblDispAuthor);
+
+			JLabel lblCreated = new JLabel("Created:");
+			lblCreated.setBounds(6, 80, 55, 16);
+			panel.add(lblCreated);
+
+			lblDispCreated = new JLabel("[Date created]");
+			lblDispCreated.setBounds(120, 80, 325, 16);
+			panel.add(lblDispCreated);
+
+			JLabel lblVersionCreated = new JLabel("Version created:");
+			lblVersionCreated.setBounds(6, 104, 105, 16);
+			panel.add(lblVersionCreated);
+
+			JLabel lblModifiedBy = new JLabel("Modified by:");
+			lblModifiedBy.setBounds(6, 128, 73, 16);
+			panel.add(lblModifiedBy);
+
+			JLabel lblModelType = new JLabel("Model Type:");
+			lblModelType.setBounds(6, 32, 73, 16);
+			panel.add(lblModelType);
+
+			JLabel lblModified = new JLabel("Modified:");
+			lblModified.setBounds(6, 152, 56, 16);
+			panel.add(lblModified);
+
+			JLabel lblVersionModified = new JLabel("Version modified:");
+			lblVersionModified.setBounds(6, 176, 105, 16);
+			panel.add(lblVersionModified);
+
+			lblDispVCreated = new JLabel("[Version]");
+			lblDispVCreated.setBounds(120, 104, 325, 16);
+			panel.add(lblDispVCreated);
+
+			lblDispModifer = new JLabel("[Modifier]");
+			lblDispModifer.setBounds(120, 128, 325, 16);
+			panel.add(lblDispModifer);
+
+			lblDispModified = new JLabel("[Date modified]");
+			lblDispModified.setBounds(120, 152, 325, 16);
+			panel.add(lblDispModified);
+
+			lblVModified = new JLabel("[Version]");
+			lblVModified.setBounds(120, 176, 325, 16);
+			panel.add(lblVModified);
+
+			lblModel = new JLabel("[Model]");
+			lblModel.setBounds(120, 32, 325, 16);
+			panel.add(lblModel);
+
+			JSeparator separator = new JSeparator();
+			separator.setBounds(6, 52, 438, 2);
+			panel.add(separator);
+
+			JSeparator separator_1 = new JSeparator();
+			separator_1.setBounds(6, 124, 438, 2);
+			panel.add(separator_1);
+
+			lblIcon = new JLabel("icon");
+			//lblIcon.setIcon(new ImageIcon(frmProperties.class.getResource("/images/modelTree_16.png")));
+			lblIcon.setBounds(100, 32, 16, 16);
+			panel.add(lblIcon);
+			
+			JPanel panel_1 = new JPanel();
+			panel_1.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			panel_1.setBackground(SystemColor.window);
+			tabbedPane.addTab("Analysis", null, panel_1, null);
+			panel_1.setLayout(null);
+
+			JScrollPane scrollPane = new JScrollPane();
+			scrollPane.setBounds(6, 6, 273, 73);
+			panel_1.add(scrollPane);
+
+			modelDimensions=new DefaultTableModel(new Object[][] {}, new String[] {"Dimension", "Symbol", "Decimals"});
+			tableDimensions = new JTable();
+			tableDimensions.setRowSelectionAllowed(false);
+			tableDimensions.getTableHeader().setReorderingAllowed(false);
+			tableDimensions.setModel(modelDimensions);
+			scrollPane.setViewportView(tableDimensions);
+
+			JButton btnAddDimension = new JButton("Add Dimension");
+			btnAddDimension.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					modelDimensions.addRow(new Object[]{null});
+					comboAnalysis.setSelectedIndex(0);
+					setAnalysisType(0);
+				}
+			});
+			btnAddDimension.setBounds(291, 5, 147, 28);
+			panel_1.add(btnAddDimension);
+
+			JButton btnRemoveDimension = new JButton("Remove Dimension");
+			btnRemoveDimension.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int selected=tableDimensions.getSelectedRow();
+					if(selected!=-1 && tableDimensions.getRowCount()>1){
+						modelDimensions.removeRow(selected);
+						comboAnalysis.setSelectedIndex(0);
+						setAnalysisType(0);
+					}
+				}
+			});
+			btnRemoveDimension.setBounds(291, 41, 147, 28);
+			panel_1.add(btnRemoveDimension);
+			
+			JLabel lblAnalysisType = new JLabel("Analysis type:");
+			lblAnalysisType.setBounds(6, 91, 74, 16);
+			panel_1.add(lblAnalysisType);
+			
+			comboAnalysis = new JComboBox<String>();
+			comboAnalysis.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					setAnalysisType(comboAnalysis.getSelectedIndex());
+				}
+			});
+			comboAnalysis.setModel(new DefaultComboBoxModel<String>(new String[] {"Expected Value (EV)", "Cost-Effectiveness Analysis (CEA)", "Benefit-Cost Analysis (BCA)"}));
+			comboAnalysis.setBounds(84, 86, 225, 26);
+			panel_1.add(comboAnalysis);
+			
+			JScrollPane scrollPane_2 = new JScrollPane();
+			scrollPane_2.setBounds(6, 122, 432, 76);
+			panel_1.add(scrollPane_2);
+			
+			tableAnalysis = new analysisTable();
+			tableAnalysis.myModel=myModel;
+			tableAnalysis.getTableHeader().setReorderingAllowed(false);
+			tableAnalysis.setModel(new DefaultTableModel(
+				new Object[][] {
+					{"Cost", null},
+					{"Effect", null},
+					{"Baseline Strategy", null},
+					{"Willingness-to-pay (WTP)", null},
+				},
+				new String[] {
+					"", ""
+				}
+			) {
+				boolean[] columnEditables = new boolean[] {
+					false, true
+				};
+				public boolean isCellEditable(int row, int column) {
+					return columnEditables[column];
+				}
+			});
+			tableAnalysis.getColumnModel().getColumn(0).setPreferredWidth(170);
+			tableAnalysis.getColumnModel().getColumn(1).setPreferredWidth(170);
+			tableAnalysis.setShowVerticalLines(true);
+			tableAnalysis.setRowSelectionAllowed(false);
+			scrollPane_2.setViewportView(tableAnalysis);
+			
+			tableAnalysis.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
+			    @Override
+			    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+			        super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+			        if(tableAnalysis.enabled[row]){setForeground(tableAnalysis.getForeground());}
+			        else{setForeground(new Color(220,220,220));}
+			        return this;
+			    }   
+			});
+			
+			JPanel panel_3 = new JPanel();
+			panel_3.setBackground(SystemColor.window);
+			tabbedPane.addTab("Simulation", null, panel_3, null);
+			panel_3.setLayout(null);
+			
+			JLabel label = new JLabel("Simulation type:");
+			label.setBounds(6, 11, 92, 16);
+			panel_3.add(label);
+			
+			comboSimType = new JComboBox();
+			comboSimType.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					int selected=comboSimType.getSelectedIndex();
+					if(selected==0){ //Cohort
+						lblCohortSize.setText("Cohort size:");
+						if(myModel.type==0){ //Decision tree
+							textCohortSize.setEnabled(false);
+						}
+						chckbxCRN.setEnabled(false);
+						textCRNSeed.setEnabled(false);
+					}
+					else if(selected==1){ //Monte Carlo
+						lblCohortSize.setText("# simulations:");
+						textCohortSize.setEnabled(true);
+						chckbxCRN.setEnabled(true);
+						if(chckbxCRN.isSelected()){textCRNSeed.setEnabled(true);}
+						else{textCRNSeed.setEnabled(false);}
+					}
+				}
+			});
+			comboSimType.setModel(new DefaultComboBoxModel(new String[] {"Cohort (Deterministic)", "Monte Carlo (Stochastic)"}));
+			comboSimType.setBounds(100, 6, 167, 26);
+			panel_3.add(comboSimType);
+			
+			lblCohortSize = new JLabel("Cohort size:");
+			lblCohortSize.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblCohortSize.setBounds(6, 46, 92, 16);
+			panel_3.add(lblCohortSize);
+			
+			textCohortSize = new JTextField();
+			textCohortSize.setColumns(10);
+			textCohortSize.setBounds(103, 40, 105, 28);
+			panel_3.add(textCohortSize);
+			
+			chckbxCRN = new JCheckBox("Seed RNG");
+			chckbxCRN.setEnabled(false);
+			chckbxCRN.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(chckbxCRN.isSelected()){textCRNSeed.setEnabled(true);}
+					else{textCRNSeed.setEnabled(false);}
+				}
+			});
+			chckbxCRN.setBounds(15, 79, 92, 18);
+			panel_3.add(chckbxCRN);
+			
+			JLabel lblSeed = new JLabel("Seed:");
+			lblSeed.setBounds(107, 80, 37, 16);
+			panel_3.add(lblSeed);
+			
+			textCRNSeed = new JTextField();
+			textCRNSeed.setEnabled(false);
+			textCRNSeed.setText("999");
+			textCRNSeed.setBounds(142, 74, 66, 28);
+			panel_3.add(textCRNSeed);
+			textCRNSeed.setColumns(10);
+			
+			JPanel testDiscountStartCycle = new JPanel();
+			testDiscountStartCycle.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			testDiscountStartCycle.setBackground(SystemColor.window);
+			tabbedPane.addTab("Markov", null, testDiscountStartCycle, null);
+			tabbedPane.setEnabledAt(3, false);
+			testDiscountStartCycle.setLayout(null);
+			
+			JLabel lblMaxCycles = new JLabel("Max cycles:");
+			lblMaxCycles.setBounds(6, 23, 71, 16);
+			testDiscountStartCycle.add(lblMaxCycles);
+			
+			textMarkovMaxCycles = new JTextField();
+			textMarkovMaxCycles.setBounds(72, 17, 71, 28);
+			testDiscountStartCycle.add(textMarkovMaxCycles);
+			textMarkovMaxCycles.setColumns(10);
+			
+			chckbxHalfcycleCorrection = new JCheckBox("Half-cycle correction");
+			chckbxHalfcycleCorrection.setBounds(6, 57, 141, 18);
+			testDiscountStartCycle.add(chckbxHalfcycleCorrection);
+			
+			lblDiscountStartCycle = new JLabel("Discount start cycle:");
+			lblDiscountStartCycle.setEnabled(false);
+			lblDiscountStartCycle.setBounds(144, 86, 116, 16);
+			testDiscountStartCycle.add(lblDiscountStartCycle);
+			
+			textDiscountStartCycle = new JTextField();
+			textDiscountStartCycle.setEnabled(false);
+			textDiscountStartCycle.setBounds(254, 80, 57, 28);
+			testDiscountStartCycle.add(textDiscountStartCycle);
+			textDiscountStartCycle.setColumns(10);
+			
+			chckbxDiscount = new JCheckBox("Discount Rewards");
+			chckbxDiscount.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					if(chckbxDiscount.isSelected()){
+						lblDiscountStartCycle.setEnabled(true);
+						textDiscountStartCycle.setEnabled(true);
+						tableDiscountRates.setEnabled(true);
+					}
+					else{
+						lblDiscountStartCycle.setEnabled(false);
+						textDiscountStartCycle.setEnabled(false);
+						tableDiscountRates.setEnabled(false);
+					}
+				}
+			});
+			chckbxDiscount.setBounds(6, 85, 141, 18);
+			testDiscountStartCycle.add(chckbxDiscount);
+			
+			JScrollPane scrollPane_1 = new JScrollPane();
+			scrollPane_1.setBounds(6, 115, 233, 71);
+			testDiscountStartCycle.add(scrollPane_1);
+			
+			modelDiscountRates=new DefaultTableModel(
+					new Object[][] {},
+					new String[] {"Dimension", "Discount Rate (%)"}
+				) {
+					boolean[] columnEditables = new boolean[] {false, true};
+					public boolean isCellEditable(int row, int column) {
+						return columnEditables[column];
+					}
+				};
+			tableDiscountRates = new JTable();
+			tableDiscountRates.setModel(modelDiscountRates);
+			tableDiscountRates.setRowSelectionAllowed(false);
+			tableDiscountRates.getTableHeader().setReorderingAllowed(false);
+			tableDiscountRates.setEnabled(false);
+			scrollPane_1.setViewportView(tableDiscountRates);
+			
+			
+			
+			
+		} catch (Exception ex){
+			ex.printStackTrace();
+			myModel.errorLog.recordError(ex);
+		}
+	}
+
+	private void displayMetadata(Metadata meta){
+		String modelTypes[]={"Decision Tree","Markov Model"};
+		String icons[]={"/images/modelTree_16.png","/images/markovChain_16.png"};
+		lblModel.setText(modelTypes[myModel.type]);
+		lblIcon.setIcon(new ImageIcon(frmProperties.class.getResource(icons[myModel.type])));
+		lblDispAuthor.setText(meta.author);
+		lblDispCreated.setText(meta.dateCreated);
+		lblDispVCreated.setText(meta.versionCreated); 
+		lblDispModifer.setText(meta.modifier);
+		lblDispModified.setText(meta.dateModified);
+		lblVModified.setText(meta.versionModified);
+	}
+	
+	private void displayAnalysisSettings(){
+		for(int i=0; i<dimInfo.dimNames.length; i++){
+			modelDimensions.addRow(new Object[]{null});
+			modelDimensions.setValueAt(dimInfo.dimNames[i], i, 0);
+			modelDimensions.setValueAt(dimInfo.dimSymbols[i], i, 1);
+			modelDimensions.setValueAt(dimInfo.decimals[i]+"", i, 2);
+		}
+		comboAnalysis.setSelectedIndex(dimInfo.analysisType);
+		setAnalysisType(dimInfo.analysisType);
+		if(dimInfo.analysisType>0){ //CEA or BCA
+			//comboCost.setSelectedIndex(dimInfo.costDim);
+			//comboEffect.setSelectedIndex(dimInfo.effectDim);
+			tableAnalysis.setValueAt(dimInfo.dimNames[dimInfo.costDim], 0, 1);
+			tableAnalysis.setValueAt(dimInfo.dimNames[dimInfo.effectDim], 1, 1);
+			if(dimInfo.analysisType==1){ //CEA
+				myModel.getStrategies();
+				tableAnalysis.setValueAt(myModel.strategyNames[dimInfo.baseScenario], 2, 1);
+			}
+			else if(dimInfo.analysisType==2){ //BCA
+				tableAnalysis.setValueAt(dimInfo.WTP+"",3,1);
+			}
+		}
+		
+	}
+	
+	private void displaySimSettings(){
+		comboSimType.setSelectedIndex(myModel.simType);
+		textCohortSize.setText(myModel.cohortSize+"");
+		chckbxCRN.setSelected(myModel.CRN);
+		if(myModel.CRN){
+			textCRNSeed.setEnabled(true);
+			textCRNSeed.setText(myModel.crnSeed+"");
+		}
+		
+	}
+	
+	private void displayMarkovSettings(){
+		tabbedPane.setEnabledAt(3, true);
+		textMarkovMaxCycles.setText(myModel.markov.maxCycles+"");
+		chckbxHalfcycleCorrection.setSelected(myModel.markov.halfCycleCorrection);
+		chckbxDiscount.setSelected(myModel.markov.discountRewards);
+		if(myModel.markov.discountRewards==true){
+			lblDiscountStartCycle.setEnabled(true);
+			textDiscountStartCycle.setEnabled(true);
+			tableDiscountRates.setEnabled(true);
+		}
+		textDiscountStartCycle.setText(myModel.markov.discountStartCycle+"");
+		for(int i=0; i<dimInfo.dimNames.length; i++){
+			modelDiscountRates.addRow(new Object[]{null});
+			modelDiscountRates.setValueAt(dimInfo.dimNames[i],i,0);
+			if(myModel.markov.discountRates!=null){
+				modelDiscountRates.setValueAt(myModel.markov.discountRates[i]+"", i, 1);
+			}
+		}
+	}
+	
+	private void setAnalysisType(int analysisType){
+		if(analysisType==0){ //EV
+			tableAnalysis.enabled[0]=false;
+			tableAnalysis.enabled[1]=false;
+			tableAnalysis.enabled[2]=false;
+			tableAnalysis.enabled[3]=false;
+		}
+		else if(analysisType==1){ //CEA
+			tableAnalysis.enabled[0]=true;
+			tableAnalysis.setValueAt("Effect", 1, 0);
+			tableAnalysis.enabled[1]=true;
+			tableAnalysis.enabled[2]=true;
+			tableAnalysis.enabled[3]=false;
+		}
+		else if(analysisType==2){ //BCA
+			tableAnalysis.enabled[0]=true;
+			tableAnalysis.setValueAt("Benefit", 1, 0);
+			tableAnalysis.enabled[1]=true;
+			tableAnalysis.enabled[2]=false;
+			tableAnalysis.enabled[3]=true;
+		}
+		tableAnalysis.repaint();
+	}
+	
+	private int getDimIndex(String dimName){
+		int index=-1;
+		int i=-1;
+		boolean found=false;
+		while(found==false && i<dimInfo.dimNames.length){
+			i++;
+			if(dimInfo.dimNames[i].matches(dimName)){
+				found=true;
+				index=i;
+			}
+		}
+		return(index);
+	}
+
+	private int getScenarioIndex(String scenName){
+		int index=-1;
+		int i=-1;
+		boolean found=false;
+		while(found==false && i<myModel.strategyNames.length){
+			i++;
+			if(myModel.strategyNames[i].matches(scenName)){
+				found=true;
+				index=i;
+			}
+		}
+		return(index);
+	}
+}
+
+
+class analysisTable extends JTable{
+	public boolean enabled[]=new boolean[]{false,false,false,false};
+	analysisTable thisTable=this;
+	public AmuaModel myModel;
+	
+	@Override
+	public void setEnabled(boolean enabled){
+		super.setEnabled(enabled);
+		for(int i=0; i<4; i++){this.enabled[i]=enabled;}
+	}
+	
+	@Override
+	public TableCellEditor getCellEditor(int row, int column){
+		if(column==1){
+			if(row==0 || row==1){ //Cost/Effect
+				JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(myModel.dimInfo.dimNames));
+				return(new DefaultCellEditor(comboDim));
+			}
+			else if(row==2){ //Baseline scenario
+				myModel.getStrategies();
+				JComboBox<String> comboScen = new JComboBox<String>(new DefaultComboBoxModel(myModel.strategyNames));
+				comboScen.setEnabled(enabled[2]);
+				return(new DefaultCellEditor(comboScen));
+			}
+			else if(row==3){ //Willingness to pay
+				return(thisTable.getDefaultEditor(Object.class));
+			}
+		}
+		return(null);
+	}
+}
