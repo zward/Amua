@@ -155,40 +155,6 @@ public class frmMain {
 	ErrorLog errorLog;
 
 	/**
-	 * Launch the application.
-	 */
-	/*public static void main(String[] args) {
-		//get current OS
-		String curOS=System.getProperty("os.name").toLowerCase();
-		if(curOS.contains("mac")){ //if Mac
-			OSHelper.setupMac();
-		}
-		
-		try {
-			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-				if ("Nimbus".equals(info.getName())) {
-					UIManager.setLookAndFeel(info.getClassName());
-					break;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					frmMain window = new frmMain();
-					main=window;
-					window.frmMain.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}*/
-
-	/**
 	 * Create the application.
 	 */
 	public frmMain() {
@@ -618,15 +584,7 @@ public class frmMain {
 			}
 		});
 		mnTools.add(mntmPlotSurface);
-
-		JMenuItem mntmScracth = new JMenuItem("ScratchPad");
-		mntmScracth.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				frmScratch window=new frmScratch(curModel);
-				window.frmScratch.setVisible(true);
-			}
-		});
-		
+	
 		JMenuItem mntmTestExpressions = new JMenuItem("Test Expressions");
 		mntmTestExpressions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -635,8 +593,7 @@ public class frmMain {
 			}
 		});
 		mnTools.add(mntmTestExpressions);
-		mnTools.add(mntmScracth);
-
+		
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
 
