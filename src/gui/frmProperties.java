@@ -97,6 +97,7 @@ public class frmProperties {
 	JCheckBox chckbxDiscount;
 	DefaultTableModel modelDiscountRates;
 	private JTable tableDiscountRates;
+	private DefaultTableModel modelAnalysis;
 	private analysisTable tableAnalysis;
 	JLabel lblDiscountStartCycle;
 	private JTextField textDiscountStartCycle;
@@ -196,9 +197,29 @@ public class frmProperties {
 					}
 					
 					//Check analysis settings
+					int objective=0, objectiveDim=0;
 					int costDim=-1, effectDim=-1;
 					double WTP=0;
-					if(comboAnalysis.getSelectedIndex()>0){
+					if(comboAnalysis.getSelectedIndex()==0){ //EV
+						String strObj=(String) tableAnalysis.getValueAt(0, 1);
+						if(strObj==null){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, "Please select an objective!");
+						}
+						else{
+							if(strObj.matches("Maximize")){objective=0;}
+							else{objective=1;}
+						}
+						String strDim=(String) tableAnalysis.getValueAt(1, 1);
+						if(strDim==null){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, "Please select an outcome!");
+						}
+						else{
+							objectiveDim=getDimIndex(strDim);
+						}
+					}
+					else if(comboAnalysis.getSelectedIndex()>0){ //CEA or BCA
 						String strCostDim=(String) tableAnalysis.getValueAt(0, 1);
 						String strEffectDim=(String) tableAnalysis.getValueAt(1, 1);
 						costDim=getDimIndex(strCostDim);
@@ -223,14 +244,12 @@ public class frmProperties {
 								myModel.dimInfo.baseScenario=baseIndex;
 							}
 						}
-						else if(comboAnalysis.getSelectedIndex()==2){ //BCA
-							try{
-								String strWTP=(String) tableAnalysis.getValueAt(3, 1);
-								WTP=Double.parseDouble(strWTP.replaceAll(",",""));
-							} catch(Exception er){
-								close=false;
-								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid willingness-to-pay!");
-							}
+						try{
+							String strWTP=(String) tableAnalysis.getValueAt(3, 1);
+							WTP=Double.parseDouble(strWTP.replaceAll(",",""));
+						} catch(Exception er){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid willingness-to-pay!");
 						}
 					}
 					
@@ -322,8 +341,8 @@ public class frmProperties {
 						
 						//analysis type
 						dimInfo.analysisType=comboAnalysis.getSelectedIndex();
-						dimInfo.costDim=costDim;
-						dimInfo.effectDim=effectDim;
+						dimInfo.objective=objective; dimInfo.objectiveDim=objectiveDim;
+						dimInfo.costDim=costDim; dimInfo.effectDim=effectDim;
 						dimInfo.WTP=WTP;
 						
 						//markov settings
@@ -501,27 +520,27 @@ public class frmProperties {
 			scrollPane_2.setBounds(6, 122, 432, 76);
 			panel_1.add(scrollPane_2);
 			
+			modelAnalysis=new DefaultTableModel(
+					new Object[][] {
+						{"Objective", null},
+						{"Outcome", null},
+					},
+					new String[] {
+						"", ""
+					}
+				) {
+					boolean[] columnEditables = new boolean[] {
+						false, true
+					};
+					public boolean isCellEditable(int row, int column) {
+						return columnEditables[column];
+					}
+				};
+			
 			tableAnalysis = new analysisTable();
 			tableAnalysis.myModel=myModel;
 			tableAnalysis.getTableHeader().setReorderingAllowed(false);
-			tableAnalysis.setModel(new DefaultTableModel(
-				new Object[][] {
-					{"Cost", null},
-					{"Effect", null},
-					{"Baseline Strategy", null},
-					{"Willingness-to-pay (WTP)", null},
-				},
-				new String[] {
-					"", ""
-				}
-			) {
-				boolean[] columnEditables = new boolean[] {
-					false, true
-				};
-				public boolean isCellEditable(int row, int column) {
-					return columnEditables[column];
-				}
-			});
+			tableAnalysis.setModel(modelAnalysis);
 			tableAnalysis.getColumnModel().getColumn(0).setPreferredWidth(170);
 			tableAnalysis.getColumnModel().getColumn(1).setPreferredWidth(170);
 			tableAnalysis.setShowVerticalLines(true);
@@ -700,18 +719,19 @@ public class frmProperties {
 		}
 		comboAnalysis.setSelectedIndex(dimInfo.analysisType);
 		setAnalysisType(dimInfo.analysisType);
-		if(dimInfo.analysisType>0){ //CEA or BCA
-			//comboCost.setSelectedIndex(dimInfo.costDim);
-			//comboEffect.setSelectedIndex(dimInfo.effectDim);
+		if(dimInfo.analysisType==0){ //EV
+			if(dimInfo.objective==0){tableAnalysis.setValueAt("Maximize", 0, 1);}
+			else if(dimInfo.objective==1){tableAnalysis.setValueAt("Minimize", 0, 1);}
+			tableAnalysis.setValueAt(dimInfo.dimNames[dimInfo.objectiveDim], 1, 1);
+		}
+		else if(dimInfo.analysisType>0){ //CEA or BCA
 			tableAnalysis.setValueAt(dimInfo.dimNames[dimInfo.costDim], 0, 1);
 			tableAnalysis.setValueAt(dimInfo.dimNames[dimInfo.effectDim], 1, 1);
 			if(dimInfo.analysisType==1){ //CEA
 				myModel.getStrategies();
 				tableAnalysis.setValueAt(myModel.strategyNames[dimInfo.baseScenario], 2, 1);
 			}
-			else if(dimInfo.analysisType==2){ //BCA
-				tableAnalysis.setValueAt(dimInfo.WTP+"",3,1);
-			}
+			tableAnalysis.setValueAt(dimInfo.WTP+"",3,1);
 		}
 		
 	}
@@ -748,26 +768,27 @@ public class frmProperties {
 	}
 	
 	private void setAnalysisType(int analysisType){
+		tableAnalysis.analysisType=analysisType;
 		if(analysisType==0){ //EV
-			tableAnalysis.enabled[0]=false;
-			tableAnalysis.enabled[1]=false;
-			tableAnalysis.enabled[2]=false;
-			tableAnalysis.enabled[3]=false;
+			modelAnalysis.setRowCount(0);
+			modelAnalysis.addRow(new Object[]{"Objective",null}); tableAnalysis.enabled[0]=true;
+			modelAnalysis.addRow(new Object[]{"Outcome",null}); tableAnalysis.enabled[1]=true;
 		}
-		else if(analysisType==1){ //CEA
-			tableAnalysis.enabled[0]=true;
-			tableAnalysis.setValueAt("Effect", 1, 0);
-			tableAnalysis.enabled[1]=true;
-			tableAnalysis.enabled[2]=true;
-			tableAnalysis.enabled[3]=false;
+		else if(analysisType==1 || analysisType==2){ //CEA or BCA
+			modelAnalysis.setRowCount(0);
+			modelAnalysis.addRow(new Object[]{"Cost",null}); tableAnalysis.enabled[0]=true;
+			modelAnalysis.addRow(new Object[]{"Effect",null}); tableAnalysis.enabled[1]=true;
+			modelAnalysis.addRow(new Object[]{"Baseline Strategy",null}); tableAnalysis.enabled[2]=true;
+			modelAnalysis.addRow(new Object[]{"Willingness-to-pay (WTP)",null}); tableAnalysis.enabled[3]=true;
+			if(analysisType==1){ //CEA
+				tableAnalysis.setValueAt("Effect", 1, 0);
+			}
+			else{ //BCA
+				tableAnalysis.setValueAt("Benefit", 1, 0);
+				tableAnalysis.enabled[2]=false; //baseline strategy
+			}
 		}
-		else if(analysisType==2){ //BCA
-			tableAnalysis.enabled[0]=true;
-			tableAnalysis.setValueAt("Benefit", 1, 0);
-			tableAnalysis.enabled[1]=true;
-			tableAnalysis.enabled[2]=false;
-			tableAnalysis.enabled[3]=true;
-		}
+		
 		tableAnalysis.repaint();
 	}
 	
@@ -802,6 +823,7 @@ public class frmProperties {
 
 
 class analysisTable extends JTable{
+	public int analysisType=0;
 	public boolean enabled[]=new boolean[]{false,false,false,false};
 	analysisTable thisTable=this;
 	public AmuaModel myModel;
@@ -814,19 +836,33 @@ class analysisTable extends JTable{
 	
 	@Override
 	public TableCellEditor getCellEditor(int row, int column){
-		if(column==1){
-			if(row==0 || row==1){ //Cost/Effect
-				JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(myModel.dimInfo.dimNames));
-				return(new DefaultCellEditor(comboDim));
+		if(analysisType==0){ //EV
+			if(column==1){
+				if(row==0){ //not editable
+					JComboBox<String> comboRule = new JComboBox<String>(new DefaultComboBoxModel(new String[]{"Maximize","Minimize"}));
+					return(new DefaultCellEditor(comboRule));
+				}
+				else if(column==1){ //dimension
+					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(myModel.dimInfo.dimNames));
+					return(new DefaultCellEditor(comboDim));
+				}
 			}
-			else if(row==2){ //Baseline scenario
-				myModel.getStrategies();
-				JComboBox<String> comboScen = new JComboBox<String>(new DefaultComboBoxModel(myModel.strategyNames));
-				comboScen.setEnabled(enabled[2]);
-				return(new DefaultCellEditor(comboScen));
-			}
-			else if(row==3){ //Willingness to pay
-				return(thisTable.getDefaultEditor(Object.class));
+		}
+		else if(analysisType==1 || analysisType==2){ //CEA/BCA
+			if(column==1){
+				if(row==0 || row==1){ //Cost/Effect
+					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(myModel.dimInfo.dimNames));
+					return(new DefaultCellEditor(comboDim));
+				}
+				else if(row==2){ //Baseline scenario
+					myModel.getStrategies();
+					JComboBox<String> comboScen = new JComboBox<String>(new DefaultComboBoxModel(myModel.strategyNames));
+					comboScen.setEnabled(enabled[2]);
+					return(new DefaultCellEditor(comboScen));
+				}
+				else if(row==3){ //Willingness to pay
+					return(thisTable.getDefaultEditor(Object.class));
+				}
 			}
 		}
 		return(null);

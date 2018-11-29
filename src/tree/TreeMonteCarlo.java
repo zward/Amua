@@ -158,7 +158,7 @@ public class TreeMonteCarlo{
 	}
 	
 	/**
-	 * Recursively traverse tree
+	 * Traverse tree
 	 * @throws Exception 
 	 */
 	
@@ -197,8 +197,7 @@ public class TreeMonteCarlo{
 				}
 			}
 		}
-		
-		if(node.type==1){ //sim chance node
+		else if(node.type==1){ //sim chance node
 			double rand=myModel.generatorVar.nextDouble();
 			int k=0;
 			if(node.childHasProbVar==true){ //re-evaluate child probs

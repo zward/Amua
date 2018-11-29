@@ -815,8 +815,8 @@ public class PanelMarkov extends ModelPanel{
 
 	public void collapseBranch(){
 		if(curNode!=null && curNode.childIndices.size()>0){
-			//Flip boolean on child nodes (recursively)
-			curNode.collapsed=!curNode.collapsed;
+			curNode.collapsed=!curNode.collapsed; //flip status
+			//change visibility of children
 			int numChildren=curNode.childIndices.size();
 			for(int i=0; i<numChildren; i++){
 				tree.nodes.get(curNode.childIndices.get(i)).showNode(!curNode.collapsed, tree.nodes);
@@ -864,7 +864,7 @@ public class PanelMarkov extends ModelPanel{
 			this.add(node.textICER);
 			node.textICER.setVisible(tree.showEV && myModel.dimInfo.analysisType>0);
 		}
-		if(node.collapsed){this.add(node.lblCollapsed);}
+		if(node.visible && node.collapsed){this.add(node.lblCollapsed);}
 		if(node.selected){textAreaNotes.setText(node.notes);}
 	}
 
@@ -1211,7 +1211,7 @@ public class PanelMarkov extends ModelPanel{
 			if(curNode.level==1){
 				this.remove(curNode.textICER);
 			}
-			if(curNode.collapsed){this.remove(curNode.lblCollapsed);}
+			if(curNode.visible && curNode.collapsed){this.remove(curNode.lblCollapsed);}
 		}
 	}
 

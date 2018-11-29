@@ -177,6 +177,7 @@ public class TreeNode extends ModelNode{
 							textVarUpdates.setBounds(xPos-scale(138),(int)(yPos+(height/2)),scale(140),scale(28));
 						}
 					}
+					textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
 				}
 			}
 			else if(type==1){ //Chance
@@ -540,6 +541,7 @@ public class TreeNode extends ModelNode{
 		textNumEnd.setVisible(tree.showEV);
 		scaleFont(textNumEnd);
 		textNumEnd.setFont(new Font(textNumEnd.getFont().getFontName(), Font.BOLD, textNumEnd.getFont().getSize()));
+		textNumEnd.setForeground(new Color(0,0,139));
 		if(tree.showEV){
 			textNumEnd.setText(Math.round(totalDenom*100)/100.0+"");
 		}
@@ -631,12 +633,14 @@ public class TreeNode extends ModelNode{
 		}
 		showComponent(false,textEV); //Always hide EV
 		showComponent(false,textNumEnd); //Always hide num end
-		showComponent(false,textICER); //Hid ICER
-		if(show==false && collapsed==true){ //Overwrite collapsed
-			collapsed=false;
-			panel.remove(lblCollapsed);
+		showComponent(false,textICER); //Hide ICER
+		if(collapsed==true){
+			if(show==false){panel.remove(lblCollapsed);} //remove collapsed label
+			else{panel.add(lblCollapsed);} //add collapsed label
 		}
-		if(nodes!=null){
+		
+		if(nodes!=null){ //apply to children
+			if(collapsed==true){show=false;}
 			for(int i=0; i<childIndices.size(); i++){
 				int index=childIndices.get(i);
 				TreeNode child=nodes.get(index);

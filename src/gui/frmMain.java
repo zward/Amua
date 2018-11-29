@@ -119,7 +119,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.0.7";
+	public String version="0.0.8";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -1902,27 +1902,44 @@ public class frmMain {
 			String name=file.getName();
 			String filepath=file.getAbsolutePath();
 
-			JAXBContext context = JAXBContext.newInstance(AmuaModel.class);
-			Unmarshaller un = context.createUnmarshaller();
-			AmuaModel newModel = (AmuaModel) un.unmarshal(new File(filepath));
-			curModel=newModel;
-			newModel.openModel(main,errorLog);
-			newModel.name=name.replaceAll(".amua", "");
-			newModel.filepath=filepath;
-			int modelType=newModel.type;
+			//Check if model is already open
+			boolean isOpen=false;
+			int numModels=modelList.size();
+			int m=0;
+			while(isOpen==false && m<numModels){
+				String openPath=modelList.get(m).filepath;
+				if(openPath.equals(filepath)){ //Open, go to tab
+					isOpen=true;
+					tabbedPaneCanvas.setSelectedIndex(m);
+					switchTabs();
+				}
+				else{m++;}
+			}
+						
+			//Not open, open it
+			if(isOpen==false){
+				JAXBContext context = JAXBContext.newInstance(AmuaModel.class);
+				Unmarshaller un = context.createUnmarshaller();
+				AmuaModel newModel = (AmuaModel) un.unmarshal(new File(filepath));
+				curModel=newModel;
+				newModel.openModel(main,errorLog);
+				newModel.name=name.replaceAll(".amua", "");
+				newModel.filepath=filepath;
+				int modelType=newModel.type;
 
-			modelList.add(newModel);
-			JScrollPane scrollPane=new JScrollPane();
-			scrollPane.setViewportView(newModel.getPanel());
-			modelTypes.add(modelType);
-			//add tab
-			addTab(modelType,scrollPane,newModel.name);
-			tabbedPaneCanvas.setSelectedIndex(tabbedPaneCanvas.getTabCount()-1);
-			switchTabs();
+				modelList.add(newModel);
+				JScrollPane scrollPane=new JScrollPane();
+				scrollPane.setViewportView(newModel.getPanel());
+				modelTypes.add(modelType);
+				//add tab
+				addTab(modelType,scrollPane,newModel.name);
+				tabbedPaneCanvas.setSelectedIndex(tabbedPaneCanvas.getTabCount()-1);
+				switchTabs();
 
-			recentFiles.updateList(filepath,newModel.type);
-			
-			checkAnyModels();
+				recentFiles.updateList(filepath,newModel.type);
+
+				checkAnyModels();
+			}
 		}catch(Exception e){
 			console.print("Error: "+e.getMessage()); console.newLine();
 			errorLog.recordError(e);

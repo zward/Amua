@@ -123,6 +123,10 @@ public class DecisionTree{
 			curNode.curCosts=new double[numDim]; 
 			curNode.curPayoffs=new double[numDim]; 
 
+			if(curNode.type==0 && myModel.simType==1){
+				errors.add("Node "+curNode.name+": Sequential decision nodes are not allowed in Monte Carlo simulations");
+			}
+			
 			if(curNode.parentType!=0){ //Validate probability
 				curNode.highlightTextField(0,null); //Prob
 				if(curNode.prob.matches("C") || curNode.prob.matches("c")){curNode.curProb=-1;} //Complementary
@@ -201,9 +205,15 @@ public class DecisionTree{
 		if(validProbs){
 			for(int i=1; i<size; i++){ //Exclude root node
 				TreeNode curNode=nodes.get(i);
-				if(curNode.type!=0){ //Not decision node
-					curNode.numChildren=curNode.childIndices.size();
-					curNode.children=new TreeNode[curNode.numChildren];
+				curNode.numChildren=curNode.childIndices.size();
+				curNode.children=new TreeNode[curNode.numChildren];
+				if(curNode.type==0){ //Decision node
+					for(int j=0; j<curNode.numChildren; j++){
+						TreeNode child=nodes.get(curNode.childIndices.get(j));
+						curNode.children[j]=child;
+					}
+				}
+				else{ //Not decision node
 					if(curNode.numChildren>0){
 						double sumProb=0;
 						int numCompProb=0;

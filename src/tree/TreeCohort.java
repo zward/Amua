@@ -115,28 +115,95 @@ public class TreeCohort{
 
 		//Get expected value of node
 		node.expectedValues=new double[numDim];
-		if(node.numChildren==0){
+		
+		if(node.type==2){ //Terminal node
 			for(int i=0; i<numDim; i++){
 				node.expectedValues[i]=(node.curPayoffs[i]+node.curCosts[i]);
 			}
 		}
-		else{
-			for(int i=0; i<numDim; i++){
-				node.expectedValues[i]=node.curCosts[i];
-			}
+		else if(node.type==1){ //Chance node
+			//Apply cost
+			for(int i=0; i<numDim; i++){node.expectedValues[i]=node.curCosts[i];}
+			//Get branch EVs
 			for(int c=0; c<node.numChildren; c++){
 				TreeNode child=node.children[c];
-				if(node.type==0){child.totalDenom=node.totalDenom;} //decision node, all go down
-				else{child.totalDenom=node.totalDenom*child.curProb;}
+				child.totalDenom=node.totalDenom*child.curProb;
 				traverseNode(child,display);
 				for(int i=0; i<numDim; i++){
-					node.expectedValues[i]+=(child.curProb*child.expectedValues[i]); //orig
-					//node.expectedValues[i]+=(child.expectedValues[i]); //scaled to cohort size
+					node.expectedValues[i]+=(child.curProb*child.expectedValues[i]);
 				}
 			}
 		}
+		else if(node.type==0){ //Decision node
+			//Apply cost
+			for(int i=0; i<numDim; i++){node.expectedValues[i]=node.curCosts[i];}
+			//Get children EVs
+			double childEVs[][]=new double[node.numChildren][numDim];
+			for(int c=0; c<node.numChildren; c++){
+				TreeNode child=node.children[c];
+				child.totalDenom=node.totalDenom; //decision node, all go down
+				traverseNode(child,display);
+				for(int i=0; i<numDim; i++){
+					childEVs[c][i]=child.expectedValues[i];
+				}
+			}
+			//Make decision
+			if(myModel.dimInfo.analysisType==0){ //EV
+				int obj=myModel.dimInfo.objective;
+				int objDim=myModel.dimInfo.objectiveDim;
+				double bestEV=childEVs[0][objDim];
+				int bestChild=0;
+				for(int c=1; c<node.numChildren; c++){
+					if(obj==0){ //Maximize
+						if(childEVs[c][objDim]>bestEV){
+							bestEV=childEVs[c][objDim];	bestChild=c;
+						}
+					}
+					else{ //Minimize
+						if(childEVs[c][objDim]<bestEV){
+							bestEV=childEVs[c][objDim];	bestChild=c;
+						}
+					}
+				}
+				//choose best EV
+				for(int i=0; i<numDim; i++){
+					node.expectedValues[i]+=childEVs[bestChild][i];
+				}
+				//don't choose other branches
+				if(display==true && node.level!=0){
+					for(int c=0; c<node.numChildren; c++){
+						if(c!=bestChild){setEndToZero(node.children[c]);}
+					}
+				}
+				
+			}
+			else if(myModel.dimInfo.analysisType>0){ //CEA or BCA
+				int dimCost=myModel.dimInfo.costDim;
+				int dimBenefit=myModel.dimInfo.effectDim;
+				double wtp=myModel.dimInfo.WTP;
+				double bestNMB=(wtp*childEVs[0][dimBenefit])-childEVs[0][dimCost];
+				int bestChild=0;
+				for(int c=1; c<node.numChildren; c++){
+					double curNMB=(wtp*childEVs[c][dimBenefit])-childEVs[c][dimCost];
+					if(curNMB>bestNMB){
+						bestNMB=curNMB; bestChild=c;
+					}
+				}
+				//choose best NMB
+				for(int i=0; i<numDim; i++){
+					node.expectedValues[i]+=childEVs[bestChild][i];
+				}
+				//don't choose other branches
+				if(display==true && node.level!=0){
+					for(int c=0; c<node.numChildren; c++){
+						if(c!=bestChild){setEndToZero(node.children[c]);}
+					}
+				}
+			}
+		}
+		
 		if(display==true){//Display
-			if(node.type==1){ //chance node
+			if(node.type!=2 && node.level!=0){ //decision/chance node
 				String buildString="";
 				for(int i=0; i<numDim-1; i++){
 					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+myModel.round(node.expectedValues[i],i)+"; ";
@@ -158,6 +225,17 @@ public class TreeCohort{
 
 	}
 
+	private void setEndToZero(TreeNode node){
+		if(node.type==2){
+			node.totalDenom=0;
+			node.textNumEnd.setText("0");
+		}
+		else{
+			for(int c=0; c<node.numChildren; c++){
+				setEndToZero(node.children[c]);
+			}
+		}
+	}
 
 
 }

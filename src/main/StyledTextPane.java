@@ -349,7 +349,7 @@ public class StyledTextPane extends JTextPane{
 					doc.setCharacterAttributes(startStyle, text.length(), pane.getStyle("plain"), true); //Reset all to plain text
 
 					//Parse word by word
-					text=text.substring(startStyle);
+					text=text.substring(Math.max(0, startStyle)); //ensure >=0
 					int offset=startStyle;
 					int len=text.length();
 					while(len>0){

@@ -53,14 +53,16 @@ public class ModelNode{
 	@XmlElement	public boolean hasVarUpdates=false;
 	@XmlElement public String varUpdates;
 	@XmlElement public String notes;
+	@XmlElement public boolean visible=true;
+	@XmlElement public boolean collapsed=false;
 	
 	@XmlTransient public int numDimensions=1;
 	@XmlTransient public AmuaModel myModel;
 	
 	//Visual attributes
 	@XmlTransient public boolean selected;
-	@XmlTransient public boolean visible=true;
-	@XmlTransient public boolean collapsed=false;
+	//@XmlTransient public boolean visible=true;
+	//@XmlTransient public boolean collapsed=false;
 	@XmlTransient public JLabel lblCollapsed;
 	@XmlTransient public int curScale=100;
 	@XmlTransient public Color textHighlights[];

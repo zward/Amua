@@ -577,8 +577,8 @@ public class PanelTree extends ModelPanel{
 
 	public void collapseBranch(){
 		if(curNode!=null && curNode.childIndices.size()>0){
-			//Flip boolean on child nodes (recursively)
-			curNode.collapsed=!curNode.collapsed;
+			curNode.collapsed=!curNode.collapsed; //flip status
+			//change visibility of children
 			int numChildren=curNode.childIndices.size();
 			for(int i=0; i<numChildren; i++){
 				tree.nodes.get(curNode.childIndices.get(i)).showNode(!curNode.collapsed, tree.nodes);
@@ -620,7 +620,7 @@ public class PanelTree extends ModelPanel{
 			this.add(node.textICER);
 			node.textICER.setVisible(tree.showEV && myModel.dimInfo.analysisType>0);
 		}
-		if(node.collapsed){this.add(node.lblCollapsed);}
+		if(node.visible && node.collapsed){this.add(node.lblCollapsed);}
 		if(node.selected){textAreaNotes.setText(node.notes);}
 	}
 
@@ -908,17 +908,17 @@ public class PanelTree extends ModelPanel{
 	public void clearAnnotations(){ //Removes expected values and any highlighting
 		tree.showEV=false;
 		int size=tree.nodes.size();
-		for(int i=0; i<size; i++){
+		for(int i=1; i<size; i++){ //skip root
 			curNode=tree.nodes.get(i);
 			//Reset highlighting
 			curNode.highlightTextField(0, null); //Prob
 			curNode.highlightTextField(1, null); //Cost
 			curNode.highlightTextField(2, null); //Payoff
 			curNode.highlightTextField(3, null); //Counters
-			if(curNode.type==1){
+			if(curNode.type!=2){
 				curNode.textEV.setVisible(false);
 			}
-			if(curNode.type==2){
+			else if(curNode.type==2){
 				curNode.textNumEnd.setVisible(false);
 			}
 			if(curNode.level==1){
@@ -949,7 +949,7 @@ public class PanelTree extends ModelPanel{
 			if(curNode.level==1){
 				this.remove(curNode.textICER);
 			}
-			if(curNode.collapsed){this.remove(curNode.lblCollapsed);}
+			if(curNode.visible && curNode.collapsed){this.remove(curNode.lblCollapsed);}
 		}
 	}
 	

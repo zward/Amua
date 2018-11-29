@@ -26,6 +26,10 @@ public class DimInfo{
 	@XmlElement public String dimNames[], dimSymbols[];
 	@XmlElement public int decimals[];
 	@XmlElement public int analysisType=0;
+	/**
+	 * Objective: 0=Maximize, 1=Minimize
+	 */
+	@XmlElement public int objective=0, objectiveDim=0;
 	@XmlElement public int costDim, effectDim;
 	@XmlElement public double WTP;
 	@XmlElement public int baseScenario=0;

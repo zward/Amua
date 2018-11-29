@@ -970,11 +970,12 @@ public class MarkovNode extends ModelNode{
 		showComponent(show,lblRewards); showComponent(show,textRewards);
 		showComponent(false,textEV); //Always hide EV
 		showComponent(false,textICER); //Hide ICER
-		if(show==false && collapsed==true){ //Overwrite collapsed
-			collapsed=false;
-			panel.remove(lblCollapsed);
+		if(collapsed==true){
+			if(show==false){panel.remove(lblCollapsed);} //remove collapsed label
+			else{panel.add(lblCollapsed);} //add collapsed label
 		}
-		if(nodes!=null){
+		if(nodes!=null){ //apply to children
+			if(collapsed==true){show=false;}
 			for(int i=0; i<childIndices.size(); i++){
 				int index=childIndices.get(i);
 				MarkovNode child=nodes.get(index);
