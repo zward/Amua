@@ -21,6 +21,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Stack;
 
 import javax.swing.ImageIcon;
@@ -124,10 +125,12 @@ public class AmuaModel{
 
 		type=modelType;
 		if(modelType==0){ //Decision tree
+			cohortSize=1;
 			panelTree=new PanelTree(mainFrm,this,errorLog);
 			tree=panelTree.tree;
 		}
 		else if(modelType==1){ //Markov
+			cohortSize=1000;
 			addT();
 			panelMarkov=new PanelMarkov(mainFrm,this,errorLog);
 			markov=panelMarkov.tree;
@@ -687,6 +690,15 @@ public class AmuaModel{
 		return(null);
 	}
 
+	private void printSimInfo(Console console){
+		console.print(new Date()+"\n");
+		if(type==0){console.print("Decision Tree: "+name+"\n");}
+		else if(type==1){console.print("Markov Model: "+name+"\n");}
+		
+		if(simType==0 && cohortSize>1){console.print("Cohort size:\t"+cohortSize+"\n");}
+		else if(simType==1){console.print("Monte Carlo simulations:\t"+cohortSize+"\n");}
+	}
+	
 	public void runModel(Console console,boolean display){
 		try{
 			//curGenerator=generatorVar; //initialize to var RNG
@@ -701,6 +713,8 @@ public class AmuaModel{
 				
 				if(display){
 					console.print("done!\n");
+					printSimInfo(console);
+					
 					if(dimInfo.analysisType>0){
 						panelTree.tree.runCEA(console);
 					}
@@ -721,6 +735,7 @@ public class AmuaModel{
 								panelMarkov.tree.runModel(curNode,display);
 								if(display){
 									console.print(" done!\n");
+									printSimInfo(console);
 									if(dimInfo.analysisType>0){
 										panelMarkov.tree.runCEA(console);
 									}
@@ -731,7 +746,10 @@ public class AmuaModel{
 					else{ //Markov Chain selected
 						if(display){console.print("Running Markov Chain: "+panelMarkov.curNode.name);}
 						panelMarkov.tree.runModel(panelMarkov.curNode, display);
-						if(display){console.print(" done!\n");}
+						if(display){
+							console.print(" done!\n");
+							printSimInfo(console);
+						}
 					}
 					unlockParams(); //unlock parameters
 				}
@@ -771,7 +789,10 @@ public class AmuaModel{
 					
 					//get mean and bounds of results
 					int numDim=dimInfo.dimSymbols.length;
-					if(display){console.print(" done!\n");}
+					if(display){
+						console.print(" done!\n");
+						printSimInfo(console);
+					}
 					for(int c=0; c<numChains; c++){
 						MarkovTraceSummary traceSummary=new MarkovTraceSummary(traces[c]);
 						MarkovNode curNode=chainRoots.get(c);

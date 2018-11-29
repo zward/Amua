@@ -404,7 +404,9 @@ public class PanelMarkov extends ModelPanel{
 		curNode=null; //Reset selected node to null
 
 		int size=tree.nodes.size();
-		for(int i=0; i<size; i++){ //If click was within bounds of an node, select it as the current node
+		int i=size; //start from end to select node displayed on top
+		while(curNode==null && i>0){ //If click was within bounds of an node, select it as the current node
+			i--;
 			boolean select=false;
 			int minX=tree.nodes.get(i).xPos;
 			int maxX=minX+tree.nodes.get(i).width;
@@ -420,7 +422,12 @@ public class PanelMarkov extends ModelPanel{
 			}
 			tree.nodes.get(i).selected=select;
 		}
-
+		//de-select any other nodes
+		while(i>0){
+			i--;
+			tree.nodes.get(i).selected=false;
+		}
+		
 		modelProperties.setRowCount(0);
 		if(curNode!=null){
 			refreshPropertiesTable();
@@ -428,56 +435,55 @@ public class PanelMarkov extends ModelPanel{
 			textAreaNotes.setEditable(true);
 			mainForm.mntmCut.setEnabled(true);
 			mainForm.mntmCopy.setEnabled(true);
-			mainForm.btnUpdateVariable.setEnabled(false);
-			if(curNode.type!=4 && curNode.collapsed==false){
-				mainForm.btnDecisionNode.setEnabled(true);
-				mainForm.btnMarkovChain.setEnabled(true);
-				mainForm.btnChanceNode.setEnabled(true);
-			}
-			else{
-				mainForm.btnDecisionNode.setEnabled(false);
-				mainForm.btnMarkovChain.setEnabled(false);
-				mainForm.btnChanceNode.setEnabled(false);
-			}
-			if(curNode.type==1){ //Markov chain
-				mainForm.btnDecisionNode.setEnabled(false);
-				mainForm.btnMarkovChain.setEnabled(false);
-				mainForm.btnMarkovState.setEnabled(true);
-				mainForm.btnChanceNode.setEnabled(false);
-				mainForm.mntmRunTree.setText("Run Markov Chain");
-				mainForm.btnCheckTree.setToolTipText("Check Markov Chain");
-				mainForm.btnRunTree.setToolTipText("Run Markov Chain");
-			}
-			else{ //not Markov chain
-				mainForm.btnDecisionNode.setEnabled(true);
-				mainForm.btnMarkovChain.setEnabled(true);
-				mainForm.btnMarkovState.setEnabled(false);
-				mainForm.btnChanceNode.setEnabled(true);
-				if(curNode.chain!=null){ //in chain
-					mainForm.btnUpdateVariable.setEnabled(true);
-				}
-				mainForm.mntmRunTree.setText("Run Model");
-				mainForm.btnCheckTree.setToolTipText("Check Model");
-				mainForm.btnRunTree.setToolTipText("Run Model");
-			}
-			if(curNode.type==4){ //State transition
-				mainForm.btnDecisionNode.setEnabled(false);
-				mainForm.btnMarkovChain.setEnabled(false);
-				mainForm.btnMarkovState.setEnabled(false);
-				mainForm.btnChanceNode.setEnabled(false);
-				mainForm.btnStateTransition.setEnabled(false);
-			}
-
+			
+			//initialize all to disabled
+			mainForm.btnDecisionNode.setEnabled(false);
+			mainForm.btnMarkovChain.setEnabled(false);
+			mainForm.btnMarkovState.setEnabled(false);
+			mainForm.btnChanceNode.setEnabled(false);
 			mainForm.btnStateTransition.setEnabled(false);
 			mainForm.btnChangeNodeType.setEnabled(false);
-			if(curNode.chain!=null){ //only 1 chain allowed per strategy
-				mainForm.btnStateTransition.setEnabled(true); //in chain, allow transition
-				mainForm.btnChangeNodeType.setEnabled(true);
-				mainForm.btnMarkovChain.setEnabled(false);
-			}
-
-			int numChildren=curNode.childIndices.size();
 			
+			mainForm.btnUpdateVariable.setEnabled(false);
+			if(curNode.type!=1 && curNode.chain!=null){ //in chain, can update variable
+				mainForm.btnUpdateVariable.setEnabled(true);
+			}
+			if(curNode.level==0 || curNode.type==2){mainForm.btnShowCost.setEnabled(false);}
+			else{mainForm.btnShowCost.setEnabled(true);}
+			
+			
+			if(curNode.collapsed==false){ //not collapsed, can add child nodes or change type
+				if(curNode.type==0){ //decision node
+					mainForm.btnChanceNode.setEnabled(true);
+					mainForm.btnMarkovChain.setEnabled(true); //only 1 decision node in Markov, so no need to check if in chain already
+				}
+				else if(curNode.type==1){ //markov chain
+					mainForm.btnMarkovState.setEnabled(true);
+				}
+				else if(curNode.type==2){ //markov state
+					mainForm.btnChanceNode.setEnabled(true);
+					mainForm.btnStateTransition.setEnabled(true);
+				}
+				else if(curNode.type==3){ //chance node
+					mainForm.btnChanceNode.setEnabled(true);
+					if(curNode.chain!=null){ // in chain
+						mainForm.btnStateTransition.setEnabled(true);
+						if(curNode.childIndices.size()==0){ //no children
+							mainForm.btnChangeNodeType.setEnabled(true);
+						}
+					}
+					else{ //not in chain
+						mainForm.btnDecisionNode.setEnabled(true);
+						mainForm.btnMarkovChain.setEnabled(true);
+					}
+				}
+				else if(curNode.type==4){ //transition
+					mainForm.btnChangeNodeType.setEnabled(true);
+				}
+			}
+			
+			//display options
+			int numChildren=curNode.childIndices.size();
 			mainForm.btnEqualY.setEnabled(false);
 			if(curNode.type<3 || numChildren>0){mainForm.btnChangeNodeType.setEnabled(false);}
 			if(numChildren==0){mainForm.btnCollapse.setEnabled(false);}
@@ -485,8 +491,19 @@ public class PanelMarkov extends ModelPanel{
 				mainForm.btnCollapse.setEnabled(true);
 				if(numChildren>2){mainForm.btnEqualY.setEnabled(true);}
 			}
-			if(curNode.level==0 || curNode.type==2){mainForm.btnShowCost.setEnabled(false);}
-			else{mainForm.btnShowCost.setEnabled(true);}
+			
+			//run model labels
+			if(curNode.type==1){ //Markov chain
+				mainForm.mntmRunModel.setText("Run Markov Chain");
+				mainForm.btnCheckModel.setToolTipText("Check Markov Chain");
+				mainForm.btnRunModel.setToolTipText("Run Markov Chain");
+			}
+			else{ //not Markov chain
+				mainForm.mntmRunModel.setText("Run Model");
+				mainForm.btnCheckModel.setToolTipText("Check Model");
+				mainForm.btnRunModel.setToolTipText("Run Model");
+			}
+			
 		}
 		else{ //Node not selected
 			textAreaNotes.setText("");
@@ -503,9 +520,9 @@ public class PanelMarkov extends ModelPanel{
 			mainForm.btnCollapse.setEnabled(false);
 			mainForm.mntmCut.setEnabled(false);
 			mainForm.mntmCopy.setEnabled(false);
-			mainForm.mntmRunTree.setText("Run Model");
-			mainForm.btnCheckTree.setToolTipText("Check Model");
-			mainForm.btnRunTree.setToolTipText("Run Model");
+			mainForm.mntmRunModel.setText("Run Model");
+			mainForm.btnCheckModel.setToolTipText("Check Model");
+			mainForm.btnRunModel.setToolTipText("Run Model");
 		}
 
 		repaint();
@@ -1058,59 +1075,70 @@ public class PanelMarkov extends ModelPanel{
 
 	private void showPopup(int x, int y){
 		mnAdd.setEnabled(true);
-		//mntmDelete.setEnabled(true);
-		mntmShowCost.setEnabled(true);
-		mntmDecision.setEnabled(true);
-		mntmMarkovChain.setEnabled(true);
+		//initialize all to disabled
+		mntmDecision.setEnabled(false);
+		mntmMarkovChain.setEnabled(false);
+		mntmMarkovState.setEnabled(false);
+		mntmChance.setEnabled(false);
 		mntmTransition.setEnabled(false);
 		mntmChangeType.setEnabled(false);
+		mntmChangeType.setText("Change Node Type");
+		mntmChangeType.setIcon(null);
+		
+		//variable updates
+		if(curNode.hasVarUpdates){mntmUpdateVariable.setText("Remove Variable Updates");}
+		else{mntmUpdateVariable.setText("Add Variable Updates");}
 		mntmUpdateVariable.setEnabled(false);
-		if(curNode.chain!=null){ //in chain
-			mntmMarkovChain.setEnabled(false);
-			mntmTransition.setEnabled(true);
-			mntmChangeType.setEnabled(true);
-			if(curNode.type!=1){ //not chain root
-				mntmUpdateVariable.setEnabled(true);
+		if(curNode.type!=1 && curNode.chain!=null){ //in chain, can update variable
+			mntmUpdateVariable.setEnabled(true);
+		}
+
+		//cost
+		if(curNode.hasCost){mntmShowCost.setText("Remove Cost");}
+		else{mntmShowCost.setText("Add Cost");}
+		if(curNode.level==0 || curNode.type==2){mntmShowCost.setEnabled(false);}
+		else{mntmShowCost.setEnabled(true);}
+	
+		if(curNode.collapsed==false){ //not collapsed, can add child nodes or change type
+			if(mainForm.clipboard.copyMarkov!=null){mntmPaste.setEnabled(true);}
+			else{mntmPaste.setEnabled(false);}
+			
+			if(curNode.type==0){ //decision node
+				mntmChance.setEnabled(true);
+				mntmMarkovChain.setEnabled(true); //only 1 decision node in Markov, so no need to check if in chain already
+			}
+			else if(curNode.type==1){ //markov chain
+				mntmMarkovState.setEnabled(true);
+			}
+			else if(curNode.type==2){ //markov state
+				mntmChance.setEnabled(true);
+				mntmTransition.setEnabled(true);
+			}
+			else if(curNode.type==3){ //chance node
+				mntmChance.setEnabled(true);
+				if(curNode.chain!=null){ // in chain
+					mntmTransition.setEnabled(true);
+					if(curNode.childIndices.size()==0){ //no children
+						mntmChangeType.setEnabled(true);
+						mntmChangeType.setText("Change to State Transition");
+						mntmChangeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/stateTransition_16.png")));
+					}
+				}
+				else{ //not in chain
+					mntmDecision.setEnabled(true);
+					mntmMarkovChain.setEnabled(true);
+				}
+			}
+			else if(curNode.type==4){ //transition
+				mnAdd.setEnabled(false);
+				mntmChangeType.setEnabled(true);
+				mntmChangeType.setText("Change to Chance Node");
+				mntmChangeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/chanceNode_16.png")));
+				mntmPaste.setEnabled(false);
 			}
 		}
-		mntmMarkovState.setEnabled(false);
-		mntmChance.setEnabled(true);
-		if(curNode.type==0){
-			mntmChangeType.setEnabled(false);
-			mntmChangeType.setText("Change Node Type");
-			mntmChangeType.setIcon(null);
-			if(mainForm.clipboard.copyMarkov!=null){mntmPaste.setEnabled(true);}
-			else{mntmPaste.setEnabled(false);}
-		}
-		else if(curNode.type==1){
-			mntmChangeType.setEnabled(false);
-			mntmChangeType.setText("Change Node Type");
-			mntmChangeType.setIcon(null);
-			mntmDecision.setEnabled(false);
-			mntmMarkovChain.setEnabled(false);
-			mntmMarkovState.setEnabled(true);
-			mntmChance.setEnabled(false);
-		}
-		else if(curNode.type==2){
-			mntmChangeType.setEnabled(false);
-			mntmChangeType.setText("Change Node Type");
-			mntmChangeType.setIcon(null);
-			mntmShowCost.setEnabled(false);
-		}
-		else if(curNode.type==3){
-			mntmChangeType.setText("Change to State Transition");
-			mntmChangeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/stateTransition_16.png")));
-			if(mainForm.clipboard.copyMarkov!=null){mntmPaste.setEnabled(true);}
-			else{mntmPaste.setEnabled(false);}
-		}
-		else if(curNode.type==4){
-			mnAdd.setEnabled(false);
-			mntmChangeType.setText("Change to Chance Node");
-			mntmChangeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/chanceNode_16.png")));
-			mntmPaste.setEnabled(false);
-		}
+		
 		if(curNode.childIndices.size()>0){
-			mntmChangeType.setEnabled(false);
 			mntmCollapse.setEnabled(true);
 			if(curNode.collapsed){
 				mntmCollapse.setText("Expand branch");
@@ -1121,12 +1149,7 @@ public class PanelMarkov extends ModelPanel{
 		else{
 			mntmCollapse.setEnabled(false);
 		}
-		if(curNode.hasCost){mntmShowCost.setText("Remove Cost");}
-		else{mntmShowCost.setText("Add Cost");}
-		if(curNode.hasVarUpdates){mntmUpdateVariable.setText("Remove Variable Updates");}
-		else{mntmUpdateVariable.setText("Add Variable Updates");}
 
-		if(curNode.level==0){mntmShowCost.setEnabled(false);}
 		popup.show(this,x,y);
 	}
 
@@ -1242,23 +1265,6 @@ public class PanelMarkov extends ModelPanel{
 			revalidate();
 			repaint();
 		}
-	}
-
-	private boolean nodesOverlap(MarkovNode node1, MarkovNode node2){
-		boolean overlap=false;
-		if(node1.xPos==node2.xPos){
-			int top1=node1.yPos;
-			int top2=node2.yPos;
-			if(top2>=top1 && top2<node1.yPos+node1.scale(60)){
-				overlap=true;
-				moveNode(node2,node2.xPos,node1.yPos+node1.scale(60));
-			}
-			else if(top1>=top2 && top1<node2.yPos+node2.scale(60)){
-				overlap=true;
-				moveNode(node1,node1.xPos,node2.yPos+node2.scale(60));
-			}
-		}
-		return(overlap);
 	}
 	
 	public void refreshPropertiesTable(){

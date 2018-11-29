@@ -237,18 +237,16 @@ public class frmProperties {
 					//Check simulation settings
 					myModel.simType=comboSimType.getSelectedIndex();
 					if(myModel.simType==0){ //Cohort
-						if(myModel.type==1){ //Markov model
-							try{
-								String text=textCohortSize.getText().replaceAll(",",""); //remove commas
-								myModel.cohortSize=Integer.parseInt(text);
-								if(myModel.cohortSize<=0){
-									close=false;
-									JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
-								}
-							} catch(Exception er){
+						try{
+							String text=textCohortSize.getText().replaceAll(",",""); //remove commas
+							myModel.cohortSize=Integer.parseInt(text);
+							if(myModel.cohortSize<=0){
 								close=false;
 								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
 							}
+						} catch(Exception er){
+							close=false;
+							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
 						}
 					}
 					else if(myModel.simType==1){ //Monte Carlo
@@ -555,15 +553,11 @@ public class frmProperties {
 					int selected=comboSimType.getSelectedIndex();
 					if(selected==0){ //Cohort
 						lblCohortSize.setText("Cohort size:");
-						if(myModel.type==0){ //Decision tree
-							textCohortSize.setEnabled(false);
-						}
 						chckbxCRN.setEnabled(false);
 						textCRNSeed.setEnabled(false);
 					}
 					else if(selected==1){ //Monte Carlo
 						lblCohortSize.setText("# simulations:");
-						textCohortSize.setEnabled(true);
 						chckbxCRN.setEnabled(true);
 						if(chckbxCRN.isSelected()){textCRNSeed.setEnabled(true);}
 						else{textCRNSeed.setEnabled(false);}

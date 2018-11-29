@@ -52,7 +52,6 @@ public class TreeCohort{
 
 		root.totalDenom=myModel.cohortSize;
 		traverseNode(root,display); //run tree
-
 	}
 
 	/**
@@ -118,7 +117,7 @@ public class TreeCohort{
 		node.expectedValues=new double[numDim];
 		if(node.numChildren==0){
 			for(int i=0; i<numDim; i++){
-				node.expectedValues[i]=node.curPayoffs[i]+node.curCosts[i];
+				node.expectedValues[i]=(node.curPayoffs[i]+node.curCosts[i]);
 			}
 		}
 		else{
@@ -131,7 +130,8 @@ public class TreeCohort{
 				else{child.totalDenom=node.totalDenom*child.curProb;}
 				traverseNode(child,display);
 				for(int i=0; i<numDim; i++){
-					node.expectedValues[i]+=(child.curProb*child.expectedValues[i]);
+					node.expectedValues[i]+=(child.curProb*child.expectedValues[i]); //orig
+					//node.expectedValues[i]+=(child.expectedValues[i]); //scaled to cohort size
 				}
 			}
 		}

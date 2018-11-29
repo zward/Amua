@@ -260,7 +260,9 @@ public class PanelTree extends ModelPanel{
 		curNode=null; //Reset selected node to null
 
 		int size=tree.nodes.size();
-		for(int i=0; i<size; i++){ //If click was within bounds of an node, select it as the current node
+		int i=size; //start from end to select node displayed on top
+		while(curNode==null && i>0){ //If click was within bounds of an node, select it as the current node
+			i--;
 			boolean select=false;
 			int minX=tree.nodes.get(i).xPos;
 			int maxX=minX+tree.nodes.get(i).width;
@@ -276,7 +278,12 @@ public class PanelTree extends ModelPanel{
 			}
 			tree.nodes.get(i).selected=select;
 		}
-
+		//de-select any other nodes
+		while(i>0){
+			i--;
+			tree.nodes.get(i).selected=false;
+		}
+		
 		if(curNode!=null){
 			textAreaNotes.setText(curNode.notes);
 			textAreaNotes.setEditable(true);
@@ -719,11 +726,12 @@ public class PanelTree extends ModelPanel{
 		mainForm.tabbedPaneBottom.setSelectedIndex(0);
 		//console.setText("");
 		ArrayList<String> errors=tree.parseTree();
+		boolean valid=false;
 		if(errors.size()==0){
 			if(console!=null){
 				console.print("Tree checked!\n"); console.newLine();;
 			}
-			return(true);
+			valid=true;
 		}
 		else{
 			if(console!=null){
@@ -733,9 +741,13 @@ public class PanelTree extends ModelPanel{
 				}
 				console.newLine();
 			}
-			return(false);
+			valid=false;
 		}
-
+		if(myModel.simType==0 && myModel.variables.size()>0){ //Variables in cohort model
+			console.print("WARNING: Variables are not evaluated in a Decision Tree cohort simulation!\n");
+		}
+		
+		return(valid);
 	}
 
 	public void openTree(DecisionTree tree1){

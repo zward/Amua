@@ -20,6 +20,9 @@ package main;
 
 import java.awt.EventQueue;
 
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+
 import gui.frmMain;
 
 public class Amua {
@@ -34,6 +37,17 @@ public class Amua {
 			System.setProperty( "com.apple.mrj.application.apple.menu.about.name", "Amua" );
 			System.setProperty( "com.apple.macos.useScreenMenuBar", "true" );
 			System.setProperty( "apple.laf.useScreenMenuBar", "true" ); // for older versions of Java
+		}
+		
+		try {
+			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+				if ("Nimbus".equals(info.getName())) {
+					UIManager.setLookAndFeel(info.getClassName());
+					break;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
 		EventQueue.invokeLater(new Runnable() {

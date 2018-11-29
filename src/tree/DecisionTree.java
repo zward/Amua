@@ -350,34 +350,19 @@ public class DecisionTree{
 		TreeNode root=nodes.get(0);
 		int numDimensions=root.numDimensions;
 		int numChildren=root.numChildren; //Root
-		console.print("\nStrategy");
+		console.print("Strategy");
 		for(int d=0; d<numDimensions; d++){
 			console.print("\tEV ("+dimInfo.dimSymbols[d]+")");
 		}
 		console.print("\n");
-		for(int i=0; i<numChildren; i++){
+		for(int i=0; i<numChildren; i++){ //strategy results
 			TreeNode child=root.children[i];
 			console.print(child.name);
 			for(int d=0; d<numDimensions; d++){
-				console.print("\t"+myModel.round(child.expectedValues[d],d));
+				console.print("\t"+myModel.round(child.expectedValues[d]*myModel.cohortSize,d));
 			}
 			console.print("\n");
 		}
-		
-		/*for(int i=0; i<numChildren; i++){
-			TreeNode child=nodes.get(root.childIndices.get(i));
-			console.print("Strategy: "+child.name+"\n");
-			for(int d=0; d<numDimensions-1; d++){
-				console.print("EV ("+dimInfo.dimSymbols[d]+"): "+myModel.round(child.expectedValues[d],d)+"	");
-			}
-			console.print("EV ("+dimInfo.dimSymbols[numDimensions-1]+"): "+myModel.round(child.expectedValues[numDimensions-1],numDimensions-1)+"\n");
-			console.print("Children...\n");
-			console.print("Name	");
-			for(int d=0; d<numDimensions-1; d++){console.print("EV ("+dimInfo.dimSymbols[d]+")	");}
-			console.print("EV ("+dimInfo.dimSymbols[numDimensions-1]+")\n");
-			appendResults(child,console);
-			console.print("\n");
-		}*/
 		console.newLine();
 	}
 

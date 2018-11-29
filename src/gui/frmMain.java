@@ -71,8 +71,6 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
@@ -121,9 +119,14 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.0.6";
+	public String version="0.0.7";
 	public main.Clipboard clipboard; //Clipboard
 
+	//Menu items to enable once a model is opened
+	JMenuItem mntmSave, mntmSaveAs, mntmExport, mntmProperties;
+	JMenu mnEdit, mnRun;
+	JButton btnOCD, btnClearAnnotations, btnZoomOut, btnZoomIn, btnSnapshot;
+	
 	//Main menu items to be accessible to panel
 	public JButton btnDecisionNode;
 	public JButton btnMarkovChain;
@@ -138,14 +141,14 @@ public class frmMain {
 	public JButton btnCollapse;
 	public JButton btnAlignLeft;
 	public JButton btnAlignRight;
-	public JButton btnCheckTree;
-	public JButton btnRunTree;
+	public JButton btnCheckModel;
+	public JButton btnRunModel;
 	public JMenuItem mntmUndo;
 	public JMenuItem mntmRedo;
 	public JMenuItem mntmCut;
 	public JMenuItem mntmCopy;
 	public JMenuItem mntmPaste;
-	public JMenuItem mntmRunTree;
+	public JMenuItem mntmRunModel;
 	public JMenuItem mntmCalibrateModel;
 	JButton btnAddVariable;
 	JSlider sliderZoom;
@@ -159,17 +162,8 @@ public class frmMain {
 	 */
 	public frmMain() {
 		main=this;
-		try {
-			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-				if ("Nimbus".equals(info.getName())) {
-					UIManager.setLookAndFeel(info.getClassName());
-					break;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		initialize();
+		checkAnyModels();
 	}
 
 	/**
@@ -221,6 +215,7 @@ public class frmMain {
 				addTab(0,scrollPane,"(New)");
 				tabbedPaneCanvas.setSelectedIndex(tabbedPaneCanvas.getTabCount()-1);
 				switchTabs();
+				checkAnyModels();
 			}
 		});
 		mnNew.add(mntmDecisionTree);
@@ -238,6 +233,7 @@ public class frmMain {
 				addTab(1,scrollPane,"(New)");
 				tabbedPaneCanvas.setSelectedIndex(tabbedPaneCanvas.getTabCount()-1);
 				switchTabs();
+				checkAnyModels();
 			}
 		});
 		mnNew.add(mntmMarkovModel);
@@ -282,7 +278,7 @@ public class frmMain {
 		JSeparator separator_2 = new JSeparator();
 		mnModel.add(separator_2);
 
-		JMenuItem mntmSave = new JMenuItem("Save");
+		mntmSave = new JMenuItem("Save");
 		KeyStroke ctrlS = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 		mntmSave.setAccelerator(ctrlS);
 		mntmSave.setIcon(new ImageIcon(frmMain.class.getResource("/images/save_16.png")));
@@ -293,7 +289,7 @@ public class frmMain {
 		});
 		mnModel.add(mntmSave);
 
-		JMenuItem mntmSaveAs = new JMenuItem("Save As...");
+		mntmSaveAs = new JMenuItem("Save As...");
 		mntmSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -360,7 +356,7 @@ public class frmMain {
 		JSeparator separator_6 = new JSeparator();
 		mnModel.add(separator_6);
 		
-		JMenuItem mntmExport = new JMenuItem("Export...");
+		mntmExport = new JMenuItem("Export...");
 		mntmExport.setIcon(new ImageIcon(frmMain.class.getResource("/images/export.png")));
 		mntmExport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -380,7 +376,7 @@ public class frmMain {
 		JSeparator separator_5 = new JSeparator();
 		mnModel.add(separator_5);
 
-		JMenuItem mntmProperties = new JMenuItem("Properties");
+		mntmProperties = new JMenuItem("Properties");
 		mntmProperties.setIcon(new ImageIcon(frmMain.class.getResource("/images/propertiesBase.png")));
 		mntmProperties.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -402,7 +398,7 @@ public class frmMain {
 		});
 		mnModel.add(mntmExit);
 
-		JMenu mnEdit = new JMenu("Edit");
+		mnEdit = new JMenu("Edit");
 		menuBar.add(mnEdit);
 
 		mntmUndo = new JMenuItem("Undo");
@@ -478,12 +474,12 @@ public class frmMain {
 		
 		mnEdit.add(mntmFindreplace);
 
-		JMenu mnRun = new JMenu("Run");
+		mnRun = new JMenu("Run");
 		menuBar.add(mnRun);
 
-		mntmRunTree = new JMenuItem("Run Model");
-		mntmRunTree.setIcon(new ImageIcon(frmMain.class.getResource("/images/runTree_16.png")));
-		mntmRunTree.addActionListener(new ActionListener() {
+		mntmRunModel = new JMenuItem("Run Model");
+		mntmRunModel.setIcon(new ImageIcon(frmMain.class.getResource("/images/runTree_16.png")));
+		mntmRunModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread SimThread = new Thread(){ //Non-UI
 					public void run(){
@@ -493,7 +489,7 @@ public class frmMain {
 				SimThread.start();
 			}
 		});
-		mnRun.add(mntmRunTree);
+		mnRun.add(mntmRunModel);
 
 		JMenu mnSensitivityAnalysis = new JMenu("Sensitivity Analysis");
 		mnRun.add(mnSensitivityAnalysis);
@@ -1452,7 +1448,7 @@ public class frmMain {
 		separator.setOrientation(SwingConstants.VERTICAL);
 		toolBar.add(separator);
 
-		JButton btnOCD = new JButton("OCD");
+		btnOCD = new JButton("OCD");
 		btnOCD.setFont(new Font("SansSerif", Font.PLAIN, 12));
 		btnOCD.setToolTipText("Optimize Current Display");
 		btnOCD.addActionListener(new ActionListener() {
@@ -1525,23 +1521,23 @@ public class frmMain {
 		separator_1.setOrientation(SwingConstants.VERTICAL);
 		toolBar.add(separator_1);
 
-		btnCheckTree=new JButton();
-		btnCheckTree.setToolTipText("Check Model");
+		btnCheckModel=new JButton();
+		btnCheckModel.setToolTipText("Check Model");
 		imageURL = frmMain.class.getResource("/images/checkTree.png");
-		btnCheckTree.setIcon(new ImageIcon(imageURL,"Check Tree"));
-		toolBar.add(btnCheckTree);
-		btnCheckTree.addActionListener(new ActionListener() {
+		btnCheckModel.setIcon(new ImageIcon(imageURL,"Check Tree"));
+		toolBar.add(btnCheckModel);
+		btnCheckModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				curModel.checkModel(console,true);
 			}
 		});
 
-		btnRunTree=new JButton();
-		btnRunTree.setToolTipText("Run Model");
+		btnRunModel=new JButton();
+		btnRunModel.setToolTipText("Run Model");
 		imageURL = frmMain.class.getResource("/images/runTree.png");
-		btnRunTree.setIcon(new ImageIcon(imageURL,"Run Tree"));
-		toolBar.add(btnRunTree);
-		btnRunTree.addActionListener(new ActionListener() {
+		btnRunModel.setIcon(new ImageIcon(imageURL,"Run Tree"));
+		toolBar.add(btnRunModel);
+		btnRunModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Thread SimThread = new Thread(){ //Non-UI
 					public void run(){
@@ -1552,7 +1548,7 @@ public class frmMain {
 			}
 		});
 
-		JButton btnClearAnnotations=new JButton();
+		btnClearAnnotations=new JButton();
 		btnClearAnnotations.setToolTipText("Clear");
 		imageURL = frmMain.class.getResource("/images/clearEV.png");
 		btnClearAnnotations.setIcon(new ImageIcon(imageURL,"Clear"));
@@ -1587,7 +1583,7 @@ public class frmMain {
 			}
 		});
 
-		JButton btnZoomOut = new JButton(" \u2013 ");
+		btnZoomOut = new JButton(" \u2013 ");
 		btnZoomOut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//Zoom out, increments of 10%
@@ -1606,7 +1602,7 @@ public class frmMain {
 		sliderZoom.setToolTipText("Zoom");
 		toolBar.add(sliderZoom);
 
-		JButton btnZoomIn = new JButton(" + ");
+		btnZoomIn = new JButton(" + ");
 		btnZoomIn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//Zoom in, increments of 10%
@@ -1628,7 +1624,7 @@ public class frmMain {
 		separator_8.setOrientation(SwingConstants.VERTICAL);
 		toolBar.add(separator_8);
 
-		JButton btnSnapshot=new JButton();
+		btnSnapshot=new JButton();
 		btnSnapshot.setToolTipText("Screenshot");
 		btnSnapshot.setIcon(new ImageIcon(imageURL,"Screenshot"));
 		toolBar.add(btnSnapshot);
@@ -1813,9 +1809,55 @@ public class frmMain {
 				tabbedPaneCanvas.setSelectedIndex(-1);
 			}
 			switchTabs();
+			checkAnyModels();
 		}
 	}
 
+	private void checkAnyModels(){
+		if(modelList.size()==0){ //no models open
+			mntmSave.setEnabled(false);
+			mntmSaveAs.setEnabled(false);
+			mntmExport.setEnabled(false);
+			mntmProperties.setEnabled(false);
+			mnEdit.setEnabled(false);
+			mnRun.setEnabled(false);
+			//toolbar non-reciprocal (will be re-enabled on node selection)
+			btnChangeNodeType.setEnabled(false); 
+			btnShowCost.setEnabled(false); 
+			btnUpdateVariable.setEnabled(false); 
+			//toolbar reciprocal
+			btnOCD.setEnabled(false);
+			btnAlignLeft.setEnabled(false);
+			btnAlignRight.setEnabled(false);
+			btnCheckModel.setEnabled(false);
+			btnRunModel.setEnabled(false);
+			btnClearAnnotations.setEnabled(false);
+			sliderZoom.setEnabled(false);
+			btnZoomOut.setEnabled(false);
+			btnZoomIn.setEnabled(false);
+			btnSnapshot.setEnabled(false);
+		}
+		else{
+			mntmSave.setEnabled(true);
+			mntmSaveAs.setEnabled(true);
+			mntmExport.setEnabled(true);
+			mntmProperties.setEnabled(true);
+			mnEdit.setEnabled(true);
+			mnRun.setEnabled(true);
+			//toolbar
+			btnOCD.setEnabled(true);
+			btnAlignLeft.setEnabled(true);
+			btnAlignRight.setEnabled(true);
+			btnCheckModel.setEnabled(true);
+			btnRunModel.setEnabled(true);
+			btnClearAnnotations.setEnabled(true);
+			sliderZoom.setEnabled(true);
+			btnZoomOut.setEnabled(true);
+			btnZoomIn.setEnabled(true);
+			btnSnapshot.setEnabled(true);
+		}
+	}
+	
 	public void setZoomVal(int scale){
 		//Calculate slider value
 		int val=240;
@@ -1879,6 +1921,8 @@ public class frmMain {
 			switchTabs();
 
 			recentFiles.updateList(filepath,newModel.type);
+			
+			checkAnyModels();
 		}catch(Exception e){
 			console.print("Error: "+e.getMessage()); console.newLine();
 			errorLog.recordError(e);

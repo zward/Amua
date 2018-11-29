@@ -122,7 +122,7 @@ public class Console{
 						doc.insertString(doc.getLength(), "\n> ", null);
 						textConsole.setCaretPosition(doc.getLength());
 						prevCaretPos=textConsole.getCaretPosition();
-						textConsole.startStyle=prevCaretPos;
+						textConsole.setStyleStart(prevCaretPos);
 						upCount=0; //reset
 					}
 					else if(e.getKeyCode()==KeyEvent.VK_LEFT || e.getKeyCode()==KeyEvent.VK_BACK_SPACE){
@@ -187,7 +187,7 @@ public class Console{
 						doc.insertString(doc.getLength(), "\n> ", null);
 						textConsole.setCaretPosition(doc.getLength());
 						prevCaretPos=textConsole.getCaretPosition();
-						textConsole.startStyle=prevCaretPos;
+						textConsole.setStyleStart(prevCaretPos);
 						ex.printStackTrace();
 					}catch(Exception ex2){
 						ex2.printStackTrace();
@@ -227,7 +227,8 @@ public class Console{
 
 			textConsole.setCaretPosition(doc.getLength());
 			prevCaretPos=textConsole.getCaretPosition();
-			textConsole.startStyle=prevCaretPos;
+			textConsole.setStyleStart(prevCaretPos);
+			
 		}catch(Exception ex2){
 			ex2.printStackTrace();
 		}
@@ -239,7 +240,8 @@ public class Console{
 			doc.insertString(doc.getLength(), "\n> ", null);
 			textConsole.setCaretPosition(doc.getLength());
 			prevCaretPos=textConsole.getCaretPosition();
-			textConsole.startStyle=prevCaretPos;
+			textConsole.setStyleStart(prevCaretPos);
+			
 		}catch(Exception ex2){
 			ex2.printStackTrace();
 		}

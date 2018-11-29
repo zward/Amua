@@ -48,8 +48,8 @@ import math.MatrixFunctions;
 public class StyledTextPane extends JTextPane{
 	StyledTextPane pane;
 	public AmuaModel myModel;
-	int defaultDismiss; //for tooltips
-	int startStyle=0; //index to begin restyle
+	private int defaultDismiss; //for tooltips
+	private int startStyle=0; //index to begin restyle
 	
 	//Constructor
 	public StyledTextPane(AmuaModel myModel){
@@ -399,7 +399,10 @@ public class StyledTextPane extends JTextPane{
 	private boolean isItalics(String word){
 		return(Interpreter.isReservedString(word));
 	}
-
-
+	
+	
+	public void setStyleStart(int newPos){
+		startStyle=Math.max(startStyle, newPos); //ensure >= curPos
+	}
 	
 }
