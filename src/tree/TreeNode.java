@@ -631,8 +631,8 @@ public class TreeNode extends ModelNode{
 			showComponent(show,lblCost); showComponent(show,textCost);
 			showComponent(false,lblVarUpdates); showComponent(false,textVarUpdates);
 		}
-		showComponent(false,textEV); //Always hide EV
-		showComponent(false,textNumEnd); //Always hide num end
+		showComponent(visible && tree.showEV,textEV); 
+		showComponent(visible && tree.showEV,textNumEnd);
 		showComponent(false,textICER); //Hide ICER
 		if(collapsed==true){
 			if(show==false){panel.remove(lblCollapsed);} //remove collapsed label

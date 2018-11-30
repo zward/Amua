@@ -78,8 +78,8 @@ public class frmExport {
 	JComboBox<String> comboTables;
 	
 	public frmExport(AmuaModel myModel){
-		initialize();
 		this.myModel=myModel;
+		initialize();
 		if(myModel.tables.size()>0){
 			lblTableFormat.setEnabled(true);
 			comboTables.setEnabled(true);
@@ -154,13 +154,12 @@ public class frmExport {
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 						
-						fc.setDialogTitle("Export Model");
-						fc.setApproveButtonText("Export");
-
-						int returnVal = fc.showSaveDialog(frmExport);
+						fc.setDialogTitle("Select Export Folder");
+						
+						int returnVal = fc.showDialog(frmExport, "Select");
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
-							String dir=file.getAbsolutePath();
+							String dir=file.getAbsolutePath()+File.separator+myModel.name+"_Export";
 							
 							int tableFormat=-1;
 							if(comboTables.isEnabled()){tableFormat=comboTables.getSelectedIndex();}
@@ -245,7 +244,8 @@ public class frmExport {
 			frmExport.getContentPane().add(lblArrow);
 			
 			JLabel lblModelType = new JLabel("lbl");
-			lblModelType.setIcon(new ImageIcon(frmExport.class.getResource("/images/modelTree_16.png")));
+			if(myModel.type==0){lblModelType.setIcon(new ImageIcon(frmExport.class.getResource("/images/modelTree_16.png")));}
+			else if(myModel.type==1){lblModelType.setIcon(new ImageIcon(frmExport.class.getResource("/images/markovChain_16.png")));}
 			lblModelType.setBounds(96, 195, 16, 16);
 			frmExport.getContentPane().add(lblModelType);
 			

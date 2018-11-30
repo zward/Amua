@@ -119,11 +119,11 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.0.8";
+	public String version="0.0.9";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
-	JMenuItem mntmSave, mntmSaveAs, mntmExport, mntmProperties;
+	JMenuItem mntmSave, mntmSaveAs, mntmDocument, mntmExport, mntmProperties;
 	JMenu mnEdit, mnRun;
 	JButton btnOCD, btnClearAnnotations, btnZoomOut, btnZoomIn, btnSnapshot;
 	
@@ -356,6 +356,25 @@ public class frmMain {
 		JSeparator separator_6 = new JSeparator();
 		mnModel.add(separator_6);
 		
+		mntmDocument = new JMenuItem("Document...");
+		mntmDocument.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//check model
+				boolean valid=curModel.checkModel(console, true);
+				if(valid==false){
+					JOptionPane.showMessageDialog(frmMain, "Errors found!");
+				}
+				else{
+					frmDocument window=new frmDocument(curModel);
+					window.frmDocument.setVisible(true);
+				}
+			}
+		});
+		mntmDocument.setIcon(new ImageIcon(frmMain.class.getResource("/images/document.png")));
+		mnModel.add(mntmDocument);
+		
+		
+		
 		mntmExport = new JMenuItem("Export...");
 		mntmExport.setIcon(new ImageIcon(frmMain.class.getResource("/images/export.png")));
 		mntmExport.addActionListener(new ActionListener() {
@@ -372,6 +391,7 @@ public class frmMain {
 			}
 		});
 		mnModel.add(mntmExport);
+		
 
 		JSeparator separator_5 = new JSeparator();
 		mnModel.add(separator_5);
@@ -1817,6 +1837,7 @@ public class frmMain {
 		if(modelList.size()==0){ //no models open
 			mntmSave.setEnabled(false);
 			mntmSaveAs.setEnabled(false);
+			mntmDocument.setEnabled(false);
 			mntmExport.setEnabled(false);
 			mntmProperties.setEnabled(false);
 			mnEdit.setEnabled(false);
@@ -1840,6 +1861,7 @@ public class frmMain {
 		else{
 			mntmSave.setEnabled(true);
 			mntmSaveAs.setEnabled(true);
+			mntmDocument.setEnabled(true);
 			mntmExport.setEnabled(true);
 			mntmProperties.setEnabled(true);
 			mnEdit.setEnabled(true);

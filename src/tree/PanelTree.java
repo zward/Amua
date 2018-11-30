@@ -609,16 +609,16 @@ public class PanelTree extends ModelPanel{
 		if(node.type!=2){ //Not terminal
 			this.add(node.lblCost); this.add(node.textCost);
 			this.add(node.textEV);
-			node.textEV.setVisible(tree.showEV);
+			node.textEV.setVisible(node.visible && tree.showEV);
 		}
 		else if(node.type==2){ //Terminal
 			this.add(node.textPayoff);
 			this.add(node.textNumEnd);
-			node.textNumEnd.setVisible(tree.showEV);
+			node.textNumEnd.setVisible(node.visible && tree.showEV);
 		}
 		if(node.level==1){
 			this.add(node.textICER);
-			node.textICER.setVisible(tree.showEV && myModel.dimInfo.analysisType>0);
+			node.textICER.setVisible(node.visible && tree.showEV && myModel.dimInfo.analysisType>0);
 		}
 		if(node.visible && node.collapsed){this.add(node.lblCollapsed);}
 		if(node.selected){textAreaNotes.setText(node.notes);}
