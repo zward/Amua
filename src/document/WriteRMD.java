@@ -202,7 +202,9 @@ public class WriteRMD{
 				out.write("|"+curParam.name);
 				out.write("|"+curParam.expression);
 				out.write("|"+writeValue(curParam.value));
-				out.write("|"+curParam.notes+"|\n");
+				String notes=curParam.notes;
+				notes=notes.replace("\n", "; ");
+				out.write("|"+notes+"|\n");
 			}
 		}
 	}
@@ -244,7 +246,9 @@ public class WriteRMD{
 				Variable curVar=myModel.variables.get(i);
 				out.write("|"+curVar.name);
 				out.write("|"+curVar.initValue);
-				out.write("|"+curVar.notes+"|\n");
+				String notes=curVar.notes;
+				notes=notes.replace("\n", "; ");
+				out.write("|"+notes+"|\n");
 			}
 		}
 	}
@@ -272,7 +276,11 @@ public class WriteRMD{
 						writeLine("|Extrapolate|"+curTable.extrapolate+"|");
 					}
 				}
-				if(!curTable.notes.isEmpty()){writeLine("|Notes|"+curTable.notes+"|");}
+				if(!curTable.notes.isEmpty()){
+					String notes=curTable.notes;
+					notes=notes.replace("\n", "; ");
+					writeLine("|Notes|"+notes+"|");
+				}
 				//table headers
 				writeLine("");
 				for(int c=0; c<curTable.numCols; c++){out.write("|"+curTable.headers[c]);}

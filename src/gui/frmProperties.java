@@ -83,6 +83,7 @@ public class frmProperties {
 	DefaultTableModel modelDimensions;
 	private JTable tableDimensions;
 	JComboBox<String> comboAnalysis;
+	JButton btnRemoveDimension;
 	
 	//Simulation
 	JComboBox comboSimType;
@@ -109,13 +110,8 @@ public class frmProperties {
 		this.myModel=myModel;
 		this.dimInfo=myModel.dimInfo;
 		initialize();
-		lblName.setText(myModel.name);
-		displayMetadata(myModel.meta);
-		displayAnalysisSettings();
-		displaySimSettings();
-		if(myModel.type==1){
-			displayMarkovSettings();
-		}
+		
+		refreshDisplay();
 	}
 
 	/**
@@ -135,233 +131,12 @@ public class frmProperties {
 			JButton btnOk = new JButton("OK");
 			btnOk.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					//Validate dimensions
-					boolean close=true;
-					//Ensure unqiue
-					int numDimensions=tableDimensions.getRowCount();
-					ArrayList<String> dimNames=new ArrayList<String>();
-					ArrayList<String> dimSymbols=new ArrayList<String>();
-					ArrayList<Integer> decimals=new ArrayList<Integer>();
-					ArrayList<Double> dimDiscount=new ArrayList<Double>();
-					for(int i=0; i<numDimensions; i++){
-						String curName=(String) tableDimensions.getValueAt(i,0);
-						String curSymbol=(String) tableDimensions.getValueAt(i,1);
-						String curDecimal=(String) tableDimensions.getValueAt(i, 2);
-						if(curName==null){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, curName+"Please enter a valid dimension name!");
-						}
-						else if(dimNames.contains(curName)){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, curName+" is already defined!");
-						}
-						else{
-							dimNames.add(curName);
-						}
-						
-						if(curSymbol==null){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, curName+"Please enter a valid dimension symbol!");
-						}
-						else if(dimSymbols.contains(curSymbol)){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, curSymbol+ "is already defined!");
-						}
-						else{
-							dimSymbols.add(curSymbol);
-						}
-						
-						if(curDecimal==null){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, curName+"Please enter decimal places!");
-						}
-						else{
-							//Try to convert to integer
-							int curDec=0;
-							try{
-								curDec=Integer.parseInt(curDecimal);
-							} catch(Exception er){
-								close=false;
-								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid integer for decimal places!");
-							}
-							if(close==true){ //Integer entered
-								if(curDec<0){
-									close=false;
-									JOptionPane.showMessageDialog(frmProperties, "Please enter a valid integer!");
-								}
-								else{
-									decimals.add(curDec);
-								}
-							}
-						}
-					}
-					
-					//Check analysis settings
-					int objective=0, objectiveDim=0;
-					int costDim=-1, effectDim=-1;
-					double WTP=0;
-					if(comboAnalysis.getSelectedIndex()==0){ //EV
-						String strObj=(String) tableAnalysis.getValueAt(0, 1);
-						if(strObj==null){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, "Please select an objective!");
-						}
-						else{
-							if(strObj.matches("Maximize")){objective=0;}
-							else{objective=1;}
-						}
-						String strDim=(String) tableAnalysis.getValueAt(1, 1);
-						if(strDim==null){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, "Please select an outcome!");
-						}
-						else{
-							objectiveDim=getDimIndex(strDim);
-						}
-					}
-					else if(comboAnalysis.getSelectedIndex()>0){ //CEA or BCA
-						String strCostDim=(String) tableAnalysis.getValueAt(0, 1);
-						String strEffectDim=(String) tableAnalysis.getValueAt(1, 1);
-						costDim=getDimIndex(strCostDim);
-						effectDim=getDimIndex(strEffectDim);
-						if(costDim==effectDim){
-							close=false;
-							if(comboAnalysis.getSelectedIndex()==1){ //CEA
-								JOptionPane.showMessageDialog(frmProperties, "Cost and Effect must be different!");
-							}
-							else if(comboAnalysis.getSelectedIndex()==2){ //BCA
-								JOptionPane.showMessageDialog(frmProperties, "Cost and Benefit must be different!");
-							}
-						}
-						if(comboAnalysis.getSelectedIndex()==1){ //CEA
-							String strBase=(String)tableAnalysis.getValueAt(2, 1);
-							int baseIndex=getScenarioIndex(strBase);
-							if(baseIndex==-1){
-								close=false;
-								JOptionPane.showMessageDialog(frmProperties, "Please choose a baseline scenario!");
-							}
-							else{
-								myModel.dimInfo.baseScenario=baseIndex;
-							}
-						}
-						try{
-							String strWTP=(String) tableAnalysis.getValueAt(3, 1);
-							WTP=Double.parseDouble(strWTP.replaceAll(",",""));
-						} catch(Exception er){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid willingness-to-pay!");
-						}
-					}
-					
-					//Check simulation settings
-					myModel.simType=comboSimType.getSelectedIndex();
-					if(myModel.simType==0){ //Cohort
-						try{
-							String text=textCohortSize.getText().replaceAll(",",""); //remove commas
-							myModel.cohortSize=Integer.parseInt(text);
-							if(myModel.cohortSize<=0){
-								close=false;
-								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
-							}
-						} catch(Exception er){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
-						}
-					}
-					else if(myModel.simType==1){ //Monte Carlo
-						try{
-							String text=textCohortSize.getText().replaceAll(",",""); //remove commas
-							myModel.cohortSize=Integer.parseInt(text);
-							if(myModel.cohortSize<=0){
-								close=false;
-								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Monte Carlo simulations!");
-							}
-						} catch(Exception er){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Monte Carlo simulations!");
-						}
-						
-						myModel.CRN=chckbxCRN.isSelected(); //CRN
-						if(myModel.CRN){ //get seed
-							try{
-								String text=textCRNSeed.getText().replaceAll(",",""); //remove commas
-								myModel.crnSeed=Integer.parseInt(text);
-							} catch(Exception er){
-								close=false;
-								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid CRN seed!");
-							}
-						}
-					}
-					
-					//Check Markov settings
-					if(myModel.type==1){
-						try{
-							String text=textMarkovMaxCycles.getText().replaceAll(",",""); //remove commas
-							myModel.markov.maxCycles=Integer.parseInt(text);
-						} catch(Exception er){
-							close=false;
-							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of max cycles!");
-						}
-						
-						myModel.markov.halfCycleCorrection=chckbxHalfcycleCorrection.isSelected();
-						
-						//discount rates
-						if(chckbxDiscount.isSelected()){
-							try{
-								int test=Integer.parseInt(textDiscountStartCycle.getText());
-							} catch(Exception er){
-								close=false;
-								JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount start cycle ("+textDiscountStartCycle.getText()+")");
-							
-							}
-							
-							for(int i=0; i<numDimensions; i++){
-								try{
-									double test=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
-									dimDiscount.add(test);
-								} catch(Exception er){
-									close=false;
-									JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount rate ("+tableDiscountRates.getValueAt(i, 0)+")");
-								}
-							}
-						}
-						
-					}
-					
-					if(close==true){ //Apply changes and close
-						//dimensions
-						dimInfo.dimNames=new String[numDimensions]; dimInfo.dimSymbols=new String[numDimensions];
-						dimInfo.decimals=new int[numDimensions];
-						for(int i=0; i<numDimensions; i++){
-							dimInfo.dimNames[i]=dimNames.get(i);
-							dimInfo.dimSymbols[i]=dimSymbols.get(i);
-							dimInfo.decimals[i]=decimals.get(i);
-						}
-						myModel.updateDimensions();
-						
-						//analysis type
-						dimInfo.analysisType=comboAnalysis.getSelectedIndex();
-						dimInfo.objective=objective; dimInfo.objectiveDim=objectiveDim;
-						dimInfo.costDim=costDim; dimInfo.effectDim=effectDim;
-						dimInfo.WTP=WTP;
-						
-						//markov settings
-						if(myModel.type==1){
-							myModel.markov.discountRewards=chckbxDiscount.isSelected();
-							if(myModel.markov.discountRewards==true){
-								myModel.markov.discountStartCycle=Integer.parseInt(textDiscountStartCycle.getText());
-								myModel.markov.discountRates=new double[numDimensions];
-								for(int i=0; i<numDimensions; i++){
-									myModel.markov.discountRates[i]=dimDiscount.get(i);
-								}
-							}
-						}
-
+					if(applyChanges()){
 						frmProperties.dispose();
 					}
 				}
 			});
-			btnOk.setBounds(262, 252, 90, 28);
+			btnOk.setBounds(159, 252, 90, 28);
 			frmProperties.getContentPane().add(btnOk);
 
 			JButton btnCancel = new JButton("Cancel");
@@ -370,8 +145,19 @@ public class frmProperties {
 					frmProperties.dispose();
 				}
 			});
-			btnCancel.setBounds(364, 252, 90, 28);
+			btnCancel.setBounds(261, 252, 90, 28);
 			frmProperties.getContentPane().add(btnCancel);
+			
+			JButton btnApply = new JButton("Apply");
+			btnApply.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(applyChanges()){
+						refreshDisplay();
+					}
+				}
+			});
+			btnApply.setBounds(364, 252, 90, 28);
+			frmProperties.getContentPane().add(btnApply);
 
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 			tabbedPane.setBounds(6, 6, 448, 234);
@@ -488,7 +274,7 @@ public class frmProperties {
 			btnAddDimension.setBounds(291, 5, 147, 28);
 			panel_1.add(btnAddDimension);
 
-			JButton btnRemoveDimension = new JButton("Remove Dimension");
+			btnRemoveDimension = new JButton("Remove Dimension");
 			btnRemoveDimension.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int selected=tableDimensions.getSelectedRow();
@@ -503,7 +289,7 @@ public class frmProperties {
 			panel_1.add(btnRemoveDimension);
 			
 			JLabel lblAnalysisType = new JLabel("Analysis type:");
-			lblAnalysisType.setBounds(6, 91, 74, 16);
+			lblAnalysisType.setBounds(6, 91, 85, 16);
 			panel_1.add(lblAnalysisType);
 			
 			comboAnalysis = new JComboBox<String>();
@@ -513,7 +299,7 @@ public class frmProperties {
 				}
 			});
 			comboAnalysis.setModel(new DefaultComboBoxModel<String>(new String[] {"Expected Value (EV)", "Cost-Effectiveness Analysis (CEA)", "Benefit-Cost Analysis (BCA)"}));
-			comboAnalysis.setBounds(84, 86, 225, 26);
+			comboAnalysis.setBounds(92, 86, 225, 26);
 			panel_1.add(comboAnalysis);
 			
 			JScrollPane scrollPane_2 = new JScrollPane();
@@ -697,9 +483,19 @@ public class frmProperties {
 		}
 	}
 
+	private void refreshDisplay(){
+		displayMetadata(myModel.meta);
+		displayAnalysisSettings();
+		displaySimSettings();
+		if(myModel.type==1){
+			displayMarkovSettings();
+		}
+	}
+	
 	private void displayMetadata(Metadata meta){
 		String modelTypes[]={"Decision Tree","Markov Model"};
 		String icons[]={"/images/modelTree_16.png","/images/markovChain_16.png"};
+		lblName.setText(myModel.name);
 		lblModel.setText(modelTypes[myModel.type]);
 		lblIcon.setIcon(new ImageIcon(frmProperties.class.getResource(icons[myModel.type])));
 		lblDispAuthor.setText(meta.author);
@@ -711,13 +507,21 @@ public class frmProperties {
 	}
 	
 	private void displayAnalysisSettings(){
+		modelDimensions.setRowCount(0);
 		for(int i=0; i<dimInfo.dimNames.length; i++){
 			modelDimensions.addRow(new Object[]{null});
 			modelDimensions.setValueAt(dimInfo.dimNames[i], i, 0);
 			modelDimensions.setValueAt(dimInfo.dimSymbols[i], i, 1);
 			modelDimensions.setValueAt(dimInfo.decimals[i]+"", i, 2);
 		}
+		
+		if(dimInfo.dimNames.length<2){
+			btnRemoveDimension.setEnabled(false);
+		}
+		
+		
 		comboAnalysis.setSelectedIndex(dimInfo.analysisType);
+		
 		setAnalysisType(dimInfo.analysisType);
 		if(dimInfo.analysisType==0){ //EV
 			if(dimInfo.objective==0){tableAnalysis.setValueAt("Maximize", 0, 1);}
@@ -767,7 +571,255 @@ public class frmProperties {
 		}
 	}
 	
+	private boolean applyChanges(){
+		boolean valid=true;
+		
+		//Validate dimensions
+		//Ensure unqiue
+		int numDimensions=tableDimensions.getRowCount();
+		ArrayList<String> dimNames=new ArrayList<String>();
+		ArrayList<String> dimSymbols=new ArrayList<String>();
+		ArrayList<Integer> decimals=new ArrayList<Integer>();
+		ArrayList<Double> dimDiscount=new ArrayList<Double>();
+		for(int i=0; i<numDimensions; i++){
+			String curName=(String) tableDimensions.getValueAt(i,0);
+			String curSymbol=(String) tableDimensions.getValueAt(i,1);
+			String curDecimal=(String) tableDimensions.getValueAt(i, 2);
+			if(curName==null){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, curName+"Please enter a valid dimension name!");
+			}
+			else if(dimNames.contains(curName)){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, curName+" is already defined!");
+			}
+			else{
+				dimNames.add(curName);
+			}
+			
+			if(curSymbol==null){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, curName+"Please enter a valid dimension symbol!");
+			}
+			else if(dimSymbols.contains(curSymbol)){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, curSymbol+ "is already defined!");
+			}
+			else{
+				dimSymbols.add(curSymbol);
+			}
+			
+			if(curDecimal==null){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, curName+"Please enter decimal places!");
+			}
+			else{
+				//Try to convert to integer
+				int curDec=0;
+				try{
+					curDec=Integer.parseInt(curDecimal);
+				} catch(Exception er){
+					valid=false;
+					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid integer for decimal places!");
+				}
+				if(valid==true){ //Integer entered
+					if(curDec<0){
+						valid=false;
+						JOptionPane.showMessageDialog(frmProperties, "Please enter a valid integer!");
+					}
+					else{
+						decimals.add(curDec);
+					}
+				}
+			}
+		}
+		
+		//Check analysis settings
+		int objective=0, objectiveDim=0;
+		int costDim=-1, effectDim=-1;
+		int baseIndex=-1;
+		double WTP=0;
+		if(comboAnalysis.getSelectedIndex()==0){ //EV
+			String strObj=(String) tableAnalysis.getValueAt(0, 1);
+			if(strObj==null){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please select an objective!");
+			}
+			else{
+				if(strObj.matches("Maximize")){objective=0;}
+				else{objective=1;}
+			}
+			String strDim=(String) tableAnalysis.getValueAt(1, 1);
+			if(strDim==null){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please select an outcome!");
+			}
+			else{
+				objectiveDim=getDimIndex(strDim);
+			}
+		}
+		else if(comboAnalysis.getSelectedIndex()>0){ //CEA or BCA
+			String strCostDim=(String) tableAnalysis.getValueAt(0, 1);
+			String strEffectDim=(String) tableAnalysis.getValueAt(1, 1);
+			costDim=getDimIndex(strCostDim);
+			effectDim=getDimIndex(strEffectDim);
+			if(costDim==effectDim){
+				valid=false;
+				if(comboAnalysis.getSelectedIndex()==1){ //CEA
+					JOptionPane.showMessageDialog(frmProperties, "Cost and Effect must be different!");
+				}
+				else if(comboAnalysis.getSelectedIndex()==2){ //BCA
+					JOptionPane.showMessageDialog(frmProperties, "Cost and Benefit must be different!");
+				}
+			}
+			if(comboAnalysis.getSelectedIndex()==1){ //CEA
+				String strBase=(String)tableAnalysis.getValueAt(2, 1);
+				baseIndex=getScenarioIndex(strBase);
+				if(baseIndex==-1){
+					valid=false;
+					JOptionPane.showMessageDialog(frmProperties, "Please choose a baseline scenario!");
+				}
+			}
+			try{
+				String strWTP=(String) tableAnalysis.getValueAt(3, 1);
+				WTP=Double.parseDouble(strWTP.replaceAll(",",""));
+			} catch(Exception er){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid willingness-to-pay!");
+			}
+		}
+		
+		//Check simulation settings
+		int simType=comboSimType.getSelectedIndex();
+		int cohortSize=-1;
+		boolean CRN=false;
+		int crnSeed=-1;
+		if(simType==0){ //Cohort
+			try{
+				String text=textCohortSize.getText().replaceAll(",",""); //remove commas
+				cohortSize=Integer.parseInt(text);
+				if(cohortSize<=0){
+					valid=false;
+					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
+				}
+			} catch(Exception er){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
+			}
+		}
+		else if(simType==1){ //Monte Carlo
+			try{
+				String text=textCohortSize.getText().replaceAll(",",""); //remove commas
+				cohortSize=Integer.parseInt(text);
+				if(cohortSize<=0){
+					valid=false;
+					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Monte Carlo simulations!");
+				}
+			} catch(Exception er){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Monte Carlo simulations!");
+			}
+			
+			CRN=chckbxCRN.isSelected(); //CRN
+			if(CRN){ //get seed
+				try{
+					String text=textCRNSeed.getText().replaceAll(",",""); //remove commas
+					crnSeed=Integer.parseInt(text);
+				} catch(Exception er){
+					valid=false;
+					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid CRN seed!");
+				}
+			}
+		}
+		
+		//Check Markov settings
+		int maxCycles=10000;
+		boolean halfCycleCorrection=false;
+		if(myModel.type==1){
+			try{
+				String text=textMarkovMaxCycles.getText().replaceAll(",",""); //remove commas
+				maxCycles=Integer.parseInt(text);
+			} catch(Exception er){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of max cycles!");
+			}
+			
+			halfCycleCorrection=chckbxHalfcycleCorrection.isSelected();
+			
+			//discount rates
+			if(chckbxDiscount.isSelected()){
+				try{
+					int test=Integer.parseInt(textDiscountStartCycle.getText());
+				} catch(Exception er){
+					valid=false;
+					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount start cycle ("+textDiscountStartCycle.getText()+")");
+				}
+				
+				for(int i=0; i<numDimensions; i++){
+					try{
+						double test=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
+						dimDiscount.add(test);
+					} catch(Exception er){
+						valid=false;
+						JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount rate ("+tableDiscountRates.getValueAt(i, 0)+")");
+					}
+				}
+			}
+			
+		}
+		
+		if(valid==true){ //Apply changes
+			//dimensions
+			dimInfo.dimNames=new String[numDimensions]; dimInfo.dimSymbols=new String[numDimensions];
+			dimInfo.decimals=new int[numDimensions];
+			for(int i=0; i<numDimensions; i++){
+				dimInfo.dimNames[i]=dimNames.get(i);
+				dimInfo.dimSymbols[i]=dimSymbols.get(i);
+				dimInfo.decimals[i]=decimals.get(i);
+			}
+			myModel.updateDimensions();
+			
+			//analysis type
+			dimInfo.analysisType=comboAnalysis.getSelectedIndex();
+			dimInfo.objective=objective; dimInfo.objectiveDim=objectiveDim;
+			dimInfo.costDim=costDim; dimInfo.effectDim=effectDim;
+			dimInfo.baseScenario=baseIndex;
+			dimInfo.WTP=WTP;
+			
+			//simulation
+			myModel.simType=simType;
+			myModel.cohortSize=cohortSize;
+			myModel.CRN=CRN;
+			myModel.crnSeed=crnSeed;
+			
+			//markov settings
+			if(myModel.type==1){
+				myModel.markov.maxCycles=maxCycles;
+				myModel.markov.halfCycleCorrection=halfCycleCorrection;
+				
+				myModel.markov.discountRewards=chckbxDiscount.isSelected();
+				if(myModel.markov.discountRewards==true){
+					myModel.markov.discountStartCycle=Integer.parseInt(textDiscountStartCycle.getText());
+					myModel.markov.discountRates=new double[numDimensions];
+					for(int i=0; i<numDimensions; i++){
+						myModel.markov.discountRates[i]=dimDiscount.get(i);
+					}
+				}
+			}
+		}
+		
+		return(valid);
+	}
+	
+	
 	private void setAnalysisType(int analysisType){
+		
+		if(modelDimensions.getRowCount()>1){btnRemoveDimension.setEnabled(true);}
+		else{btnRemoveDimension.setEnabled(false);}
+		
+		if(dimInfo.dimNames.length==1 || modelDimensions.getRowCount()<2){comboAnalysis.setEnabled(false);}
+		else{comboAnalysis.setEnabled(true);}
+				
 		tableAnalysis.analysisType=analysisType;
 		if(analysisType==0){ //EV
 			modelAnalysis.setRowCount(0);

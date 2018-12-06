@@ -399,7 +399,9 @@ public class frmSensOneWay {
 										
 										if(cancelled==false){
 											updateChart();
-											comboDimensions.setEnabled(true);
+											if(numOutcomes>1){
+												comboDimensions.setEnabled(true);
+											}
 											btnExport.setEnabled(true);
 										}
 										progress.close();

@@ -107,7 +107,9 @@ public class MarkovCohort{
 				//adjust cum rewards
 				for(int d=0; d<numDim; d++){
 					cumRewards[d]=trace.cumRewards[d].get(t);
-					cumRewardsDis[d]=trace.cumRewardsDis[d].get(t);
+					if(markovTree.discountRewards){
+						cumRewardsDis[d]=trace.cumRewardsDis[d].get(t);
+					}
 				}
 			}
 
