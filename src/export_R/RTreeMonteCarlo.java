@@ -22,6 +22,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 
+import javax.swing.JOptionPane;
+
 import base.AmuaModel;
 import main.*;
 import tree.DecisionTree;
@@ -67,36 +69,36 @@ public class RTreeMonteCarlo{
 			rModel.writeVariables();
 
 			//Define strategies
-			writeLine("#Define strategies");
-			writeLine("numSim<-"+myModel.cohortSize);
+			writeLine("# Define strategies");
+			writeLine("numSim <- "+myModel.cohortSize);
 			int numStrat=myModel.getStrategies();
 			for(int s=0; s<numStrat; s++){
 				writeLine("");
-				writeLine("#"+myModel.strategyNames[s]);
+				writeLine("# "+myModel.strategyNames[s]);
 				if(myModel.CRN){writeLine("set.seed("+myModel.crnSeed+")");}
-				writeLine("#Initialize outcomes");
+				writeLine("# Initialize outcomes");
 				for(int d=0; d<dimNames.length; d++){
-					writeLine(dimNames[d]+"=0");
+					writeLine(dimNames[d]+" <- 0");
 				}
 				writeLine("#Run Monte Carlo simulation");
-				writeLine("for(i in 1:numSim){");
+				writeLine("for(i in 1 : numSim) {");
 				if(numVars>0){
-					writeLine("	#Initialize variables");
+					writeLine("  # Initialize variables");
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
-						writeLine("	"+curVar.name+"="+rModel.translate(curVar.initValue,false));
+						writeLine("  "+curVar.name+" <- "+rModel.translate(curVar.initValue,false));
 					}
 				}
 				//define nodes
 				int stratIndex=myModel.tree.nodes.get(0).childIndices.get(s);
 				TreeNode curStrategy=myModel.tree.nodes.get(stratIndex);
 				defineNode(curStrategy);
-				writeLine("} #end Monte Carlo loop");
+				writeLine("}  # end Monte Carlo loop");
 				//Print results
-				writeLine("#Print results");
+				writeLine("# Print results");
 				writeLine("print(\"Strategy: "+myModel.strategyNames[s]+"\")");
 				for(int d=0; d<numDimensions; d++){
-					writeLine("print(paste(\""+dimNames[d]+": \","+dimNames[d]+"))");
+					writeLine("print(paste(\""+dimNames[d]+": \", "+dimNames[d]+"))");
 				}
 				writeLine("print(\"\")");
 			}
@@ -106,8 +108,7 @@ public class RTreeMonteCarlo{
 			out.close();
 
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -117,28 +118,28 @@ public class RTreeMonteCarlo{
 			int level=curNode.level; //tab indents
 
 			if(curNode.hasVarUpdates){ //update variables
-				writeLine("#Update variables",level);
+				writeLine("# Update variables",level);
 				String updates[]=curNode.varUpdates.split(";");
 				int numUpdates=updates.length;
 				for(int u=0; u<numUpdates; u++){
-					writeLine(rModel.translate(updates[u],false)+" #Orig: "+updates[u], level);
+					writeLine(rModel.translate(updates[u],false)+"  # Orig: "+updates[u], level);
 				}
 			}
 
 			if(curNode.hasCost){ //add cost
-				writeLine("#Update costs",level);
+				writeLine("# Update costs",level);
 				for(int d=0; d<numDimensions; d++){
 					String dim=dimNames[d];
-					writeLine(dim+"="+dim+"+"+rModel.translate(curNode.cost[d],false),level);
+					writeLine(dim+" <- "+dim+" + "+rModel.translate(curNode.cost[d],false),level);
 				}
 			}
 
 			int numChildren=curNode.childIndices.size();
 			if(numChildren==0){ //terminal node
-				writeLine("#Update payoffs",level);
+				writeLine("# Update payoffs",level);
 				for(int d=0; d<numDimensions; d++){
 					String dim=dimNames[d];
-					writeLine(dim+"="+dim+"+"+rModel.translate(curNode.payoff[d],false),level);
+					writeLine(dim+" <- "+dim+" + "+rModel.translate(curNode.payoff[d],false),level);
 				}
 			}
 			else{
@@ -147,64 +148,63 @@ public class RTreeMonteCarlo{
 					int index=curNode.childIndices.get(i);
 					children[i]=tree.nodes.get(index);
 				}
-				writeLine("#Calculate child probs",level);
-				writeLine("childProbs<-rep(0,"+numChildren+")",level);
+				writeLine("# Calculate child probs",level);
+				writeLine("childProbs <- rep(0, "+numChildren+")",level);
 				int compIndex=-1;
 				for(int i=0; i<numChildren; i++){
 					String prob=children[i].prob;
 					if(prob.matches("C") || prob.matches("c")){compIndex=i;} //Complementary
 					else{
-						if(i==0){writeLine("childProbs[1]="+rModel.translate(prob,false)+" #Prob "+children[i].name,level);}
-						else{writeLine("childProbs["+(i+1)+"]=childProbs["+i+"]+"+rModel.translate(prob,false)+" #Prob "+children[i].name,level);}
+						if(i==0){writeLine("childProbs[1] <- "+rModel.translate(prob,false)+"  # Prob "+children[i].name,level);}
+						else{writeLine("childProbs["+(i+1)+"] <- childProbs["+i+"] + "+rModel.translate(prob,false)+"  # Prob "+children[i].name,level);}
 					}
 				}
 				
-				writeLine("#Sample event",level);
-				writeLine("rand=runif(1)",level);
+				writeLine("# Sample event",level);
+				writeLine("rand <- runif(1)",level);
 				if(compIndex==-1){ //no comp prob
-					writeLine("if(rand<childProbs[1]){ #"+children[0].name,level);
+					writeLine("if (rand < childProbs[1]) {  # "+children[0].name,level);
 					defineNode(children[0]);
-					writeLine("} #end "+children[0].name,level);
+					writeLine("}  # end "+children[0].name,level);
 					for(int i=1; i<numChildren; i++){
-						writeLine("else if(rand<childProbs["+(i+1)+"]){ #"+children[i].name,level);
+						writeLine("else if (rand < childProbs["+(i+1)+"]) {  # "+children[i].name,level);
 						defineNode(children[i]);
-						writeLine("} #end "+children[i].name,level);
+						writeLine("}  # end "+children[i].name,level);
 					}
 				}
 				else{ //write comp prob as last 'else'
 					if(compIndex!=0){
-						writeLine("if(rand<childProbs[1]){ #"+children[0].name,level);
+						writeLine("if (rand < childProbs[1]) {  # "+children[0].name,level);
 						defineNode(children[0]);
-						writeLine("} #end "+children[0].name,level);
+						writeLine("}  # end "+children[0].name,level);
 						for(int i=1; i<numChildren; i++){
 							if(compIndex!=i){
-								writeLine("else if(rand<childProbs["+(i+1)+"]){ #"+children[i].name,level);
+								writeLine("else if (rand < childProbs["+(i+1)+"]) {  # "+children[i].name,level);
 								defineNode(children[i]);
-								writeLine("} #end "+children[i].name,level);
+								writeLine("}  # end "+children[i].name,level);
 							}
 						}
 					}
 					else{ //compIndex == 0
-						writeLine("if(rand<childProbs[2]){ #"+children[1].name,level);
+						writeLine("if (rand < childProbs[2]) {  # "+children[1].name,level);
 						defineNode(children[1]);
-						writeLine("} #end "+children[1].name,level);
+						writeLine("}  # end "+children[1].name,level);
 						for(int i=2; i<numChildren; i++){
 							if(compIndex!=i){
-								writeLine("else if(rand<childProbs["+(i+1)+"]){ #"+children[i].name,level);
+								writeLine("else if (rand < childProbs["+(i+1)+"]) {  # "+children[i].name,level);
 								defineNode(children[i]);
-								writeLine("#end "+children[i].name,level);
+								writeLine("# end "+children[i].name,level);
 							}
 						}
 					}
 					//write comp index
-					writeLine("else{ #"+children[compIndex].name,level);
+					writeLine("else {  # "+children[compIndex].name,level);
 					defineNode(children[compIndex]);
-					writeLine("} #end "+children[compIndex].name,level);
+					writeLine("}  # end "+children[compIndex].name,level);
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -215,19 +215,23 @@ public class RTreeMonteCarlo{
 		try{
 			out.write(line); out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
 	private void writeLine(String line, int tab){
 		try{
-			for(int t=0; t<tab; t++){out.write("	");}
+			for(int t=0; t<tab; t++){out.write("  ");}
 			out.write(line); out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
+	}
+	
+	private void recordError(Exception e){
+		e.printStackTrace();
+		errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
 	}
 
 }

@@ -115,56 +115,144 @@ public final class RFunctions{
 	public static String define(String fx){
 		switch(fx){
 		case "bound":{ //bound
-			String function="bound<-function(x, a, b){\n";
-			function+="	if(x<a){x=a;} //min\n";
-			function+="	if(x>b){x=b;} //max\n";
-			function+="	return(x);\n";
+			String function="bound <- function(x, a, b) {\n";
+			function+="  # Bounds x in to be in [a, b]\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   x: Real number\n";
+			function+="  #   a: Lower bound (inclusive)\n";
+			function+="  #   b: Upper bound (inclusive)\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   Real number in [a, b]\n\n";
+			function+="  if (x < a) {  # min\n";
+			function+="	   x <- a\n";
+			function+="  }\n";
+			function+="  if (x > b) {  # max\n";
+			function+="	   x <- b\n";
+			function+="  }\n";
+			function+="  return(x)\n";
 			function+="}";
 			return(function);
 		}
-		case "cbrt": return("cbrt<-function(x) x^(1/3) #cube root"); //cube root
-		case "erf": return("erf<-function(x) 2*pnorm(x*sqrt(2))-1 #error function"); //error function
-		case "hypot": return("hypot<-function(a,b) sqrt(a^2+b^2)"); //hypotenuse
-		case "invErf": return("invErf<-function(x) qnorm((1+x)/2)/sqrt(2) #inverse error function"); //inverse error function
+		case "cbrt":{
+			String function="cbrt <- function(x) {\n";
+			function+="  # Calculates the cube root of x\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   x: Real number\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   The cube root of x\n\n";
+			function+="  return(x ^ (1/3))\n";
+			function+="}";
+			return(function);
+		}
+		case "erf":{
+			String function="erf <- function(x) {\n";
+			function+="  # Calculates the error function at x\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   x: Real number\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   The error function at x\n\n";
+			function+="  return(2 * pnorm(x * sqrt(2)) - 1)\n";
+			function+="}";
+			return(function);
+		}
+		case "hypot":{
+			String function="hypot <- function(x, y) {\n";
+			function+="  # Calculates the distance (hypotenuse) between x and y\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   x: Real number\n";
+			function+="  #   y: Real number\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   The hypotenuse of x and y\n\n";
+			function+="  return(sqrt(a^2 + b^2))\n";
+			function+="}";
+			return(function);
+		}
+		case "invErf":{
+			String function="invErf <- function(x) {\n";
+			function+="  # Calculates the inverse error function at x\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   x: Real number in [-1, 1]\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   The inverse error function at x\n\n";
+			function+="  return(qnorm((1 + x) / 2) / sqrt(2))\n";
+			function+="}";
+			return(function);
+		}
 		case "probRescale":{ //prob to prob
-			String function="probRescale<-function(p, t1, t2){\n";
-			function+="	r0=-log(1-p); #prob to rate\n";
-			function+="	r1=r0/t1; //rate per t1\n";
-			function+="	r2=r1*t2; //rate per t2\n";
-			function+="	pNew=1-exp(-r2); #prob per t2\n";
-			function+="	return(pNew);\n";
+			String function="probRescale <- function(p, t1, t2) {\n";
+			function+="  # Rescales a probability p from time interval t1 to a new time interval t2\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   p: Probability (real number in [0, 1])\n";
+			function+="  #   t1: Original time interval (>0)\n";
+			function+="  #   t2: New time interval (>0)\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   Rescaled probability for time interval t2\n\n";
+			function+="  r0 <- -log(1 - p)  # prob to rate\n";
+			function+="  r1 <- r0 / t1  # rate per t1\n";
+			function+="  r2 <- r1 * t2  # rate per t2\n";
+			function+="  pNew <- 1 - exp(-r2)  # prob per t2\n";
+			function+="  return(pNew)\n";
 			function+="}";
 			return(function);
 		}
 		case "probToRate":{ //prob to rate
-			String function="probToRate<-function(p, t1=NULL, t2=NULL){\n";
-			function+="	if(is.null(t1)){\n";
-			function+="		r=-log(1-p); #prob to rate\n";
-			function+="		return(r);\n";
-			function+="	}\n";
-			function+="	else{\n";
-			function+="		r0=-log(1-p); #prob to rate\n";
-			function+="		r1=r0/t1; #rate per t1\n";
-			function+="		r2=r1*t2; #rate per t2\n";
-			function+="		return(r2);\n";
-			function+="	}\n";
+			String function="probToRate <- function(p, t1=NULL, t2=NULL) {\n";
+			function+="  # Converts a probability p to a rate r.  It time intervals are specified the rate is scaled from t1 to t2.\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   p: Probability (real number in [0, 1])\n";
+			function+="  #   t1: Probability time interval (>0). Default is NULL\n";
+			function+="  #   t2: Rate time interval (>0). Default is NULL\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   Converted rate (real number >= 0)\n\n";
+			function+="  if (is.null(t1)){\n";
+			function+="    r <- -log(1 - p)  # prob to rate\n";
+			function+="    return(r)\n";
+			function+="  } else {\n";
+			function+="    r0 <- -log(1 - p)  # prob to rate\n";
+			function+="    r1 <- r0 / t1  # rate per t1\n";
+			function+="    r2 <- r1 * t2  # rate per t2\n";
+			function+="    return(r2)\n";
+			function+="  }\n";
 			function+="}";
 			return(function);
 		}
 		case "rateToProb":{ //rate to prob
-			String function="rateToProb<-function(r, t1=NULL, t2=NULL){\n";
-			function+="	if(is.null(t1)){\n";
-			function+="		p=1-exp(-r); #rate to prob\n";
-			function+="		return(p);\n";
-			function+="	}\n";
-			function+="	else{\n";
-			function+="		r1=r/t1; #rate per t1\n";
-			function+="		r2=r1*t2; #rate per t2\n";
-			function+="		p=1-exp(-r2); #prob per t2\n";
-			function+="		return(p);\n";
-			function+="	}\n";
+			String function="rateToProb <- function(r, t1=NULL, t2=NULL) {\n";
+			function+="  # Converts a rate r to a probability p.  It time intervals are specified the probability is scaled from t1 to t2.\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   r: Rate (real number >= 0)\n";
+			function+="  #   t1: Rate time interval (>0). Default is NULL\n";
+			function+="  #   t2: Probability time interval (>0). Default is NULL\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   Converted probability (real number in [0, 1])\n\n";
+			function+="  if (is.null(t1)){\n";
+			function+="    p <- 1 - exp(-r)  # rate to prob\n";
+			function+="    return(p)\n";
+			function+="  } else {\n";
+			function+="    r1 <- r / t1  # rate per t1\n";
+			function+="    r2 <- r1 * t2  # rate per t2\n";
+			function+="    p <- 1 - exp(-r2)  # prob per t2\n";
+			function+="    return(p)\n";
+			function+="  }\n";
 			function+="}";
 			return(function);
+		
 		}
 		
 		} //end switch
@@ -179,7 +267,7 @@ public final class RFunctions{
 			String vector="";
 			if(numArgs>2){ //entries, not vector
 				vector="c("+rModel.translate(args[1], personLevel);
-				for(int i=2; i<numArgs; i++){vector+=","+rModel.translate(args[i], personLevel);}
+				for(int i=2; i<numArgs; i++){vector+=", "+rModel.translate(args[i], personLevel);}
 				vector+=")";
 			}
 			else{ //vector
@@ -192,7 +280,7 @@ public final class RFunctions{
 			String vector="";
 			if(numArgs>1){ //entries, not vector
 				vector="c("+rModel.translate(args[0], personLevel);
-				for(int i=1; i<numArgs; i++){vector+=","+rModel.translate(args[i], personLevel);}
+				for(int i=1; i<numArgs; i++){vector+=", "+rModel.translate(args[i], personLevel);}
 				vector+=")";
 			}
 			else{ //vector
@@ -205,7 +293,7 @@ public final class RFunctions{
 			String vector="";
 			if(numArgs>1){ //entries, not vector
 				vector="c("+rModel.translate(args[0], personLevel);
-				for(int i=1; i<numArgs; i++){vector+=","+rModel.translate(args[i], personLevel);}
+				for(int i=1; i<numArgs; i++){vector+=", "+rModel.translate(args[i], personLevel);}
 				vector+=")";
 			}
 			else{ //vector

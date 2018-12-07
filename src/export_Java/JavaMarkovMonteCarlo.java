@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 import base.AmuaModel;
 import main.*;
 import markov.MarkovNode;
@@ -275,8 +277,7 @@ public class JavaMarkovMonteCarlo{
 			out.close();
 
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -377,8 +378,7 @@ public class JavaMarkovMonteCarlo{
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -399,8 +399,7 @@ public class JavaMarkovMonteCarlo{
 		try{
 			out.write(line); out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -409,9 +408,13 @@ public class JavaMarkovMonteCarlo{
 			for(int t=0; t<tab; t++){out.write("	");}
 			out.write(line); out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
+	private void recordError(Exception e){
+		e.printStackTrace();
+		errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
+	}
 }

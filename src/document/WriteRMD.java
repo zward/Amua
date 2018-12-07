@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 
 import base.AmuaModel;
 import main.*;
@@ -174,8 +175,7 @@ public class WriteRMD{
 			out.close();
 
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -298,17 +298,18 @@ public class WriteRMD{
 			}
 		}
 	}
-
-	
-	
-	
 	
 	private void writeLine(String line){
 		try{
 			out.write(line); out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
+	}
+	
+	private void recordError(Exception e){
+		e.printStackTrace();
+		errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
 	}
 }

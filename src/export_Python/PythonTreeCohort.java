@@ -21,6 +21,9 @@ package export_Python;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+
+import javax.swing.JOptionPane;
+
 import base.AmuaModel;
 import main.*;
 import tree.DecisionTree;
@@ -106,8 +109,7 @@ public class PythonTreeCohort{
 			out.close();
 
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -134,8 +136,7 @@ public class PythonTreeCohort{
 				addNode(childIndex);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -167,8 +168,7 @@ public class PythonTreeCohort{
 					writeLine(2,"displayResults(child)");
 				writeLine(1,"return;");
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -201,8 +201,7 @@ public class PythonTreeCohort{
 					writeLine(2,"return(child)");
 			writeLine(0,"");
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 	
@@ -212,8 +211,7 @@ public class PythonTreeCohort{
 			out.write(line); 
 			out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 	
@@ -244,10 +242,14 @@ public class PythonTreeCohort{
 			}
 			writeLine(0,"");
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
+	private void recordError(Exception e){
+		e.printStackTrace();
+		errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
+	}
 	
 }

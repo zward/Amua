@@ -21,6 +21,9 @@ package export_R;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+
+import javax.swing.JOptionPane;
+
 import base.AmuaModel;
 import main.*;
 import tree.DecisionTree;
@@ -57,11 +60,11 @@ public class RTreeCohort{
 			writeLine("");
 			writeLine("### Define Node Class");
 			writeLine("setRefClass(\"Node\",");
-			writeLine("  fields=list(name=\"character\",prob=\"numeric\",");
+			writeLine("  fields = list(name=\"character\", prob=\"numeric\", ");
 			DimInfo info=myModel.dimInfo;
 			for(int d=0; d<numDim; d++){
 				String dim=info.dimNames[d];
-				writeLine("             cost"+dim+"=\"numeric\",payoff"+dim+"=\"numeric\",expected"+dim+"=\"numeric\",");
+				writeLine("             cost"+dim+"=\"numeric\", payoff"+dim+"=\"numeric\", expected"+dim+"=\"numeric\", ");
 			}
 			writeLine("             children=\"vector\")");
 			writeLine(")");
@@ -70,29 +73,37 @@ public class RTreeCohort{
 			rModel.writeTableClass();
 			
 			writeLine("### Define Run tree");
-			writeLine("evaluateNode<-function(curNode){");
-			writeLine("  numChildren=length(curNode$children)");
-			writeLine("  if(numChildren==0){");
-			for(int d=0; d<numDim; d++){writeLine("    curNode$expected"+info.dimNames[d]+"=curNode$payoff"+info.dimNames[d]+"+curNode$cost"+info.dimNames[d]);}
-			writeLine("  }");
-			writeLine("  else{ #Evaluate children");
-			for(int d=0; d<numDim; d++){writeLine("    curNode$expected"+info.dimNames[d]+"=curNode$cost"+info.dimNames[d]);}
-			writeLine("    for(i in 1:numChildren){");
-			writeLine("      child<-tree[[curNode$children[i]]] #Get child");
+			writeLine("evaluateNode <- function(curNode) {");
+			writeLine("  # Recursive function to average and roll-back tree");
+			writeLine("  #");
+			writeLine("  # Args:");
+			writeLine("  #   curNode: Current node.  Children will be evaluated recursively.");
+			writeLine("");
+			writeLine("  numChildren <- length(curNode$children)");
+			writeLine("  if (numChildren == 0) {");
+			for(int d=0; d<numDim; d++){writeLine("    curNode$expected"+info.dimNames[d]+" <- curNode$payoff"+info.dimNames[d]+" + curNode$cost"+info.dimNames[d]);}
+			writeLine("  } else {  # Evaluate children");
+			for(int d=0; d<numDim; d++){writeLine("    curNode$expected"+info.dimNames[d]+" <- curNode$cost"+info.dimNames[d]);}
+			writeLine("    for (i in 1 : numChildren) {");
+			writeLine("      child <- tree[[curNode$children[i]]]  # Get child");
 			writeLine("      evaluateNode(child)");
-			for(int d=0; d<numDim; d++){writeLine("      curNode$expected"+info.dimNames[d]+"=curNode$expected"+info.dimNames[d]+"+(child$prob*child$expected"+info.dimNames[d]+")");}
+			for(int d=0; d<numDim; d++){writeLine("      curNode$expected"+info.dimNames[d]+" <- curNode$expected"+info.dimNames[d]+" + (child$prob * child$expected"+info.dimNames[d]+")");}
 			writeLine("    }");  
 			writeLine("  }");
 			writeLine("}");
 			writeLine("");
 			writeLine("### Define display results");
-			writeLine("displayEV<-function(curNode){");
-			writeLine("  numChildren=length(curNode$children)");
-			writeLine("  if(numChildren>0){");
-			writeLine("    for(i in 1:numChildren){");
-			writeLine("      curChild<-tree[[curNode$children[i]]]");
-			out.write("      print(paste(curChild$name,");
-			for(int d=0; d<numDim-1; d++){out.write("curChild$expected"+info.dimNames[d]+",");}
+			writeLine("displayEV <- function(curNode) {");
+			writeLine("  # Recursive function to display results");
+			writeLine("  #");
+			writeLine("  # Args:");
+			writeLine("  #   curNode: Current node.  Child results will be displayed recursively.");
+			writeLine("  numChildren <- length(curNode$children)");
+			writeLine("  if (numChildren > 0) {");
+			writeLine("    for(i in 1 : numChildren) {");
+			writeLine("      curChild <- tree[[curNode$children[i]]]");
+			out.write("      print(paste(curChild$name, ");
+			for(int d=0; d<numDim-1; d++){out.write("curChild$expected"+info.dimNames[d]+", ");}
 			out.write("curChild$expected"+info.dimNames[numDim-1]+"))");
 			out.newLine();
 			writeLine("      displayEV(curChild)");
@@ -109,38 +120,38 @@ public class RTreeCohort{
 			
 			writeLine("### Create tree");
 			int numNodes=tree.nodes.size();
-			out.write("Root<-new(\"Node\",name=\"Root\"");
+			out.write("Root <- new(\"Node\", name=\"Root\"");
 			int numChildren=tree.nodes.get(0).childIndices.size();
 			if(numChildren>0){
-				out.write(",children=c(");
+				out.write(", children=c(");
 				for(int i=0; i<numChildren-1; i++){
-					out.write((tree.nodes.get(0).childIndices.get(i)+1)+","); //Index from 1 instead of 0
+					out.write((tree.nodes.get(0).childIndices.get(i)+1)+", "); //Index from 1 instead of 0
 				}
 				out.write((tree.nodes.get(0).childIndices.get(numChildren-1)+1)+")");
 			}
 			out.write(")");
 			out.newLine();
 			for(int i=1; i<numNodes; i++){addNode(i);}
-			out.write("tree<-c(");
-			for(int i=0; i<numNodes-1; i++){out.write(tree.nodes.get(i).nameExport+",");}
+			out.write("tree <- c(");
+			for(int i=0; i<numNodes-1; i++){out.write(tree.nodes.get(i).nameExport+", ");}
 			out.write(tree.nodes.get(numNodes-1).nameExport+")"); out.newLine();
 			writeLine("");
 			
 			defineCompProbs();
 			
-			writeLine("###Run tree");
+			writeLine("### Run tree");
 			writeLine("evaluateNode(tree[[1]])");
 			writeLine("");
 			writeLine("### Display output for each strategy");
-			writeLine("numStrategies=length(Root$children)");
-			writeLine("for(i in 1:numStrategies){");
-			writeLine("	curNode<-tree[[Root$children[i]]]");
-			out.write("	print(paste(\"Strategy:\",curNode$name,");
-			for(int d=0; d<numDim-1; d++){out.write("curNode$expected"+info.dimNames[d]+",");}
+			writeLine("numStrategies <- length(Root$children)");
+			writeLine("for(i in 1 : numStrategies) {");
+			writeLine("  curNode <- tree[[Root$children[i]]]");
+			out.write("  print(paste(\"Strategy:\", curNode$name, ");
+			for(int d=0; d<numDim-1; d++){out.write("curNode$expected"+info.dimNames[d]+", ");}
 			out.write("curNode$expected"+info.dimNames[numDim-1]+"))");
 			out.newLine();
-			writeLine("	print(\"Children...\")");
-			writeLine("	displayEV(curNode)");
+			writeLine("	 print(\"Children...\")");
+			writeLine("	 displayEV(curNode)");
 			writeLine("}");
 			
 			out.close();
@@ -148,27 +159,26 @@ public class RTreeCohort{
 			rModel.defineFunctions();
 
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
 	private void addNode(int curIndex){
 		try{
 			TreeNode curNode=tree.nodes.get(curIndex);
-			out.write(curNode.nameExport+"<-new(\"Node\",name=\""+curNode.nameExport+"\",");
+			out.write(curNode.nameExport+" <- new(\"Node\", name=\""+curNode.nameExport+"\", ");
 			//Prob
-			if(curNode.prob.matches("C") || curNode.prob.matches("c")){out.write("prob=-1,");}
-			else{out.write("prob="+rModel.translate(curNode.prob,false)+",");}
+			if(curNode.prob.matches("C") || curNode.prob.matches("c")){out.write("prob=-1, ");}
+			else{out.write("prob="+rModel.translate(curNode.prob,false)+", ");}
 			DimInfo info=myModel.dimInfo;
-			for(int d=0; d<numDim; d++){out.write("cost"+info.dimNames[d]+"="+rModel.translate(curNode.cost[d],false)+",");}
-			for(int d=0; d<numDim-1; d++){out.write("payoff"+info.dimNames[d]+"="+rModel.translate(curNode.payoff[d],false)+",");}
+			for(int d=0; d<numDim; d++){out.write("cost"+info.dimNames[d]+"="+rModel.translate(curNode.cost[d],false)+", ");}
+			for(int d=0; d<numDim-1; d++){out.write("payoff"+info.dimNames[d]+"="+rModel.translate(curNode.payoff[d],false)+", ");}
 			out.write("payoff"+info.dimNames[numDim-1]+"="+rModel.translate(curNode.payoff[numDim-1],false));
 			int numChildren=curNode.childIndices.size();
 			if(numChildren>0){
-				out.write(",children=c(");
+				out.write(", children=c(");
 				for(int i=0; i<numChildren-1; i++){
-					out.write((curNode.childIndices.get(i)+1)+","); //Index from 1 instead of 0
+					out.write((curNode.childIndices.get(i)+1)+", "); //Index from 1 instead of 0
 				}
 				out.write((curNode.childIndices.get(numChildren-1)+1)+")");
 			}
@@ -176,8 +186,7 @@ public class RTreeCohort{
 			//out.write("eM=0,eU=0)");
 			out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -185,8 +194,7 @@ public class RTreeCohort{
 		try{
 			out.write(line); out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 	
@@ -198,10 +206,10 @@ public class RTreeCohort{
 				TreeNode curNode=tree.nodes.get(i);
 				if(curNode.prob.matches("C")||curNode.prob.matches("c")){ //Complementary
 					if(headerWritten==false){
-						writeLine("###Define complementary probs");
+						writeLine("### Define complementary probs");
 						headerWritten=true;
 					}
-					out.write(curNode.nameExport+"$prob=1.0");
+					out.write(curNode.nameExport+"$prob <- 1.0");
 					int parentIndex=tree.getParentIndex(i);
 					TreeNode parent=tree.nodes.get(parentIndex);
 					int numChildren=parent.childIndices.size();
@@ -209,7 +217,7 @@ public class RTreeCohort{
 						int childIndex=parent.childIndices.get(c);
 						if(childIndex!=i){
 							TreeNode child=tree.nodes.get(childIndex);
-							out.write("-"+child.nameExport+"$prob");
+							out.write(" - "+child.nameExport+"$prob");
 						}
 					}
 					out.newLine();
@@ -217,9 +225,13 @@ public class RTreeCohort{
 			}
 			writeLine("");
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 	
+	private void recordError(Exception e){
+		e.printStackTrace();
+		errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
+	}
 }

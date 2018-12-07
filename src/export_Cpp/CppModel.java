@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.swing.JOptionPane;
+
 import base.AmuaModel;
 import main.*;
 import math.Constants;
@@ -68,8 +70,7 @@ public class CppModel{
 			writeLine("Version modified: "+myModel.meta.versionModified);
 			writeLine("*/");
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -315,8 +316,7 @@ public class CppModel{
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 	
@@ -387,8 +387,7 @@ public class CppModel{
 			outFx.close();
 			
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 	
@@ -759,8 +758,7 @@ public class CppModel{
 			out=temp; //pont back
 			
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 	
@@ -768,8 +766,13 @@ public class CppModel{
 		try{
 			out.write(line); out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
+	}
+	
+	private void recordError(Exception e){
+		e.printStackTrace();
+		myModel.errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
 	}
 }

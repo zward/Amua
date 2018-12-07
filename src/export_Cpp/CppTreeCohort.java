@@ -21,6 +21,9 @@ package export_Cpp;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+
+import javax.swing.JOptionPane;
+
 import base.AmuaModel;
 import main.*;
 import tree.DecisionTree;
@@ -128,8 +131,7 @@ public class CppTreeCohort{
 			out.close();
 
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -154,8 +156,7 @@ public class CppTreeCohort{
 				addNode(childIndex);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -199,8 +200,7 @@ public class CppTreeCohort{
 			writeLine("	}");
 			writeLine("}");
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -250,8 +250,7 @@ public class CppTreeCohort{
 			writeLine("};");
 			writeLine("");
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 	
@@ -259,8 +258,7 @@ public class CppTreeCohort{
 		try{
 			out.write(line); out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -291,9 +289,13 @@ public class CppTreeCohort{
 			}
 			writeLine("");
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
+	private void recordError(Exception e){
+		e.printStackTrace();
+		errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
+	}
 }

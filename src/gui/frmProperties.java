@@ -65,7 +65,7 @@ public class frmProperties {
 	 */
 	public JDialog frmProperties;
 	AmuaModel myModel;
-	DimInfo dimInfo;
+	DimInfo tempDimInfo;
 	JTabbedPane tabbedPane;
 	
 	//Metadata
@@ -79,11 +79,18 @@ public class frmProperties {
 	JLabel lblDispModified; 
 	JLabel lblVModified; 
 	
+	int numDimensions;
+	ArrayList<String> dimNames, dimSymbols;
+	ArrayList<Integer> decimals;
+	ArrayList<Double> dimDiscount;
+	
 	//Analysis
 	DefaultTableModel modelDimensions;
 	private JTable tableDimensions;
 	JComboBox<String> comboAnalysis;
 	JButton btnRemoveDimension;
+	private DefaultTableModel modelAnalysis;
+	private analysisTable tableAnalysis;
 	
 	//Simulation
 	JComboBox comboSimType;
@@ -98,19 +105,17 @@ public class frmProperties {
 	JCheckBox chckbxDiscount;
 	DefaultTableModel modelDiscountRates;
 	private JTable tableDiscountRates;
-	private DefaultTableModel modelAnalysis;
-	private analysisTable tableAnalysis;
 	JLabel lblDiscountStartCycle;
 	private JTextField textDiscountStartCycle;
-	
+		
 	/**
 	 *  Default Constructor
 	 */
 	public frmProperties(AmuaModel myModel) {
 		this.myModel=myModel;
-		this.dimInfo=myModel.dimInfo;
+		this.tempDimInfo=myModel.dimInfo.copy();
+		myModel.getStrategies();
 		initialize();
-		
 		refreshDisplay();
 	}
 
@@ -136,7 +141,7 @@ public class frmProperties {
 					}
 				}
 			});
-			btnOk.setBounds(159, 252, 90, 28);
+			btnOk.setBounds(262, 252, 90, 28);
 			frmProperties.getContentPane().add(btnOk);
 
 			JButton btnCancel = new JButton("Cancel");
@@ -145,19 +150,8 @@ public class frmProperties {
 					frmProperties.dispose();
 				}
 			});
-			btnCancel.setBounds(261, 252, 90, 28);
+			btnCancel.setBounds(364, 252, 90, 28);
 			frmProperties.getContentPane().add(btnCancel);
-			
-			JButton btnApply = new JButton("Apply");
-			btnApply.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if(applyChanges()){
-						refreshDisplay();
-					}
-				}
-			});
-			btnApply.setBounds(364, 252, 90, 28);
-			frmProperties.getContentPane().add(btnApply);
 
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 			tabbedPane.setBounds(6, 6, 448, 234);
@@ -263,29 +257,39 @@ public class frmProperties {
 			tableDimensions.setModel(modelDimensions);
 			scrollPane.setViewportView(tableDimensions);
 
-			JButton btnAddDimension = new JButton("Add Dimension");
+			JButton btnAddDimension = new JButton("");
 			btnAddDimension.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					modelDimensions.addRow(new Object[]{null});
-					comboAnalysis.setSelectedIndex(0);
-					setAnalysisType(0);
+					if(modelDimensions.getRowCount()>1){btnRemoveDimension.setEnabled(true);}
+					else{btnRemoveDimension.setEnabled(false);}
+					if(myModel.type==1){ //Markov
+						modelDiscountRates.addRow(new Object[]{null,"0"});
+					}
 				}
 			});
-			btnAddDimension.setBounds(291, 5, 147, 28);
+			btnAddDimension.setToolTipText("Add Dimension");
+			btnAddDimension.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/add.png")));
+			btnAddDimension.setBounds(282, 11, 35, 28);
 			panel_1.add(btnAddDimension);
 
-			btnRemoveDimension = new JButton("Remove Dimension");
+			btnRemoveDimension = new JButton("");
 			btnRemoveDimension.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int selected=tableDimensions.getSelectedRow();
 					if(selected!=-1 && tableDimensions.getRowCount()>1){
 						modelDimensions.removeRow(selected);
-						comboAnalysis.setSelectedIndex(0);
-						setAnalysisType(0);
+						if(modelDimensions.getRowCount()>1){btnRemoveDimension.setEnabled(true);}
+						else{btnRemoveDimension.setEnabled(false);}
+						if(myModel.type==1){ //Markov
+							modelDiscountRates.removeRow(selected);
+						}
 					}
 				}
 			});
-			btnRemoveDimension.setBounds(291, 41, 147, 28);
+			btnRemoveDimension.setBounds(282, 46, 35, 28);
+			btnRemoveDimension.setToolTipText("Remove Dimension");
+			btnRemoveDimension.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/remove.png")));
 			panel_1.add(btnRemoveDimension);
 			
 			JLabel lblAnalysisType = new JLabel("Analysis type:");
@@ -325,6 +329,7 @@ public class frmProperties {
 			
 			tableAnalysis = new analysisTable();
 			tableAnalysis.myModel=myModel;
+			tableAnalysis.tempDimInfo=tempDimInfo;
 			tableAnalysis.getTableHeader().setReorderingAllowed(false);
 			tableAnalysis.setModel(modelAnalysis);
 			tableAnalysis.getColumnModel().getColumn(0).setPreferredWidth(170);
@@ -332,6 +337,44 @@ public class frmProperties {
 			tableAnalysis.setShowVerticalLines(true);
 			tableAnalysis.setRowSelectionAllowed(false);
 			scrollPane_2.setViewportView(tableAnalysis);
+			
+			JButton btnRefreshDim = new JButton("Refresh");
+			btnRefreshDim.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					//Update dimensions
+					if(validateDimensions()){
+						tempDimInfo.dimNames=new String[numDimensions]; tempDimInfo.dimSymbols=new String[numDimensions];
+						tempDimInfo.decimals=new int[numDimensions];
+						for(int i=0; i<numDimensions; i++){
+							tempDimInfo.dimNames[i]=dimNames.get(i);
+							tempDimInfo.dimSymbols[i]=dimSymbols.get(i);
+							tempDimInfo.decimals[i]=decimals.get(i);
+						}
+						
+						if(numDimensions==1){
+							comboAnalysis.setEnabled(false);
+							setAnalysisType(0);
+						}
+						else{comboAnalysis.setEnabled(true);}
+												
+						//update discount names
+						if(myModel.type==1){
+							myModel.markov.discountRates=new double[numDimensions];
+							for(int i=0; i<numDimensions; i++){
+								modelDiscountRates.setValueAt(dimNames.get(i), i, 0);
+								try{
+									myModel.markov.discountRates[i]=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
+								}catch (Exception e1){
+									myModel.markov.discountRates[i]=0;
+								}
+							}
+						}
+					}
+				}
+			});
+			btnRefreshDim.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/refresh_16.png")));
+			btnRefreshDim.setBounds(329, 30, 109, 28);
+			panel_1.add(btnRefreshDim);
 			
 			tableAnalysis.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
 			    @Override
@@ -508,34 +551,33 @@ public class frmProperties {
 	
 	private void displayAnalysisSettings(){
 		modelDimensions.setRowCount(0);
-		for(int i=0; i<dimInfo.dimNames.length; i++){
+		for(int i=0; i<tempDimInfo.dimNames.length; i++){
 			modelDimensions.addRow(new Object[]{null});
-			modelDimensions.setValueAt(dimInfo.dimNames[i], i, 0);
-			modelDimensions.setValueAt(dimInfo.dimSymbols[i], i, 1);
-			modelDimensions.setValueAt(dimInfo.decimals[i]+"", i, 2);
+			modelDimensions.setValueAt(tempDimInfo.dimNames[i], i, 0);
+			modelDimensions.setValueAt(tempDimInfo.dimSymbols[i], i, 1);
+			modelDimensions.setValueAt(tempDimInfo.decimals[i]+"", i, 2);
 		}
 		
-		if(dimInfo.dimNames.length<2){
+		if(tempDimInfo.dimNames.length<2){
 			btnRemoveDimension.setEnabled(false);
 		}
 		
 		
-		comboAnalysis.setSelectedIndex(dimInfo.analysisType);
+		comboAnalysis.setSelectedIndex(tempDimInfo.analysisType);
 		
-		setAnalysisType(dimInfo.analysisType);
-		if(dimInfo.analysisType==0){ //EV
-			if(dimInfo.objective==0){tableAnalysis.setValueAt("Maximize", 0, 1);}
-			else if(dimInfo.objective==1){tableAnalysis.setValueAt("Minimize", 0, 1);}
-			tableAnalysis.setValueAt(dimInfo.dimNames[dimInfo.objectiveDim], 1, 1);
+		setAnalysisType(tempDimInfo.analysisType);
+		if(tempDimInfo.analysisType==0){ //EV
+			if(tempDimInfo.objective==0){tableAnalysis.setValueAt("Maximize", 0, 1);}
+			else if(tempDimInfo.objective==1){tableAnalysis.setValueAt("Minimize", 0, 1);}
+			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.objectiveDim], 1, 1);
 		}
-		else if(dimInfo.analysisType>0){ //CEA or BCA
-			tableAnalysis.setValueAt(dimInfo.dimNames[dimInfo.costDim], 0, 1);
-			tableAnalysis.setValueAt(dimInfo.dimNames[dimInfo.effectDim], 1, 1);
-			if(dimInfo.analysisType==1){ //CEA
-				myModel.getStrategies();
-				tableAnalysis.setValueAt(myModel.strategyNames[dimInfo.baseScenario], 2, 1);
+		else if(tempDimInfo.analysisType>0){ //CEA or BCA
+			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.costDim], 0, 1);
+			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.effectDim], 1, 1);
+			if(tempDimInfo.analysisType==1){ //CEA
+				tableAnalysis.setValueAt(myModel.strategyNames[tempDimInfo.baseScenario], 2, 1);
 			}
-			tableAnalysis.setValueAt(dimInfo.WTP+"",3,1);
+			tableAnalysis.setValueAt(tempDimInfo.WTP+"",3,1);
 		}
 		
 	}
@@ -562,25 +604,25 @@ public class frmProperties {
 			tableDiscountRates.setEnabled(true);
 		}
 		textDiscountStartCycle.setText(myModel.markov.discountStartCycle+"");
-		for(int i=0; i<dimInfo.dimNames.length; i++){
+		modelDiscountRates.setRowCount(0);
+		for(int i=0; i<tempDimInfo.dimNames.length; i++){
 			modelDiscountRates.addRow(new Object[]{null});
-			modelDiscountRates.setValueAt(dimInfo.dimNames[i],i,0);
+			modelDiscountRates.setValueAt(tempDimInfo.dimNames[i],i,0);
 			if(myModel.markov.discountRates!=null){
 				modelDiscountRates.setValueAt(myModel.markov.discountRates[i]+"", i, 1);
 			}
 		}
 	}
 	
-	private boolean applyChanges(){
+	private boolean validateDimensions(){
 		boolean valid=true;
-		
 		//Validate dimensions
 		//Ensure unqiue
-		int numDimensions=tableDimensions.getRowCount();
-		ArrayList<String> dimNames=new ArrayList<String>();
-		ArrayList<String> dimSymbols=new ArrayList<String>();
-		ArrayList<Integer> decimals=new ArrayList<Integer>();
-		ArrayList<Double> dimDiscount=new ArrayList<Double>();
+		numDimensions=tableDimensions.getRowCount();
+		dimNames=new ArrayList<String>();
+		dimSymbols=new ArrayList<String>();
+		decimals=new ArrayList<Integer>();
+		dimDiscount=new ArrayList<Double>();
 		for(int i=0; i<numDimensions; i++){
 			String curName=(String) tableDimensions.getValueAt(i,0);
 			String curSymbol=(String) tableDimensions.getValueAt(i,1);
@@ -596,7 +638,7 @@ public class frmProperties {
 			else{
 				dimNames.add(curName);
 			}
-			
+
 			if(curSymbol==null){
 				valid=false;
 				JOptionPane.showMessageDialog(frmProperties, curName+"Please enter a valid dimension symbol!");
@@ -608,7 +650,7 @@ public class frmProperties {
 			else{
 				dimSymbols.add(curSymbol);
 			}
-			
+
 			if(curDecimal==null){
 				valid=false;
 				JOptionPane.showMessageDialog(frmProperties, curName+"Please enter decimal places!");
@@ -633,6 +675,14 @@ public class frmProperties {
 				}
 			}
 		}
+		return(valid);
+	}
+	
+	private boolean applyChanges(){
+		boolean valid=true;
+		
+		//Validate dimensions
+		valid=validateDimensions();
 		
 		//Check analysis settings
 		int objective=0, objectiveDim=0;
@@ -660,9 +710,19 @@ public class frmProperties {
 		}
 		else if(comboAnalysis.getSelectedIndex()>0){ //CEA or BCA
 			String strCostDim=(String) tableAnalysis.getValueAt(0, 1);
+			if(strCostDim==null){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please select a Cost!");
+			}
+			else{costDim=getDimIndex(strCostDim);}
 			String strEffectDim=(String) tableAnalysis.getValueAt(1, 1);
-			costDim=getDimIndex(strCostDim);
-			effectDim=getDimIndex(strEffectDim);
+			if(strEffectDim==null){
+				if(comboAnalysis.getSelectedIndex()==1){JOptionPane.showMessageDialog(frmProperties, "Please select an Effect!");} //CEA
+				else if(comboAnalysis.getSelectedIndex()==2){JOptionPane.showMessageDialog(frmProperties, "Please select a Benefit!");} //BCA
+			}
+			else{
+				effectDim=getDimIndex(strEffectDim);
+			}
 			if(costDim==effectDim){
 				valid=false;
 				if(comboAnalysis.getSelectedIndex()==1){ //CEA
@@ -674,7 +734,8 @@ public class frmProperties {
 			}
 			if(comboAnalysis.getSelectedIndex()==1){ //CEA
 				String strBase=(String)tableAnalysis.getValueAt(2, 1);
-				baseIndex=getScenarioIndex(strBase);
+				baseIndex=-1;
+				if(strBase!=null){baseIndex=getScenarioIndex(strBase);}
 				if(baseIndex==-1){
 					valid=false;
 					JOptionPane.showMessageDialog(frmProperties, "Please choose a baseline scenario!");
@@ -769,22 +830,28 @@ public class frmProperties {
 		}
 		
 		if(valid==true){ //Apply changes
+			//add to undo
+			myModel.saveSnapshot("Change Properties");
+			
 			//dimensions
-			dimInfo.dimNames=new String[numDimensions]; dimInfo.dimSymbols=new String[numDimensions];
-			dimInfo.decimals=new int[numDimensions];
+			myModel.dimInfo.dimNames=new String[numDimensions]; myModel.dimInfo.dimSymbols=new String[numDimensions];
+			myModel.dimInfo.decimals=new int[numDimensions];
 			for(int i=0; i<numDimensions; i++){
-				dimInfo.dimNames[i]=dimNames.get(i);
-				dimInfo.dimSymbols[i]=dimSymbols.get(i);
-				dimInfo.decimals[i]=decimals.get(i);
+				myModel.dimInfo.dimNames[i]=dimNames.get(i);
+				myModel.dimInfo.dimSymbols[i]=dimSymbols.get(i);
+				myModel.dimInfo.decimals[i]=decimals.get(i);
 			}
 			myModel.updateDimensions();
 			
 			//analysis type
-			dimInfo.analysisType=comboAnalysis.getSelectedIndex();
-			dimInfo.objective=objective; dimInfo.objectiveDim=objectiveDim;
-			dimInfo.costDim=costDim; dimInfo.effectDim=effectDim;
-			dimInfo.baseScenario=baseIndex;
-			dimInfo.WTP=WTP;
+			myModel.dimInfo.analysisType=comboAnalysis.getSelectedIndex();
+			myModel.dimInfo.objective=objective; myModel.dimInfo.objectiveDim=objectiveDim;
+			myModel.dimInfo.costDim=costDim; myModel.dimInfo.effectDim=effectDim;
+			myModel.dimInfo.baseScenario=baseIndex;
+			myModel.dimInfo.WTP=WTP;
+			
+			tempDimInfo=myModel.dimInfo.copy(); //get new copy
+			tableAnalysis.tempDimInfo=tempDimInfo;
 			
 			//simulation
 			myModel.simType=simType;
@@ -813,11 +880,7 @@ public class frmProperties {
 	
 	
 	private void setAnalysisType(int analysisType){
-		
-		if(modelDimensions.getRowCount()>1){btnRemoveDimension.setEnabled(true);}
-		else{btnRemoveDimension.setEnabled(false);}
-		
-		if(dimInfo.dimNames.length==1 || modelDimensions.getRowCount()<2){comboAnalysis.setEnabled(false);}
+		if(tempDimInfo.dimNames.length==1 || modelDimensions.getRowCount()<2){comboAnalysis.setEnabled(false);}
 		else{comboAnalysis.setEnabled(true);}
 				
 		tableAnalysis.analysisType=analysisType;
@@ -848,9 +911,9 @@ public class frmProperties {
 		int index=-1;
 		int i=-1;
 		boolean found=false;
-		while(found==false && i<dimInfo.dimNames.length){
+		while(found==false && i<tempDimInfo.dimNames.length){
 			i++;
-			if(dimInfo.dimNames[i].matches(dimName)){
+			if(tempDimInfo.dimNames[i].matches(dimName)){
 				found=true;
 				index=i;
 			}
@@ -879,6 +942,7 @@ class analysisTable extends JTable{
 	public boolean enabled[]=new boolean[]{false,false,false,false};
 	analysisTable thisTable=this;
 	public AmuaModel myModel;
+	public DimInfo tempDimInfo;;
 	
 	@Override
 	public void setEnabled(boolean enabled){
@@ -895,7 +959,7 @@ class analysisTable extends JTable{
 					return(new DefaultCellEditor(comboRule));
 				}
 				else if(column==1){ //dimension
-					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(myModel.dimInfo.dimNames));
+					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(tempDimInfo.dimNames));
 					return(new DefaultCellEditor(comboDim));
 				}
 			}
@@ -903,7 +967,7 @@ class analysisTable extends JTable{
 		else if(analysisType==1 || analysisType==2){ //CEA/BCA
 			if(column==1){
 				if(row==0 || row==1){ //Cost/Effect
-					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(myModel.dimInfo.dimNames));
+					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(tempDimInfo.dimNames));
 					return(new DefaultCellEditor(comboDim));
 				}
 				else if(row==2){ //Baseline scenario

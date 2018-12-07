@@ -66,8 +66,34 @@ public final class RMatrixFunctions{
 	
 	public static String define(String fx){
 		switch(fx){
-		case "renorm": return("renorm<-function(X) X/sum(X) #renormalize (sum to 1.0)"); //renormalize
-		case "softmax": return("softmax<-function(X) exp(X)/sum(exp(X)) #softmax (sum to 1.0)"); //softmax
+		
+		case "renorm":{
+			String function="renorm <- function(X) {\n";
+			function+="  # Returns a vector with the elements of X linearly renormalized to sum to 1.0\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   X: Vector of real numbers (>0)\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   Vector of real numbers that sum to 1.0\n\n";
+			function+="  return(X / sum(X))\n";
+			function+="}";
+			return(function);
+			
+		}
+		case "softmax":{
+			String function="softmax <- function(X) {\n";
+			function+="  # Returns a vector with the exponentiated elements of X renormalized to sum to 1.0\n";
+			function+="  #\n";
+			function+="  # Args:\n";
+			function+="  #   X: Vector of real numbers\n";
+			function+="  #\n";
+			function+="  # Returns:\n";
+			function+="  #   Vector of real numbers that sum to 1.0\n\n";
+			function+="  return(exp(X) / sum(exp(X)))\n";
+			function+="}";
+			return(function);
+		}
 		
 		} //end switch
 		return(null); //fell through

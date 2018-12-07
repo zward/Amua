@@ -22,6 +22,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 
+import javax.swing.JOptionPane;
+
 import base.AmuaModel;
 import main.*;
 import tree.DecisionTree;
@@ -116,8 +118,7 @@ public class PythonTreeMonteCarlo{
 			out.close();
 
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -213,12 +214,9 @@ public class PythonTreeMonteCarlo{
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
-
-	
 	
 	private void writeLine(int indent,String line){
 		try{
@@ -226,9 +224,13 @@ public class PythonTreeMonteCarlo{
 			out.write(line); 
 			out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
+	private void recordError(Exception e){
+		e.printStackTrace();
+		errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
+	}
 }

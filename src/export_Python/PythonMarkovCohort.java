@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 import base.AmuaModel;
 import main.*;
 import markov.MarkovNode;
@@ -210,8 +212,7 @@ public class PythonMarkovCohort{
 			out.close();
 
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -289,8 +290,7 @@ public class PythonMarkovCohort{
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -313,9 +313,14 @@ public class PythonMarkovCohort{
 			out.write(line); 
 			out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			errorLog.recordError(e);
+			recordError(e);
 		}
+	}
+	
+	private void recordError(Exception e){
+		e.printStackTrace();
+		errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
 	}
 
 }

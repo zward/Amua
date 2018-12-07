@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.swing.JOptionPane;
+
 import base.AmuaModel;
 import main.*;
 import math.Constants;
@@ -70,8 +72,7 @@ public class PythonModel{
 			writeLine(0,"Version modified: "+myModel.meta.versionModified);
 			writeLine(0,"\"\"\"");
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -302,8 +303,7 @@ public class PythonModel{
 				out=temp; //point back
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 	
@@ -588,8 +588,7 @@ public class PythonModel{
 			out=temp; //point back
 			
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -649,8 +648,7 @@ public class PythonModel{
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
 	}
 
@@ -660,8 +658,13 @@ public class PythonModel{
 			out.write(line); 
 			out.newLine();
 		}catch(Exception e){
-			e.printStackTrace();
-			myModel.errorLog.recordError(e);
+			recordError(e);
 		}
+	}
+	
+	private void recordError(Exception e){
+		e.printStackTrace();
+		myModel.errorLog.recordError(e);
+		JOptionPane.showMessageDialog(null, e.toString());
 	}
 }

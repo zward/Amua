@@ -94,32 +94,35 @@ public class RModel{
 				if(curTable.type.matches("Lookup")){
 					int close=Interpreter.findRightBracket(curText,pos);
 					String args[]=Interpreter.splitArgs(curText.substring(pos+1,close));
-					if(!curTable.interpolate.matches("Cubic Splines")){
-						exportText+="lookupTable("+curTable.name+","+translate(args[0],personLevel)+","+curTable.getColumnIndex(args[1])+","; //table,index,col
-						exportText+="\""+curTable.lookupMethod+"\",";
-						exportText+="\""+curTable.interpolate+"\",";
-						exportText+="\""+curTable.boundary+"\",";
-						exportText+="\""+curTable.extrapolate+"\")";
+					if(curTable.lookupMethod.matches("Interpolate")){
+						if(!curTable.interpolate.matches("Cubic Splines")){
+							exportText+="lookupTable("+curTable.name+", "+translate(args[0],personLevel)+", "+curTable.getColumnIndex(args[1])+", "; //table,index,col
+							exportText+="\""+curTable.lookupMethod+"\", ";
+							exportText+="\""+curTable.interpolate+"\", ";
+							exportText+="\""+curTable.extrapolate+"\")";
+						}
+						else{ //cubic splines
+							int col=curTable.getColumnIndex(args[1]);
+							exportText+="lookupTable("+curTable.name+", "+translate(args[0],personLevel)+", "+col+", "; //table,index,col
+							exportText+="\""+curTable.lookupMethod+"\", ";
+							exportText+="\""+curTable.interpolate+"\", ";
+							exportText+="\""+curTable.extrapolate+"\", ";
+							exportText+=curTable.name+"_knots_"+col+", ";
+							exportText+=curTable.name+"_knotHeights_"+col+", ";
+							exportText+=curTable.name+"_splineCoeffs_"+col+", ";
+							exportText+=curTable.name+"_boundaryCondition_"+col+")";
+						}
 					}
-					else{ //cubic splines
-						int col=curTable.getColumnIndex(args[1]);
-						exportText+="lookupTable("+curTable.name+","+translate(args[0],personLevel)+","+col+","; //table,index,col
-						exportText+="\""+curTable.lookupMethod+"\",";
-						exportText+="\""+curTable.interpolate+"\",";
-						exportText+="\""+curTable.boundary+"\",";
-						exportText+="\""+curTable.extrapolate+"\",";
-						exportText+=curTable.name+"_knots_"+col+",";
-						exportText+=curTable.name+"_knotHeights_"+col+",";
-						exportText+=curTable.name+"_splineCoeffs_"+col+",";
-						exportText+=curTable.name+"_boundaryCondition_"+col+")";
+					else{ //Exact or truncate
+						exportText+="lookupTable("+curTable.name+", "+translate(args[0],personLevel)+", "+curTable.getColumnIndex(args[1])+", "; //table,index,col
+						exportText+="\""+curTable.lookupMethod+"\")";
 					}
-				
 					pos=close; //Move to end of table indices
 				}
 				else if(curTable.type.matches("Distribution")){ //Replace with value
 					int close=Interpreter.findRightParen(curText,pos);
 					String args[]=Interpreter.splitArgs(curText.substring(pos+1,close));
-					exportText+="calcTableEV("+curTable.name+","+translate(args[0],personLevel)+")";
+					exportText+="calcTableEV("+curTable.name+", "+translate(args[0],personLevel)+")";
 					pos=close; //Move to end of dist parameters
 				}
 				else if(curTable.type.matches("Matrix")){
@@ -127,7 +130,7 @@ public class RModel{
 						int close=Interpreter.findRightBracket(curText,pos);
 						String args[]=Interpreter.splitArgs(curText.substring(pos+1,close));
 						//add 1 for index 1 instead of index 0
-						exportText+=curTable.name+"data["+translate(args[0],personLevel)+"+1,"+translate(args[1],personLevel)+"+1]";
+						exportText+=curTable.name+"data["+translate(args[0],personLevel)+" + 1, "+translate(args[1],personLevel)+" + 1]";
 						pos=close; //Move to end of matrix indices
 					}
 					else{ //entire matrix
@@ -150,10 +153,10 @@ public class RModel{
 				String col=translate(args[1],personLevel);
 				if(col.charAt(0)=='\'' || col.charAt(0)=='\"'){ //String column reference
 					col=col.substring(1, col.length()-1); //trim quotes
-					exportText+="trace$"+col+"["+row+"+1]";
+					exportText+="trace$"+col+"["+row+" + 1]";
 				}
 				else{ //use numeric indices
-					exportText+="trace["+row+"+1,"+col+"+1]";
+					exportText+="trace["+row+" + 1, "+col+" + 1]";
 				}
 				pos=close; //Move to end of trace indices
 			}
@@ -163,13 +166,13 @@ public class RModel{
 				int inPlace=RFunctions.inPlace(word);
 				if(inPlace==0){ //translate in place
 					exportText+=RFunctions.translate(word)+"("+translate(args[0],personLevel);
-					for(int i=1; i<args.length; i++){exportText+=","+translate(args[i],personLevel);}
+					for(int i=1; i<args.length; i++){exportText+=", "+translate(args[i],personLevel);}
 					exportText+=")";
 					pos=close+1; //Move to end of function call
 				}
 				else if(inPlace==1){ //define function method
 					exportText+=word+"("+translate(args[0],personLevel);
-					for(int i=1; i<args.length; i++){exportText+=","+translate(args[i],personLevel);}
+					for(int i=1; i<args.length; i++){exportText+=", "+translate(args[i],personLevel);}
 					exportText+=")";
 					pos=close+1; //Move to end of function call
 					if(!functionNames.contains(word)){ //not defined yet
@@ -188,13 +191,13 @@ public class RModel{
 				int inPlace=RMatrixFunctions.inPlace(word);
 				if(inPlace==0){ //translate in place
 					exportText+=RMatrixFunctions.translate(word)+"("+translate(args[0],personLevel);
-					for(int i=1; i<args.length; i++){exportText+=","+translate(args[i],personLevel);}
+					for(int i=1; i<args.length; i++){exportText+=", "+translate(args[i],personLevel);}
 					exportText+=")";
 					pos=close+1; //Move to end of function call
 				}
 				else if(inPlace==1){ //define function method
 					exportText+=word+"("+translate(args[0],personLevel);
-					for(int i=1; i<args.length; i++){exportText+=","+translate(args[i],personLevel);}
+					for(int i=1; i<args.length; i++){exportText+=", "+translate(args[i],personLevel);}
 					exportText+=")";
 					pos=close+1; //Move to end of function call
 					if(!functionNames.contains(word)){ //not defined yet
@@ -213,7 +216,7 @@ public class RModel{
 				String args[]=Interpreter.splitArgs(curText.substring(pos+1,close));
 				exportText+=word+"("+translate(args[0],personLevel);
 				for(int i=1; i<args.length; i++){
-					exportText+=","+translate(args[i],personLevel);
+					exportText+=", "+translate(args[i],personLevel);
 				}
 				exportText+=")";
 				pos=close+1; //Move to end of distribution call
@@ -247,11 +250,11 @@ public class RModel{
 	
 	private String initNumeric(String name, Numeric value) throws NumericException{
 		String init="";
-		if(value.isDouble() || value.isInteger()){init=name+"="+value.getDouble();}
-		else if(value.isBoolean()){init=name+"="+value.toString().toUpperCase();}
+		if(value.isDouble() || value.isInteger()){init=name+" <- "+value.getDouble();}
+		else if(value.isBoolean()){init=name+" <- "+value.toString().toUpperCase();}
 		else if(value.isMatrix()){
-			if(value.nrow>1){init=name+"<-"+writeMatrix(value.matrix);}
-			else{init=name+"<-"+writeArray(value.matrix[0]);}
+			if(value.nrow>1){init=name+" <- "+writeMatrix(value.matrix);}
+			else{init=name+" <- "+writeArray(value.matrix[0]);}
 		}
 		return(init);
 	}
@@ -259,13 +262,13 @@ public class RModel{
 	public void writeParameters() throws NumericException{
 		int numParams=myModel.parameters.size();
 		if(numParams>0){
-			writeLine("###Define parameters");
+			writeLine("### Define parameters");
 			for(int i=0; i<numParams; i++){
 				Parameter curParam=myModel.parameters.get(i);
 				if(!curParam.notes.isEmpty()){writeLine("\""+curParam.notes+"\"");}
 				String expr=curParam.expression;
 				String init=initNumeric(curParam.name,curParam.value);
-				writeLine(init+" #Expression: "+expr);
+				writeLine(init+"  # Expression: "+expr);
 			}
 			writeLine("");
 		}
@@ -274,14 +277,13 @@ public class RModel{
 	public void writeVariables() throws NumericException{
 		int numVars=myModel.variables.size();
 		if(numVars>0){
-			writeLine("###Define variables");
+			writeLine("### Define variables");
 			for(int i=0; i<numVars; i++){
 				Variable curVar=myModel.variables.get(i);
 				if(!curVar.notes.isEmpty()){writeLine("\""+curVar.notes+"\"");}
 				String init=initNumeric(curVar.name,curVar.value);
 				writeLine(init);
 			}
-			writeLine("");
 		}
 	}
 
@@ -289,17 +291,17 @@ public class RModel{
 		try{
 			int numTables=myModel.tables.size();
 			if(numTables>0){
-				writeLine("###Define tables");
+				writeLine("### Define tables");
 				if(format==0){ //Inline
 					for(int i=0; i<numTables; i++){
 						Table curTable=myModel.tables.get(i);
-						writeLine(curTable.name+"<-data.frame(matrix(nrow="+curTable.numRows+",ncol="+curTable.numCols+"))");
-						out.write("names("+curTable.name+")<-c(");
-						for(int c=0; c<curTable.numCols-1; c++){out.write("\""+curTable.headers[c]+"\",");}
+						writeLine(curTable.name+" <- data.frame(matrix(nrow="+curTable.numRows+", ncol="+curTable.numCols+"))");
+						out.write("names("+curTable.name+") <- c(");
+						for(int c=0; c<curTable.numCols-1; c++){out.write("\""+curTable.headers[c]+"\", ");}
 						out.write("\""+curTable.headers[curTable.numCols-1]+"\")"); out.newLine();
 						for(int r=0; r<curTable.numRows; r++){
-							out.write(curTable.name+"["+(r+1)+",]<-c(");
-							for(int c=0; c<curTable.numCols-1; c++){out.write(curTable.data[r][c]+",");}
+							out.write(curTable.name+"["+(r+1)+", ] <- c(");
+							for(int c=0; c<curTable.numCols-1; c++){out.write(curTable.data[r][c]+", ");}
 							out.write(curTable.data[r][curTable.numCols-1]+")"); out.newLine();
 						}
 						if(curTable.interpolate!=null && curTable.interpolate.matches("Cubic Splines")){
@@ -307,18 +309,16 @@ public class RModel{
 						}
 						writeLine("");
 					}
-					writeLine("");
 				}
 				else if(format==1){ //CSV
 					writeLine("setwd(\""+dir.replaceAll("\\\\", "\\\\\\\\")+"\")");
 					for(int i=0; i<numTables; i++){
 						Table curTable=myModel.tables.get(i);
-						writeLine(curTable.name+"<-read.csv(\""+curTable.name+".csv\")");
+						writeLine(curTable.name+" <- read.csv(\""+curTable.name+".csv\")");
 						if(curTable.interpolate!=null && curTable.interpolate.matches("Cubic Splines")){
 							writeTableSplines(curTable);
 						}
 					}
-					writeLine("");
 				}
 			}
 		}catch(Exception e){
@@ -330,17 +330,17 @@ public class RModel{
 	private void writeTableSplines(Table curTable) throws IOException{
 		int numSplines=curTable.splines.length;
 		for(int s=0; s<numSplines; s++){
-			writeLine(curTable.name+"_knots_"+(s+1)+"<-"+writeArray(curTable.splines[s].knots));
-			writeLine(curTable.name+"_knotHeights_"+(s+1)+"<-"+writeArray(curTable.splines[s].knotHeights));
-			writeLine(curTable.name+"_splineCoeffs_"+(s+1)+"<-"+writeMatrix(curTable.splines[s].splineCoeffs));
-			writeLine(curTable.name+"_boundaryCondition_"+(s+1)+"<-"+(curTable.splines[s].boundaryCondition));
+			writeLine(curTable.name+"_knots_"+(s+1)+" <- "+writeArray(curTable.splines[s].knots));
+			writeLine(curTable.name+"_knotHeights_"+(s+1)+" <- "+writeArray(curTable.splines[s].knotHeights));
+			writeLine(curTable.name+"_splineCoeffs_"+(s+1)+" <- "+writeMatrix(curTable.splines[s].splineCoeffs));
+			writeLine(curTable.name+"_boundaryCondition_"+(s+1)+" <- "+(curTable.splines[s].boundaryCondition));
 		}
 	}
 	
 	private String writeArray(double array[]){
 		int len=array.length;
 		String write="c(";
-		for(int i=0; i<len-1; i++){write+=array[i]+",";}
+		for(int i=0; i<len-1; i++){write+=array[i]+", ";}
 		write+=array[len-1]+")";
 		return(write);
 	}
@@ -350,7 +350,7 @@ public class RModel{
 		String write="rbind(";
 		write+=writeArray(matrix[0]);
 		for(int r=1; r<nrow; r++){
-			write+=","+writeArray(matrix[1]);
+			write+=", "+writeArray(matrix[1]);
 		}
 		write+=")";
 		return(write);
@@ -384,114 +384,168 @@ public class RModel{
 			out=outFx;
 			
 			writeLine("### Define Table Functions");
-			writeLine("cubicSplines<-function(x,knots,knotHeights,splineCoeffs,boundaryCondition){");
-			writeLine("	numKnots=length(knots)");
-			writeLine("	y=NaN");
-			writeLine("	#Find domain");
-			writeLine("	index=-1");
-			writeLine("	if(x<knots[1]){ #Extrapolate left");
-			writeLine("		x=x-knots[1]");
-			writeLine("		a=splineCoeffs[1,]");
-			writeLine("		if(boundaryCondition==1 | boundaryCondition==1){ #Natural or clamped");
-			writeLine("			slope=a[2]");
-			writeLine("			y=slope*x+knotHeights[1]");
-			writeLine("		}");
-			writeLine("		else{ #Not-a-knot or periodic");
-			writeLine("			index=1");
-			writeLine("			y=splineCoeffs[index,1]+splineCoeffs[index,2]*x+splineCoeffs[index,3]*x*x+splineCoeffs[index,4]*x*x*x");
-			writeLine("		}");
-			writeLine("	}");
-			writeLine("	else if(x>knots[numKnots]){ #Extrapolate right");
-			writeLine("		a=splineCoeffs[numKnots-1]");
-			writeLine("		if(boundaryCondition==1 | boundaryCondition==1){ #Natural or clamped");
-			writeLine("			x=x-knots[numKnots]");
-			writeLine("			h=knots[numKnots]-knots[numKnots-1]");
-			writeLine("			slope=a[2]+2*a[3]*h+3*a[4]*h*h");
-			writeLine("			y=slope*x+knotHeights[numKnots]");
-			writeLine("		}");
-			writeLine("		else{ #Not-a-knot or periodic");
-			writeLine("			index=numKnots-1");
-			writeLine("			x=x-knots[index]");
-			writeLine("			y=splineCoeffs[index,1]+splineCoeffs[index,2]*x+splineCoeffs[index,3]*x*x+splineCoeffs[index,4]*x*x*x");
-			writeLine("		}");
-			writeLine("	} else{ #Interpolate");
-			writeLine("		index=1");
-			writeLine("		while(x>knots[index+1] & index<numKnots-1){index=index+1}");
-			writeLine("		x=x-knots[index]");
-			writeLine("		y=splineCoeffs[index,1]+splineCoeffs[index,2]*x+splineCoeffs[index,3]*x*x+splineCoeffs[index,4]*x*x*x");
-			writeLine("	}");
-			writeLine("	return(y)");
+			writeLine("cubicSplines <- function(x, knots, knotHeights, splineCoeffs, boundaryCondition) {");
+			writeLine("  # Evaluates the value of the cubic splines at x");
+			writeLine("  #");
+			writeLine("  # Args:");
+			writeLine("  #   x: Point at which to evaluate the cubic splines");
+			writeLine("  #   knots: Knot locations of the splines");
+			writeLine("  #   knotHeights: Knot heights of the splines");
+			writeLine("  #   splineCoeffs: Cubic spline coefficients");
+			writeLine("  #   boundaryCondition: Boundary condition used to implement the splines");
+			writeLine("  #     0: Natural, 1: Clamped, 2: Not-a-knot, 3: Periodic");
+			writeLine("  #");
+			writeLine("  # Returns:");
+			writeLine("  #   The value of the cubic spline at x");
+			writeLine("");
+			writeLine("  numKnots <- length(knots)");
+			writeLine("  y <- NaN");
+			writeLine("  # Find domain");
+			writeLine("  index <- -1");
+			writeLine("	 if (x < knots[1]){  # Extrapolate left");
+			writeLine("    x <- x - knots[1]");
+			writeLine("    a <- splineCoeffs[1, ]");
+			writeLine("    if (boundaryCondition == 0 | boundaryCondition == 1){  # Natural or clamped");
+			writeLine("      slope <- a[2]");
+			writeLine("      y <- slope * x + knotHeights[1]");
+			writeLine("    } else {  # Not-a-knot or periodic");
+			writeLine("      index <- 1");
+			writeLine("      y <- splineCoeffs[index, 1] + splineCoeffs[index, 2] * x + splineCoeffs[index, 3] * x^2 + splineCoeffs[index,4] * x^3");
+			writeLine("    }");
+			writeLine("  } else if (x > knots[numKnots]) {  # Extrapolate right");
+			writeLine("    a <- splineCoeffs[numKnots - 1]");
+			writeLine("    if (boundaryCondition == 0 | boundaryCondition == 1) {  # Natural or clamped");
+			writeLine("      x <- x - knots[numKnots]");
+			writeLine("      h <- knots[numKnots] - knots[numKnots - 1]");
+			writeLine("      slope <- a[2] + 2 * a[3] * h + 3 * a[4] * h^2");
+			writeLine("      y <- slope * x + knotHeights[numKnots]");
+			writeLine("    } else {  # Not-a-knot or periodic");
+			writeLine("      index <- numKnots - 1");
+			writeLine("      x <- x - knots[index]");
+			writeLine("      y <- splineCoeffs[index, 1] + splineCoeffs[index, 2] * x + splineCoeffs[index, 3] * x^2 + splineCoeffs[index, 4] * x^3");
+			writeLine("    }");
+			writeLine("  } else {  # Interpolate");
+			writeLine("    index <- 1");
+			writeLine("    while (x > knots[index + 1] & index < numKnots - 1) {");
+			writeLine("      index <- index + 1");
+			writeLine("    }");
+			writeLine("    x <- x - knots[index]");
+			writeLine("    y <- splineCoeffs[index, 1] + splineCoeffs[index, 2] * x + splineCoeffs[index, 3] * x^2 + splineCoeffs[index, 4] * x^3");
+			writeLine("  }");
+			writeLine("  return(y)");
 			writeLine("}");
 			writeLine("");
-			writeLine("lookupTable<-function(data,index,col,lookupMethod,interpolate,boundary,extrapolate,knots,knotHeights,splineCoeffs,boundaryCondition){");
-			writeLine("	col=col+1 #Index from 1");
-			writeLine("	numRows=nrow(data)");
-			writeLine("	if(col<2 || col>ncol(data)){return(NaN)} #Invalid column");
-			writeLine("	else{ #Valid column");
-			writeLine("		val=NaN");
-			writeLine("		if(lookupMethod==\"Exact\"){");
-			writeLine("			row=0");
-			writeLine("			found=F");
-			writeLine("			while(found==F & row<numRows+1){");
-			writeLine("				row=row+1");
-			writeLine("				if(index==data[row,1]){found=T}");
-			writeLine("			}");
-			writeLine("			if(found){val=data[row,col]}");
-			writeLine("		}");
-			writeLine("		else if(lookupMethod==\"Truncate\"){");
-			writeLine("			if(index<data[1,1]){val=NaN} #Below first value - error");
-			writeLine("			else if(index>=data[numRows,1]){val=data[numRows,col]} #Above last value");
-			writeLine("			else{ #Between");
-			writeLine("				row=1");
-			writeLine("				while(data[row,1]<index){row=row+1}");
-			writeLine("				if(index==data[row,1]){val=data[row,col]}");
-			writeLine("				else{val=data[row-1,col]}");
-			writeLine("			}");
-			writeLine("		}");
-			writeLine("		else if(lookupMethod==\"Interpolate\"){");
-			writeLine("			if(interpolate==\"Linear\"){");
-			writeLine("				if(index<=data[1,1]){ #Below or at first index");
-			writeLine("					slope=(data[2,col]-data[1,col])/(data[2,1]-data[1,1])");
-			writeLine("					val=data[1,col]-(data[1,1]-index)*slope");
-			writeLine("				}");
-			writeLine("				else if(index>data[numRows,1]){ #Above last index");
-			writeLine("					slope=(data[numRows,col]-data[numRows-1,col])/(data[numRows,1]-data[numRows-1,1])");
-			writeLine("					val=data[numRows,col]+(index-data[numRows,1])*slope");
-			writeLine("				}");
-			writeLine("				else{ #Between");
-			writeLine("					row=1");
-			writeLine("					while(data[row,1]<index){row=row+1}");
-			writeLine("					slope=(data[row,col]-data[row-1,col])/(data[row,1]-data[row-1,1])");
-			writeLine("					val=data[row-1,col]+(index-data[row-1,1])*slope");
-			writeLine("				}");
-			writeLine("			}");
-			writeLine("			else if(interpolate==\"Cubic Splines\"){");
-			writeLine("				val=cubicSplines(index,knots,knotHeights,splineCoeffs,boundaryCondition)");
-			writeLine("			}");
 			writeLine("");
-			writeLine("			#Check extrapolation conditions");
-			writeLine("			if(extrapolate==\"No\"){");
-			writeLine("				if(index<=data[1,1]){val=data[1,col]} #Below or at first index");
-			writeLine("				else if(index>data[numRows,1]){val=data[numRows,col]} #Above last index");
-			writeLine("			}");
-			writeLine("			else if(extrapolate==\"Left only\"){ #truncate right");
-			writeLine("				if(index>data[numRows,1]){val=data[numRows,col]} #Above last index");
-			writeLine("			}");
-			writeLine("			else if(extrapolate==\"Right only\"){ #truncate left");
-			writeLine("				if(index<=data[1,1]){val=data[1,col]} #Below or at first index");
-			writeLine("			}");
-			writeLine("		}");
-			writeLine("		return(val)");
-			writeLine("	}");
+			writeLine("lookupTable <- function(data, index, col, lookupMethod, interpolate=NULL, extrapolate=NULL,");
+			writeLine("                        knots=NULL, knotHeights=NULL, splineCoeffs=NULL, boundaryCondition=NULL) {");
+			writeLine("  # Returns a value from the lookup table given an index");
+			writeLine("  #");
+			writeLine("  # Args:");
+			writeLine("  #   data: Lookup table data");
+			writeLine("  #   col: Index of column to lookup");
+			writeLine("  #   lookupMethod: Method to lookup value (Exact, Interpolate, or Truncate)");
+			writeLine("  #   interpolate: Interpolation method (Linear or Cubic Splines). Default is null.");
+			writeLine("  #   extrapolate: Extrapolation options (No, Left Only, Right Only, Both). Default is null.");
+			writeLine("  #   knots: Knot locations of the splines. Default is null.");
+			writeLine("  #   knotHeights: Knot heights of the splines. Default is null.");
+			writeLine("  #   splineCoeffs: Cubic spline coefficients. Default is null.");
+			writeLine("  #   boundaryCondition: Boundary condition used to implement the splines. Default is null.");
+			writeLine("  #     0: Natural, 1: Clamped, 2: Not-a-knot, 3: Periodic");
+			writeLine("  #");
+			writeLine("  # Returns:");
+			writeLine("  #   A value from the lookup table that corresponds to a given index");
+			writeLine("");
+			writeLine("  col <- col + 1  # Index from 1");
+			writeLine("  numRows <- nrow(data)");
+			writeLine("  if (col < 2 | col > ncol(data)){");
+			writeLine("    return(NaN)  # Invalid column");
+			writeLine("  } else {  # Valid column");
+			writeLine("    val <- NaN");
+			writeLine("    if (lookupMethod == \"Exact\") {");
+			writeLine("      row <- 0");
+			writeLine("      found <- F");
+			writeLine("      while (found == F & row < numRows + 1) {");
+			writeLine("        row <- row + 1");
+			writeLine("        if (index == data[row, 1]) {");
+			writeLine("          found <- T");
+			writeLine("        }");
+			writeLine("      }");
+			writeLine("      if (found) {");
+			writeLine("        val <- data[row, col]");
+			writeLine("      }");
+			writeLine("    } else if(lookupMethod == \"Truncate\") {");
+			writeLine("      if (index < data[1, 1]) {  # Below first value - error");
+			writeLine("        val <- NaN");
+			writeLine("      } else if (index >= data[numRows, 1]) {  # Above last value");
+			writeLine("        val <- data[numRows, col]");
+			writeLine("      } else {  # Between");
+			writeLine("        row <- 1");
+			writeLine("        while (data[row, 1] < index) {");
+			writeLine("          row <- row + 1");
+			writeLine("        }");
+			writeLine("        if (index == data[row, 1]) {");
+			writeLine("          val <- data[row, col]");
+			writeLine("        } else {");
+			writeLine("          val <- data[row - 1, col]");
+			writeLine("        }");
+			writeLine("      }");
+			writeLine("    } else if (lookupMethod == \"Interpolate\") {");
+			writeLine("      if (interpolate == \"Linear\") {");
+			writeLine("        if (index <= data[1, 1]) {  # Below or at first index");
+			writeLine("          slope <- (data[2, col] - data[1, col]) / (data[2, 1] - data[1, 1])");
+			writeLine("          val <- data[1, col] - (data[1, 1] - index) * slope");
+			writeLine("        } else if (index > data[numRows, 1]) {  # Above last index");
+			writeLine("          slope <- (data[numRows, col] - data[numRows - 1, col]) / (data[numRows, 1] - data[numRows - 1, 1])");
+			writeLine("          val <- data[numRows, col] + (index - data[numRows, 1]) * slope");
+			writeLine("        } else {  # Between");
+			writeLine("          row <- 1");
+			writeLine("          while (data[row, 1] < index) {");
+			writeLine("            row <- row + 1");
+			writeLine("          }");
+			writeLine("          slope <- (data[row, col] - data[row - 1, col]) / (data[row, 1] - data[row - 1, 1])");
+			writeLine("          val <- data[row - 1, col] + (index - data[row - 1, 1]) * slope");
+			writeLine("        }");
+			writeLine("      } else if (interpolate == \"Cubic Splines\") {");
+			writeLine("        val <- cubicSplines(index, knots, knotHeights, splineCoeffs, boundaryCondition)");
+			writeLine("      }");
+			writeLine("");
+			writeLine("      # Check extrapolation conditions");
+			writeLine("      if (extrapolate == \"No\") {");
+			writeLine("        if (index <= data[1, 1]) {  # Below or at first index");
+			writeLine("          val <- data[1, col]");
+			writeLine("        } else if (index > data[numRows, 1]) {  # Above last index");
+			writeLine("          val <- data[numRows, col]");
+			writeLine("        }");
+			writeLine("      } else if (extrapolate == \"Left only\") {  # Truncate right");
+			writeLine("        if (index > data[numRows, 1]) {  # Above last index");
+			writeLine("          val <- data[numRows, col]");
+			writeLine("        }");
+			writeLine("      } else if (extrapolate == \"Right only\") {  # Truncate left");
+			writeLine("        if (index <= data[1, 1]) {  # Below or at first index");
+			writeLine("          val <- data[1, col]");
+			writeLine("        }");
+			writeLine("      }");
+			writeLine("    }");
+			writeLine("    return(val)");
+			writeLine("  }");
 			writeLine("}");
 			writeLine("");
-			writeLine("calcTableEV<-function(data,col){");
-			writeLine("	col=col+1 #Index from 1");
-			writeLine("	ev=0");
-			writeLine("	for(r in 1:nrow(data)){");
-			writeLine("		ev=ev+data[r,1]*data[r,col]");
-			writeLine("	}");
-			writeLine("	return(ev)");
+			writeLine("calcTableEV <- function(data, col) {");
+			writeLine("  # Calculates the expected value (EV) of the empirical distribution");
+			writeLine("  #");
+			writeLine("  # Args:");
+			writeLine("  #   data: Empirical distribution table");
+			writeLine("  #   col: Index of column for EV calculation");
+			writeLine("  #");
+			writeLine("  # Returns:");
+			writeLine("  #   The expected value of the empirical distribuion in the specified column");
+			writeLine("");
+			writeLine("  col <- col + 1  # Index from 1");
+			writeLine("  ev <- 0");
+			writeLine("  for (r in 1 : nrow(data)) {");
+			writeLine("    ev <- ev + data[r, 1] * data[r, col]");
+			writeLine("  }");
+			writeLine("  return(ev)");
 			writeLine("}");
 			writeLine("");
 			
