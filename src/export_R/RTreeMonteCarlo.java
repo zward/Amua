@@ -81,7 +81,7 @@ public class RTreeMonteCarlo{
 					writeLine(dimNames[d]+" <- 0");
 				}
 				writeLine("#Run Monte Carlo simulation");
-				writeLine("for(i in 1 : numSim) {");
+				writeLine("for(i in 1:numSim) {");
 				if(numVars>0){
 					writeLine("  # Initialize variables");
 					for(int v=0; v<numVars; v++){

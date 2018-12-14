@@ -357,8 +357,8 @@ public class frmThreshOneWay {
 											if(minDist==0){ //Intersection found
 												intersection=dataEV[0][0][minIndex];
 											}
-											else{
-												if(minIndex==0 || minIndex==intervals){
+											else{ //No intersection found
+												if(minIndex<=0 || minIndex==intervals){
 													JOptionPane.showMessageDialog(frmThreshOneWay, "No intersection found in current range!");
 												}
 												else{ //Search neighbourhood for intersection

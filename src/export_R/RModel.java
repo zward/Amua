@@ -542,7 +542,7 @@ public class RModel{
 			writeLine("");
 			writeLine("  col <- col + 1  # Index from 1");
 			writeLine("  ev <- 0");
-			writeLine("  for (r in 1 : nrow(data)) {");
+			writeLine("  for (r in 1:nrow(data)) {");
 			writeLine("    ev <- ev + data[r, 1] * data[r, col]");
 			writeLine("  }");
 			writeLine("  return(ev)");

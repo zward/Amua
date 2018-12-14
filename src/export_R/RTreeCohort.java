@@ -84,7 +84,7 @@ public class RTreeCohort{
 			for(int d=0; d<numDim; d++){writeLine("    curNode$expected"+info.dimNames[d]+" <- curNode$payoff"+info.dimNames[d]+" + curNode$cost"+info.dimNames[d]);}
 			writeLine("  } else {  # Evaluate children");
 			for(int d=0; d<numDim; d++){writeLine("    curNode$expected"+info.dimNames[d]+" <- curNode$cost"+info.dimNames[d]);}
-			writeLine("    for (i in 1 : numChildren) {");
+			writeLine("    for (i in 1:numChildren) {");
 			writeLine("      child <- tree[[curNode$children[i]]]  # Get child");
 			writeLine("      evaluateNode(child)");
 			for(int d=0; d<numDim; d++){writeLine("      curNode$expected"+info.dimNames[d]+" <- curNode$expected"+info.dimNames[d]+" + (child$prob * child$expected"+info.dimNames[d]+")");}
@@ -100,7 +100,7 @@ public class RTreeCohort{
 			writeLine("  #   curNode: Current node.  Child results will be displayed recursively.");
 			writeLine("  numChildren <- length(curNode$children)");
 			writeLine("  if (numChildren > 0) {");
-			writeLine("    for(i in 1 : numChildren) {");
+			writeLine("    for(i in 1:numChildren) {");
 			writeLine("      curChild <- tree[[curNode$children[i]]]");
 			out.write("      print(paste(curChild$name, ");
 			for(int d=0; d<numDim-1; d++){out.write("curChild$expected"+info.dimNames[d]+", ");}
@@ -144,7 +144,7 @@ public class RTreeCohort{
 			writeLine("");
 			writeLine("### Display output for each strategy");
 			writeLine("numStrategies <- length(Root$children)");
-			writeLine("for(i in 1 : numStrategies) {");
+			writeLine("for(i in 1:numStrategies) {");
 			writeLine("  curNode <- tree[[Root$children[i]]]");
 			out.write("  print(paste(\"Strategy:\", curNode$name, ");
 			for(int d=0; d<numDim-1; d++){out.write("curNode$expected"+info.dimNames[d]+", ");}

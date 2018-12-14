@@ -117,16 +117,23 @@ public class CEAHelper{
 					}
 				}
 				else{ //Increasing effect: Calculate ICER
-					double icer=incCost/incEffect;
-					if(icer<curMaxICER){ //Non-increasing
-						repeat=true;
+					if(incCost==0){ //Greater effect, same cost
 						table[index0][4]=Double.NaN;
-						table[index0][5]="Weakly Dominated";
+						table[index0][5]="Strongly Dominated";
 						viable.remove(v-1);
 					}
 					else{
-						curMaxICER=icer;
-						table[index1][4]=icer;
+						double icer=incCost/incEffect;
+						if(icer<curMaxICER){ //Non-increasing
+							repeat=true;
+							table[index0][4]=Double.NaN;
+							table[index0][5]="Weakly Dominated";
+							viable.remove(v-1);
+						}
+						else{
+							curMaxICER=icer;
+							table[index1][4]=icer;
+						}
 					}
 				}
 				v++;

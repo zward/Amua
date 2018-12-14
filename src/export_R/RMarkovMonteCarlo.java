@@ -131,7 +131,7 @@ public class RMarkovMonteCarlo{
 						Variable curVar=myModel.variables.get(v);
 						writeLine("person."+curVar.name+" <- c()"); //initialize vector
 					}
-					writeLine("for(p in 1 : numPeople) {");
+					writeLine("for(p in 1:numPeople) {");
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
 						writeLine("  person."+curVar.name+"[p] <- "+rModel.translate(curVar.initValue, true));
@@ -162,7 +162,7 @@ public class RMarkovMonteCarlo{
 				}
 				writeLine("");
 				writeLine("  # Update each person");
-				writeLine("  for(p in 1 : numPeople) {");
+				writeLine("  for(p in 1:numPeople) {");
 				writeLine("    curState <- person.state[p]");
 				writeLine("    prev[curState] <- prev[curState] + 1  # record prevalence");
 				writeLine("    if (curState == 1) {  # "+states[0].name);
