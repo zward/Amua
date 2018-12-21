@@ -42,7 +42,7 @@ public class MarkovMonteCarlo{
 	int numVariables;
 	Variable variables[];
 	Numeric origVariableVals[];
-	double cycleVariables[], cumVariables[], prevVariables[];
+	double cycleVariables[]; int cycleVariablesDenom[];
 	MarkovTrace trace;
 	Variable curT;
 	AmuaModel myModel;
@@ -78,7 +78,7 @@ public class MarkovMonteCarlo{
 		cycleRewards=new double[numDim]; cycleRewardsDis=new double[numDim];
 		cumRewards=new double[numDim]; cumRewardsDis=new double[numDim];
 		numVariables=myModel.variables.size();
-		cycleVariables=new double[numVariables]; cumVariables=new double[numVariables]; prevVariables=new double[numVariables];
+		cycleVariables=new double[numVariables]; cycleVariablesDenom=new int[numVariables];
 		variables=new Variable[numVariables];
 		origVariableVals=new Numeric[numVariables];
 		for(int c=0; c<numVariables; c++){ //get pointers
@@ -119,7 +119,6 @@ public class MarkovMonteCarlo{
 			people[p].variableVals=new Numeric[numVariables];
 			for(int c=0; c<numVariables; c++){
 				people[p].variableVals[c]=Interpreter.evaluate(variables[c].initValue, myModel,false);
-				prevVariables[c]+=people[p].variableVals[c].getDouble();
 			}
 		}
 		
@@ -170,7 +169,8 @@ public class MarkovMonteCarlo{
 				traverseNode(states[curState],people[p]);
 				//update variables
 				for(int c=0; c<numVariables; c++){
-					cumVariables[c]+=variables[c].value.getDouble();
+					cycleVariables[c]+=variables[c].value.getDouble();
+					cycleVariablesDenom[c]++;
 				}
 			}
 			
@@ -245,7 +245,7 @@ public class MarkovMonteCarlo{
 		//Update variables
 		if(node.hasVarUpdates){
 			for(int u=0; u<node.curVariableUpdates.length; u++){
-				node.curVariableUpdates[u].updateMonteCarlo(true);
+				node.curVariableUpdates[u].update(true);
 			}
 		}
 		
@@ -391,11 +391,9 @@ public class MarkovMonteCarlo{
 		}
 		//Update variables
 		for(int c=0; c<numVariables; c++){
-			cycleVariables[c]=cumVariables[c]-prevVariables[c];
-			prevVariables[c]=cumVariables[c];
-			trace.cycleVariables[c].add(cycleVariables[c]);
-			trace.cumVariables[c].add(cumVariables[c]);
-			cumVariables[c]=0;
+			double mean=cycleVariables[c]/(cycleVariablesDenom[c]*1.0);
+			trace.cycleVariables[c].add(mean);
+			cycleVariables[c]=0; cycleVariablesDenom[c]=0;
 		}
 		trace.updateTable(t);
 	}

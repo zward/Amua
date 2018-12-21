@@ -95,29 +95,7 @@ public class VariableUpdate{
 		return(ch=='=' || ch=='+' || ch=='-' || ch=='*' || ch=='/');
 	}
 	
-	public void updateCohort(double prev) throws Exception{
-		Numeric value=variable.value;
-		if(operation==1){ //++
-			value.setDouble(value.getDouble()+prev);
-		} 
-		else if(operation==2){ //--
-			value.setDouble(value.getDouble()-prev);
-		} 
-		else{
-			Numeric eval=Interpreter.evaluate(exprUpdate, myModel,false);
-			if(operation==0){value.setDouble(eval.getDouble()*prev);}
-			else{
-				double curVal=value.getDouble();
-				if(operation==3){curVal+=eval.getDouble()*prev;}
-				else if(operation==4){curVal-=eval.getDouble()*prev;}
-				else if(operation==5){curVal*=eval.getDouble()*prev;}
-				else if(operation==6){curVal/=eval.getDouble()*prev;}
-				value.setDouble(curVal);
-			}
-		}
-	}
-	
-	public void updateMonteCarlo(boolean sample) throws Exception{
+	public void update(boolean sample) throws Exception{
 		Numeric value=variable.value;
 		if(operation==1){ //++
 			if(value.isInteger()){value.setInt(value.getInt()+1);}

@@ -36,7 +36,7 @@ public class MarkovCohort{
 	double cycleRewardsDis[],cumRewardsDis[];
 	int numVariables;
 	Variable variables[];
-	double cycleVariables[], cumVariables[], prevVariables[];
+	double cycleVariables[];
 	MarkovTrace trace;
 	Variable curT;
 	AmuaModel myModel;
@@ -59,7 +59,7 @@ public class MarkovCohort{
 		cycleRewards=new double[numDim]; cycleRewardsDis=new double[numDim];
 		cumRewards=new double[numDim]; cumRewardsDis=new double[numDim];
 		numVariables=myModel.variables.size();
-		cycleVariables=new double[numVariables]; cumVariables=new double[numVariables]; prevVariables=new double[numVariables];
+		cycleVariables=new double[numVariables];
 		variables=new Variable[numVariables];
 		for(int c=0; c<numVariables; c++){ //get pointers
 			variables[c]=myModel.variables.get(c);
@@ -85,7 +85,6 @@ public class MarkovCohort{
 		//Initialize variables
 		for(int c=0; c<numVariables; c++){
 			variables[c].value=Interpreter.evaluate(variables[c].initValue, myModel,false);
-			prevVariables[c]=variables[c].value.getDouble();
 		}
 		
 		//Simulate cycles
@@ -171,7 +170,7 @@ public class MarkovCohort{
 		//Update variables
 		if(node.hasVarUpdates){
 			for(int u=0; u<node.curVariableUpdates.length; u++){
-				node.curVariableUpdates[u].updateCohort(nodePrev);
+				node.curVariableUpdates[u].update(false);
 			}
 		}
 		
@@ -256,11 +255,8 @@ public class MarkovCohort{
 		}
 		//Update variables
 		for(int c=0; c<numVariables; c++){
-			cumVariables[c]=variables[c].value.getDouble();
-			cycleVariables[c]=cumVariables[c]-prevVariables[c];
-			prevVariables[c]=cumVariables[c];
+			cycleVariables[c]=variables[c].value.getDouble();
 			trace.cycleVariables[c].add(cycleVariables[c]);
-			trace.cumVariables[c].add(cumVariables[c]);
 		}
 		
 		trace.updateTable(t);

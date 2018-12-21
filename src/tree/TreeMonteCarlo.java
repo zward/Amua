@@ -181,7 +181,7 @@ public class TreeMonteCarlo{
 		//Update variables
 		if(node.hasVarUpdates){
 			for(int u=0; u<node.curVariableUpdates.length; u++){
-				node.curVariableUpdates[u].updateMonteCarlo(true);
+				node.curVariableUpdates[u].update(true);
 			}
 		}
 		

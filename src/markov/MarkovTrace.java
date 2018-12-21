@@ -41,7 +41,7 @@ public class MarkovTrace{
 	public ArrayList<Double> cumRewards[], cumRewardsDis[];
 	public int numVariables;
 	public String varNames[];
-	public ArrayList<Double> cycleVariables[], cumVariables[];
+	public ArrayList<Double> cycleVariables[];
 	public DefaultTableModel modelTraceRounded;
 	DefaultTableModel modelTraceRaw;
 	AmuaModel myModel;
@@ -72,10 +72,10 @@ public class MarkovTrace{
 		}
 		numVariables=chainRoot.myModel.variables.size();
 		varNames=new String[numVariables];
-		cycleVariables=new ArrayList[numVariables]; cumVariables=new ArrayList[numVariables];
+		cycleVariables=new ArrayList[numVariables];
 		for(int c=0; c<numVariables; c++){
 			varNames[c]=chainRoot.myModel.variables.get(c).name;
-			cycleVariables[c]=new ArrayList<Double>(); cumVariables[c]=new ArrayList<Double>();
+			cycleVariables[c]=new ArrayList<Double>();
 		}
 		//Build Model headers
 		modelTraceRaw=new DefaultTableModel(); modelTraceRounded=new DefaultTableModel();
@@ -108,10 +108,6 @@ public class MarkovTrace{
 		for(int c=0; c<numVariables; c++){
 			modelTraceRaw.addColumn("Cycle_"+chainRoot.myModel.variables.get(c).name);
 			modelTraceRounded.addColumn("Cycle_"+chainRoot.myModel.variables.get(c).name);
-		}
-		for(int c=0; c<numVariables; c++){
-			modelTraceRaw.addColumn("Cum_"+chainRoot.myModel.variables.get(c).name);
-			modelTraceRounded.addColumn("Cum_"+chainRoot.myModel.variables.get(c).name);
 		}
 	}
 	
@@ -153,11 +149,6 @@ public class MarkovTrace{
 		for(int c=0; c<numVariables; c++){
 			modelTraceRaw.setValueAt(cycleVariables[c].get(t), t, curCol);
 			modelTraceRounded.setValueAt(cycleVariables[c].get(t), t, curCol);
-			curCol++;
-		}
-		for(int c=0; c<numVariables; c++){
-			modelTraceRaw.setValueAt(cumVariables[c].get(t), t, curCol);
-			modelTraceRounded.setValueAt(cumVariables[c].get(t), t, curCol);
 			curCol++;
 		}
 	}	
@@ -221,7 +212,7 @@ public class MarkovTrace{
 		}
 		//Update variables
 		for(int c=0; c<numVariables; c++){
-			cycleVariables[c].add(0.0); cumVariables[c].add(0.0);
+			cycleVariables[c].add(0.0);
 		}
 		updateTable(0);
 	}

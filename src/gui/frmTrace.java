@@ -131,7 +131,7 @@ public class frmTrace {
 			});
 			comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)"}));
 			if(trace.numVariables>0){
-				comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)","Variables (Cycle)","Variables (Cum.)"}));
+				comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)","Variables (Cycle)"}));
 			}
 			comboPlot.setBounds(41, 1, 157, 26);
 			panel.add(comboPlot);
@@ -331,15 +331,6 @@ public class frmTrace {
 			plot.setRenderer(renderer);
 			plot.setDataset(dataTrace);
 			plot.getRangeAxis().setLabel("Variables(t)");
-		}
-		else if(type==4){ //Variables - Cumulative
-			for(int c=0; c<trace.numVariables; c++){
-				renderer.setSeriesPaint(c, supplier.getNextPaint());
-				dataTrace.addSeries(trace.varNames[c],getSeriesData(trace.cycles,trace.cumVariables[c]));
-			}
-			plot.setRenderer(renderer);
-			plot.setDataset(dataTrace);
-			plot.getRangeAxis().setLabel("Cum. Variables(t)");
 		}
 	}
 	
