@@ -857,6 +857,10 @@ public class frmDefineTable {
 		table.data=new double[table.numRows][table.numCols];
 		for(int c=0; c<table.numCols; c++){
 			table.headers[c]=viewTable.getColumnName(c);
+			//strip \r or \n characters
+			table.headers[c]=table.headers[c].replaceAll("\\r", "");
+			table.headers[c]=table.headers[c].replaceAll("\\n", "");
+			
 			for(int r=0; r<table.numRows; r++){
 				table.data[r][c]=Double.parseDouble((String)viewTable.getValueAt(r, c));
 			}
