@@ -132,9 +132,19 @@ public class RMarkovMonteCarlo{
 						writeLine("person."+curVar.name+" <- c()"); //initialize vector
 					}
 					writeLine("for(p in 1:numPeople) {");
+					//independent vars
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
-						writeLine("  person."+curVar.name+"[p] <- "+rModel.translate(curVar.initValue, true));
+						if(curVar.independent==true){
+							writeLine("  person."+curVar.name+"[p] <- "+rModel.translate(curVar.expression, true));
+						}
+					}
+					//dependent vars
+					for(int v=0; v<numVars; v++){
+						Variable curVar=myModel.variables.get(v);
+						if(curVar.independent==false){
+							writeLine("  person."+curVar.name+"[p] <- "+rModel.translate(curVar.expression, true));
+						}
 					}
 					writeLine("}");
 				}
@@ -165,6 +175,35 @@ public class RMarkovMonteCarlo{
 				writeLine("  for(p in 1:numPeople) {");
 				writeLine("    curState <- person.state[p]");
 				writeLine("    prev[curState] <- prev[curState] + 1  # record prevalence");
+				
+				//cycle variable updates
+				if(curChain.hasVarUpdates){
+					writeLine("");
+					writeLine("    # Cycle variable updates");
+					String updates[]=curChain.varUpdates.split(";");
+					int numUpdates=updates.length;
+					ArrayList<Variable> dependents=new ArrayList<Variable>();
+					for(int u=0; u<numUpdates; u++){
+						writeLine(rModel.translate(updates[u],true)+"  # Orig: "+updates[u], 2);
+						for(int d=0; d<curChain.curVariableUpdates[u].variable.dependents.size(); d++){
+							Variable curDep=curChain.curVariableUpdates[u].variable.dependents.get(d);
+							if(!dependents.contains(curDep)){
+								dependents.add(curDep);
+							}
+						}
+					}
+					//update dependent variables
+					if(dependents.size()>0){
+						writeLine("    # Update dependent variables");
+						for(int d=0; d<dependents.size(); d++){
+							Variable curVar=dependents.get(d);
+							writeLine("    person."+curVar.name+"[p] <- "+rModel.translate(curVar.expression,true));
+						}
+					}
+					writeLine("");
+				}
+				
+				
 				writeLine("    if (curState == 1) {  # "+states[0].name);
 				defineNode(states[0]);
 				writeLine("    }");
@@ -254,8 +293,23 @@ public class RMarkovMonteCarlo{
 				writeLine("# Update variables",level);
 				String updates[]=curNode.varUpdates.split(";");
 				int numUpdates=updates.length;
+				ArrayList<Variable> dependents=new ArrayList<Variable>();
 				for(int u=0; u<numUpdates; u++){
 					writeLine(rModel.translate(updates[u],true)+"  # Orig: "+updates[u], level);
+					for(int d=0; d<curNode.curVariableUpdates[u].variable.dependents.size(); d++){
+						Variable curDep=curNode.curVariableUpdates[u].variable.dependents.get(d);
+						if(!dependents.contains(curDep)){
+							dependents.add(curDep);
+						}
+					}
+				}
+				//update dependent variables
+				if(dependents.size()>0){
+					writeLine("# Update dependent variables",level);
+					for(int d=0; d<dependents.size(); d++){
+						Variable curVar=dependents.get(d);
+						writeLine("person."+curVar.name+"[p] <- "+rModel.translate(curVar.expression,true),level);
+					}
 				}
 			}
 

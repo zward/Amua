@@ -632,7 +632,7 @@ public class frmCalibrate {
 										curParam.locked=false;
 										curParam.value=origValues[v];
 									}
-									myModel.validateParamsVars();
+									myModel.validateModelObjects();
 									
 									//Get parameter values
 									paramVals=new double[numParams][numSets];
@@ -686,7 +686,7 @@ public class frmCalibrate {
 									curParam.locked=false;
 									curParam.value=origValues[v];
 								}
-								myModel.validateParamsVars();
+								myModel.validateModelObjects();
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(frmCalibrate, e.getMessage());
 								myModel.errorLog.recordError(e);

@@ -445,7 +445,7 @@ public class PanelMarkov extends ModelPanel{
 			mainForm.btnChangeNodeType.setEnabled(false);
 			
 			mainForm.btnUpdateVariable.setEnabled(false);
-			if(curNode.type!=1 && curNode.chain!=null){ //in chain, can update variable
+			if(curNode.chain!=null){ //in chain, can update variable
 				mainForm.btnUpdateVariable.setEnabled(true);
 			}
 			if(curNode.level==0 || curNode.type==2){mainForm.btnShowCost.setEnabled(false);}
@@ -579,6 +579,7 @@ public class PanelMarkov extends ModelPanel{
 			if(type==1){ //Chain
 				this.add(curNode.textTermination);
 				this.add(curNode.textEV);
+				this.add(curNode.lblVarUpdates); this.add(curNode.textVarUpdates);
 			}
 			else{ //not chain
 				this.add(curNode.lblVarUpdates); this.add(curNode.textVarUpdates);
@@ -618,6 +619,7 @@ public class PanelMarkov extends ModelPanel{
 				if(curNode.type==1){ //Chain
 					this.remove(curNode.textTermination);
 					this.remove(curNode.textEV);
+					this.remove(curNode.lblVarUpdates); this.remove(curNode.textVarUpdates);
 				}
 				else{ //not chain
 					this.remove(curNode.lblVarUpdates); this.remove(curNode.textVarUpdates);
@@ -674,7 +676,7 @@ public class PanelMarkov extends ModelPanel{
 	}
 
 	public void addRemoveVarUpdates(){
-		if(curNode!=null && curNode.chain!=null && curNode.type!=1){ //has chain but not chain root
+		if(curNode!=null && curNode.chain!=null){ //in chain
 			if(curNode.hasVarUpdates){saveSnapshot("Remove Variable Updates");}
 			else{saveSnapshot("Add Variable Updates");}
 			curNode.addRemoveVarUpdates();
@@ -853,6 +855,7 @@ public class PanelMarkov extends ModelPanel{
 			this.add(node.textTermination);
 			this.add(node.textEV);
 			node.textEV.setVisible(tree.showEV);
+			this.add(node.lblVarUpdates); this.add(node.textVarUpdates);
 		}
 		else{ //not chain
 			this.add(node.lblVarUpdates); this.add(node.textVarUpdates);
@@ -1089,7 +1092,7 @@ public class PanelMarkov extends ModelPanel{
 		if(curNode.hasVarUpdates){mntmUpdateVariable.setText("Remove Variable Updates");}
 		else{mntmUpdateVariable.setText("Add Variable Updates");}
 		mntmUpdateVariable.setEnabled(false);
-		if(curNode.type!=1 && curNode.chain!=null){ //in chain, can update variable
+		if(curNode.chain!=null){ //in chain, can update variable
 			mntmUpdateVariable.setEnabled(true);
 		}
 
@@ -1200,6 +1203,8 @@ public class PanelMarkov extends ModelPanel{
 			if(curNode.type==1){ //chain
 				this.remove(curNode.textTermination);
 				this.remove(curNode.textEV);
+				if(curNode.lblVarUpdates!=null){this.remove(curNode.lblVarUpdates);} 
+				if(curNode.textVarUpdates!=null){this.remove(curNode.textVarUpdates);}
 			}
 			else{ //not chain
 				if(curNode.lblVarUpdates!=null){this.remove(curNode.lblVarUpdates);} 

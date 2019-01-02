@@ -40,6 +40,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import base.ModelNode;
 import main.VariableUpdate;
 import markov.MarkovTextField;
+import math.MathUtils;
 
 @XmlRootElement(name="node")
 public class TreeNode extends ModelNode{
@@ -52,7 +53,7 @@ public class TreeNode extends ModelNode{
 	@XmlTransient double curProb; //Current probability used to run the model - not saved
 	@XmlTransient double curCosts[], curPayoffs[];
 	@XmlTransient public double expectedValues[];
-	@XmlTransient VariableUpdate curVariableUpdates[];
+	@XmlTransient public VariableUpdate curVariableUpdates[];
 	//Monte Carlo
 	@XmlTransient boolean probHasVar, childHasProbVar;
 	@XmlTransient boolean costHasVar[];
@@ -525,9 +526,9 @@ public class TreeNode extends ModelNode{
 		if(tree.showEV){
 			String buildString="";
 			for(int i=0; i<numDimensions-1; i++){
-				buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+myModel.round(expectedValues[i],i)+"; ";
+				buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(expectedValues[i],myModel.dimInfo.decimals[i])+"; ";
 			}
-			buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+myModel.round(expectedValues[numDimensions-1],numDimensions-1);
+			buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+MathUtils.round(expectedValues[numDimensions-1],myModel.dimInfo.decimals[numDimensions-1]);
 			textEV.setText(buildString);
 		}
 	}

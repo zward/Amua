@@ -315,7 +315,7 @@ public class frmTornadoDiagram {
 									if(errorsMin.size()>0){
 										curParam.value=origValue;
 										curParam.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramName+" - Min value");
 										break;
 									}
@@ -352,7 +352,7 @@ public class frmTornadoDiagram {
 									if(errorsMax.size()>0){
 										curParam.value=origValue;
 										curParam.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramName+" - Max value");
 										break;
 									}
@@ -388,7 +388,7 @@ public class frmTornadoDiagram {
 									results.add(result);
 								}
 							}
-							myModel.validateParamsVars();
+							myModel.validateModelObjects();
 							//Update chart
 							Collections.sort(results);
 
@@ -435,7 +435,7 @@ public class frmTornadoDiagram {
 						}
 					}catch(Exception e1){
 						curParam.locked=false;
-						myModel.validateParamsVars();
+						myModel.validateModelObjects();
 						JOptionPane.showMessageDialog(frmTornadoDiagram, e1.getMessage());
 						e1.printStackTrace();
 						myModel.errorLog.recordError(e1);

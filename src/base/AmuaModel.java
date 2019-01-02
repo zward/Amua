@@ -225,7 +225,7 @@ public class AmuaModel{
 		int numVars=variables.size();
 		for(int i=0; i<numVars; i++){
 			Variable curVar=variables.get(i);
-			mainForm.modelVariables.addRow(new Object[]{curVar.name,curVar.initValue});
+			mainForm.modelVariables.addRow(new Object[]{curVar.name,curVar.expression});
 		}
 	}
 
@@ -413,48 +413,48 @@ public class AmuaModel{
 		saveSnapshot("Delete Parameter");//Add to undo stack
 		parameters.remove(paramNum);
 		mainForm.modelParameters.removeRow(paramNum);
-		validateParamsVars();
+		validateModelObjects();
 	}
 	
 	public void deleteVariable(int varNum){
 		saveSnapshot("Delete Variable");//Add to undo stack
 		variables.remove(varNum);
 		mainForm.modelVariables.removeRow(varNum);
-		validateParamsVars();
+		validateModelObjects();
 	}
 
 	public void deleteTable(int tableNum){
 		saveSnapshot("Delete Table");//Add to undo stack
 		tables.remove(tableNum);
 		mainForm.modelTables.removeRow(tableNum);
-		validateParamsVars();
+		validateModelObjects();
 	}
 	
 	public void deleteConstraint(int constNum){
 		saveSnapshot("Delete Constraint"); //Add to undo stack
 		constraints.remove(constNum);
 		mainForm.modelConstraints.removeRow(constNum);
-		validateParamsVars();
+		validateModelObjects();
 	}
 	
 	public void addParameter(Parameter param){
 		mainForm.modelParameters.addRow(new Object[]{param.name,param.expression});
-		validateParamsVars();
+		validateModelObjects();
 	}
 	
 	public void addVariable(Variable variable){
-		mainForm.modelVariables.addRow(new Object[]{variable.name,variable.initValue});
-		validateParamsVars();
+		mainForm.modelVariables.addRow(new Object[]{variable.name,variable.expression});
+		validateModelObjects();
 	}
 
 	public void addTable(Table table){
 		mainForm.modelTables.addRow(new Object[]{table.name,table.type,table.numRows+" x "+table.numCols});
-		validateParamsVars();
+		validateModelObjects();
 	}
 	
 	public void addConstraint(Constraint curConst){
 		mainForm.modelConstraints.addRow(new Object[]{curConst.name,curConst.expression});
-		validateParamsVars();
+		validateModelObjects();
 	}
 	
 	public void editTable(int tableNum){
@@ -462,21 +462,21 @@ public class AmuaModel{
 		mainForm.modelTables.setValueAt(table.name, tableNum, 0);
 		mainForm.modelTables.setValueAt(table.type, tableNum, 1);
 		mainForm.modelTables.setValueAt(table.numRows+" x "+table.numCols, tableNum, 2);
-		validateParamsVars();
+		validateModelObjects();
 	}
 
 	public void editParameter(int paramNum){
 		Parameter param=parameters.get(paramNum);
 		mainForm.modelParameters.setValueAt(param.name, paramNum, 0);
 		mainForm.modelParameters.setValueAt(param.expression, paramNum, 1);
-		validateParamsVars();
+		validateModelObjects();
 	}
 	
 	public void editVariable(int varNum){
 		Variable variable=variables.get(varNum);
 		mainForm.modelVariables.setValueAt(variable.name, varNum, 0);
-		mainForm.modelVariables.setValueAt(variable.initValue, varNum, 1);
-		validateParamsVars();
+		mainForm.modelVariables.setValueAt(variable.expression, varNum, 1);
+		validateModelObjects();
 	}
 	
 	public void editConstraint(int constNum){
@@ -486,9 +486,9 @@ public class AmuaModel{
 	}
 	
 	/**
-	 * Evaluates all parameters and variables
+	 * Evaluates all parameters, variables, and constraints
 	 */
-	public void validateParamsVars(){
+	public void validateModelObjects(){
 		//parameters
 		int numParams=parameters.size();
 		for(int i=0; i<numParams; i++){
@@ -510,11 +510,15 @@ public class AmuaModel{
 			Variable curVar=variables.get(i);
 			curVar.valid=true;
 			try{
-				curVar.value=Interpreter.evaluate(curVar.initValue, this,false);
+				curVar.value=Interpreter.evaluate(curVar.expression, this,false);
+				curVar.dependents=new ArrayList<Variable>();
 			}catch(Exception e){
 				curVar.valid=false;
 				curVar.value=null;
 			}
+		}
+		for(int i=0; i<numVars; i++){
+			variables.get(i).getDependents(this);
 		}
 		
 		//constraints
@@ -633,11 +637,11 @@ public class AmuaModel{
 
 	}
 	
-	public double round(double num, int dim){
+	/*public double round(double num, int dim){
 		double scale=Math.pow(10, dimInfo.decimals[dim]);
 		num=Math.round(num*scale)/scale;
 		return(num);
-	}
+	}*/
 
 	public boolean checkParamSets(Console console){
 		boolean valid=true;
@@ -808,12 +812,12 @@ public class AmuaModel{
 						if(display){
 							String buildString="";
 							if(markov.discountRewards==false){
-								for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+round(curNode.expectedValues[i],i)+"; ";}
-								buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+round(curNode.expectedValues[numDim-1],numDim-1);
+								for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValues[i],dimInfo.decimals[i])+"; ";}
+								buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValues[numDim-1],dimInfo.decimals[numDim-1]);
 							}
 							else{
-								for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+round(curNode.expectedValuesDis[i],i)+"; ";}
-								buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+round(curNode.expectedValuesDis[numDim-1],numDim-1);
+								for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValuesDis[i],dimInfo.decimals[i])+"; ";}
+								buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValuesDis[numDim-1],dimInfo.decimals[numDim-1]);
 							}
 							curNode.textEV.setText(buildString);
 							if(curNode.visible){curNode.textEV.setVisible(true);}
@@ -839,6 +843,12 @@ public class AmuaModel{
 	public void unlockParams(){
 		for(int v=0; v<parameters.size(); v++){
 			parameters.get(v).locked=false;
+		}
+	}
+	
+	public void unlockVars(){
+		for(int v=0; v<variables.size(); v++){
+			variables.get(v).locked=false;
 		}
 	}
 	
@@ -1023,7 +1033,7 @@ public class AmuaModel{
 		int index=getVariableIndex(var);
 		Variable curVar=variables.get(index);
 		des="<html><b>"+curVar.name+"</b><br>";
-		des+="Initial Value: <br>"+MathUtils.consoleFont(curVar.initValue)+"<br><br>";
+		des+="Expression: <br>"+MathUtils.consoleFont(curVar.expression)+"<br><br>";
 		String strEV=curVar.value.toString().replaceAll("\\n", "<br>");
 		//strEV=strEV.replaceAll("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
 		des+="Expected Value: <br>"+MathUtils.consoleFont(strEV)+"<br><br>";

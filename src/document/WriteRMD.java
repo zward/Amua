@@ -245,7 +245,7 @@ public class WriteRMD{
 			for(int i=0; i<numVars; i++){
 				Variable curVar=myModel.variables.get(i);
 				out.write("|"+curVar.name);
-				out.write("|"+curVar.initValue);
+				out.write("|"+curVar.expression);
 				String notes=curVar.notes;
 				notes=notes.replace("\n", "; ");
 				out.write("|"+notes+"|\n");

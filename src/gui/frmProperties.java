@@ -107,6 +107,7 @@ public class frmProperties {
 	private JTable tableDiscountRates;
 	JLabel lblDiscountStartCycle;
 	private JTextField textDiscountStartCycle;
+	private JTextField textMarkovStateDecimals;
 		
 	/**
 	 *  Default Constructor
@@ -517,6 +518,15 @@ public class frmProperties {
 			tableDiscountRates.setEnabled(false);
 			scrollPane_1.setViewportView(tableDiscountRates);
 			
+			JLabel lblStatePrevalenceDecimals = new JLabel("State Prevalence Decimals:");
+			lblStatePrevalenceDecimals.setBounds(184, 23, 158, 16);
+			testDiscountStartCycle.add(lblStatePrevalenceDecimals);
+			
+			textMarkovStateDecimals = new JTextField();
+			textMarkovStateDecimals.setBounds(340, 17, 47, 28);
+			testDiscountStartCycle.add(textMarkovStateDecimals);
+			textMarkovStateDecimals.setColumns(10);
+			
 			
 			
 			
@@ -596,6 +606,7 @@ public class frmProperties {
 	private void displayMarkovSettings(){
 		tabbedPane.setEnabledAt(3, true);
 		textMarkovMaxCycles.setText(myModel.markov.maxCycles+"");
+		textMarkovStateDecimals.setText(myModel.markov.stateDecimals+"");
 		chckbxHalfcycleCorrection.setSelected(myModel.markov.halfCycleCorrection);
 		chckbxDiscount.setSelected(myModel.markov.discountRewards);
 		if(myModel.markov.discountRewards==true){
@@ -794,15 +805,33 @@ public class frmProperties {
 		}
 		
 		//Check Markov settings
-		int maxCycles=10000;
+		int maxCycles=10000, statePrevDecimals=4;
 		boolean halfCycleCorrection=false;
 		if(myModel.type==1){
+			//max cycles
 			try{
 				String text=textMarkovMaxCycles.getText().replaceAll(",",""); //remove commas
 				maxCycles=Integer.parseInt(text);
 			} catch(Exception er){
 				valid=false;
 				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of max cycles!");
+			}
+			if(maxCycles<0){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of max cycles!");
+			}
+			
+			//state prev decimals
+			try{
+				String text=textMarkovStateDecimals.getText().replaceAll(",",""); //remove commas
+				statePrevDecimals=Integer.parseInt(text);
+			} catch(Exception er){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Markov State prevalence decimals!");
+			}
+			if(statePrevDecimals<0){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Markov State prevalence decimals!");
 			}
 			
 			halfCycleCorrection=chckbxHalfcycleCorrection.isSelected();
@@ -862,6 +891,7 @@ public class frmProperties {
 			//markov settings
 			if(myModel.type==1){
 				myModel.markov.maxCycles=maxCycles;
+				myModel.markov.stateDecimals=statePrevDecimals;
 				myModel.markov.halfCycleCorrection=halfCycleCorrection;
 				
 				myModel.markov.discountRewards=chckbxDiscount.isSelected();

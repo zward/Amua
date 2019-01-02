@@ -84,7 +84,7 @@ public class MarkovCohort{
 
 		//Initialize variables
 		for(int c=0; c<numVariables; c++){
-			variables[c].value=Interpreter.evaluate(variables[c].initValue, myModel,false);
+			variables[c].value=Interpreter.evaluate(variables[c].expression, myModel,false);
 		}
 		
 		//Simulate cycles
@@ -92,6 +92,19 @@ public class MarkovCohort{
 		curT.value=new Numeric(0);
 		boolean terminate=false;
 		while(terminate==false && t<markovTree.maxCycles){
+			//chain root variable updates
+			if(chainRoot.hasVarUpdates){
+				myModel.unlockVars();
+				//Perform variable updates
+				for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
+					chainRoot.curVariableUpdates[u].update(false);
+				}
+				//Update any dependent variables
+				for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
+					chainRoot.curVariableUpdates[u].variable.updateDependents(myModel);
+				}
+			}
+			
 			for(int s=0; s<numStates; s++){ //Update each state
 				for(int d=0; d<numDim; d++){ //Update state rewards
 					double curReward=Interpreter.evaluate(states[s].rewards[d],myModel,false).getDouble();
@@ -169,8 +182,14 @@ public class MarkovCohort{
 		}
 		//Update variables
 		if(node.hasVarUpdates){
+			myModel.unlockVars();
+			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
 				node.curVariableUpdates[u].update(false);
+			}
+			//Update any dependent variables
+			for(int u=0; u<node.curVariableUpdates.length; u++){
+				node.curVariableUpdates[u].variable.updateDependents(myModel);
 			}
 		}
 		

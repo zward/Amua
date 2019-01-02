@@ -31,6 +31,7 @@ import main.Console;
 import main.DimInfo;
 import main.VariableUpdate;
 import math.Interpreter;
+import math.MathUtils;
 
 @XmlRootElement(name="DecisionTree")
 /**
@@ -102,7 +103,7 @@ public class DecisionTree{
 	 * @return ArrayList of error messages
 	 */
 	public ArrayList<String> parseTree(){
-		myModel.validateParamsVars();
+		myModel.validateModelObjects();
 		ArrayList<String> errors=new ArrayList<String>();
 		//Initialize root
 		TreeNode root=nodes.get(0);
@@ -296,14 +297,14 @@ public class DecisionTree{
 
 		//Round results
 		for(int s=0; s<numStrat; s++){
-			table[s][2]=myModel.round((double)table[s][2],dimInfo.costDim); //Cost
-			table[s][3]=myModel.round((double)table[s][3],dimInfo.effectDim); //Effect
+			table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.costDim]); //Cost
+			table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.effectDim]); //Effect
 			double icer=(double) table[s][4];
 			if(Double.isNaN(icer)){
 				table[s][4]="---";
 			}
 			else{
-				table[s][4]=myModel.round(icer,dimInfo.costDim);
+				table[s][4]=MathUtils.round(icer,dimInfo.decimals[dimInfo.costDim]);
 			}
 		}
 
@@ -369,7 +370,7 @@ public class DecisionTree{
 			TreeNode child=root.children[i];
 			console.print(child.name);
 			for(int d=0; d<numDimensions; d++){
-				console.print("\t"+myModel.round(child.expectedValues[d]*myModel.cohortSize,d));
+				console.print("\t"+MathUtils.round(child.expectedValues[d]*myModel.cohortSize,dimInfo.decimals[d]));
 			}
 			console.print("\n");
 		}
@@ -382,9 +383,9 @@ public class DecisionTree{
 			TreeNode child=nodes.get(curNode.childIndices.get(i));
 			console.print(child.name+"	");
 			for(int d=0; d<child.numDimensions-1; d++){
-				console.print(myModel.round(child.expectedValues[d],d)+"	");
+				console.print(MathUtils.round(child.expectedValues[d],myModel.dimInfo.decimals[d])+"	");
 			}
-			console.print(myModel.round(child.expectedValues[child.numDimensions-1],child.numDimensions-1)+"\n");
+			console.print(MathUtils.round(child.expectedValues[child.numDimensions-1],myModel.dimInfo.decimals[child.numDimensions-1])+"\n");
 			appendResults(child,console);
 		}
 	}

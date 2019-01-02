@@ -734,7 +734,7 @@ public class frmPSA {
 										curParam.locked=false;
 										curParam.value=origValues[v];
 									}
-									myModel.validateParamsVars();
+									myModel.validateModelObjects();
 									
 									if(cancelled==false){
 										//Sort ordered arrays

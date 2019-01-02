@@ -28,6 +28,13 @@ public final class MathUtils{
 	 */
 	public static double tolerance=Math.pow(10, -6);
 		
+	
+	public static double round(double num, int numDecimals){
+		double scale=Math.pow(10, numDecimals);
+		num=Math.round(num*scale)/scale;
+		return(num);
+	}
+	
 	/**
 	 * 
 	 * @param k

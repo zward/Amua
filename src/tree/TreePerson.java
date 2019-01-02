@@ -21,7 +21,7 @@ package tree;
 import math.Numeric;
 
 public class TreePerson{
-	Numeric counterVals[];
+	Numeric variableVals[];
 	
 	//Constructor
 	public TreePerson(){

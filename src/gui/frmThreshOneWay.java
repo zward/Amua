@@ -51,6 +51,7 @@ import base.AmuaModel;
 import main.CEAHelper;
 import main.DimInfo;
 import main.Parameter;
+import math.MathUtils;
 import math.Numeric;
 
 import javax.swing.border.LineBorder;
@@ -284,13 +285,13 @@ public class frmThreshOneWay {
 									if(errorsMin.size()>0){
 										error=true;
 										curParam.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										JOptionPane.showMessageDialog(frmThreshOneWay, "Error: Min value");
 									}
 									if(errorsMax.size()>0){
 										error=true;
 										curParam.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										JOptionPane.showMessageDialog(frmThreshOneWay, "Error: Max value");
 									}
 
@@ -445,7 +446,7 @@ public class frmThreshOneWay {
 													}
 												}
 											}
-											textThresh.setText(myModel.round(intersection,decimalDim)+"");
+											textThresh.setText(MathUtils.round(intersection,myModel.dimInfo.decimals[decimalDim])+"");
 
 											//Update chart
 											DimInfo info=myModel.dimInfo;
@@ -475,14 +476,14 @@ public class frmThreshOneWay {
 										//Reset param value
 										curParam.value=origValue;
 										curParam.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										
 										progress.close();
 									}
 								}
 							} catch (Exception e) {
 								curParam.locked=false;
-								myModel.validateParamsVars();
+								myModel.validateModelObjects();
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(frmThreshOneWay, e.getMessage());
 								myModel.errorLog.recordError(e);

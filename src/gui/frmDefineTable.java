@@ -756,7 +756,7 @@ public class frmDefineTable {
 								table.notes=testNotes;
 								myModel.editTable(tableNum);
 							}
-							myModel.validateParamsVars(); //Update all parameters/variables
+							myModel.validateModelObjects(); //Update all model objects
 							myModel.rescale(myModel.scale); //Re-validates textfields
 
 							frmDefineTable.dispose();

@@ -126,9 +126,19 @@ public class RMarkovCohort{
 				writeLine("newPrev <- curPrev  # copy inital prev");
 				if(numVars>0){
 					writeLine("# Initialize variables");
+					//independent vars
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
-						writeLine(curVar.name+" <- "+rModel.translate(curVar.initValue,false));
+						if(curVar.independent==true){
+							writeLine(curVar.name+" <- "+rModel.translate(curVar.expression,false));
+						}
+					}
+					//dependent vars
+					for(int v=0; v<numVars; v++){
+						Variable curVar=myModel.variables.get(v);
+						if(curVar.independent==false){
+							writeLine(curVar.name+" <- "+rModel.translate(curVar.expression,false));
+						}
 					}
 				}
 				writeLine("");
@@ -147,10 +157,38 @@ public class RMarkovCohort{
 				writeLine("    cat(\".\", sep=\"\")");
 				writeLine("  }");
 				writeLine("");
+				
 				writeLine("  # Cycle outcomes");
 				for(int d=0; d<numDimensions; d++){
 					writeLine("  cycle"+dimNames[d]+" <- 0; cycle"+dimNames[d]+"_dis <- 0");
 				}
+				
+				//cycle variable updates
+				if(curChain.hasVarUpdates){
+					writeLine("");
+					writeLine("  # Cycle variable updates");
+					String updates[]=curChain.varUpdates.split(";");
+					int numUpdates=updates.length;
+					ArrayList<Variable> dependents=new ArrayList<Variable>();
+					for(int u=0; u<numUpdates; u++){
+						writeLine(rModel.translate(updates[u],false)+"  # Orig: "+updates[u], 1);
+						for(int d=0; d<curChain.curVariableUpdates[u].variable.dependents.size(); d++){
+							Variable curDep=curChain.curVariableUpdates[u].variable.dependents.get(d);
+							if(!dependents.contains(curDep)){
+								dependents.add(curDep);
+							}
+						}
+					}
+					//update dependent variables
+					if(dependents.size()>0){
+						writeLine("  # Update dependent variables");
+						for(int d=0; d<dependents.size(); d++){
+							Variable curVar=dependents.get(d);
+							writeLine("  "+curVar.name+" <- "+rModel.translate(curVar.expression,false));
+						}
+					}
+				}
+								
 				writeLine("");
 				writeLine("  # Update prevalence");
 				writeLine("  curPrev <- newPrev");
@@ -246,8 +284,23 @@ public class RMarkovCohort{
 				writeLine("# Update variables",level);
 				String updates[]=curNode.varUpdates.split(";");
 				int numUpdates=updates.length;
+				ArrayList<Variable> dependents=new ArrayList<Variable>();
 				for(int u=0; u<numUpdates; u++){
 					writeLine(rModel.translate(updates[u],false)+"  # Orig: "+updates[u], level);
+					for(int d=0; d<curNode.curVariableUpdates[u].variable.dependents.size(); d++){
+						Variable curDep=curNode.curVariableUpdates[u].variable.dependents.get(d);
+						if(!dependents.contains(curDep)){
+							dependents.add(curDep);
+						}
+					}
+				}
+				//update dependent variables
+				if(dependents.size()>0){
+					writeLine("# Update dependent variables",level);
+					for(int d=0; d<dependents.size(); d++){
+						Variable curVar=dependents.get(d);
+						writeLine(curVar.name+" <- "+rModel.translate(curVar.expression,false),level);
+					}
 				}
 			}
 

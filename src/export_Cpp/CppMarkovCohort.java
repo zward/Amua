@@ -99,11 +99,11 @@ public class CppMarkovCohort{
 			writeLine("	double sumProb;");
 			writeLine("");
 			writeLine("	//Initialize discount rates");
+			writeLine("	int startDiscountCycle="+myModel.markov.discountStartCycle+";");
 			out.write("	double discountRates["+numDimensions+"]={");
 			if(myModel.markov.discountRewards){
 				for(int d=0; d<numDimensions-1; d++){out.write(myModel.markov.discountRates[d]/100.0+",");}
 				out.write(myModel.markov.discountRates[numDimensions-1]/100.0+"};"); out.newLine();
-				writeLine("	int startDiscountCycle="+myModel.markov.discountStartCycle+";");
 			}
 			else{
 				for(int d=0; d<numDimensions-1; d++){out.write("0,");}
@@ -144,9 +144,19 @@ public class CppMarkovCohort{
 				
 				if(numVars>0){
 					writeLine("	//Initialize variables");
+					//independent vars
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
-						writeLine("	"+curVar.name+"="+cppModel.translate(curVar.initValue,false)+";");
+						if(curVar.independent==true){
+							writeLine("	"+curVar.name+"="+cppModel.translate(curVar.expression,false)+";");
+						}
+					}
+					//dependent vars
+					for(int v=0; v<numVars; v++){
+						Variable curVar=myModel.variables.get(v);
+						if(curVar.independent==false){
+							writeLine("	"+curVar.name+"="+cppModel.translate(curVar.expression,false)+";");
+						}
 					}
 				}
 				writeLine("");
@@ -165,6 +175,31 @@ public class CppMarkovCohort{
 				writeLine("		//Cycle outcomes");
 				for(int d=0; d<numDimensions; d++){
 					writeLine("		double cycle"+dimNames[d]+"=0, cycle"+dimNames[d]+"_dis=0;");
+				}
+				//cycle variable updates
+				if(curChain.hasVarUpdates){
+					writeLine("");
+					writeLine("		//Cycle variable updates");
+					String updates[]=curChain.varUpdates.split(";");
+					int numUpdates=updates.length;
+					ArrayList<Variable> dependents=new ArrayList<Variable>();
+					for(int u=0; u<numUpdates; u++){
+						writeLine(cppModel.translate(updates[u],false)+"; //Orig: "+updates[u], 2);
+						for(int d=0; d<curChain.curVariableUpdates[u].variable.dependents.size(); d++){
+							Variable curDep=curChain.curVariableUpdates[u].variable.dependents.get(d);
+							if(!dependents.contains(curDep)){
+								dependents.add(curDep);
+							}
+						}
+					}
+					//update dependent variables
+					if(dependents.size()>0){
+						writeLine("		//Update dependent variables");
+						for(int d=0; d<dependents.size(); d++){
+							Variable curVar=dependents.get(d);
+							writeLine("		"+curVar.name+"="+cppModel.translate(curVar.expression,false)+";");
+						}
+					}
 				}
 				writeLine("");
 				writeLine("		//Update prevalence");
@@ -266,8 +301,23 @@ public class CppMarkovCohort{
 				writeLine("//Update variables",level);
 				String updates[]=curNode.varUpdates.split(";");
 				int numUpdates=updates.length;
+				ArrayList<Variable> dependents=new ArrayList<Variable>();
 				for(int u=0; u<numUpdates; u++){
 					writeLine(cppModel.translate(updates[u],false)+"; //Orig: "+updates[u], level);
+					for(int d=0; d<curNode.curVariableUpdates[u].variable.dependents.size(); d++){
+						Variable curDep=curNode.curVariableUpdates[u].variable.dependents.get(d);
+						if(!dependents.contains(curDep)){
+							dependents.add(curDep);
+						}
+					}
+				}
+				//update dependent variables
+				if(dependents.size()>0){
+					writeLine("//Update dependent variables",level);
+					for(int d=0; d<dependents.size(); d++){
+						Variable curVar=dependents.get(d);
+						writeLine(curVar.name+"="+cppModel.translate(curVar.expression,false)+";",level);
+					}
 				}
 			}
 

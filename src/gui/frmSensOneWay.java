@@ -328,13 +328,13 @@ public class frmSensOneWay {
 									if(errorsMin.size()>0){
 										error=true;
 										curParam.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										JOptionPane.showMessageDialog(frmSensOneWay, "Error: Min value");
 									}
 									if(errorsMax.size()>0){
 										error=true;
 										curParam.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										JOptionPane.showMessageDialog(frmSensOneWay, "Error: Max value");
 									}
 
@@ -395,7 +395,7 @@ public class frmSensOneWay {
 										//Reset param value
 										curParam.value=origValue;
 										curParam.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										
 										if(cancelled==false){
 											updateChart();
@@ -409,7 +409,7 @@ public class frmSensOneWay {
 								}
 							} catch (Exception e) {
 								curParam.locked=false;
-								myModel.validateParamsVars();
+								myModel.validateModelObjects();
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(frmSensOneWay, e.getMessage());
 								myModel.errorLog.recordError(e);

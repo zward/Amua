@@ -121,11 +121,11 @@ public class CppMarkovMonteCarlo{
 			
 			writeLine("");
 			writeLine("	//Initialize discount rates");
+			writeLine("	int startDiscountCycle="+myModel.markov.discountStartCycle+";");
 			out.write("	double discountRates["+numDimensions+"]={");
 			if(myModel.markov.discountRewards){
 				for(int d=0; d<numDimensions-1; d++){out.write(myModel.markov.discountRates[d]/100.0+",");}
 				out.write(myModel.markov.discountRates[numDimensions-1]/100.0+"};"); out.newLine();
-				writeLine("	int startDiscountCycle="+myModel.markov.discountStartCycle+";");
 			}
 			else{
 				for(int d=0; d<numDimensions-1; d++){out.write("0,");}
@@ -178,15 +178,26 @@ public class CppMarkovMonteCarlo{
 				writeLine("	numPeople="+myModel.cohortSize+";");
 				writeLine("	people=new Person[numPeople];");
 				writeLine("	for(int p=0; p<numPeople; p++){");
+				writeLine("		Person & curPerson=people[p];");
 				writeLine("		rand=unif(generator);");
 				writeLine("		int k=0;");
 				writeLine("		while(rand>initPrev[k]){k++;}");
 				writeLine("		people[p].state=k;");
 				if(numVars>0){
 					writeLine("		//Initialize variables");
+					//independent vars
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
-						writeLine("		people[p]."+curVar.name+"="+cppModel.translate(curVar.initValue,true)+";");
+						if(curVar.independent==true){
+							writeLine("		people[p]."+curVar.name+"="+cppModel.translate(curVar.expression,true)+";");
+						}
+					}
+					//dependent vars
+					for(int v=0; v<numVars; v++){
+						Variable curVar=myModel.variables.get(v);
+						if(curVar.independent==false){
+							writeLine("		people[p]."+curVar.name+"="+cppModel.translate(curVar.expression,true)+";");
+						}
 					}
 				}
 				writeLine("	}");
@@ -216,6 +227,34 @@ public class CppMarkovMonteCarlo{
 				writeLine("			Person & curPerson=people[p];");
 				writeLine("			int curState=curPerson.state;");
 				writeLine("			prev[curState]++; //record prevalence");
+				
+				//cycle variable updates
+				if(curChain.hasVarUpdates){
+					writeLine("");
+					writeLine("			//Cycle variable updates");
+					String updates[]=curChain.varUpdates.split(";");
+					int numUpdates=updates.length;
+					ArrayList<Variable> dependents=new ArrayList<Variable>();
+					for(int u=0; u<numUpdates; u++){
+						writeLine(cppModel.translate(updates[u],true)+"; //Orig: "+updates[u], 3);
+						for(int d=0; d<curChain.curVariableUpdates[u].variable.dependents.size(); d++){
+							Variable curDep=curChain.curVariableUpdates[u].variable.dependents.get(d);
+							if(!dependents.contains(curDep)){
+								dependents.add(curDep);
+							}
+						}
+					}
+					//update dependent variables
+					if(dependents.size()>0){
+						writeLine("			//Update dependent variables");
+						for(int d=0; d<dependents.size(); d++){
+							Variable curVar=dependents.get(d);
+							writeLine("			curPerson."+curVar.name+"="+cppModel.translate(curVar.expression,true)+";");
+						}
+					}
+					writeLine("");
+				}
+								
 				writeLine("			if(curState==0){ //"+states[0].name);
 				defineNode(states[0]);
 				writeLine("			}");
@@ -309,8 +348,23 @@ public class CppMarkovMonteCarlo{
 				writeLine("//Update variables",level);
 				String updates[]=curNode.varUpdates.split(";");
 				int numUpdates=updates.length;
+				ArrayList<Variable> dependents=new ArrayList<Variable>();
 				for(int u=0; u<numUpdates; u++){
 					writeLine(cppModel.translate(updates[u],true)+"; //Orig: "+updates[u], level);
+					for(int d=0; d<curNode.curVariableUpdates[u].variable.dependents.size(); d++){
+						Variable curDep=curNode.curVariableUpdates[u].variable.dependents.get(d);
+						if(!dependents.contains(curDep)){
+							dependents.add(curDep);
+						}
+					}
+				}
+				//update dependent variables
+				if(dependents.size()>0){
+					writeLine("//Update dependent variables",level);
+					for(int d=0; d<dependents.size(); d++){
+						Variable curVar=dependents.get(d);
+						writeLine("curPerson."+curVar.name+"="+cppModel.translate(curVar.expression,true)+";",level);
+					}
 				}
 			}
 

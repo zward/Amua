@@ -90,7 +90,7 @@ public class Token{
 								//myModel.curGenerator=myModel.generatorVar; //re-point RNG
 								//myModel.curRand=myModel.curRandVar;
 							//} 
-							curVar.value=Interpreter.evaluate(curVar.initValue, myModel, sample);
+							curVar.value=Interpreter.evaluate(curVar.expression, myModel, sample);
 						}
 						numeric=curVar.value.copy();
 					}

@@ -43,6 +43,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import base.ModelNode;
 import main.VariableUpdate;
+import math.MathUtils;
 
 @XmlRootElement(name="node")
 public class MarkovNode extends ModelNode{
@@ -62,7 +63,7 @@ public class MarkovNode extends ModelNode{
 	@XmlTransient public double expectedValues[], expectedValuesDis[]; //For each chain
 	@XmlTransient double curRewards[];
 	@XmlTransient double curChildProbs[]; //cumulative
-	@XmlTransient VariableUpdate curVariableUpdates[];
+	@XmlTransient public VariableUpdate curVariableUpdates[];
 	@XmlTransient boolean probHasVariables, childHasProbVariables;
 	@XmlTransient boolean costHasVariables[];
 	@XmlTransient boolean rewardHasVariables[];
@@ -151,6 +152,7 @@ public class MarkovNode extends ModelNode{
 		if(type==1){ //Chain
 			displayTermination();
 			displayEV();
+			displayVarUpdates();
 		}
 		else{ //not Chain
 			displayVarUpdates();
@@ -269,10 +271,14 @@ public class MarkovNode extends ModelNode{
 					textProb.setBounds(xPos-scale(140), yPos+(height/2),scale(140),scale(28));
 					lblCost.setBounds(xPos-scale(150),(int)(yPos+2.5*(height/2)),scale(12),scale(28));
 					textCost.setBounds(xPos-scale(140),(int)(yPos+2.5*(height/2)),scale(140),scale(28));
+					lblVarUpdates.setBounds(xPos+width-scale(112), (int)(yPos+5*(height/2)),scale(15),scale(28));
+					textVarUpdates.setBounds(xPos+width-scale(100),(int)(yPos+5*(height/2)),scale(100),scale(28));
 				}
 				else{
 					lblCost.setBounds(xPos-scale(150),yPos+(height/2),scale(12),scale(28));
 					textCost.setBounds(xPos-scale(140),yPos+(height/2),scale(140),scale(28));
+					lblVarUpdates.setBounds(xPos+width-scale(112),(int)(yPos+3.5*(height/2)),scale(15),scale(28));
+					textVarUpdates.setBounds(xPos+width-scale(100),(int)(yPos+3.5*(height/2)),scale(100),scale(28));
 				}
 				textEV.setBounds(xPos-scale(150),yPos+(height/2)-scale(48),scale(150),scale(28));
 			}
@@ -455,6 +461,7 @@ public class MarkovNode extends ModelNode{
 		if(type==1){ //Chain
 			displayTermination();
 			displayEV();
+			displayVarUpdates();
 		}
 		else{ //not Chain
 			displayVarUpdates();
@@ -721,6 +728,9 @@ public class MarkovNode extends ModelNode{
 		textVarUpdates=new MarkovTextField(panel, this, 4);
 		if(textHighlights[4]!=null){textVarUpdates.setBackground(textHighlights[4]);}
 		else{textVarUpdates.setBackground(new Color(0,0,0,0));}
+		if(type==1){ //chain
+			textVarUpdates.setHorizontalAlignment(SwingConstants.RIGHT);
+		}
 		textVarUpdates.setText(varUpdates);
 		textVarUpdates.validateEntry();
 		textVarUpdates.setVisible(hasVarUpdates);
@@ -845,17 +855,17 @@ public class MarkovNode extends ModelNode{
 			if(tree.discountRewards==false){
 				String buildString="";
 				for(int i=0; i<numDimensions-1; i++){
-					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+myModel.round(expectedValues[i],i)+"; ";
+					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(expectedValues[i],myModel.dimInfo.decimals[i])+"; ";
 				}
-				buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+myModel.round(expectedValues[numDimensions-1],numDimensions-1);
+				buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+MathUtils.round(expectedValues[numDimensions-1],myModel.dimInfo.decimals[numDimensions-1]);
 				textEV.setText(buildString);
 			}
 			else{ //discounted
 				String buildString="";
 				for(int i=0; i<numDimensions-1; i++){
-					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+myModel.round(expectedValuesDis[i],i)+"; ";
+					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(expectedValuesDis[i],myModel.dimInfo.decimals[i])+"; ";
 				}
-				buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+myModel.round(expectedValuesDis[numDimensions-1],numDimensions-1);
+				buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+MathUtils.round(expectedValuesDis[numDimensions-1],myModel.dimInfo.decimals[numDimensions-1]);
 				textEV.setText(buildString);
 			}
 		}

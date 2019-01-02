@@ -152,7 +152,7 @@ public class frmDefineVariable {
 							if(varNum==-1){
 								myModel.saveSnapshot("Add Variable"); //Add to undo stack
 								variable.name=testName;
-								variable.initValue=testExp;
+								variable.expression=testExp;
 								variable.notes=testNotes;
 								variable.value=testVal;
 								myModel.variables.add(variable);
@@ -161,17 +161,17 @@ public class frmDefineVariable {
 							else{
 								boolean changed=false;
 								if(!variable.name.matches(testName)){changed=true;}
-								if(!variable.initValue.matches(testExp)){changed=true;}
+								if(!variable.expression.matches(testExp)){changed=true;}
 								if(variable.notes!=null && !variable.notes.equals(testNotes)){changed=true;}
 								
 								if(changed){myModel.saveSnapshot("Edit Variable");} //Add to undo stack
 								variable.name=testName;
-								variable.initValue=testExp;
+								variable.expression=testExp;
 								variable.notes=testNotes;
 								variable.value=testVal;
 								myModel.editVariable(varNum);
 							}
-							myModel.validateParamsVars(); //Update all parameters/variables
+							myModel.validateModelObjects(); //Update all model objects
 							myModel.rescale(myModel.scale); //Re-validates textfields
 							
 							frmDefineVariable.dispose();
@@ -200,11 +200,11 @@ public class frmDefineVariable {
 			frmDefineVariable.getContentPane().add(textName);
 			textName.setColumns(10);
 
-			JLabel lblValue = new JLabel("Initial Expected Value:");
+			JLabel lblValue = new JLabel("Expected Value:");
 			lblValue.setBounds(6, 118, 150, 16);
 			frmDefineVariable.getContentPane().add(lblValue);
 			
-			JLabel lblExpression = new JLabel("Initial Value (Expression):");
+			JLabel lblExpression = new JLabel("Expression:");
 			lblExpression.setBounds(6, 43, 150, 16);
 			frmDefineVariable.getContentPane().add(lblExpression);
 
@@ -291,7 +291,7 @@ public class frmDefineVariable {
 				String checkName=var.name;
 				if(checkName.matches(varName)){circular=true;}
 				else{
-					boolean checkCirc=isCircular(var.initValue,varName);
+					boolean checkCirc=isCircular(var.expression,varName);
 					if(checkCirc==true){circular=true;}
 				}
 			}
@@ -317,7 +317,7 @@ public class frmDefineVariable {
 	private void getVar(){
 		variable=myModel.variables.get(varNum);
 		textName.setText(variable.name);
-		paneExpression.setText(variable.initValue);
+		paneExpression.setText(variable.expression);
 		paneExpression.restyle();
 		//textValue.setText(variable.EV.toString()+"");
 		textNotes.setText(variable.notes);

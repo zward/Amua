@@ -25,7 +25,7 @@ import math.NumericException;
 
 
 public class VariableUpdate{
-	Variable variable;
+	public Variable variable;
 	String exprUpdate; //expression to evaluate when updating
 	/**
 	 * 0:=, 1:++, 2:--, 3:+=, 4:-=, 5:*=, 6:/=
@@ -96,6 +96,7 @@ public class VariableUpdate{
 	}
 	
 	public void update(boolean sample) throws Exception{
+		variable.locked=true;
 		Numeric value=variable.value;
 		if(operation==1){ //++
 			if(value.isInteger()){value.setInt(value.getInt()+1);}

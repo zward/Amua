@@ -21,6 +21,7 @@ package tree;
 import base.AmuaModel;
 import main.Variable;
 import math.Interpreter;
+import math.MathUtils;
 import math.NumericException;
 
 public class TreeCohort{
@@ -47,7 +48,7 @@ public class TreeCohort{
 	public void simulate(boolean display) throws NumericException, Exception{
 		//Initialize variables
 		for(int c=0; c<numVars; c++){
-			variables[c].value=Interpreter.evaluate(variables[c].initValue, myModel,false);
+			variables[c].value=Interpreter.evaluate(variables[c].expression, myModel,false);
 		}
 
 		root.totalDenom=myModel.cohortSize;
@@ -68,8 +69,14 @@ public class TreeCohort{
 
 		//Update variables
 		if(node.hasVarUpdates){
+			myModel.unlockVars();
+			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
 				node.curVariableUpdates[u].update(false);
+			}
+			//Update any dependent variables
+			for(int u=0; u<node.curVariableUpdates.length; u++){
+				node.curVariableUpdates[u].variable.updateDependents(myModel);
 			}
 		}
 
@@ -206,9 +213,9 @@ public class TreeCohort{
 			if(node.type!=2 && node.level!=0){ //decision/chance node
 				String buildString="";
 				for(int i=0; i<numDim-1; i++){
-					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+myModel.round(node.expectedValues[i],i)+"; ";
+					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(node.expectedValues[i],myModel.dimInfo.decimals[i])+"; ";
 				}
-				buildString+="("+myModel.dimInfo.dimSymbols[numDim-1]+") "+myModel.round(node.expectedValues[numDim-1],numDim-1);
+				buildString+="("+myModel.dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(node.expectedValues[numDim-1],myModel.dimInfo.decimals[numDim-1]);
 				node.textEV.setText(buildString);
 				if(node.visible){
 					node.textEV.setVisible(true);

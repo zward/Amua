@@ -87,14 +87,14 @@ public class PythonMarkovCohort{
 			writeLine(0,"cohortSize="+myModel.cohortSize);
 			writeLine(0,"");
 			writeLine(0,"#Initialize discount rates");
+			writeLine(0,"startDiscountCycle="+myModel.markov.discountStartCycle);
 			if(myModel.markov.discountRewards){
 				out.write("discountRates=[");
 				for(int d=0; d<numDimensions-1; d++){out.write(myModel.markov.discountRates[d]/100.0+",");}
 				out.write(myModel.markov.discountRates[numDimensions-1]/100.0+"]"); out.newLine();
-				writeLine(0,"startDiscountCycle="+myModel.markov.discountStartCycle);
 			}
 			else{
-				out.write("discountRates<-np.ones("+numDimensions+")"); out.newLine();
+				out.write("discountRates=np.ones("+numDimensions+")"); out.newLine();
 			}
 			if(myModel.markov.halfCycleCorrection){writeLine(0,"halfCycle=True");}
 			else{writeLine(0,"halfCycle=False");}
@@ -131,9 +131,19 @@ public class PythonMarkovCohort{
 				writeLine(0,"newPrev=curPrev.copy() #copy inital prev");
 				if(numVars>0){
 					writeLine(0,"#Initialize variables");
+					//independent vars
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
-						writeLine(0,curVar.name+"="+pyModel.translate(curVar.initValue,false));
+						if(curVar.independent==true){
+							writeLine(0,curVar.name+"="+pyModel.translate(curVar.expression,false));
+						}
+					}
+					//dependent vars
+					for(int v=0; v<numVars; v++){
+						Variable curVar=myModel.variables.get(v);
+						if(curVar.independent==false){
+							writeLine(0,curVar.name+"="+pyModel.translate(curVar.expression,false));
+						}
 					}
 				}
 				writeLine(0,"");
@@ -155,6 +165,33 @@ public class PythonMarkovCohort{
 					writeLine(1,"cycle"+dimNames[d]+"=0");
 					writeLine(1,"cycle"+dimNames[d]+"_dis=0");
 					}
+					//cycle variable updates
+					if(curChain.hasVarUpdates){
+						writeLine(1,"");
+						writeLine(1,"#Cycle variable updates");
+						String updates[]=curChain.varUpdates.split(";");
+						int numUpdates=updates.length;
+						ArrayList<Variable> dependents=new ArrayList<Variable>();
+						for(int u=0; u<numUpdates; u++){
+							writeLine(1,pyModel.translate(updates[u],false)+" #Orig: "+updates[u]);
+							for(int d=0; d<curChain.curVariableUpdates[u].variable.dependents.size(); d++){
+								Variable curDep=curChain.curVariableUpdates[u].variable.dependents.get(d);
+								if(!dependents.contains(curDep)){
+									dependents.add(curDep);
+								}
+							}
+						}
+						//update dependent variables
+						if(dependents.size()>0){
+							writeLine(1,"#Update dependent variables");
+							for(int d=0; d<dependents.size(); d++){
+								Variable curVar=dependents.get(d);
+								writeLine(1,curVar.name+"="+pyModel.translate(curVar.expression,false));
+							}
+						}
+					}
+					
+					
 					writeLine(1,"");
 					writeLine(1,"#Update prevalence");
 					writeLine(1,"curPrev=newPrev.copy()");
@@ -240,8 +277,23 @@ public class PythonMarkovCohort{
 				writeLine(level,"#Update variables");
 				String updates[]=curNode.varUpdates.split(";");
 				int numUpdates=updates.length;
+				ArrayList<Variable> dependents=new ArrayList<Variable>();
 				for(int u=0; u<numUpdates; u++){
 					writeLine(level,pyModel.translate(updates[u],false)+" #Orig: "+updates[u]);
+					for(int d=0; d<curNode.curVariableUpdates[u].variable.dependents.size(); d++){
+						Variable curDep=curNode.curVariableUpdates[u].variable.dependents.get(d);
+						if(!dependents.contains(curDep)){
+							dependents.add(curDep);
+						}
+					}
+				}
+				//update dependent variables
+				if(dependents.size()>0){
+					writeLine(level,"#Update dependent variables");
+					for(int d=0; d<dependents.size(); d++){
+						Variable curVar=dependents.get(d);
+						writeLine(level,curVar.name+"="+pyModel.translate(curVar.expression,false));
+					}
 				}
 			}
 

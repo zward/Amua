@@ -119,7 +119,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.0.14";
+	public String version="0.0.15";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -961,7 +961,7 @@ public class frmMain {
 		gbc_scrollPaneVariables.gridy = 1;
 		panelVars.add(scrollPaneVariables);
 
-		modelVariables=new DefaultTableModel(new Object[][] {},	new String[] {"Name", "Initial Value"})
+		modelVariables=new DefaultTableModel(new Object[][] {},	new String[] {"Name", "Expression"})
 		{boolean[] columnEditables = new boolean[] {false, false};
 		public boolean isCellEditable(int row, int column) {
 			return columnEditables[column];

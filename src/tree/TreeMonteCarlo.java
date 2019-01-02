@@ -24,6 +24,7 @@ import base.AmuaModel;
 import main.MersenneTwisterFast;
 import main.Variable;
 import math.Interpreter;
+import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
 
@@ -79,15 +80,15 @@ public class TreeMonteCarlo{
 		boolean cancelled=false;
 		progress.setMaximum(numPeople);
 		person=new TreePerson();
-		person.counterVals=new Numeric[numVars];
+		person.variableVals=new Numeric[numVars];
 		
 		long startTime=System.currentTimeMillis();
 		
 		for(int p=0; p<numPeople; p++){
-			//initialize counters
+			//initialize variables
 			for(int c=0; c<numVars; c++){
-				person.counterVals[c]=Interpreter.evaluate(variables[c].initValue, myModel,false);
-				variables[c].value=person.counterVals[c];
+				person.variableVals[c]=Interpreter.evaluate(variables[c].expression, myModel,false);
+				variables[c].value=person.variableVals[c];
 			}
 		
 			//run all strategies
@@ -139,9 +140,9 @@ public class TreeMonteCarlo{
 				if(node.type==1){ //chance
 					String buildString="";
 					for(int i=0; i<numDim-1; i++){
-						buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+myModel.round(node.expectedValues[i],i)+"; ";
+						buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(node.expectedValues[i],myModel.dimInfo.decimals[i])+"; ";
 					}
-					buildString+="("+myModel.dimInfo.dimSymbols[numDim-1]+") "+myModel.round(node.expectedValues[numDim-1],numDim-1);
+					buildString+="("+myModel.dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(node.expectedValues[numDim-1],myModel.dimInfo.decimals[numDim-1]);
 					node.textEV.setText(buildString);
 					if(node.visible){
 						node.textEV.setVisible(true);
@@ -164,6 +165,19 @@ public class TreeMonteCarlo{
 	
 	private void traverseNode(TreeNode node) throws Exception{
 		node.totalDenom++;
+				
+		//Update variables
+		if(node.hasVarUpdates){
+			myModel.unlockVars();
+			//Perform variable updates
+			for(int u=0; u<node.curVariableUpdates.length; u++){
+				node.curVariableUpdates[u].update(true);
+			}
+			//Update any dependent variables
+			for(int u=0; u<node.curVariableUpdates.length; u++){
+				node.curVariableUpdates[u].variable.updateDependents(myModel);
+			}
+		}
 		
 		//Update costs
 		if(node.hasCost){
@@ -175,13 +189,6 @@ public class TreeMonteCarlo{
 					double curCost=Interpreter.evaluate(node.cost[d],myModel,false).getDouble();
 					node.totalCosts[d]+=curCost;
 				}
-			}
-		}
-				
-		//Update variables
-		if(node.hasVarUpdates){
-			for(int u=0; u<node.curVariableUpdates.length; u++){
-				node.curVariableUpdates[u].update(true);
 			}
 		}
 		

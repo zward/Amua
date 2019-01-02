@@ -21,6 +21,7 @@ package export_Python;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
@@ -94,9 +95,19 @@ public class PythonTreeMonteCarlo{
 				writeLine(0,"for i in range(numSim):");
 				if(numVars>0){
 					writeLine(1,"#Initialize variables");
+					//independent vars
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
-						writeLine(1,curVar.name+"="+pyModel.translate(curVar.initValue,false));
+						if(curVar.independent==true){
+							writeLine(1,curVar.name+"="+pyModel.translate(curVar.expression,false));
+						}
+					}
+					//dependent vars
+					for(int v=0; v<numVars; v++){
+						Variable curVar=myModel.variables.get(v);
+						if(curVar.independent==false){
+							writeLine(1,curVar.name+"="+pyModel.translate(curVar.expression,false));
+						}
 					}
 				}
 				//define nodes
@@ -131,8 +142,23 @@ public class PythonTreeMonteCarlo{
 				writeLine(level,"#Update variables");
 				String updates[]=curNode.varUpdates.split(";");
 				int numUpdates=updates.length;
+				ArrayList<Variable> dependents=new ArrayList<Variable>();
 				for(int u=0; u<numUpdates; u++){
 					writeLine(level,pyModel.translate(updates[u],false)+" #Orig: "+updates[u]);
+					for(int d=0; d<curNode.curVariableUpdates[u].variable.dependents.size(); d++){
+						Variable curDep=curNode.curVariableUpdates[u].variable.dependents.get(d);
+						if(!dependents.contains(curDep)){
+							dependents.add(curDep);
+						}
+					}
+				}
+				//update dependent variables
+				if(dependents.size()>0){
+					writeLine(level,"#Update dependent variables");
+					for(int d=0; d<dependents.size(); d++){
+						Variable curVar=dependents.get(d);
+						writeLine(level,curVar.name+"="+pyModel.translate(curVar.expression,false));
+					}
 				}
 			}
 

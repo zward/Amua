@@ -118,7 +118,7 @@ public class MarkovMonteCarlo{
 			//initialize variables
 			people[p].variableVals=new Numeric[numVariables];
 			for(int c=0; c<numVariables; c++){
-				people[p].variableVals[c]=Interpreter.evaluate(variables[c].initValue, myModel,false);
+				people[p].variableVals[c]=Interpreter.evaluate(variables[c].expression, myModel,false);
 			}
 		}
 		
@@ -152,6 +152,20 @@ public class MarkovMonteCarlo{
 				for(int c=0; c<numVariables; c++){
 					variables[c].value=people[p].variableVals[c];
 				}
+				
+				//chain root variable updates
+				if(chainRoot.hasVarUpdates){
+					myModel.unlockVars();
+					//Perform variable updates
+					for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
+						chainRoot.curVariableUpdates[u].update(true);
+					}
+					//Update any dependent variables
+					for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
+						chainRoot.curVariableUpdates[u].variable.updateDependents(myModel);
+					}
+				}
+				
 				
 				int curState=people[p].curState;
 				//rewards
@@ -244,10 +258,17 @@ public class MarkovMonteCarlo{
 	private void traverseNode(MarkovNode node, MarkovPerson curPerson) throws Exception{
 		//Update variables
 		if(node.hasVarUpdates){
+			myModel.unlockVars();
+			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
 				node.curVariableUpdates[u].update(true);
 			}
+			//Update any dependent variables
+			for(int u=0; u<node.curVariableUpdates.length; u++){
+				node.curVariableUpdates[u].variable.updateDependents(myModel);
+			}
 		}
+		
 		
 		//Update costs
 		if(node.hasCost){

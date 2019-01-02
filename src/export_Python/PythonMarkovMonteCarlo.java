@@ -96,14 +96,14 @@ public class PythonMarkovMonteCarlo{
 			
 			writeLine(0,"");
 			writeLine(0,"#Initialize discount rates");
+			writeLine(0,"startDiscountCycle="+myModel.markov.discountStartCycle);
 			if(myModel.markov.discountRewards){
 				out.write("discountRates=[");
 				for(int d=0; d<numDimensions-1; d++){out.write(myModel.markov.discountRates[d]/100.0+",");}
 				out.write(myModel.markov.discountRates[numDimensions-1]/100.0+"]"); out.newLine();
-				writeLine(0,"startDiscountCycle="+myModel.markov.discountStartCycle);
 			}
 			else{
-				out.write("discountRates<-np.ones("+numDimensions+")"); out.newLine();
+				out.write("discountRates=np.ones("+numDimensions+")"); out.newLine();
 			}
 			if(myModel.markov.halfCycleCorrection){writeLine(0,"halfCycle=True");}
 			else{writeLine(0,"halfCycle=False");}
@@ -145,15 +145,26 @@ public class PythonMarkovMonteCarlo{
 				writeLine(0,"numPeople="+myModel.cohortSize);
 				writeLine(0,"people=[Person() for i in range(numPeople)]");
 				writeLine(0,"for p in range(0,numPeople):");
+					writeLine(1,"curPerson=people[p]");
 					writeLine(1,"rand=np.random.rand()");
 					writeLine(1,"k=0");
 					writeLine(1,"while(rand>initPrev[k]): k+=1");
 					writeLine(1,"people[p].state=k");
 					if(numVars>0){
 					writeLine(1,"#Initialize variables");
+					//independent vars
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
-						writeLine(1,"people[p]."+curVar.name+"="+pyModel.translate(curVar.initValue,true));
+						if(curVar.independent==true){
+							writeLine(1,"people[p]."+curVar.name+"="+pyModel.translate(curVar.expression,true));
+						}
+					}
+					//dependent vars
+					for(int v=0; v<numVars; v++){
+						Variable curVar=myModel.variables.get(v);
+						if(curVar.independent==false){
+							writeLine(1,"people[p]."+curVar.name+"="+pyModel.translate(curVar.expression,true));
+						}
 					}
 				}
 				writeLine(0,"");
@@ -184,6 +195,35 @@ public class PythonMarkovMonteCarlo{
 						writeLine(2,"curPerson=people[p]");
 						writeLine(2,"curState=curPerson.state");
 						writeLine(2,"prev[curState]+=1 #record prevalence");
+						
+						//cycle variable updates
+						if(curChain.hasVarUpdates){
+							writeLine(2,"");
+							writeLine(2,"#Cycle variable updates");
+							String updates[]=curChain.varUpdates.split(";");
+							int numUpdates=updates.length;
+							ArrayList<Variable> dependents=new ArrayList<Variable>();
+							for(int u=0; u<numUpdates; u++){
+								writeLine(2,pyModel.translate(updates[u],true)+" #Orig: "+updates[u]);
+								for(int d=0; d<curChain.curVariableUpdates[u].variable.dependents.size(); d++){
+									Variable curDep=curChain.curVariableUpdates[u].variable.dependents.get(d);
+									if(!dependents.contains(curDep)){
+										dependents.add(curDep);
+									}
+								}
+							}
+							//update dependent variables
+							if(dependents.size()>0){
+								writeLine(2,"#Update dependent variables");
+								for(int d=0; d<dependents.size(); d++){
+									Variable curVar=dependents.get(d);
+									writeLine(2,"curPerson."+curVar.name+"="+pyModel.translate(curVar.expression,true));
+								}
+							}
+							writeLine(2,"");
+						}
+						
+						
 						writeLine(2,"if(curState==0): #"+states[0].name);
 						defineNode(states[0]);
 						for(int s=1; s<numStates; s++){
@@ -261,8 +301,23 @@ public class PythonMarkovMonteCarlo{
 				writeLine(level,"#Update variables");
 				String updates[]=curNode.varUpdates.split(";");
 				int numUpdates=updates.length;
+				ArrayList<Variable> dependents=new ArrayList<Variable>();
 				for(int u=0; u<numUpdates; u++){
 					writeLine(level,pyModel.translate(updates[u],true)+" #Orig: "+updates[u]);
+					for(int d=0; d<curNode.curVariableUpdates[u].variable.dependents.size(); d++){
+						Variable curDep=curNode.curVariableUpdates[u].variable.dependents.get(d);
+						if(!dependents.contains(curDep)){
+							dependents.add(curDep);
+						}
+					}
+				}
+				//update dependent variables
+				if(dependents.size()>0){
+					writeLine(level,"#Update dependent variables");
+					for(int d=0; d<dependents.size(); d++){
+						Variable curVar=dependents.get(d);
+						writeLine(level,"curPerson."+curVar.name+"="+pyModel.translate(curVar.expression,true));
+					}
 				}
 			}
 			

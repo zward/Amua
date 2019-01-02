@@ -404,13 +404,13 @@ public class frmSensTwoWay {
 									if(errorsMin.size()>0){
 										error=true;
 										curParam1.locked=false; curParam2.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										JOptionPane.showMessageDialog(frmSensTwoWay, "Error: Min value");
 									}
 									if(errorsMax.size()>0){
 										error=true;
 										curParam1.locked=false; curParam2.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										JOptionPane.showMessageDialog(frmSensTwoWay, "Error: Max value");
 									}
 
@@ -499,7 +499,7 @@ public class frmSensTwoWay {
 										//Reset parameter values
 										curParam1.value=origValue1; curParam2.value=origValue2;
 										curParam1.locked=false; curParam2.locked=false;
-										myModel.validateParamsVars();
+										myModel.validateModelObjects();
 										
 										if(cancelled==false){
 											//Update chart
@@ -538,7 +538,7 @@ public class frmSensTwoWay {
 								}
 							} catch (Exception e) {
 								curParam1.locked=false; curParam2.locked=false;
-								myModel.validateParamsVars();
+								myModel.validateModelObjects();
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(frmSensTwoWay, e.getMessage());
 								myModel.errorLog.recordError(e);

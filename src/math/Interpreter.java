@@ -337,7 +337,7 @@ public final class Interpreter{
 							int varIndex=myModel.getVariableIndex(word);
 							Variable curVar=myModel.variables.get(varIndex);
 							if(curVar.value==null){ //not initialized
-								curVar.value=Interpreter.evaluate(curVar.initValue,myModel,sample);
+								curVar.value=Interpreter.evaluate(curVar.expression,myModel,sample);
 							}
 							int close=findRightBracket(curExpr,pos);
 							String args[]=splitArgs(curExpr.substring(pos+1,close));

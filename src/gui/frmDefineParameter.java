@@ -173,7 +173,7 @@ public class frmDefineParameter {
 								parameter.value=testVal;
 								myModel.editParameter(paramNum);
 							}
-							myModel.validateParamsVars(); //Update all parameters/variables
+							myModel.validateModelObjects(); //Update all model objects
 							myModel.rescale(myModel.scale); //Re-validates textfields
 							
 							frmDefineParameter.dispose();
@@ -303,7 +303,7 @@ public class frmDefineParameter {
 				String checkName=var.name;
 				if(checkName.matches(name)){circular=true;}
 				else{
-					boolean checkCirc=isCircular(var.initValue,name);
+					boolean checkCirc=isCircular(var.expression,name);
 					if(checkCirc==true){circular=true;}
 				}
 			}

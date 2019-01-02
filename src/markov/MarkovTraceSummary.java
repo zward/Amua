@@ -25,6 +25,7 @@ import java.util.Collections;
 import javax.swing.table.DefaultTableModel;
 
 import base.AmuaModel;
+import math.MathUtils;
 
 public class MarkovTraceSummary{
 	public String traceName;
@@ -200,24 +201,27 @@ public class MarkovTraceSummary{
 			int curCol=0;
 			modelTraceRaw.setValueAt(t, t, curCol); modelTraceRounded.setValueAt(t, t, curCol); //cycle
 			curCol++;
+			//state prevalence
 			for(int s=0; s<numStates; s++){
 				for(int i=0; i<3; i++){
 					modelTraceRaw.setValueAt(prev[s][i][t], t, curCol);
-					modelTraceRounded.setValueAt(prev[s][i][t], t, curCol);
+					double roundedPrev=MathUtils.round(prev[s][i][t],myModel.markov.stateDecimals);
+					modelTraceRounded.setValueAt(roundedPrev, t, curCol);
 					curCol++;
 				}
 			}
+			//rewards
 			for(int d=0; d<numDim; d++){
 				for(int i=0; i<3; i++){
 					modelTraceRaw.setValueAt(cycleRewards[d][i][t],t,curCol);
-					modelTraceRounded.setValueAt(myModel.round(cycleRewards[d][i][t],d),t,curCol);
+					modelTraceRounded.setValueAt(MathUtils.round(cycleRewards[d][i][t],myModel.dimInfo.decimals[d]),t,curCol);
 					curCol++;
 				}
 			}
 			for(int d=0; d<numDim; d++){
 				for(int i=0; i<3; i++){
 					modelTraceRaw.setValueAt(cumRewards[d][i][t],t,curCol);
-					modelTraceRounded.setValueAt(myModel.round(cumRewards[d][i][t],d),t,curCol);
+					modelTraceRounded.setValueAt(MathUtils.round(cumRewards[d][i][t],myModel.dimInfo.decimals[d]),t,curCol);
 					curCol++;
 				}
 			}
@@ -226,14 +230,14 @@ public class MarkovTraceSummary{
 				for(int d=0; d<numDim; d++){
 					for(int i=0; i<3; i++){
 						modelTraceRaw.setValueAt(cycleRewardsDis[d][i][t],t,curCol);
-						modelTraceRounded.setValueAt(myModel.round(cycleRewardsDis[d][i][t],d),t,curCol);
+						modelTraceRounded.setValueAt(MathUtils.round(cycleRewardsDis[d][i][t],myModel.dimInfo.decimals[d]),t,curCol);
 						curCol++;
 					}
 				}
 				for(int d=0; d<numDim; d++){
 					for(int i=0; i<3; i++){
 						modelTraceRaw.setValueAt(cumRewardsDis[d][i][t],t,curCol);
-						modelTraceRounded.setValueAt(myModel.round(cumRewardsDis[d][i][t],d),t,curCol);
+						modelTraceRounded.setValueAt(MathUtils.round(cumRewardsDis[d][i][t],myModel.dimInfo.decimals[d]),t,curCol);
 						curCol++;
 					}
 				}

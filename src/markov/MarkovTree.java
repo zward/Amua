@@ -31,6 +31,7 @@ import main.Console;
 import main.DimInfo;
 import main.VariableUpdate;
 import math.Interpreter;
+import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
 
@@ -44,6 +45,7 @@ import math.NumericException;
 public class MarkovTree{
 	@XmlElement(name = "Node", type = MarkovNode.class)public ArrayList<MarkovNode> nodes; //Save ArrayList of nodes for direct access to children
 	@XmlElement	public int maxCycles=10000;
+	@XmlElement public int stateDecimals=4;
 	@XmlElement public boolean halfCycleCorrection;
 	@XmlElement public boolean discountRewards;
 	@XmlElement public double discountRates[];
@@ -97,6 +99,7 @@ public class MarkovTree{
 	public MarkovTree snapshot(){ //Return copy of this tree
 		MarkovTree copy=new MarkovTree(false);
 		copy.maxCycles=maxCycles;
+		copy.stateDecimals=stateDecimals;
 		copy.halfCycleCorrection=halfCycleCorrection;
 		copy.discountRewards=discountRewards;
 		if(discountRates!=null){
@@ -122,7 +125,7 @@ public class MarkovTree{
 	 * @return ArrayList of error messages
 	 */
 	public ArrayList<String> parseTree(){
-		myModel.validateParamsVars(); 
+		myModel.validateModelObjects(); 
 		
 		errors=new ArrayList<String>();
 		//Initialize root
@@ -155,7 +158,7 @@ public class MarkovTree{
 	}
 	
 	public ArrayList<String> parseChain(MarkovNode chainRoot){
-		myModel.validateParamsVars();
+		myModel.validateModelObjects();
 		errors=new ArrayList<String>();
 		//Parse chain inputs and variables
 		validProbs=true;
@@ -235,30 +238,29 @@ public class MarkovTree{
 			}
 		}
 		
-		if(curNode.type!=1){ //not chain
-			curNode.highlightTextField(4,null); //Variable updates
-			if(curNode.hasVarUpdates){
-				String updates[]=null;
-				int curU=-1;
-				try{
-					updates=curNode.varUpdates.split(";");
-					int numUpdates=updates.length;
-					curNode.curVariableUpdates=new VariableUpdate[numUpdates];
-					for(int u=0; u<updates.length; u++){
-						curU=u; //update for error catching
-						curNode.curVariableUpdates[u]=new VariableUpdate(updates[u],myModel);
-						double testVal=curNode.curVariableUpdates[u].testVal.getDouble();
-						if(Double.isNaN(testVal)){
-							curNode.highlightTextField(4, Color.YELLOW); //Variable updates
-							errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
-						}
-
+		//Variable updates
+		curNode.highlightTextField(4,null); 
+		if(curNode.hasVarUpdates){
+			String updates[]=null;
+			int curU=-1;
+			try{
+				updates=curNode.varUpdates.split(";");
+				int numUpdates=updates.length;
+				curNode.curVariableUpdates=new VariableUpdate[numUpdates];
+				for(int u=0; u<updates.length; u++){
+					curU=u; //update for error catching
+					curNode.curVariableUpdates[u]=new VariableUpdate(updates[u],myModel);
+					double testVal=curNode.curVariableUpdates[u].testVal.getDouble();
+					if(Double.isNaN(testVal)){
+						curNode.highlightTextField(4, Color.YELLOW); //Variable updates
+						errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
 					}
-				}catch(Exception e){
-					curNode.highlightTextField(4, Color.YELLOW); //Variable updates
-					if(updates==null){errors.add("Node "+curNode.name+": Variable Update Error - Null entry");}
-					else{errors.add("Node "+curNode.name+": Variable Update Error ("+updates[curU]+")");}
+
 				}
+			}catch(Exception e){
+				curNode.highlightTextField(4, Color.YELLOW); //Variable updates
+				if(updates==null){errors.add("Node "+curNode.name+": Variable Update Error - Null entry");}
+				else{errors.add("Node "+curNode.name+": Variable Update Error ("+updates[curU]+")");}
 			}
 		}
 		
@@ -389,15 +391,15 @@ public class MarkovTree{
 			String buildString="";
 			if(discountRewards==false){
 				for(int i=0; i<node.numDimensions-1; i++){
-					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+myModel.round(node.expectedValues[i],i)+"; ";
+					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(node.expectedValues[i],myModel.dimInfo.decimals[i])+"; ";
 				}
-				buildString+="("+myModel.dimInfo.dimSymbols[node.numDimensions-1]+") "+myModel.round(node.expectedValues[node.numDimensions-1],node.numDimensions-1);
+				buildString+="("+myModel.dimInfo.dimSymbols[node.numDimensions-1]+") "+MathUtils.round(node.expectedValues[node.numDimensions-1],myModel.dimInfo.decimals[node.numDimensions-1]);
 			}
 			else{
 				for(int i=0; i<node.numDimensions-1; i++){
-					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+myModel.round(node.expectedValuesDis[i],i)+"; ";
+					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(node.expectedValuesDis[i],myModel.dimInfo.decimals[i])+"; ";
 				}
-				buildString+="("+myModel.dimInfo.dimSymbols[node.numDimensions-1]+") "+myModel.round(node.expectedValuesDis[node.numDimensions-1],node.numDimensions-1);
+				buildString+="("+myModel.dimInfo.dimSymbols[node.numDimensions-1]+") "+MathUtils.round(node.expectedValuesDis[node.numDimensions-1],myModel.dimInfo.decimals[node.numDimensions-1]);
 			}
 			node.textEV.setText(buildString);
 			if(node.visible){
@@ -454,11 +456,11 @@ public class MarkovTree{
 				console.print(curNode.name+"\t");
 				if(curNode.expectedValues!=null){
 					for(int d=0; d<numDimensions; d++){
-						console.print(myModel.round(curNode.expectedValues[d],d)+"\t");
+						console.print(MathUtils.round(curNode.expectedValues[d],myModel.dimInfo.decimals[d])+"\t");
 					}
 					if(discountRewards){
 						for(int d=0; d<numDimensions; d++){
-							console.print(myModel.round(curNode.expectedValuesDis[d],d)+"\t");
+							console.print(MathUtils.round(curNode.expectedValuesDis[d],myModel.dimInfo.decimals[d])+"\t");
 						}
 					}
 				}
@@ -477,14 +479,14 @@ public class MarkovTree{
 
 		//Round results
 		for(int s=0; s<numStrat; s++){
-			table[s][2]=myModel.round((double)table[s][2],info.costDim); //Cost
-			table[s][3]=myModel.round((double)table[s][3],info.effectDim); //Effect
+			table[s][2]=MathUtils.round((double)table[s][2],info.decimals[info.costDim]); //Cost
+			table[s][3]=MathUtils.round((double)table[s][3],info.decimals[info.effectDim]); //Effect
 			double icer=(double) table[s][4];
 			if(Double.isNaN(icer)){
 				table[s][4]="---";
 			}
 			else{
-				table[s][4]=myModel.round(icer,myModel.dimInfo.costDim);
+				table[s][4]=MathUtils.round(icer,info.decimals[info.costDim]);
 			}
 		}
 
