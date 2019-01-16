@@ -140,7 +140,7 @@ public class MarkovNode extends ModelNode{
 		}
 		prob="0";
 		level=parent.level+1;
-		textHighlights=new Color[]{null,null,null,null,null};
+		textHighlights=new Color[]{null,null,null,null,null,null};
 
 		displayName();
 		if(parentType!=0){ //Not decision
@@ -180,12 +180,12 @@ public class MarkovNode extends ModelNode{
 		cost=new String[numDimensions]; Arrays.fill(cost,"0");
 		level=0;
 		name="Root";
-		textHighlights=new Color[]{null,null,null,null,null};
+		textHighlights=new Color[]{null,null,null,null,null,null};
 	}
 
 	public MarkovNode(){ //No argument constructor - initialize display fields with XML marshalling
 		if(childIndices==null){childIndices=new ArrayList<Integer>();}
-		textHighlights=new Color[]{null,null,null,null,null};
+		textHighlights=new Color[]{null,null,null,null,null,null};
 	}
 
 	public void paintComponent(Graphics g){
@@ -495,7 +495,8 @@ public class MarkovNode extends ModelNode{
 		if(name!=null){textName.setText(name);}
 		textName.setBorder(null);
 		textName.setHorizontalAlignment(JTextField.CENTER);
-		textName.setBackground(new Color(0,0,0,0));
+		if(textHighlights[0]!=null){textName.setBackground(textHighlights[0]);}
+		else{textName.setBackground(new Color(0,0,0,0));}
 		if(type==2){ //State
 			Font curFont=textName.getFont();
 			textName.setFont(curFont.deriveFont(curFont.BOLD));
@@ -949,7 +950,7 @@ public class MarkovNode extends ModelNode{
 
 
 	public void highlightTextField(int fieldIndex, Color color){
-		if(textHighlights==null){textHighlights=new Color[]{null,null,null};}
+		if(textHighlights==null){textHighlights=new Color[]{null,null,null,null,null,null};}
 		textHighlights[fieldIndex]=color;
 		JTextField curField=null;
 		if(fieldIndex==0){curField=textProb;}
@@ -957,6 +958,7 @@ public class MarkovNode extends ModelNode{
 		else if(fieldIndex==2){curField=textTermination;}
 		else if(fieldIndex==3){curField=textRewards;}
 		else if(fieldIndex==4){curField=textVarUpdates;}
+		else if(fieldIndex==5){curField=textName;}
 		if(curField!=null){
 			if(color==null){curField.setBackground(new Color(0,0,0,0));}
 			else{curField.setBackground(color);}

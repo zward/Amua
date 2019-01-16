@@ -163,7 +163,8 @@ public class frmDefineParameter {
 							else{
 								boolean changed=false;
 								if(!parameter.name.matches(testName)){changed=true;}
-								if(!parameter.expression.matches(testExp)){changed=true;}
+								if(parameter.expression==null){changed=true;}
+								else if(!parameter.expression.matches(testExp)){changed=true;}
 								if(parameter.notes!=null && !parameter.notes.equals(testNotes)){changed=true;}
 								
 								if(changed){myModel.saveSnapshot("Edit Parameter");} //Add to undo stack

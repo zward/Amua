@@ -94,7 +94,7 @@ public class TreeNode extends ModelNode{
 		expectedValues=new double[numDimensions];
 		prob="0";
 		level=parent.level+1;
-		textHighlights=new Color[]{null,null,null,null};
+		textHighlights=new Color[]{null,null,null,null,null};
 
 		displayName();
 		displayVarUpdates();
@@ -127,12 +127,12 @@ public class TreeNode extends ModelNode{
 		expectedValues=new double[numDimensions];
 		level=0;
 		name="Root";
-		textHighlights=new Color[]{null,null,null,null};
+		textHighlights=new Color[]{null,null,null,null,null};
 	}
 
 	public TreeNode(){ //No argument constructor - initialize display fields with XML marshalling
 		if(childIndices==null){childIndices=new ArrayList<Integer>();}
-		textHighlights=new Color[]{null,null,null,null};
+		textHighlights=new Color[]{null,null,null,null,null};
 	}
 
 	public void paintComponent(Graphics g){
@@ -317,7 +317,8 @@ public class TreeNode extends ModelNode{
 		if(name!=null){textName.setText(name);}
 		textName.setBorder(null);
 		textName.setHorizontalAlignment(JTextField.CENTER);
-		textName.setBackground(new Color(0,0,0,0));
+		if(textHighlights[4]!=null){textName.setBackground(textHighlights[0]);}
+		else{textName.setBackground(new Color(0,0,0,0));}
 		scaleFont(textName);
 		textName.addFocusListener(new FocusAdapter() {
 			@Override
@@ -605,14 +606,14 @@ public class TreeNode extends ModelNode{
 
 
 	public void highlightTextField(int fieldIndex, Color color){
-		if(textHighlights==null){textHighlights=new Color[]{null,null,null,null};}
+		if(textHighlights==null){textHighlights=new Color[]{null,null,null,null,null};}
 		textHighlights[fieldIndex]=color;
 		JTextField curField=null;
 		if(fieldIndex==0){curField=textProb;}
 		else if(fieldIndex==1){curField=textCost;}
 		else if(fieldIndex==2){curField=textPayoff;}
 		else if(fieldIndex==3){curField=textVarUpdates;}
-		else if(fieldIndex==-1){curField=textName;}
+		else if(fieldIndex==4){curField=textName;}
 		if(curField!=null){
 			if(color==null){curField.setBackground(new Color(0,0,0,0));}
 			else{curField.setBackground(color);}

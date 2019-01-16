@@ -161,7 +161,8 @@ public class frmDefineVariable {
 							else{
 								boolean changed=false;
 								if(!variable.name.matches(testName)){changed=true;}
-								if(!variable.expression.matches(testExp)){changed=true;}
+								if(variable.expression==null){changed=true;}
+								else if(!variable.expression.matches(testExp)){changed=true;}
 								if(variable.notes!=null && !variable.notes.equals(testNotes)){changed=true;}
 								
 								if(changed){myModel.saveSnapshot("Edit Variable");} //Add to undo stack

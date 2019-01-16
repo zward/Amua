@@ -286,7 +286,7 @@ public class MarkovTree{
 					else{sumProb+=child.curProb;}
 				}
 				if(numCompProb==0){
-					if(sumProb!=1.0){
+					if(Math.abs(1.0-sumProb)>MathUtils.tolerance){
 						errors.add("Node "+curNode.name+": Probabilities sum to "+sumProb+"!");
 						for(int j=0; j<numChildren; j++){
 							MarkovNode child=nodes.get(curNode.childIndices.get(j));
@@ -295,7 +295,7 @@ public class MarkovTree{
 					}
 				}
 				else if(numCompProb==1){
-					if(sumProb<0 || sumProb>1){
+					if(sumProb<0 || sumProb>(1.0+MathUtils.tolerance)){
 						errors.add("Node "+curNode.name+": Entered probabilities sum to "+sumProb+"!");
 						for(int j=0; j<numChildren; j++){
 							MarkovNode child=nodes.get(curNode.childIndices.get(j));

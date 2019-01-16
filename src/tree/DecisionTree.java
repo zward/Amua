@@ -114,6 +114,12 @@ public class DecisionTree{
 		root.children=new TreeNode[root.numChildren];
 		for(int j=0; j<root.numChildren; j++){
 			root.children[j]=nodes.get(root.childIndices.get(j));
+			//ensure each strategy has a name
+			root.children[j].highlightTextField(4,null); //Name
+			if(root.children[j].name==null || root.children[j].name.isEmpty()){
+				errors.add("Strategy has not been named!");
+				root.children[j].highlightTextField(4,Color.YELLOW); 
+			}
 		}
 		
 		//Parse tree inputs and variables

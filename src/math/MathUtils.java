@@ -26,8 +26,7 @@ public final class MathUtils{
 	/**
 	 * Numerical Tolerance to check difference from 1.0
 	 */
-	public static double tolerance=Math.pow(10, -6);
-		
+	public static double tolerance=Math.pow(10, -8);
 	
 	public static double round(double num, int numDecimals){
 		double scale=Math.pow(10, numDecimals);

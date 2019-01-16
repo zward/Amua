@@ -518,7 +518,10 @@ public class AmuaModel{
 			}
 		}
 		for(int i=0; i<numVars; i++){
-			variables.get(i).getDependents(this);
+			Variable curVar=variables.get(i);
+			if(curVar.valid==true){
+				curVar.getDependents(this);
+			}
 		}
 		
 		//constraints

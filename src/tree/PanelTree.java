@@ -914,7 +914,8 @@ public class PanelTree extends ModelPanel{
 			curNode.highlightTextField(0, null); //Prob
 			curNode.highlightTextField(1, null); //Cost
 			curNode.highlightTextField(2, null); //Payoff
-			curNode.highlightTextField(3, null); //Counters
+			curNode.highlightTextField(3, null); //Variables
+			curNode.highlightTextField(4, null); //Name
 			if(curNode.type!=2){
 				curNode.textEV.setVisible(false);
 			}

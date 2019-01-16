@@ -1167,6 +1167,7 @@ public class PanelMarkov extends ModelPanel{
 			curNode.highlightTextField(2, null); //Termination
 			curNode.highlightTextField(3, null); //Rewards
 			curNode.highlightTextField(4, null); //Variable updates
+			curNode.highlightTextField(5, null); //Name
 			if(curNode.type==1){ //chain
 				curNode.textEV.setVisible(false);
 			}
