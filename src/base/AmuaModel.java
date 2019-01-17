@@ -667,19 +667,54 @@ public class AmuaModel{
 			}
 		}
 		
-		if(type==0){return(panelTree.checkTree(console,checkProbs));} //Decision tree
-		else if(type==1){ //Markov
-			
-			//Reset t=0
-			resetT();
-			
-			if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, check whole model
-				return(panelMarkov.checkModel(console, checkProbs));
+		//check model objects
+		validateModelObjects();
+		boolean parse=true;
+		ArrayList<String> objectErrors=new ArrayList<String>();
+		for(int p=0; p<parameters.size(); p++){
+			if(parameters.get(p).valid==false){
+				parse=false;
+				objectErrors.add("Parameter: "+parameters.get(p).name);
 			}
-			else{ //Markov Chain selected
-				return(panelMarkov.checkChain(console,panelMarkov.curNode,checkProbs));
+		}
+		for(int v=0; v<variables.size(); v++){
+			if(variables.get(v).valid==false){
+				parse=false;
+				objectErrors.add("Variable: "+variables.get(v).name);
 			}
-			
+		}
+		for(int c=0; c<constraints.size(); c++){
+			if(constraints.get(c).valid==false){
+				parse=false;
+				objectErrors.add("Constraint: "+constraints.get(c).name);
+			}
+		}
+				
+		if(parse==false){ //object errors found
+			console.print(objectErrors.size()+" object errors:\n");
+			for(int i=0; i<objectErrors.size(); i++){
+				console.print(objectErrors.get(i)+"\n");		
+			}
+			console.newLine();
+			return(false);
+		}
+		else{
+			if(type==0){ //Decision tree
+				return(panelTree.checkTree(console,checkProbs));
+			} 
+			else if(type==1){ //Markov
+
+				//Reset t=0
+				resetT();
+
+				if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, check whole model
+					return(panelMarkov.checkModel(console, checkProbs));
+				}
+				else{ //Markov Chain selected
+					return(panelMarkov.checkChain(console,panelMarkov.curNode,checkProbs));
+				}
+
+			}
 		}
 		return(false);
 	}

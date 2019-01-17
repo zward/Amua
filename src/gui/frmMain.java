@@ -119,7 +119,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.0.16";
+	public String version="0.1.0";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -601,14 +601,14 @@ public class frmMain {
 		});
 		mnTools.add(mntmPlotSurface);
 	
-		JMenuItem mntmTestExpressions = new JMenuItem("Test Expressions");
+		/*JMenuItem mntmTestExpressions = new JMenuItem("Test Expressions");
 		mntmTestExpressions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				frmTestExpressions window=new frmTestExpressions(curModel);
 				window.frmTestExpressions.setVisible(true);
 			}
 		});
-		mnTools.add(mntmTestExpressions);
+		mnTools.add(mntmTestExpressions);*/
 		
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
