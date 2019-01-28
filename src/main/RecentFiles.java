@@ -97,7 +97,7 @@ public class RecentFiles{
 			String file=data[0];
 			String separator=File.separator;
 			int index0=file.lastIndexOf(separator);
-			int index1=file.indexOf(".");
+			int index1=file.indexOf(".amua");
 			String name=file.substring(index0+1, index1);
 			final JMenuItem mntmNewMenuItem = new JMenuItem(name);
 			mntmNewMenuItem.setToolTipText(file);

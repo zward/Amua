@@ -119,7 +119,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.1.0";
+	public String version="0.1.1";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -571,8 +571,10 @@ public class frmMain {
 		mntmCalibrateModel.setIcon(new ImageIcon(frmMain.class.getResource("/images/calibrate.png")));
 		mntmCalibrateModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				frmCalibrate window=new frmCalibrate(curModel);
-				window.frmCalibrate.setVisible(true);
+				if(curModel.checkModel(console,true)){
+					frmCalibrate window=new frmCalibrate(curModel);
+					window.frmCalibrate.setVisible(true);
+				}
 			}
 		});
 		mnRun.add(mntmCalibrateModel);
@@ -1576,7 +1578,6 @@ public class frmMain {
 		btnClearAnnotations.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				curModel.clearAnnotations();
-				//console.setText("");
 			}
 		});
 
@@ -1932,6 +1933,7 @@ public class frmMain {
 				String openPath=modelList.get(m).filepath;
 				if(openPath.equals(filepath)){ //Open, go to tab
 					isOpen=true;
+					JOptionPane.showMessageDialog(frmMain, filepath+" is already open!");
 					tabbedPaneCanvas.setSelectedIndex(m);
 					switchTabs();
 				}

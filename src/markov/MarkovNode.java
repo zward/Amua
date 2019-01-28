@@ -598,16 +598,14 @@ public class MarkovNode extends ModelNode{
 		textProb.setText(prob);
 		textProb.validateEntry();
 		Font curFont=textProb.getFont();
-		if(prob.matches("C")){textProb.setFont(curFont.deriveFont(curFont.ITALIC));}
+		if(prob!=null && prob.matches("C")){textProb.setFont(curFont.deriveFont(curFont.ITALIC));}
 		else{textProb.setFont(curFont.deriveFont(curFont.PLAIN));}
 		textProb.setBorder(null);
-		//textProb.setFont(new Font("Consolas", Font.PLAIN, 14));
 		scaleFont(textProb);
 		textProb.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
 				tempProb=prob; //Get existing value on field entry
-				//panel.mainForm.tabbedPaneBottom.setSelectedIndex(1);
 				panel.paneFormula.setEditable(true);
 				panel.paneFormula.setText(textProb.getText());
 				panel.curFocus=textProb;

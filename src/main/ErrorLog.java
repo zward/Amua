@@ -88,8 +88,11 @@ public class ErrorLog{
 	}
 	
 	public void recordError(Exception e){
-		StackTraceElement[] trace= e.getStackTrace();
 		String error=new Date()+"\n";
+		error+=e.toString()+"\n";
+		error+="Message: "+e.getMessage()+"\n";
+		error+="Trace:\n";
+		StackTraceElement[] trace= e.getStackTrace();
 		for(int i=0; i<trace.length; i++){
 			error+=trace[i]+"\n";
 		}

@@ -358,7 +358,7 @@ public class TreeNode extends ModelNode{
 		textProb.setText(prob);
 		textProb.validateEntry();
 		Font curFont=textProb.getFont();
-		if(prob.matches("C")){textProb.setFont(curFont.deriveFont(curFont.ITALIC));}
+		if(prob!=null && prob.matches("C")){textProb.setFont(curFont.deriveFont(curFont.ITALIC));}
 		else{textProb.setFont(curFont.deriveFont(curFont.PLAIN));}
 		textProb.setBorder(null);
 		scaleFont(textProb);

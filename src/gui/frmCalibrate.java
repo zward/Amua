@@ -179,6 +179,7 @@ public class frmCalibrate {
 			tableParamSets.setShowVerticalLines(true);
 			tableParamSets.setModel(modelParamSets);
 			tableParamSets.getTableHeader().setReorderingAllowed(false);
+			tableParamSets.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			scrollPane_1.setViewportView(tableParamSets);
 					
 			JPanel panel_3 = new JPanel();

@@ -354,6 +354,7 @@ public class frmProperties {
 						
 						if(numDimensions==1){
 							comboAnalysis.setEnabled(false);
+							comboAnalysis.setSelectedIndex(0);
 							setAnalysisType(0);
 						}
 						else{comboAnalysis.setEnabled(true);}
