@@ -495,7 +495,7 @@ public class MarkovNode extends ModelNode{
 		if(name!=null){textName.setText(name);}
 		textName.setBorder(null);
 		textName.setHorizontalAlignment(JTextField.CENTER);
-		if(textHighlights[0]!=null){textName.setBackground(textHighlights[0]);}
+		if(textHighlights[5]!=null){textName.setBackground(textHighlights[5]);}
 		else{textName.setBackground(new Color(0,0,0,0));}
 		if(type==2){ //State
 			Font curFont=textName.getFont();

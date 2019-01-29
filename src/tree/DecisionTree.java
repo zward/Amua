@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import base.AmuaModel;
 import main.CEAHelper;
 import main.Console;
+import main.ConsoleTable;
 import main.DimInfo;
 import main.VariableUpdate;
 import math.Interpreter;
@@ -317,25 +318,28 @@ public class DecisionTree{
 		//Display results in console
 		if(dimInfo.analysisType==1){ //CEA
 			console.print("\nCEA Results:\n");
-			console.print("Strategy	"+dimInfo.dimNames[dimInfo.costDim]+"	"+dimInfo.dimNames[dimInfo.effectDim]+"	ICER	Notes\n");
+			boolean colTypes[]=new boolean[]{false,true,true,true,false}; //is column number (true), or text (false)
+			ConsoleTable curTable=new ConsoleTable(console,colTypes);
+			String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.costDim],dimInfo.dimNames[dimInfo.effectDim],"ICER","Notes"};
+			curTable.addRow(headers);
 			for(int s=0; s<numStrat; s++){
-				console.print(table[s][1]+"	");
-				console.print(table[s][2]+"	");
-				console.print(table[s][3]+"	");
-				console.print(table[s][4]+"	");
-				console.print(table[s][5]+"\n");
+				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+"",table[s][5]+""};
+				curTable.addRow(row);
 			}
+			curTable.print();
 			console.newLine();
 		}
 		else if(dimInfo.analysisType==2){ //BCA
 			console.print("\nBCA Results:\n");
-			console.print("Strategy	"+dimInfo.dimNames[dimInfo.effectDim]+"	"+dimInfo.dimNames[dimInfo.costDim]+"	NMB\n");
+			boolean colTypes[]=new boolean[]{false,true,true,true};
+			ConsoleTable curTable=new ConsoleTable(console,colTypes);
+			String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB"};
+			curTable.addRow(headers);
 			for(int s=0; s<numStrat; s++){
-				console.print(table[s][1]+"	");
-				console.print(table[s][3]+"	");
-				console.print(table[s][2]+"	");
-				console.print(table[s][4]+"\n");
+				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+""};
+				curTable.addRow(row);
 			}
+			curTable.print();
 			console.newLine();
 		}
 		
@@ -367,23 +371,29 @@ public class DecisionTree{
 		TreeNode root=nodes.get(0);
 		int numDimensions=root.numDimensions;
 		int numChildren=root.numChildren; //Root
-		console.print("Strategy");
-		for(int d=0; d<numDimensions; d++){
-			console.print("\tEV ("+dimInfo.dimSymbols[d]+")");
-		}
-		console.print("\n");
+		boolean colTypes[]=new boolean[numDimensions+1]; //is column number (true), or text (false)
+		colTypes[0]=false;
+		for(int d=0; d<numDimensions; d++){colTypes[d+1]=true;}
+		ConsoleTable curTable=new ConsoleTable(console,colTypes);
+		String headers[]=new String[numDimensions+1];
+		headers[0]="Strategy";
+		for(int d=0; d<numDimensions; d++){headers[d+1]="EV ("+dimInfo.dimSymbols[d]+")";}
+		curTable.addRow(headers);
 		for(int i=0; i<numChildren; i++){ //strategy results
 			TreeNode child=root.children[i];
-			console.print(child.name);
+			String row[]=new String[numDimensions+1];
+			row[0]=child.name;
 			for(int d=0; d<numDimensions; d++){
-				console.print("\t"+MathUtils.round(child.expectedValues[d]*myModel.cohortSize,dimInfo.decimals[d]));
+				row[d+1]=MathUtils.round(child.expectedValues[d]*myModel.cohortSize,dimInfo.decimals[d])+"";
 			}
-			console.print("\n");
+			curTable.addRow(row);
 		}
+		console.print("\nEV Results:\n");
+		curTable.print();
 		console.newLine();
 	}
 
-	public void appendResults(TreeNode curNode, Console console){
+	/*public void appendResults(TreeNode curNode, Console console){
 		int numChildren=curNode.childIndices.size();
 		for(int i=0; i<numChildren; i++){
 			TreeNode child=nodes.get(curNode.childIndices.get(i));
@@ -394,7 +404,7 @@ public class DecisionTree{
 			console.print(MathUtils.round(child.expectedValues[child.numDimensions-1],myModel.dimInfo.decimals[child.numDimensions-1])+"\n");
 			appendResults(child,console);
 		}
-	}
+	}*/
 
 	public void updateDimensions(int numDimensions){
 		int numNodes=nodes.size();

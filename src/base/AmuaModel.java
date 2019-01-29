@@ -734,8 +734,8 @@ public class AmuaModel{
 
 	private void printSimInfo(Console console){
 		console.print(new Date()+"\n");
-		if(type==0){console.print("Decision Tree: "+name+"\n");}
-		else if(type==1){console.print("Markov Model: "+name+"\n");}
+		if(type==0){console.print("Decision Tree:\t"+name+"\n");}
+		else if(type==1){console.print("Markov Model:\t"+name+"\n");}
 		
 		if(simType==0 && cohortSize>1){console.print("Cohort size:\t"+cohortSize+"\n");}
 		else if(simType==1){console.print("Monte Carlo simulations:\t"+cohortSize+"\n");}
@@ -775,13 +775,16 @@ public class AmuaModel{
 							MarkovNode curNode=markov.nodes.get(n);
 							if(curNode.type==1){
 								panelMarkov.tree.runModel(curNode,display);
-								if(display){
-									console.print(" done!\n");
-									printSimInfo(console);
-									if(dimInfo.analysisType>0){
-										panelMarkov.tree.runCEA(console);
-									}
-								}
+							}
+						}
+						if(display){
+							console.print(" done!\n");
+							printSimInfo(console);
+							if(dimInfo.analysisType>0){
+								panelMarkov.tree.runCEA(console);
+							}
+							else{
+								panelMarkov.tree.displayModelResults(console);
 							}
 						}
 					}
@@ -791,6 +794,7 @@ public class AmuaModel{
 						if(display){
 							console.print(" done!\n");
 							printSimInfo(console);
+							panelMarkov.tree.displayChainResults(console,panelMarkov.curNode);
 						}
 					}
 					unlockParams(); //unlock parameters
@@ -848,29 +852,36 @@ public class AmuaModel{
 						}
 						
 						if(display){
-							String buildString="";
-							if(markov.discountRewards==false){
-								for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValues[i],dimInfo.decimals[i])+"; ";}
-								buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValues[numDim-1],dimInfo.decimals[numDim-1]);
+							if(dimInfo.analysisType==0){ //EV
+								String buildString="";
+								if(markov.discountRewards==false){
+									for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValues[i],dimInfo.decimals[i])+"; ";}
+									buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValues[numDim-1],dimInfo.decimals[numDim-1]);
+								}
+								else{
+									for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValuesDis[i],dimInfo.decimals[i])+"; ";}
+									buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValuesDis[numDim-1],dimInfo.decimals[numDim-1]);
+								}
+								curNode.textEV.setText(buildString);
+								if(curNode.visible){curNode.textEV.setVisible(true);}
 							}
-							else{
-								for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValuesDis[i],dimInfo.decimals[i])+"; ";}
-								buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValuesDis[numDim-1],dimInfo.decimals[numDim-1]);
-							}
-							curNode.textEV.setText(buildString);
-							if(curNode.visible){curNode.textEV.setVisible(true);}
 							
 							frmTraceSummary showSummary=new frmTraceSummary(traceSummary,errorLog);
 							showSummary.frmTraceSummary.setVisible(true);
 						}
 					}
 					progress.close();
+					
+					if(display){
+						if(dimInfo.analysisType>0){
+							panelMarkov.tree.runCEA(console);
+						}
+						else{
+							panelMarkov.tree.displayModelResults(console);
+						}
+					}
 				}	
 
-				if(display){
-					//Display output on console
-					panelMarkov.tree.displayResults(console);
-				}
 			}
 		}catch(Exception e){
 			JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());

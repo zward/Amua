@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import base.AmuaModel;
 import main.CEAHelper;
 import main.Console;
+import main.ConsoleTable;
 import main.DimInfo;
 import main.VariableUpdate;
 import math.Interpreter;
@@ -432,41 +433,81 @@ public class MarkovTree{
 		}
 	}
 
-	public void displayResults(Console console){
+	public void displayModelResults(Console console){
 		//Display output for each Markov Chain
 		DimInfo dimInfo=myModel.dimInfo;
 		int numDimensions=dimInfo.dimSymbols.length;
 		console.print("\n");
-		console.print("Chain\t");
-		for(int d=0; d<numDimensions; d++){console.print(dimInfo.dimNames[d]+"\t");}
+		boolean colTypes[]=new boolean[numDimensions+1]; //is column number (true), or text (false)
+		if(discountRewards){colTypes=new boolean[numDimensions*2+1];}
+		colTypes[0]=false;
+		for(int d=1; d<colTypes.length; d++){colTypes[d]=true;}
+		ConsoleTable curTable=new ConsoleTable(console,colTypes);
+		String headers[]=new String[numDimensions+1];
+		if(discountRewards){headers=new String[numDimensions*2+1];}
+		headers[0]="Chain";
+		for(int d=0; d<numDimensions; d++){headers[d+1]=dimInfo.dimNames[d];}
 		if(discountRewards){
-			for(int d=0; d<numDimensions; d++){console.print(dimInfo.dimNames[d]+" (Dis.)\t");}
+			for(int d=0; d<numDimensions; d++){headers[numDimensions+d+1]=dimInfo.dimNames[d]+" (Dis)";}
 		}
-		console.print("\n");
-		console.print("-----\t");
-		for(int d=0; d<numDimensions; d++){console.print("-----\t");}
-		if(discountRewards){
-			for(int d=0; d<numDimensions; d++){console.print("-----\t");}
-		}
-		console.print("\n");
-		
+		curTable.addRow(headers);
+		//chain results
 		for(int i=0; i<nodes.size(); i++){
 			MarkovNode curNode=nodes.get(i);
 			if(curNode.type==1){ //Chain
-				console.print(curNode.name+"\t");
+				String row[]=new String[numDimensions+1];
+				if(discountRewards){row=new String[numDimensions*2+1];}
+				row[0]=curNode.name;
 				if(curNode.expectedValues!=null){
 					for(int d=0; d<numDimensions; d++){
-						console.print(MathUtils.round(curNode.expectedValues[d],myModel.dimInfo.decimals[d])+"\t");
+						row[d+1]=MathUtils.round(curNode.expectedValues[d],myModel.dimInfo.decimals[d])+"";
 					}
 					if(discountRewards){
 						for(int d=0; d<numDimensions; d++){
-							console.print(MathUtils.round(curNode.expectedValuesDis[d],myModel.dimInfo.decimals[d])+"\t");
+							row[numDimensions+d+1]=MathUtils.round(curNode.expectedValuesDis[d],myModel.dimInfo.decimals[d])+"";
 						}
 					}
 				}
-				console.print("\n");
+				curTable.addRow(row);
 			}
 		}
+		curTable.print();
+		console.newLine();
+	}
+	
+	public void displayChainResults(Console console, MarkovNode curChain){
+		DimInfo dimInfo=myModel.dimInfo;
+		int numDimensions=dimInfo.dimSymbols.length;
+		console.print("\n");
+		boolean colTypes[]=new boolean[numDimensions+1]; //is column number (true), or text (false)
+		if(discountRewards){colTypes=new boolean[numDimensions*2+1];}
+		colTypes[0]=false;
+		for(int d=1; d<colTypes.length; d++){colTypes[d]=true;}
+		ConsoleTable curTable=new ConsoleTable(console,colTypes);
+		String headers[]=new String[numDimensions+1];
+		if(discountRewards){headers=new String[numDimensions*2+1];}
+		headers[0]="Chain";
+		for(int d=0; d<numDimensions; d++){headers[d+1]=dimInfo.dimNames[d];}
+		if(discountRewards){
+			for(int d=0; d<numDimensions; d++){headers[numDimensions+d+1]=dimInfo.dimNames[d]+" (Dis)";}
+		}
+		curTable.addRow(headers);
+		//chain results
+		String row[]=new String[numDimensions+1];
+		if(discountRewards){row=new String[numDimensions*2+1];}
+		row[0]=curChain.name;
+		if(curChain.expectedValues!=null){
+			for(int d=0; d<numDimensions; d++){
+				row[d+1]=MathUtils.round(curChain.expectedValues[d],myModel.dimInfo.decimals[d])+"";
+			}
+			if(discountRewards){
+				for(int d=0; d<numDimensions; d++){
+					row[numDimensions+d+1]=MathUtils.round(curChain.expectedValuesDis[d],myModel.dimInfo.decimals[d])+"";
+				}
+			}
+		}
+		curTable.addRow(row);
+		curTable.print();
 		console.newLine();
 	}
 	
@@ -493,25 +534,28 @@ public class MarkovTree{
 		//Display results in console
 		if(info.analysisType==1){ //CEA
 			console.print("\nCEA Results:\n");
-			console.print("Strategy	"+info.dimNames[info.costDim]+"	"+info.dimNames[info.effectDim]+"	ICER	Notes\n");
+			boolean colTypes[]=new boolean[]{false,true,true,true,false}; //is column number (true), or text (false)
+			ConsoleTable curTable=new ConsoleTable(console,colTypes);
+			String headers[]=new String[]{"Strategy",info.dimNames[info.costDim],info.dimNames[info.effectDim],"ICER","Notes"};
+			curTable.addRow(headers);
 			for(int s=0; s<numStrat; s++){
-				console.print(table[s][1]+"	");
-				console.print(table[s][2]+"	");
-				console.print(table[s][3]+"	");
-				console.print(table[s][4]+"	");
-				console.print(table[s][5]+"\n");
+				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+"",table[s][5]+""};
+				curTable.addRow(row);
 			}
+			curTable.print();
 			console.newLine();
 		}
 		else if(info.analysisType==2){ //BCA
 			console.print("\nBCA Results:\n");
-			console.print("Strategy	"+info.dimNames[info.effectDim]+"	"+info.dimNames[info.costDim]+"	NMB\n");
+			boolean colTypes[]=new boolean[]{false,true,true,true};
+			ConsoleTable curTable=new ConsoleTable(console,colTypes);
+			String headers[]=new String[]{"Strategy",info.dimNames[info.effectDim],info.dimNames[info.costDim],"NMB"};
+			curTable.addRow(headers);
 			for(int s=0; s<numStrat; s++){
-				console.print(table[s][1]+"	");
-				console.print(table[s][3]+"	");
-				console.print(table[s][2]+"	");
-				console.print(table[s][4]+"\n");
+				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+""};
+				curTable.addRow(row);
 			}
+			curTable.print();
 			console.newLine();
 		}
 		

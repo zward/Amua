@@ -120,6 +120,7 @@ public class CEAHelper{
 					if(incCost==0){ //Greater effect, same cost
 						table[index0][4]=Double.NaN;
 						table[index0][5]="Strongly Dominated";
+						table[index1][4]=0.0; //set dominating ICER to 0 for now
 						viable.remove(v-1);
 					}
 					else{

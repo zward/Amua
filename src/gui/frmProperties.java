@@ -256,6 +256,7 @@ public class frmProperties {
 			tableDimensions.setRowSelectionAllowed(false);
 			tableDimensions.getTableHeader().setReorderingAllowed(false);
 			tableDimensions.setModel(modelDimensions);
+			tableDimensions.putClientProperty("terminateEditOnFocusLost", true);
 			scrollPane.setViewportView(tableDimensions);
 
 			JButton btnAddDimension = new JButton("");
@@ -337,6 +338,7 @@ public class frmProperties {
 			tableAnalysis.getColumnModel().getColumn(1).setPreferredWidth(170);
 			tableAnalysis.setShowVerticalLines(true);
 			tableAnalysis.setRowSelectionAllowed(false);
+			tableAnalysis.putClientProperty("terminateEditOnFocusLost", true);
 			scrollPane_2.setViewportView(tableAnalysis);
 			
 			JButton btnRefreshDim = new JButton("Refresh");
@@ -517,6 +519,7 @@ public class frmProperties {
 			tableDiscountRates.setRowSelectionAllowed(false);
 			tableDiscountRates.getTableHeader().setReorderingAllowed(false);
 			tableDiscountRates.setEnabled(false);
+			tableDiscountRates.putClientProperty("terminateEditOnFocusLost", true);
 			scrollPane_1.setViewportView(tableDiscountRates);
 			
 			JLabel lblStatePrevalenceDecimals = new JLabel("State Prevalence Decimals:");
