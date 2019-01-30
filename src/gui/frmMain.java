@@ -119,7 +119,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.1.2";
+	public String version="0.1.3";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -1931,7 +1931,7 @@ public class frmMain {
 			int m=0;
 			while(isOpen==false && m<numModels){
 				String openPath=modelList.get(m).filepath;
-				if(openPath.equals(filepath)){ //Open, go to tab
+				if(openPath!=null && openPath.equals(filepath)){ //Open, go to tab
 					isOpen=true;
 					JOptionPane.showMessageDialog(frmMain, filepath+" is already open!");
 					tabbedPaneCanvas.setSelectedIndex(m);

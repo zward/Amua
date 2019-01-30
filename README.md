@@ -13,4 +13,6 @@ Model types:
 * Discrete Event Simulation (planned)
 * Microsimulation Models (multi-method) (planned)
 
+You can get started [here](https://github.com/zward/Amua/wiki/Getting-Started)!
+
 ![Screenshot](https://github.com/zward/amua/blob/gh-pages/images/screenMarkov.png)
