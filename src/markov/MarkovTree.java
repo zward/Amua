@@ -229,13 +229,21 @@ public class MarkovTree{
 				try{
 					double testVal=Interpreter.evaluate(curNode.rewards[c],myModel,false).getDouble();
 					if(Double.isNaN(testVal)){
-						curNode.highlightTextField(3, Color.YELLOW); //Cost
+						curNode.highlightTextField(3, Color.YELLOW); //rewards
 						errors.add("Node "+curNode.name+": Rewards Error ("+curNode.rewards[c]+")");
 					}
 				}catch(Exception e){
-					curNode.highlightTextField(3, Color.YELLOW); //Cost
+					curNode.highlightTextField(3, Color.YELLOW); //rewards
 					errors.add("Node "+curNode.name+": Rewards Error ("+curNode.rewards[c]+")");
 				}
+			}
+		}
+		
+		if(curNode.type==1){ //Chain, check name
+			curNode.highlightTextField(5, null);
+			if(curNode.name==null || curNode.name.isEmpty()){
+				curNode.highlightTextField(5, Color.YELLOW);
+				errors.add("Markov Chain Error: Chain not named");
 			}
 		}
 		
@@ -512,31 +520,32 @@ public class MarkovTree{
 	}
 	
 	public void runCEA(Console console){
-		DimInfo info=myModel.dimInfo;
+		DimInfo dimInfo=myModel.dimInfo;
 		Object table[][]=null;
-		if(info.analysisType==1){table=new CEAHelper().calculateICERs(myModel);} //CEA
-		else if(info.analysisType==2){table=new CEAHelper().calculateNMB(myModel);} //BCA
-		int numStrat=table.length;
+		int numStrat=0;
 
-		//Round results
-		for(int s=0; s<numStrat; s++){
-			table[s][2]=MathUtils.round((double)table[s][2],info.decimals[info.costDim]); //Cost
-			table[s][3]=MathUtils.round((double)table[s][3],info.decimals[info.effectDim]); //Effect
-			double icer=(double) table[s][4];
-			if(Double.isNaN(icer)){
-				table[s][4]="---";
+		if(dimInfo.analysisType==1){ //CEA
+			table=new CEAHelper().calculateICERs(myModel);
+			
+			//Round results
+			numStrat=table.length;
+			for(int s=0; s<numStrat; s++){
+				table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.costDim]); //Cost
+				table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.effectDim]); //Effect
+				double icer=(double) table[s][4];
+				if(Double.isNaN(icer)){
+					table[s][4]="---";
+				}
+				else{
+					table[s][4]=MathUtils.round(icer,dimInfo.decimals[dimInfo.costDim]);
+				}
 			}
-			else{
-				table[s][4]=MathUtils.round(icer,info.decimals[info.costDim]);
-			}
-		}
-
-		//Display results in console
-		if(info.analysisType==1){ //CEA
+			
+			//Print results
 			console.print("\nCEA Results:\n");
 			boolean colTypes[]=new boolean[]{false,true,true,true,false}; //is column number (true), or text (false)
 			ConsoleTable curTable=new ConsoleTable(console,colTypes);
-			String headers[]=new String[]{"Strategy",info.dimNames[info.costDim],info.dimNames[info.effectDim],"ICER","Notes"};
+			String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.costDim],dimInfo.dimNames[dimInfo.effectDim],"ICER","Notes"};
 			curTable.addRow(headers);
 			for(int s=0; s<numStrat; s++){
 				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+"",table[s][5]+""};
@@ -545,11 +554,21 @@ public class MarkovTree{
 			curTable.print();
 			console.newLine();
 		}
-		else if(info.analysisType==2){ //BCA
+		else if(dimInfo.analysisType==2){ //BCA
+			table=new CEAHelper().calculateNMB(myModel);
+			
+			//Round results
+			numStrat=table.length;
+			for(int s=0; s<numStrat; s++){
+				table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.effectDim]); //Benefit
+				table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.costDim]); //Cost
+				table[s][4]=MathUtils.round((double)table[s][4],dimInfo.decimals[dimInfo.costDim]); //NMB
+			}
+			
 			console.print("\nBCA Results:\n");
 			boolean colTypes[]=new boolean[]{false,true,true,true};
 			ConsoleTable curTable=new ConsoleTable(console,colTypes);
-			String headers[]=new String[]{"Strategy",info.dimNames[info.effectDim],info.dimNames[info.costDim],"NMB"};
+			String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB"};
 			curTable.addRow(headers);
 			for(int s=0; s<numStrat; s++){
 				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+""};
@@ -570,8 +589,8 @@ public class MarkovTree{
 				if(icer.matches("---")){
 					icer=(String)table[s][5];
 				}
-				if(info.analysisType==1){icer="ICER: "+icer;}
-				else if(info.analysisType==2){icer="NMB: "+icer;}
+				if(dimInfo.analysisType==1){icer="ICER: "+icer;}
+				else if(dimInfo.analysisType==2){icer="NMB: "+icer;}
 				child.icer=icer;
 				child.textICER.setText(icer);
 				if(child.visible){

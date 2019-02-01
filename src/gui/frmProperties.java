@@ -54,6 +54,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
+import java.awt.Font;
 
 /**
  *
@@ -422,12 +423,12 @@ public class frmProperties {
 			
 			lblCohortSize = new JLabel("Cohort size:");
 			lblCohortSize.setHorizontalAlignment(SwingConstants.RIGHT);
-			lblCohortSize.setBounds(6, 46, 92, 16);
+			lblCohortSize.setBounds(6, 45, 92, 16);
 			panel_3.add(lblCohortSize);
 			
 			textCohortSize = new JTextField();
 			textCohortSize.setColumns(10);
-			textCohortSize.setBounds(103, 40, 105, 28);
+			textCohortSize.setBounds(103, 39, 105, 28);
 			panel_3.add(textCohortSize);
 			
 			chckbxCRN = new JCheckBox("Seed RNG");
@@ -438,7 +439,7 @@ public class frmProperties {
 					else{textCRNSeed.setEnabled(false);}
 				}
 			});
-			chckbxCRN.setBounds(15, 79, 92, 18);
+			chckbxCRN.setBounds(15, 78, 92, 18);
 			panel_3.add(chckbxCRN);
 			
 			JLabel lblSeed = new JLabel("Seed:");
@@ -448,9 +449,15 @@ public class frmProperties {
 			textCRNSeed = new JTextField();
 			textCRNSeed.setEnabled(false);
 			textCRNSeed.setText("999");
-			textCRNSeed.setBounds(142, 74, 66, 28);
+			textCRNSeed.setBounds(142, 73, 66, 28);
 			panel_3.add(textCRNSeed);
 			textCRNSeed.setColumns(10);
+			
+			JLabel lblstOrder = new JLabel("(1st-order uncertainty)");
+			lblstOrder.setHorizontalAlignment(SwingConstants.CENTER);
+			lblstOrder.setFont(new Font("SansSerif", Font.PLAIN, 9));
+			lblstOrder.setBounds(269, 11, 98, 16);
+			panel_3.add(lblstOrder);
 			
 			JPanel testDiscountStartCycle = new JPanel();
 			testDiscountStartCycle.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -589,7 +596,7 @@ public class frmProperties {
 			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.costDim], 0, 1);
 			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.effectDim], 1, 1);
 			if(tempDimInfo.analysisType==1){ //CEA
-				tableAnalysis.setValueAt(myModel.strategyNames[tempDimInfo.baseScenario], 2, 1);
+				tableAnalysis.setValueAt(tempDimInfo.baseScenario, 2, 1);
 			}
 			tableAnalysis.setValueAt(tempDimInfo.WTP+"",3,1);
 		}
@@ -702,7 +709,7 @@ public class frmProperties {
 		//Check analysis settings
 		int objective=0, objectiveDim=0;
 		int costDim=-1, effectDim=-1;
-		int baseIndex=-1;
+		String baseStrategy = null;
 		double WTP=0;
 		if(comboAnalysis.getSelectedIndex()==0){ //EV
 			String strObj=(String) tableAnalysis.getValueAt(0, 1);
@@ -748,12 +755,17 @@ public class frmProperties {
 				}
 			}
 			if(comboAnalysis.getSelectedIndex()==1){ //CEA
-				String strBase=(String)tableAnalysis.getValueAt(2, 1);
-				baseIndex=-1;
-				if(strBase!=null){baseIndex=getScenarioIndex(strBase);}
-				if(baseIndex==-1){
+				baseStrategy=(String)tableAnalysis.getValueAt(2, 1);
+				if(baseStrategy==null || baseStrategy.isEmpty()){
 					valid=false;
 					JOptionPane.showMessageDialog(frmProperties, "Please choose a baseline scenario!");
+				}
+				else{
+					int baseIndex=myModel.getStrategyIndex(baseStrategy);
+					if(baseIndex==-1){
+						valid=false;
+						JOptionPane.showMessageDialog(frmProperties, "Baseline scenario not recognized!");
+					}
 				}
 			}
 			try{
@@ -880,7 +892,7 @@ public class frmProperties {
 			myModel.dimInfo.analysisType=comboAnalysis.getSelectedIndex();
 			myModel.dimInfo.objective=objective; myModel.dimInfo.objectiveDim=objectiveDim;
 			myModel.dimInfo.costDim=costDim; myModel.dimInfo.effectDim=effectDim;
-			myModel.dimInfo.baseScenario=baseIndex;
+			myModel.dimInfo.baseScenario=baseStrategy;
 			myModel.dimInfo.WTP=WTP;
 			
 			tempDimInfo=myModel.dimInfo.copy(); //get new copy
@@ -961,7 +973,8 @@ public class frmProperties {
 		boolean found=false;
 		while(found==false && i<myModel.strategyNames.length){
 			i++;
-			if(myModel.strategyNames[i].matches(scenName)){
+			//if(myModel.strategyNames[i].matches(scenName)){
+			if(myModel.strategyNames[i].equals(scenName)){
 				found=true;
 				index=i;
 			}

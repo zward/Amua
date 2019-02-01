@@ -32,7 +32,8 @@ public class DimInfo{
 	@XmlElement public int objective=0, objectiveDim=0;
 	@XmlElement public int costDim, effectDim;
 	@XmlElement public double WTP;
-	@XmlElement public int baseScenario=0;
+	//@XmlElement public int baseScenario=0;
+	@XmlElement public String baseScenario;
 	
 	//Constructor
 	public DimInfo(){

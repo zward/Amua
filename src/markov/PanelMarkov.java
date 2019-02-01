@@ -29,7 +29,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -878,7 +880,28 @@ public class PanelMarkov extends ModelPanel{
 			if(curNode.hasVarUpdates==false){maxY+=curNode.scale(60);}
 			else{maxY+=curNode.scale(80);} //give extra space
 		}
-		else{
+		else{ //has children
+			//update order of child indices based on current position
+			Object childY[][]=new Object[numChildren][2]; //[y pos][cur position in child indices]
+			for(int c=0; c<numChildren; c++){
+				int curIndex=curNode.childIndices.get(c);
+				childY[c][0]=tree.nodes.get(curIndex).yPos;
+				childY[c][1]=curIndex;
+			}
+			Arrays.sort(childY, new Comparator<Object[]>(){
+				@Override
+				public int compare(final Object[] row1, final Object[] row2){
+					Integer y1 = (Integer) row1[0];
+					Integer y2 = (Integer) row2[0];
+					return y1.compareTo(y2);
+				}
+			});
+			curNode.childIndices.clear();
+			for(int c=0; c<numChildren; c++){ //update order
+				curNode.childIndices.add((Integer) childY[c][1]);
+			}
+			
+			//adjust y
 			int totalY=0;
 			boolean childChain=false;
 			for(int c=0; c<numChildren; c++){

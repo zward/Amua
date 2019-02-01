@@ -298,25 +298,26 @@ public class DecisionTree{
 	public void runCEA(Console console){
 		DimInfo dimInfo=myModel.dimInfo;
 		Object table[][]=null;
-		if(dimInfo.analysisType==1){table=new CEAHelper().calculateICERs(myModel);} //CEA
-		else if(dimInfo.analysisType==2){table=new CEAHelper().calculateNMB(myModel);} //BCA
-		int numStrat=table.length;
+		int numStrat=0;
 
-		//Round results
-		for(int s=0; s<numStrat; s++){
-			table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.costDim]); //Cost
-			table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.effectDim]); //Effect
-			double icer=(double) table[s][4];
-			if(Double.isNaN(icer)){
-				table[s][4]="---";
-			}
-			else{
-				table[s][4]=MathUtils.round(icer,dimInfo.decimals[dimInfo.costDim]);
-			}
-		}
-
-		//Display results in console
 		if(dimInfo.analysisType==1){ //CEA
+			table=new CEAHelper().calculateICERs(myModel);
+			
+			//Round results
+			numStrat=table.length;
+			for(int s=0; s<numStrat; s++){
+				table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.costDim]); //Cost
+				table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.effectDim]); //Effect
+				double icer=(double) table[s][4];
+				if(Double.isNaN(icer)){
+					table[s][4]="---";
+				}
+				else{
+					table[s][4]=MathUtils.round(icer,dimInfo.decimals[dimInfo.costDim]);
+				}
+			}
+			
+			//Print results
 			console.print("\nCEA Results:\n");
 			boolean colTypes[]=new boolean[]{false,true,true,true,false}; //is column number (true), or text (false)
 			ConsoleTable curTable=new ConsoleTable(console,colTypes);
@@ -330,6 +331,16 @@ public class DecisionTree{
 			console.newLine();
 		}
 		else if(dimInfo.analysisType==2){ //BCA
+			table=new CEAHelper().calculateNMB(myModel);
+			
+			//Round results
+			numStrat=table.length;
+			for(int s=0; s<numStrat; s++){
+				table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.effectDim]); //Benefit
+				table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.costDim]); //Cost
+				table[s][4]=MathUtils.round((double)table[s][4],dimInfo.decimals[dimInfo.costDim]); //NMB
+			}
+			
 			console.print("\nBCA Results:\n");
 			boolean colTypes[]=new boolean[]{false,true,true,true};
 			ConsoleTable curTable=new ConsoleTable(console,colTypes);

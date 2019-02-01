@@ -29,6 +29,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -804,6 +806,30 @@ public class MarkovNode extends ModelNode{
 		});
 	}
 
+	public void updateStateNameOrder(){
+		//get position of states
+		numChildren=childIndices.size();
+		Object childY[][]=new Object[numChildren][2]; //[y pos][cur position in child indices]
+		for(int c=0; c<numChildren; c++){
+			MarkovNode curChild=tree.nodes.get(childIndices.get(c));
+			childY[c][0]=curChild.yPos;
+			childY[c][1]=curChild.name;
+		}
+		Arrays.sort(childY, new Comparator<Object[]>(){
+			@Override
+			public int compare(final Object[] row1, final Object[] row2){
+				Integer y1 = (Integer) row1[0];
+				Integer y2 = (Integer) row2[0];
+				return y1.compareTo(y2);
+			}
+		});
+		if(stateNames==null){stateNames=new ArrayList<String>();}
+		stateNames.clear();
+		for(int c=0; c<numChildren; c++){ //update order
+			stateNames.add((String) childY[c][1]);
+		}
+	}
+	
 	
 	public void displayTransition(){
 		comboTransition=new JComboBox<String>();
@@ -824,6 +850,7 @@ public class MarkovNode extends ModelNode{
 				tempTransition=transition; //get existing value on field entry
 				comboTransition.setBorder(defaultBorder);
 				DefaultComboBoxModel modelTransition=new DefaultComboBoxModel();
+				chain.updateStateNameOrder();
 				if(chain.stateNames!=null){modelTransition=new DefaultComboBoxModel(chain.stateNames.toArray());}
 				comboTransition.setModel(modelTransition);
 				comboTransition.setSelectedItem(tempTransition);

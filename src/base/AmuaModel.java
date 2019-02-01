@@ -667,6 +667,22 @@ public class AmuaModel{
 			}
 		}
 		
+		if(dimInfo.analysisType==1){ //CEA
+			if(dimInfo.baseScenario==null || dimInfo.baseScenario.isEmpty()){
+				console.print("\nCEA Error: Baseline scenario is not specified!\n");
+				console.newLine();
+				return(false);
+			}
+			else{ //ensure strategy is valid
+				int baseIndex=getStrategyIndex(dimInfo.baseScenario);
+				if(baseIndex==-1){
+					console.print("\nCEA Error: Baseline scenario is not recognized! ("+dimInfo.baseScenario+")\n");
+					console.newLine();
+					return(false);
+				}
+			}
+		}
+		
 		//check model objects
 		validateModelObjects();
 		boolean parse=true;
@@ -939,6 +955,19 @@ public class AmuaModel{
 			}
 		}
 		return(ev);
+	}
+	
+	public int getStrategyIndex(String strat){
+		int numStrat=getStrategies();
+		int index=-1;
+		int s=0;
+		while(index==-1 && s<numStrat){
+			if(strategyNames[s].equals(strat)){
+				index=s;
+			}
+			s++;
+		}
+		return(index);
 	}
 
 	public void updateDimensions(){

@@ -113,11 +113,11 @@ public class frmDefineTable {
 			frmDefineTable.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineTable.class.getResource("/images/logo_16.png")));
 			frmDefineTable.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineTable.setTitle("Amua - Define Table");
-			frmDefineTable.setBounds(100, 100, 901, 600);
+			frmDefineTable.setBounds(100, 100, 925, 600);
 			frmDefineTable.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			
 			GridBagLayout gridBagLayout = new GridBagLayout();
-			gridBagLayout.columnWidths = new int[]{52, 100, 84, 158, 100, 110, 285, 0, 0};
+			gridBagLayout.columnWidths = new int[]{75, 123, 84, 134, 100, 110, 285, 0, 0};
 			gridBagLayout.rowHeights = new int[]{28, 28, 334, 22, 65, 28, 0};
 			gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 			gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
@@ -181,10 +181,25 @@ public class frmDefineTable {
 				public void actionPerformed(ActionEvent e) {
 					int selected=comboType.getSelectedIndex();
 					if(selected==0){ //Lookup
-						model.setColumnCount(0);
-						model.addColumn("Index");
-						model.addColumn("Value");
-						textNumCols.setText("2");
+						int numCols=model.getColumnCount();
+						if(numCols==0){
+							model.addColumn("Index");
+							model.addColumn("Value");
+						}
+						else if(numCols==1){
+							model.setColumnIdentifiers(new String[]{"Index"});
+							model.addColumn("Value");
+						}
+						else{
+							String colNames[]=new String[numCols];
+							for(int c=0; c<numCols; c++){
+								colNames[c]=model.getColumnName(c);
+							}
+							colNames[0]="Index";
+							model.setColumnIdentifiers(colNames);
+						}
+						textNumCols.setText(model.getColumnCount()+"");
+												
 						lblMethod.setEnabled(true);
 						comboLookupMethod.setEnabled(true);
 						lblExpectedValue.setVisible(false);
@@ -192,10 +207,25 @@ public class frmDefineTable {
 						btnEvaluate.setVisible(false);
 					}
 					else if(selected==1){ //Distribution
-						model.setColumnCount(0);
-						model.addColumn("Probability");
-						model.addColumn("Value");
-						textNumCols.setText("2");
+						int numCols=model.getColumnCount();
+						if(numCols==0){
+							model.addColumn("Probability");
+							model.addColumn("Value");
+						}
+						else if(numCols==1){
+							model.setColumnIdentifiers(new String[]{"Probability"});
+							model.addColumn("Value");
+						}
+						else{
+							String colNames[]=new String[numCols];
+							for(int c=0; c<numCols; c++){
+								colNames[c]=model.getColumnName(c);
+							}
+							colNames[0]="Probability";
+							model.setColumnIdentifiers(colNames);
+						}
+						textNumCols.setText(model.getColumnCount()+"");
+						
 						lblMethod.setEnabled(false);
 						comboLookupMethod.setEnabled(false);
 						lblExpectedValue.setVisible(true);
@@ -203,9 +233,14 @@ public class frmDefineTable {
 						btnEvaluate.setVisible(true);
 					}
 					else if(selected==2){ //Matrix
-						model.setColumnCount(0);
-						model.addColumn("0");
-						textNumCols.setText("1");
+						int numCols=model.getColumnCount();
+						String colNames[]=new String[numCols];
+						for(int c=0; c<numCols; c++){
+							colNames[c]=c+"";
+						}
+						model.setColumnIdentifiers(colNames);
+						textNumCols.setText(model.getColumnCount()+"");
+						
 						lblMethod.setEnabled(false);
 						comboLookupMethod.setEnabled(false);
 						lblExpectedValue.setVisible(false);
@@ -528,6 +563,29 @@ public class frmDefineTable {
 			btnRemoveColumn.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/remove.png")));
 			btnRemoveColumn.setToolTipText("Remove Column");
 			toolBar.add(btnRemoveColumn);
+			
+			JButton btnEditColName = new JButton("");
+			btnEditColName.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					int selected=viewTable.getSelectedColumn();
+					if(selected!=-1){
+						String curName=model.getColumnName(selected);
+						String name = JOptionPane.showInputDialog(frmDefineTable, "Column name:",curName);
+						if(name!=null && !name.isEmpty()){
+							int numCols=model.getColumnCount();
+							String colNames[]=new String[numCols];
+							for(int c=0; c<numCols; c++){
+								colNames[c]=model.getColumnName(c);
+							}
+							colNames[selected]=name;
+							model.setColumnIdentifiers(colNames);
+						}
+					}
+				}
+			});
+			btnEditColName.setToolTipText("Edit Column Name");
+			btnEditColName.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/edit_16.png")));
+			toolBar.add(btnEditColName);
 
 			textNumCols = new JTextField();
 			textNumCols.setBackground(SystemColor.info);

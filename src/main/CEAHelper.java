@@ -35,7 +35,14 @@ public class CEAHelper{
 	//ErrorLog errorLog;
 	public Object[][] calculateICERs(AmuaModel myModel){
 		getResults(myModel); //Get EVs
-		int baseline=myModel.dimInfo.baseScenario;
+		int baseline=-1;
+		int strat=0;
+		while(baseline==-1 && strat<numStrat){
+			if(myModel.strategyNames[strat].equals(myModel.dimInfo.baseScenario)){
+				baseline=strat;
+			}
+			strat++;
+		}
 		
 		//Sort by costs
 		Object costTable[][]=new Object[numStrat][2];
@@ -140,10 +147,19 @@ public class CEAHelper{
 				v++;
 			}
 		}
-		//Set baseline ICER to NAN
-		table[0][4]=Double.NaN; //Baseline
-		table[0][5]="Baseline";
+		//Set first ICER to NAN
+		table[0][4]=Double.NaN;
+		//table[baseline][5]="Baseline";
 
+		for(int s=0; s<numStrat; s++){
+			int curStrat=(int) costTable[s][0];
+			if(curStrat==baseline){
+				//table[s][4]=Double.NaN;
+				String curNote=(String) table[s][5];
+				if(curNote==null || curNote.isEmpty()){table[s][5]="Baseline";}
+				else{table[s][5]+=" (Baseline)";}
+			}
+		}
 
 		return(table);
 	}
@@ -171,8 +187,8 @@ public class CEAHelper{
 			double cost, benefit;
 			cost=costs[s];
 			benefit=effects[s];
-			table[s][2]=cost;
-			table[s][3]=benefit;
+			table[s][2]=benefit;
+			table[s][3]=cost;
 			table[s][4]=(benefit*myModel.dimInfo.WTP)-cost; //NMB
 		}
 

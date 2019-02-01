@@ -670,11 +670,13 @@ public class frmPSA {
 											if(analysisType==1){ //CEA
 												Object table[][]=new CEAHelper().calculateICERs(myModel);
 												//get baseline row
+												int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
 												int baseRow=-1,curRow=0;
-												while(baseRow==-1){
-													if((int)table[curRow][0]==myModel.dimInfo.baseScenario){
+												while(baseRow==-1 && curRow<table.length){
+													if((int)table[curRow][0]==baseIndex){
 														baseRow=curRow;
 													}
+													curRow++;
 												}
 												
 												for(int s=0; s<table.length; s++){	
@@ -698,11 +700,13 @@ public class frmPSA {
 											else if(analysisType==2){ //BCA
 												Object table[][]=new CEAHelper().calculateNMB(myModel);
 												//get baseline row
+												int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
 												int baseRow=-1,curRow=0;
-												while(baseRow==-1){
-													if((int)table[curRow][0]==myModel.dimInfo.baseScenario){
+												while(baseRow==-1 && curRow<table.length){
+													if((int)table[curRow][0]==baseIndex){
 														baseRow=curRow;
 													}
+													curRow++;
 												}
 												for(int s=0; s<table.length; s++){	
 													int origStrat=(int) table[s][0];

@@ -112,7 +112,7 @@ public class WriteRMD{
 				writeLine("|Cost|"+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]+"|");
 				writeLine("|Effect|"+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]+"|");
 				myModel.getStrategies();
-				writeLine("|Baseline Strategy|"+myModel.strategyNames[myModel.dimInfo.baseScenario]+"|");
+				writeLine("|Baseline Strategy|"+myModel.dimInfo.baseScenario+"|");
 				writeLine("|Willingness-to-pay (WTP)|"+myModel.dimInfo.WTP+"|");
 			}
 			else if(myModel.dimInfo.analysisType==2){ //BCA
