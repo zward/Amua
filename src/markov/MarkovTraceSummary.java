@@ -115,7 +115,7 @@ public class MarkovTraceSummary{
 			}
 			expectedValues[d][0]=mean/(numTraces*1.0);
 			Arrays.sort(curVal);
-			int bounds[]=getBoundIndices(numTraces); int lb=bounds[0], ub=bounds[1];
+			int bounds[]=MathUtils.getBoundIndices(numTraces); int lb=bounds[0], ub=bounds[1];
 			expectedValues[d][1]=curVal[lb]; expectedValues[d][2]=curVal[ub];
 			if(discounted){
 				expectedValuesDis[d][0]=meanDis/(numTraces*1.0);
@@ -148,7 +148,7 @@ public class MarkovTraceSummary{
 				}
 				prev[s][0][c]=mean/denom;
 				Collections.sort(curPrev);
-				int bounds[]=getBoundIndices(denom); int lb=bounds[0], ub=bounds[1];
+				int bounds[]=MathUtils.getBoundIndices(denom); int lb=bounds[0], ub=bounds[1];
 				prev[s][1][c]=curPrev.get(lb); prev[s][2][c]=curPrev.get(ub);
 			}
 		}
@@ -167,7 +167,7 @@ public class MarkovTraceSummary{
 				}
 				cycleRewards[d][0][c]=mean/denom; cumRewards[d][0][c]=meanCum/denom;
 				Collections.sort(curRewards); Collections.sort(curCum);
-				int bounds[]=getBoundIndices(denom); int lb=bounds[0], ub=bounds[1];
+				int bounds[]=MathUtils.getBoundIndices(denom); int lb=bounds[0], ub=bounds[1];
 				cycleRewards[d][1][c]=curRewards.get(lb); cycleRewards[d][2][c]=curRewards.get(ub);
 				cumRewards[d][1][c]=curCum.get(lb); cumRewards[d][2][c]=curCum.get(ub);
 			}
@@ -188,7 +188,7 @@ public class MarkovTraceSummary{
 					}
 					cycleRewardsDis[d][0][c]=mean/denom; cumRewardsDis[d][0][c]=meanCum/denom;
 					Collections.sort(curRewards); Collections.sort(curCum);
-					int bounds[]=getBoundIndices(denom); int lb=bounds[0], ub=bounds[1];
+					int bounds[]=MathUtils.getBoundIndices(denom); int lb=bounds[0], ub=bounds[1];
 					cycleRewardsDis[d][1][c]=curRewards.get(lb); cycleRewardsDis[d][2][c]=curRewards.get(ub);
 					cumRewardsDis[d][1][c]=curCum.get(lb); cumRewardsDis[d][2][c]=curCum.get(ub);
 				}
@@ -248,17 +248,7 @@ public class MarkovTraceSummary{
 		
 	}
 
-	private int[] getBoundIndices(double dNum){
-		int num=(int)dNum;
-		int lb=(int) Math.round(0.025*num)-1;
-		int ub=(int) Math.round(0.975*num)-1;
-		lb=Math.max(0, lb); ub=Math.max(0, lb); //floor of 0
-		lb=Math.min(num-1, lb); ub=Math.min(num-1, ub); //ceiling of num-1
-		if(lb>=ub){ //set to min and max
-			lb=0; ub=num-1;
-		}
-		return(new int[]{lb,ub});
-	}
+	
 	
 	
 

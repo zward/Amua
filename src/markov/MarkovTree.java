@@ -35,6 +35,7 @@ import math.Interpreter;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
+import tree.TreeNode;
 
 
 @XmlRootElement(name="MarkovTree")
@@ -51,6 +52,7 @@ public class MarkovTree{
 	@XmlElement public boolean discountRewards;
 	@XmlElement public double discountRates[];
 	@XmlElement public int discountStartCycle=0;
+	@XmlElement public boolean showTrace=true;
 		
 	@XmlTransient public boolean showEV=false;
 	@XmlTransient boolean validProbs;
@@ -136,12 +138,15 @@ public class MarkovTree{
 		//Parse tree inputs and variables
 		validProbs=true;
 		int numChildren=root.childIndices.size(); //Exclude root node
+		root.numChildren=numChildren;
+		root.children=new MarkovNode[numChildren];
 		for(int i=0; i<numChildren; i++){
 			int childIndex=root.childIndices.get(i);
 			MarkovNode child=nodes.get(childIndex);
+			root.children[i]=child; //get pointer to child
 			parseNode(child);
 		}
-
+		
 		//Ensure probabilities sum to 1.0
 		if(validProbs){
 			for(int i=0; i<numChildren; i++){
@@ -363,36 +368,189 @@ public class MarkovTree{
 	/**
 	 * Run all Markov chains
 	 * @param display
+	 * @throws Exception 
+	 * @throws NumericException 
 	 */
-	/*public void runModel(boolean display){
-		int numNodes=nodes.size();
-		for(int i=0; i<numNodes; i++){
-			MarkovNode curNode=nodes.get(i);
-			if(curNode.type==1){
-				runModel(curNode,display);
+	
+	private void getEVs(MarkovNode node, boolean display) throws NumericException, Exception{
+		int numDim=myModel.dimInfo.dimNames.length;
+		
+		//Update costs
+		if(node.curCosts==null){node.curCosts=new double[numDim];}
+		if(node.hasCost){
+			for(int c=0; c<numDim; c++){
+				node.curCosts[c]=Interpreter.evaluate(node.cost[c],myModel,false).getDouble();
 			}
 		}
-	}*/
-	
+		
+		if(node.type==0){ //Decision, choose best branch
+			//Get EVs
+			node.expectedValues=new double[numDim]; node.expectedValuesDis=new double[numDim];
+			//Apply cost
+			for(int i=0; i<numDim; i++){
+				node.expectedValues[i]=node.curCosts[i];
+				node.expectedValuesDis[i]=node.curCosts[i];
+			}
+			//Get children EVs
+			int disIndex=0;
+			if(discountRewards==true){disIndex=1;}
+			double childEVs[][][]=new double[node.numChildren][numDim][2];
+			for(int c=0; c<node.numChildren; c++){
+				MarkovNode child=node.children[c];
+				getEVs(child,display);
+				for(int i=0; i<numDim; i++){
+					childEVs[c][i][0]=child.expectedValues[i];
+					childEVs[c][i][1]=child.expectedValuesDis[i];
+				}
+			}
+			//Make decision
+			if(myModel.dimInfo.analysisType==0){ //EV
+				int obj=myModel.dimInfo.objective;
+				int objDim=myModel.dimInfo.objectiveDim;
+				double bestEV=childEVs[0][objDim][disIndex];
+				int bestChild=0;
+				for(int c=1; c<node.numChildren; c++){
+					if(obj==0){ //Maximize
+						if(childEVs[c][objDim][disIndex]>bestEV){
+							bestEV=childEVs[c][objDim][disIndex];	bestChild=c;
+						}
+					}
+					else{ //Minimize
+						if(childEVs[c][objDim][disIndex]<bestEV){
+							bestEV=childEVs[c][objDim][disIndex];	bestChild=c;
+						}
+					}
+				}
+				//choose best EV
+				for(int i=0; i<numDim; i++){
+					node.expectedValues[i]+=childEVs[bestChild][i][0];
+					node.expectedValuesDis[i]+=childEVs[bestChild][i][1];
+				}
+			}
+			else if(myModel.dimInfo.analysisType>0){ //CEA or BCA
+				int dimCost=myModel.dimInfo.costDim;
+				int dimBenefit=myModel.dimInfo.effectDim;
+				double wtp=myModel.dimInfo.WTP;
+				double bestNMB=(wtp*childEVs[0][dimBenefit][disIndex])-childEVs[0][dimCost][disIndex];
+				int bestChild=0;
+				for(int c=1; c<node.numChildren; c++){
+					double curNMB=(wtp*childEVs[c][dimBenefit][disIndex])-childEVs[c][dimCost][disIndex];
+					if(curNMB>bestNMB){
+						bestNMB=curNMB; bestChild=c;
+					}
+				}
+				//choose best NMB
+				for(int i=0; i<numDim; i++){
+					node.expectedValues[i]+=childEVs[bestChild][i][0];
+					node.expectedValuesDis[i]+=childEVs[bestChild][i][1];
+				}
+			}
+		}
+		else if(node.type==3){ //Chance node, get EV of children
+			//Calculate probabilities for children
+			double sumProb=0;
+			int indexCompProb=-1;
+			for(int c=0; c<node.numChildren; c++){
+				MarkovNode curChild=node.children[c];
+				if(curChild.prob.matches("C") || curChild.prob.matches("c")){ //Complementary
+					curChild.curProb=-1;
+					indexCompProb=c;
+				}
+				else{ //Evaluate text
+					curChild.curProb=Interpreter.evaluate(curChild.prob,myModel,false).getDouble();
+					sumProb+=curChild.curProb;
+				}
+			}
+			if(indexCompProb==-1){
+				if(sumProb!=1.0){ //throw error
+					throw new Exception("Probability error: "+node.name+" (Prob="+sumProb+")");
+				}
+			}
+			else{
+				if(sumProb>1.0 || sumProb<0.0){ //throw error
+					throw new Exception("Probability error: "+node.name+" (Prob="+sumProb+")");
+				}
+				else{
+					MarkovNode curChild=node.children[indexCompProb];
+					curChild.curProb=1.0-sumProb;
+				}
+			}
+			
+			//Get EVs
+			node.expectedValues=new double[numDim]; node.expectedValuesDis=new double[numDim];
+			//Apply cost
+			for(int i=0; i<numDim; i++){
+				node.expectedValues[i]=node.curCosts[i];
+				node.expectedValuesDis[i]=node.curCosts[i];
+			}
+			for(int c=0; c<node.numChildren; c++){
+				MarkovNode child=node.children[c];
+				getEVs(child,display);
+				for(int d=0; d<numDim; d++){
+					node.expectedValues[d]+=child.curProb*child.expectedValues[d];
+					node.expectedValuesDis[d]+=child.curProb*child.expectedValuesDis[d];
+				}
+			}
+		}
+		
+		if(display==true){
+			String buildString="";
+			if(discountRewards==false){
+				for(int i=0; i<node.numDimensions-1; i++){
+					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(node.expectedValues[i],myModel.dimInfo.decimals[i])+"; ";
+				}
+				buildString+="("+myModel.dimInfo.dimSymbols[node.numDimensions-1]+") "+MathUtils.round(node.expectedValues[node.numDimensions-1],myModel.dimInfo.decimals[node.numDimensions-1]);
+			}
+			else{
+				for(int i=0; i<node.numDimensions-1; i++){
+					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(node.expectedValuesDis[i],myModel.dimInfo.decimals[i])+"; ";
+				}
+				buildString+="("+myModel.dimInfo.dimSymbols[node.numDimensions-1]+") "+MathUtils.round(node.expectedValuesDis[node.numDimensions-1],myModel.dimInfo.decimals[node.numDimensions-1]);
+			}
+			node.textEV.setText(buildString);
+			if(node.visible){
+				node.textEV.setVisible(true);
+			}
+		}
+	}
 	
 	/**
 	 * Run selected Markov chain
-	 * @param node  Selected Markov chain
+	 * @param node  Root
 	 * @param display
 	 * @return 
 	 * @throws Exception 
 	 * @throws NumericException 
 	 */
-	public MarkovTrace runModel(MarkovNode node, boolean display) throws NumericException, Exception{
+	public ArrayList<MarkovTrace> runModel(boolean display) throws NumericException, Exception{
+		ArrayList<MarkovTrace> traces=new ArrayList<MarkovTrace>();
+		MarkovNode root=nodes.get(0);
+		//Run all chains and then get expected values
+		for(int n=0; n<nodes.size(); n++){
+			MarkovNode curNode=nodes.get(n);
+			if(curNode.type==1){
+				traces.add(runMarkovChain(curNode,display));
+			}
+		}
+
+		//Get EVs
+		for(int c=0; c<root.numChildren; c++){
+			getEVs(root.children[c],display);
+		}
+
+		return(traces);
+	}
+	
+	public MarkovTrace runMarkovChain(MarkovNode node, boolean display) throws NumericException, Exception{
 		MarkovTrace trace=null;
 		if(myModel.simType==0){ //Markov
 			MarkovCohort cohortModel=new MarkovCohort(node);
-			cohortModel.simulate(display);
+			cohortModel.simulate(display && showTrace);
 			trace=cohortModel.trace;
 		}
 		else if(myModel.simType==1){ //Monte Carlo
 			MarkovMonteCarlo microModel=new MarkovMonteCarlo(node);
-			microModel.simulate(display);
+			microModel.simulate(display && showTrace);
 			trace=microModel.trace;
 		}
 		
@@ -442,7 +600,7 @@ public class MarkovTree{
 	}
 
 	public void displayModelResults(Console console){
-		//Display output for each Markov Chain
+		//Display output for each strategy
 		DimInfo dimInfo=myModel.dimInfo;
 		int numDimensions=dimInfo.dimSymbols.length;
 		console.print("\n");
@@ -453,32 +611,32 @@ public class MarkovTree{
 		ConsoleTable curTable=new ConsoleTable(console,colTypes);
 		String headers[]=new String[numDimensions+1];
 		if(discountRewards){headers=new String[numDimensions*2+1];}
-		headers[0]="Chain";
+		headers[0]="Strategy";
 		for(int d=0; d<numDimensions; d++){headers[d+1]=dimInfo.dimNames[d];}
 		if(discountRewards){
 			for(int d=0; d<numDimensions; d++){headers[numDimensions+d+1]=dimInfo.dimNames[d]+" (Dis)";}
 		}
 		curTable.addRow(headers);
-		//chain results
-		for(int i=0; i<nodes.size(); i++){
-			MarkovNode curNode=nodes.get(i);
-			if(curNode.type==1){ //Chain
-				String row[]=new String[numDimensions+1];
-				if(discountRewards){row=new String[numDimensions*2+1];}
-				row[0]=curNode.name;
-				if(curNode.expectedValues!=null){
+		//strategy results
+		MarkovNode root=nodes.get(0);
+		for(int c=0; c<root.numChildren; c++){
+			MarkovNode curNode=root.children[c];
+			String row[]=new String[numDimensions+1];
+			if(discountRewards){row=new String[numDimensions*2+1];}
+			row[0]=curNode.name;
+			if(curNode.expectedValues!=null){
+				for(int d=0; d<numDimensions; d++){
+					row[d+1]=MathUtils.round(curNode.expectedValues[d],myModel.dimInfo.decimals[d])+"";
+				}
+				if(discountRewards){
 					for(int d=0; d<numDimensions; d++){
-						row[d+1]=MathUtils.round(curNode.expectedValues[d],myModel.dimInfo.decimals[d])+"";
-					}
-					if(discountRewards){
-						for(int d=0; d<numDimensions; d++){
-							row[numDimensions+d+1]=MathUtils.round(curNode.expectedValuesDis[d],myModel.dimInfo.decimals[d])+"";
-						}
+						row[numDimensions+d+1]=MathUtils.round(curNode.expectedValuesDis[d],myModel.dimInfo.decimals[d])+"";
 					}
 				}
-				curTable.addRow(row);
 			}
+			curTable.addRow(row);
 		}
+		
 		curTable.print();
 		console.newLine();
 	}

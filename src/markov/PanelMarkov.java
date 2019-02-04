@@ -456,8 +456,9 @@ public class PanelMarkov extends ModelPanel{
 			
 			if(curNode.collapsed==false){ //not collapsed, can add child nodes or change type
 				if(curNode.type==0){ //decision node
+					mainForm.btnDecisionNode.setEnabled(true);
 					mainForm.btnChanceNode.setEnabled(true);
-					mainForm.btnMarkovChain.setEnabled(true); //only 1 decision node in Markov, so no need to check if in chain already
+					mainForm.btnMarkovChain.setEnabled(true); //decision nodes only allowed oustide chain, so no need to check if in chain already
 				}
 				else if(curNode.type==1){ //markov chain
 					mainForm.btnMarkovState.setEnabled(true);
@@ -586,6 +587,9 @@ public class PanelMarkov extends ModelPanel{
 			else{ //not chain
 				this.add(curNode.lblVarUpdates); this.add(curNode.textVarUpdates);
 			}
+			if((type==0 || type==3) && curNode.chain==null){ //decision/chance node outside of chain
+				this.add(curNode.textEV);
+			}
 			if(type==2){ //State
 				this.add(curNode.lblRewards); this.add(curNode.textRewards);
 			}
@@ -625,6 +629,9 @@ public class PanelMarkov extends ModelPanel{
 				}
 				else{ //not chain
 					this.remove(curNode.lblVarUpdates); this.remove(curNode.textVarUpdates);
+				}
+				if((curNode.type==0 || curNode.type==3) && curNode.chain==null){ //decision/chance node outside of chain
+					this.remove(curNode.textEV);
 				}
 				if(curNode.type==4){
 					this.remove(curNode.comboTransition);
@@ -861,6 +868,10 @@ public class PanelMarkov extends ModelPanel{
 		}
 		else{ //not chain
 			this.add(node.lblVarUpdates); this.add(node.textVarUpdates);
+		}
+		if((node.type==0 || node.type==3) && node.chain==null){ //Decision/Chance node outside of chain
+			this.add(node.textEV);
+			node.textEV.setVisible(tree.showEV);
 		}
 		if(node.type==4){ //Transition
 			this.add(node.comboTransition);
@@ -1130,8 +1141,9 @@ public class PanelMarkov extends ModelPanel{
 			else{mntmPaste.setEnabled(false);}
 			
 			if(curNode.type==0){ //decision node
+				mntmDecision.setEnabled(true);
 				mntmChance.setEnabled(true);
-				mntmMarkovChain.setEnabled(true); //only 1 decision node in Markov, so no need to check if in chain already
+				mntmMarkovChain.setEnabled(true); //decision nodes only allowed outside chain, so no need to check if in chain already
 			}
 			else if(curNode.type==1){ //markov chain
 				mntmMarkovState.setEnabled(true);
@@ -1182,7 +1194,7 @@ public class PanelMarkov extends ModelPanel{
 	public void clearAnnotations(){ //Removes expected values and any highlighting
 		tree.showEV=false;
 		int size=tree.nodes.size();
-		for(int i=0; i<size; i++){
+		for(int i=1; i<size; i++){
 			curNode=tree.nodes.get(i);
 			//Reset highlighting
 			curNode.highlightTextField(0, null); //Prob
@@ -1197,6 +1209,9 @@ public class PanelMarkov extends ModelPanel{
 			else if(curNode.type==4){
 				curNode.comboTransition.setBackground(new Color(0,0,0,0));
 				curNode.comboTransition.setBorder(null);
+			}
+			if((curNode.type==0 || curNode.type==3) && curNode.chain==null){ //decision/chance node outside of chain
+				curNode.textEV.setVisible(false);
 			}
 			if(curNode.level==1){
 				curNode.textICER.setVisible(false);
@@ -1236,6 +1251,9 @@ public class PanelMarkov extends ModelPanel{
 			}
 			if(curNode.type==2){ //state
 				this.remove(curNode.lblRewards); this.remove(curNode.textRewards);
+			}
+			if((curNode.type==0 || curNode.type==3) && curNode.chain==null){ //decision/chance node outside of chain
+				this.remove(curNode.textEV);
 			}
 			if(curNode.level==1){
 				this.remove(curNode.textICER);

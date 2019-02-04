@@ -532,7 +532,7 @@ public class frmCalibrate {
 								}
 								else{
 									//initial run to build trace
-									myModel.markov.runModel(curChain,false);
+									myModel.markov.runMarkovChain(curChain,false);
 								}
 								
 								//try evaluate score expression
@@ -578,7 +578,7 @@ public class frmCalibrate {
 										for(int i=0; i<numSets; i++){
 											progress.setProgress(i+1);
 											sampleAll();
-											myModel.markov.runModel(curChain,false);
+											myModel.markov.runMarkovChain(curChain,false);
 											double curScore=Interpreter.evaluate(strScore, myModel, false).getDouble();
 											params[i]=new ParameterSet(myModel);
 											params[i].id=(i+1)+"";
@@ -605,7 +605,7 @@ public class frmCalibrate {
 											double curScore=thresh+1;
 											while(curScore>thresh){
 												sampleAll();
-												myModel.markov.runModel(curChain,false);
+												myModel.markov.runMarkovChain(curChain,false);
 												curScore=Interpreter.evaluate(strScore, myModel, false).getDouble();
 												if(progress.isCanceled()){ //listen for cancel
 													curScore=thresh-1; //end while loop

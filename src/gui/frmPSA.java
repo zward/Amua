@@ -68,6 +68,8 @@ import org.jfree.data.xy.DefaultXYDataset;
 import base.AmuaModel;
 import filters.CSVFilter;
 import main.CEAHelper;
+import main.Console;
+import main.ConsoleTable;
 import main.Constraint;
 import main.DimInfo;
 import main.MersenneTwisterFast;
@@ -77,6 +79,7 @@ import markov.MarkovTrace;
 import markov.MarkovTraceSummary;
 import math.Interpreter;
 import math.KernelSmooth;
+import math.MathUtils;
 import math.Numeric;
 
 /**
@@ -580,13 +583,10 @@ public class frmPSA {
 									if(myModel.type==1){
 										//get number of chains
 										chainRoots=new ArrayList<MarkovNode>();
-										if(myModel.panelMarkov.curNode==null || myModel.panelMarkov.curNode.type!=1){ //No Markov Chain selected, run all chains
-											for(int n=0; n<myModel.markov.nodes.size(); n++){
-												MarkovNode curNode=myModel.markov.nodes.get(n);
-												if(curNode.type==1){chainRoots.add(curNode);}
-											}
+										for(int n=0; n<myModel.markov.nodes.size(); n++){
+											MarkovNode curNode=myModel.markov.nodes.get(n);
+											if(curNode.type==1){chainRoots.add(curNode);}
 										}
-										else{chainRoots.add(myModel.panelMarkov.curNode);}
 										numChains=chainRoots.size();
 										traces=new MarkovTrace[numChains][numIterations];
 									}
@@ -651,11 +651,11 @@ public class frmPSA {
 										}
 										else if(myModel.type==1){ //Markov model
 											myModel.evaluateParameters(); //get parameters
-											for(int c=0; c<numChains; c++){
-												traces[c][n]=myModel.markov.runModel(chainRoots.get(c),false);
-											}
+											ArrayList<MarkovTrace> curTraces=myModel.markov.runModel(false);
 											myModel.unlockParams(); //unlock parameters
-										
+											for(int c=0; c<numChains; c++){
+												traces[c][n]=curTraces.get(c);
+											}
 										}
 																				
 										//Get EVs
@@ -741,6 +741,12 @@ public class frmPSA {
 									myModel.validateModelObjects();
 									
 									if(cancelled==false){
+										double meanResults[][]=new double[numOutcomes][numStrat];
+										double lbResults[][]=new double[numOutcomes][numStrat];
+										double ubResults[][]=new double[numOutcomes][numStrat];
+										int bounds[]=MathUtils.getBoundIndices(numIterations);
+										int indexLB=bounds[0], indexUB=bounds[1];
+										
 										//Sort ordered arrays
 										for(int d=0; d<numOutcomes; d++){
 											for(int s=0; s<numStrat; s++){
@@ -749,7 +755,11 @@ public class frmPSA {
 													dataResultsVal[d][s][0][n]=n/(numIterations*1.0);
 													dataResultsCumDens[d][s][0][n]=dataResultsVal[d][s][1][n];
 													dataResultsCumDens[d][s][1][n]=dataResultsVal[d][s][0][n];
+													meanResults[d][s]+=dataResultsVal[d][s][1][n];
 												}
+												meanResults[d][s]/=(numIterations*1.0);
+												lbResults[d][s]=dataResultsVal[d][s][1][indexLB];
+												ubResults[d][s]=dataResultsVal[d][s][1][indexUB];
 											}
 										}
 										for(int v=0; v<numParams; v++){
@@ -801,6 +811,31 @@ public class frmPSA {
 												showSummary.frmTraceSummary.setVisible(true);
 											}
 										}
+										
+										//Print results summary to console
+										Console console=myModel.mainForm.console;
+										myModel.printSimInfo(console);
+										console.print("PSA Iterations:\t"+numIterations+"\n\n");
+										boolean colTypes[]=new boolean[]{false,false,true,true,true}; //is column number (true), or text (false)
+										ConsoleTable curTable=new ConsoleTable(console,colTypes);
+										String headers[]=new String[]{"Strategy","Outcome","Mean","95% LB","95% UB"};
+										curTable.addRow(headers);
+										//strategy results
+										for(int s=0; s<numStrat; s++){
+											String stratName=myModel.strategyNames[s];
+											for(int d=0; d<numDim; d++){
+												String dimName=myModel.dimInfo.dimNames[d];
+												if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" (Dis)";}
+												double mean=MathUtils.round(meanResults[d][s],myModel.dimInfo.decimals[d]);
+												double lb=MathUtils.round(lbResults[d][s],myModel.dimInfo.decimals[d]);
+												double ub=MathUtils.round(ubResults[d][s],myModel.dimInfo.decimals[d]);
+												String curRow[]=new String[]{stratName,dimName,mean+"",lb+"",ub+""};
+												curTable.addRow(curRow);
+											}
+										}
+										curTable.print();
+										console.newLine();
+										
 										
 									}
 									progress.close();

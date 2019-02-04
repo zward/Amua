@@ -82,6 +82,18 @@ public final class MathUtils{
 		return(fact);
 	}
 	
+	public static int[] getBoundIndices(double dNum){
+		int num=(int)dNum;
+		int lb=(int) Math.round(0.025*num)-1;
+		int ub=(int) Math.round(0.975*num)-1;
+		lb=Math.max(0, lb); ub=Math.max(0, ub); //floor of 0
+		lb=Math.min(num-1, lb); ub=Math.min(num-1, ub); //ceiling of num-1
+		if(lb>=ub){ //set to min and max
+			lb=0; ub=num-1;
+		}
+		return(new int[]{lb,ub});
+	}
+		
 	/**
 	 * Calculates the variance
 	 * @return

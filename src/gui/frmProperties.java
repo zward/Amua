@@ -108,6 +108,7 @@ public class frmProperties {
 	private JTable tableDiscountRates;
 	JLabel lblDiscountStartCycle;
 	private JTextField textDiscountStartCycle;
+	JCheckBox chckbxShowMarkovTrace;
 	private JTextField textMarkovStateDecimals;
 		
 	/**
@@ -459,35 +460,35 @@ public class frmProperties {
 			lblstOrder.setBounds(269, 11, 98, 16);
 			panel_3.add(lblstOrder);
 			
-			JPanel testDiscountStartCycle = new JPanel();
-			testDiscountStartCycle.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-			testDiscountStartCycle.setBackground(SystemColor.window);
-			tabbedPane.addTab("Markov", null, testDiscountStartCycle, null);
+			JPanel panelMarkov = new JPanel();
+			panelMarkov.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			panelMarkov.setBackground(SystemColor.window);
+			tabbedPane.addTab("Markov", null, panelMarkov, null);
 			tabbedPane.setEnabledAt(3, false);
-			testDiscountStartCycle.setLayout(null);
+			panelMarkov.setLayout(null);
 			
 			JLabel lblMaxCycles = new JLabel("Max cycles:");
 			lblMaxCycles.setBounds(6, 23, 71, 16);
-			testDiscountStartCycle.add(lblMaxCycles);
+			panelMarkov.add(lblMaxCycles);
 			
 			textMarkovMaxCycles = new JTextField();
 			textMarkovMaxCycles.setBounds(72, 17, 71, 28);
-			testDiscountStartCycle.add(textMarkovMaxCycles);
+			panelMarkov.add(textMarkovMaxCycles);
 			textMarkovMaxCycles.setColumns(10);
 			
 			chckbxHalfcycleCorrection = new JCheckBox("Half-cycle correction");
 			chckbxHalfcycleCorrection.setBounds(6, 57, 141, 18);
-			testDiscountStartCycle.add(chckbxHalfcycleCorrection);
+			panelMarkov.add(chckbxHalfcycleCorrection);
 			
 			lblDiscountStartCycle = new JLabel("Discount start cycle:");
 			lblDiscountStartCycle.setEnabled(false);
 			lblDiscountStartCycle.setBounds(144, 86, 116, 16);
-			testDiscountStartCycle.add(lblDiscountStartCycle);
+			panelMarkov.add(lblDiscountStartCycle);
 			
 			textDiscountStartCycle = new JTextField();
 			textDiscountStartCycle.setEnabled(false);
 			textDiscountStartCycle.setBounds(254, 80, 57, 28);
-			testDiscountStartCycle.add(textDiscountStartCycle);
+			panelMarkov.add(textDiscountStartCycle);
 			textDiscountStartCycle.setColumns(10);
 			
 			chckbxDiscount = new JCheckBox("Discount Rewards");
@@ -506,11 +507,11 @@ public class frmProperties {
 				}
 			});
 			chckbxDiscount.setBounds(6, 85, 141, 18);
-			testDiscountStartCycle.add(chckbxDiscount);
+			panelMarkov.add(chckbxDiscount);
 			
 			JScrollPane scrollPane_1 = new JScrollPane();
 			scrollPane_1.setBounds(6, 115, 233, 71);
-			testDiscountStartCycle.add(scrollPane_1);
+			panelMarkov.add(scrollPane_1);
 			
 			modelDiscountRates=new DefaultTableModel(
 					new Object[][] {},
@@ -530,15 +531,17 @@ public class frmProperties {
 			scrollPane_1.setViewportView(tableDiscountRates);
 			
 			JLabel lblStatePrevalenceDecimals = new JLabel("State Prevalence Decimals:");
-			lblStatePrevalenceDecimals.setBounds(184, 23, 158, 16);
-			testDiscountStartCycle.add(lblStatePrevalenceDecimals);
+			lblStatePrevalenceDecimals.setBounds(228, 40, 158, 16);
+			panelMarkov.add(lblStatePrevalenceDecimals);
 			
 			textMarkovStateDecimals = new JTextField();
-			textMarkovStateDecimals.setBounds(340, 17, 47, 28);
-			testDiscountStartCycle.add(textMarkovStateDecimals);
+			textMarkovStateDecimals.setBounds(384, 34, 47, 28);
+			panelMarkov.add(textMarkovStateDecimals);
 			textMarkovStateDecimals.setColumns(10);
 			
-			
+			chckbxShowMarkovTrace = new JCheckBox("Show trace");
+			chckbxShowMarkovTrace.setBounds(228, 17, 104, 18);
+			panelMarkov.add(chckbxShowMarkovTrace);
 			
 			
 		} catch (Exception ex){
@@ -617,6 +620,7 @@ public class frmProperties {
 	private void displayMarkovSettings(){
 		tabbedPane.setEnabledAt(3, true);
 		textMarkovMaxCycles.setText(myModel.markov.maxCycles+"");
+		chckbxShowMarkovTrace.setSelected(myModel.markov.showTrace);
 		textMarkovStateDecimals.setText(myModel.markov.stateDecimals+"");
 		chckbxHalfcycleCorrection.setSelected(myModel.markov.halfCycleCorrection);
 		chckbxDiscount.setSelected(myModel.markov.discountRewards);
@@ -823,6 +827,7 @@ public class frmProperties {
 		//Check Markov settings
 		int maxCycles=10000, statePrevDecimals=4;
 		boolean halfCycleCorrection=false;
+		boolean showTrace=true;
 		if(myModel.type==1){
 			//max cycles
 			try{
@@ -836,6 +841,8 @@ public class frmProperties {
 				valid=false;
 				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of max cycles!");
 			}
+			
+			showTrace=chckbxShowMarkovTrace.isSelected();
 			
 			//state prev decimals
 			try{
@@ -907,6 +914,7 @@ public class frmProperties {
 			//markov settings
 			if(myModel.type==1){
 				myModel.markov.maxCycles=maxCycles;
+				myModel.markov.showTrace=showTrace;
 				myModel.markov.stateDecimals=statePrevDecimals;
 				myModel.markov.halfCycleCorrection=halfCycleCorrection;
 				

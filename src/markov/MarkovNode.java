@@ -80,10 +80,8 @@ public class MarkovNode extends ModelNode{
 	@XmlTransient JLabel lblRewards; MarkovTextField textRewards;
 	@XmlTransient JComboBox<String> comboTransition;
 	@XmlTransient MarkovTextField textTermination;
-	@XmlTransient
-	public JTextField textEV;
-	@XmlTransient
-	JTextField textICER;
+	@XmlTransient public JTextField textEV;
+	@XmlTransient JTextField textICER;
 	@XmlTransient String icer;
 	
 	//Store original text on focus to see if it has change on lost focus
@@ -163,6 +161,9 @@ public class MarkovNode extends ModelNode{
 		if(type==2){ //State
 			displayRewards();
 		}
+		if((type==0 || type==3) && chain==null){ //Decision/Chance
+			displayEV();
+		}
 		if(type==4){ //Transition
 			displayTransition();
 		}
@@ -233,6 +234,7 @@ public class MarkovNode extends ModelNode{
 							textVarUpdates.setBounds(xPos-scale(138),(int)(yPos+(height/2)),scale(140),scale(28));
 						}
 					}
+					textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
 				}
 			}
 			else if(type==1){ //Chain
@@ -344,6 +346,9 @@ public class MarkovNode extends ModelNode{
 						lblVarUpdates.setBounds(xPos-scale(150),(int)(yPos+(height/2)),scale(15),scale(28));
 						textVarUpdates.setBounds(xPos-scale(138),(int)(yPos+(height/2)),scale(140),scale(28));
 					}
+				}
+				if(chain==null){ //outside of chain
+					textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
 				}
 			}
 			else if(type==4){ //Transition
@@ -470,6 +475,9 @@ public class MarkovNode extends ModelNode{
 		}
 		if(type==2){ //State
 			displayRewards();
+		}
+		if((type==0 || type==3) && chain==null){ //Chance node outside of chain
+			displayEV();
 		}
 		if(type==4){ //Transition
 			displayTransition();
@@ -871,6 +879,7 @@ public class MarkovNode extends ModelNode{
 	public void displayEV(){
 		textEV=new JTextField();
 		textEV.setHorizontalAlignment(JTextField.CENTER);
+		if(type==0 || type==3){textEV.setHorizontalAlignment(JTextField.LEFT);}
 		textEV.setBackground(new Color(0,0,0,0));
 		textEV.setBorder(null);
 		textEV.setEditable(false);

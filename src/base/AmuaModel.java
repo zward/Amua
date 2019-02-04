@@ -21,6 +21,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Stack;
 
@@ -38,6 +39,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import gui.frmMain;
 import gui.frmTraceSummary;
 import main.Console;
+import main.ConsoleTable;
 import main.Constraint;
 import main.DimInfo;
 import main.ErrorLog;
@@ -748,7 +750,7 @@ public class AmuaModel{
 		return(null);
 	}
 
-	private void printSimInfo(Console console){
+	public void printSimInfo(Console console){
 		console.print(new Date()+"\n");
 		if(type==0){console.print("Decision Tree:\t"+name+"\n");}
 		else if(type==1){console.print("Markov Model:\t"+name+"\n");}
@@ -758,147 +760,219 @@ public class AmuaModel{
 	}
 	
 	public void runModel(Console console,boolean display){
+		if(type==0){ //Decision tree
+			runDecisionTree(console,display);
+		}
+		else if(type==1){ //Markov model
+			if(display){panelMarkov.tree.showEV=true;}
+			if(simParamSets==false){ //Base case
+				runMarkov(console,display);
+			}
+			else{ //sim parameter sets
+				runMarkovParamSets(console,display);
+			}	
+
+		}
+	}
+	
+	private void runDecisionTree(Console console,boolean display){
 		try{
-			//curGenerator=generatorVar; //initialize to var RNG
-			if(type==0){ //Decision tree
-				if(display){
-					console.print("Running tree... ");
-					panelTree.tree.showEV=true;
+			if(display){
+				console.print("Running tree... ");
+				panelTree.tree.showEV=true;
+			}
+			evaluateParameters(); //get parameters
+			panelTree.tree.runModel(display); //run model
+			unlockParams(); //unlock parameters
+
+			if(display){
+				console.print("done!\n");
+				printSimInfo(console);
+
+				if(dimInfo.analysisType>0){
+					panelTree.tree.runCEA(console);
 				}
-				evaluateParameters(); //get parameters
-				panelTree.tree.runModel(display); //run model
-				unlockParams(); //unlock parameters
-				
-				if(display){
-					console.print("done!\n");
-					printSimInfo(console);
-					
-					if(dimInfo.analysisType>0){
-						panelTree.tree.runCEA(console);
-					}
-					else{ //Display output on console
-						panelTree.tree.displayResults(console);
-					}
+				else{ //Display output on console
+					panelTree.tree.displayResults(console);
 				}
 			}
-			else if(type==1){ //Markov model
-				if(display){panelMarkov.tree.showEV=true;}
-				if(simParamSets==false){ //Base case
-					evaluateParameters(); //get parameters
-					if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, run all chains
-						if(display){console.print("Running model... ");}
-						for(int n=0; n<markov.nodes.size(); n++){
-							MarkovNode curNode=markov.nodes.get(n);
-							if(curNode.type==1){
-								panelMarkov.tree.runModel(curNode,display);
-							}
-						}
-						if(display){
-							console.print(" done!\n");
-							printSimInfo(console);
-							if(dimInfo.analysisType>0){
-								panelMarkov.tree.runCEA(console);
-							}
-							else{
-								panelMarkov.tree.displayModelResults(console);
-							}
-						}
-					}
-					else{ //Markov Chain selected
-						if(display){console.print("Running Markov Chain: "+panelMarkov.curNode.name);}
-						panelMarkov.tree.runModel(panelMarkov.curNode, display);
-						if(display){
-							console.print(" done!\n");
-							printSimInfo(console);
-							panelMarkov.tree.displayChainResults(console,panelMarkov.curNode);
-						}
-					}
-					unlockParams(); //unlock parameters
-				}
-				else{ //sim parameter sets
-					ProgressMonitor progress=new ProgressMonitor(mainForm.frmMain, "Running parameter sets", "", 0, 100);
-					int prog=0;
-					//get number of chains
-					ArrayList<MarkovNode> chainRoots=new ArrayList<MarkovNode>();
-					if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, run all chains
-						for(int n=0; n<markov.nodes.size(); n++){
-							MarkovNode curNode=markov.nodes.get(n);
-							if(curNode.type==1){
-								chainRoots.add(curNode);
-							}
-						}
+		}catch(Exception e){
+			JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());
+			errorLog.recordError(e);
+		}
+	}
+	
+	private void runMarkov(Console console, boolean display){
+		try{
+			evaluateParameters(); //get parameters
+			if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, run all chains
+				if(display){console.print("Running model... ");}
+				panelMarkov.tree.runModel(display);
+				if(display){
+					console.print(" done!\n");
+					printSimInfo(console);
+					if(dimInfo.analysisType>0){
+						panelMarkov.tree.runCEA(console);
 					}
 					else{
-						chainRoots.add(panelMarkov.curNode);
+						panelMarkov.tree.displayModelResults(console);
 					}
-					int numChains=chainRoots.size();
-					int numSets=parameterSets.length;
-					MarkovTrace traces[][]=new MarkovTrace[numChains][numSets];
-					if(display){
-						console.print("Running parameter sets... ");
-						progress.setMaximum(numChains*numSets+1);
-					}
-					//Run all parameter sets
-					for(int c=0; c<numChains; c++){
-						for(int i=0; i<numSets; i++){
-							prog++;
-							if(display){progress.setProgress(prog);}
-							parameterSets[i].setParameters(this);
-							traces[c][i]=panelMarkov.tree.runModel(chainRoots.get(c),false);
-						}
-					}
-					unlockParams(); //unlock parameters
-					
-					//get mean and bounds of results
-					int numDim=dimInfo.dimSymbols.length;
-					if(display){
-						console.print(" done!\n");
-						printSimInfo(console);
-					}
-					for(int c=0; c<numChains; c++){
-						MarkovTraceSummary traceSummary=new MarkovTraceSummary(traces[c]);
-						MarkovNode curNode=chainRoots.get(c);
-						for(int d=0; d<numDim; d++){
-							curNode.expectedValues[d]=traceSummary.expectedValues[d][0];
-						}
-						if(markov.discountRewards){
-							for(int d=0; d<numDim; d++){
-								curNode.expectedValuesDis[d]=traceSummary.expectedValuesDis[d][0];
-							}
-						}
-						
-						if(display){
-							if(dimInfo.analysisType==0){ //EV
-								String buildString="";
-								if(markov.discountRewards==false){
-									for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValues[i],dimInfo.decimals[i])+"; ";}
-									buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValues[numDim-1],dimInfo.decimals[numDim-1]);
-								}
-								else{
-									for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValuesDis[i],dimInfo.decimals[i])+"; ";}
-									buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValuesDis[numDim-1],dimInfo.decimals[numDim-1]);
-								}
-								curNode.textEV.setText(buildString);
-								if(curNode.visible){curNode.textEV.setVisible(true);}
-							}
-							
-							frmTraceSummary showSummary=new frmTraceSummary(traceSummary,errorLog);
-							showSummary.frmTraceSummary.setVisible(true);
-						}
-					}
-					progress.close();
-					
-					if(display){
-						if(dimInfo.analysisType>0){
-							panelMarkov.tree.runCEA(console);
-						}
-						else{
-							panelMarkov.tree.displayModelResults(console);
-						}
-					}
-				}	
-
+				}
 			}
+			else{ //Markov Chain selected
+				if(display){console.print("Running Markov Chain: "+panelMarkov.curNode.name);}
+				panelMarkov.tree.runMarkovChain(panelMarkov.curNode, display);
+				if(display){
+					console.print(" done!\n");
+					printSimInfo(console);
+					panelMarkov.tree.displayChainResults(console,panelMarkov.curNode);
+				}
+			}
+			unlockParams(); //unlock parameters
+		}catch(Exception e){
+			JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());
+			errorLog.recordError(e);
+		}
+	}
+	
+	private void runMarkovParamSets(Console console,boolean display){
+		try{
+			ProgressMonitor progress=new ProgressMonitor(mainForm.frmMain, "Running parameter sets", "", 0, 100);
+			int prog=0;
+			//get number of chains
+			ArrayList<MarkovNode> chainRoots=new ArrayList<MarkovNode>();
+			for(int n=0; n<markov.nodes.size(); n++){
+				MarkovNode curNode=markov.nodes.get(n);
+				if(curNode.type==1){
+					chainRoots.add(curNode);
+				}
+			}
+			
+			int numChains=chainRoots.size();
+			int numSets=parameterSets.length;
+			MarkovTrace traces[][]=new MarkovTrace[numChains][numSets];
+			if(display){
+				console.print("Running parameter sets... ");
+				progress.setMaximum(numSets+1);
+			}
+			
+			//Run all parameter sets
+			int numStrat=getStrategies();
+			int numDim=dimInfo.dimNames.length;
+			double results[][][]=new double[numDim][numStrat][numSets];
+			boolean cancelled=false;
+			for(int i=0; i<numSets; i++){
+				prog++;
+				if(display){progress.setProgress(prog);}
+				parameterSets[i].setParameters(this);
+				ArrayList<MarkovTrace> curTraces=markov.runModel(false);
+				for(int c=0; c<numChains; c++){
+					traces[c][i]=curTraces.get(c);
+				}
+				//Get EVs
+				for(int d=0; d<numDim; d++){
+					for(int s=0; s<numStrat; s++){
+						results[d][s][i]=getStrategyEV(s,d);
+					}
+				}
+				if(progress.isCanceled()){  //End loop
+					i=numSets;
+					cancelled=true;
+				}
+			}
+			unlockParams(); //unlock parameters
+			
+			if(cancelled==false){
+
+				//get mean and bounds of traces
+				if(display){
+					console.print(" done!\n");
+					
+					double meanResults[][]=new double[numDim][numStrat];
+					double lbResults[][]=new double[numDim][numStrat];
+					double ubResults[][]=new double[numDim][numStrat];
+					int bounds[]=MathUtils.getBoundIndices(numSets);
+					int indexLB=bounds[0], indexUB=bounds[1];
+
+					//Sort ordered arrays
+					for(int d=0; d<numDim; d++){
+						for(int s=0; s<numStrat; s++){
+							Arrays.sort(results[d][s]);
+							for(int n=0; n<numSets; n++){
+								meanResults[d][s]+=results[d][s][n];
+							}
+							meanResults[d][s]/=(numSets*1.0);
+							lbResults[d][s]=results[d][s][indexLB];
+							ubResults[d][s]=results[d][s][indexUB];
+						}
+					}
+					
+					//Print results summary to console
+					printSimInfo(console);
+					console.print("Parameter Sets:\t"+numSets+"\n\n");
+					boolean colTypes[]=new boolean[]{false,false,true,true,true}; //is column number (true), or text (false)
+					ConsoleTable curTable=new ConsoleTable(console,colTypes);
+					String headers[]=new String[]{"Strategy","Outcome","Mean","95% LB","95% UB"};
+					curTable.addRow(headers);
+					//strategy results
+					for(int s=0; s<numStrat; s++){
+						String stratName=strategyNames[s];
+						for(int d=0; d<numDim; d++){
+							String dimName=dimInfo.dimNames[d];
+							if(type==1 && markov.discountRewards){dimName+=" (Dis)";}
+							double mean=MathUtils.round(meanResults[d][s],dimInfo.decimals[d]);
+							double lb=MathUtils.round(lbResults[d][s],dimInfo.decimals[d]);
+							double ub=MathUtils.round(ubResults[d][s],dimInfo.decimals[d]);
+							String curRow[]=new String[]{stratName,dimName,mean+"",lb+"",ub+""};
+							curTable.addRow(curRow);
+						}
+					}
+					curTable.print();
+					console.newLine();
+				}
+				//get trace summary
+				for(int c=0; c<numChains; c++){
+					MarkovTraceSummary traceSummary=new MarkovTraceSummary(traces[c]);
+					MarkovNode curNode=chainRoots.get(c);
+					for(int d=0; d<numDim; d++){
+						curNode.expectedValues[d]=traceSummary.expectedValues[d][0];
+					}
+					if(markov.discountRewards){
+						for(int d=0; d<numDim; d++){
+							curNode.expectedValuesDis[d]=traceSummary.expectedValuesDis[d][0];
+						}
+					}
+
+					if(display){
+						if(dimInfo.analysisType==0){ //EV
+							String buildString="";
+							if(markov.discountRewards==false){
+								for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValues[i],dimInfo.decimals[i])+"; ";}
+								buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValues[numDim-1],dimInfo.decimals[numDim-1]);
+							}
+							else{
+								for(int i=0; i<numDim-1; i++){buildString+="("+dimInfo.dimSymbols[i]+") "+MathUtils.round(curNode.expectedValuesDis[i],dimInfo.decimals[i])+"; ";}
+								buildString+="("+dimInfo.dimSymbols[numDim-1]+") "+MathUtils.round(curNode.expectedValuesDis[numDim-1],dimInfo.decimals[numDim-1]);
+							}
+							curNode.textEV.setText(buildString);
+							if(curNode.visible){curNode.textEV.setVisible(true);}
+						}
+
+						frmTraceSummary showSummary=new frmTraceSummary(traceSummary,errorLog);
+						showSummary.frmTraceSummary.setVisible(true);
+					}
+				}
+				progress.close();
+
+				if(display){
+					if(dimInfo.analysisType>0){
+						panelMarkov.tree.runCEA(console);
+					}
+					else{
+						panelMarkov.tree.displayModelResults(console);
+					}
+				}
+			} //end check cancelled == false
 		}catch(Exception e){
 			JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());
 			errorLog.recordError(e);
