@@ -42,6 +42,7 @@ public final class MatrixFunctions{
 		case "softmax": return(true);
 		case "stack": return(true);
 		case "tp": return(true);
+		case "tr": return(true);
 		}
 		return(false); //fell through
 	}
@@ -204,6 +205,22 @@ public final class MatrixFunctions{
 			if(args.length!=1){throw new NumericException("Function takes 1 argument","tp");}
 			if(args[0].format!=Format.MATRIX){throw new NumericException("Argument is not a matrix","tp");}
 			return(tp(args[0]));
+		}
+		case "tr":{ //trace
+			if(args.length!=1){throw new NumericException("Function takes 1 argument","tr");}
+			if(args[0].format!=Format.MATRIX){throw new NumericException("Argument is not a matrix","tr");}
+			Numeric matrix=args[0];
+			if(matrix.nrow==matrix.ncol){ //square
+				double sum=0;
+				for(int i=0; i<matrix.nrow; i++){
+					sum+=matrix.matrix[i][i];
+				}
+				Numeric trace=new Numeric(sum);
+				return(trace);
+			}
+			else{
+				throw new NumericException("X should be a square matrix","tr");
+			}
 		}
 		
 		}
@@ -497,6 +514,13 @@ public final class MatrixFunctions{
 			des+=MathUtils.consoleFont("<b>tp</b>","#800000")+MathUtils.consoleFont("(<b>X</b>)")+": Returns the transpose of "+MathUtils.consoleFont("<b>X</b>")+"<br>";
 			des+="<br><i>Arguments</i><br>";
 			des+=MathUtils.consoleFont("<b>X</b>")+": Matrix<br>";
+			des+="</html>";
+			return(des);
+		case "tr": 
+			des="<html><b>Matrix Trace</b><br>";
+			des+=MathUtils.consoleFont("<b>tr</b>","#800000")+MathUtils.consoleFont("(<b>X</b>)")+": Returns the trace (i.e. sum of diagonal elements) of "+MathUtils.consoleFont("<b>X</b>")+"<br>";
+			des+="<br><i>Arguments</i><br>";
+			des+=MathUtils.consoleFont("<b>X</b>")+": Square matrix<br>";
 			des+="</html>";
 			return(des);
 		}

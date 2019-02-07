@@ -82,8 +82,8 @@ public class CEAHelper{
 			if(s!=baseline){
 				double cost1=(double) table[s][2]; double effect1=(double) table[s][3];
 				if(cost1<baseCost && effect1>=baseEffect){
-					table[s+1][4]=Double.NaN;
-					table[s+1][5]="Cost Saving";
+					table[s][4]=Double.NaN;
+					table[s][5]="Cost Saving";
 					table[baseline][4]=Double.NaN;
 					anyCostSaving=true;
 				}
