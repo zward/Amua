@@ -22,6 +22,7 @@ import base.AmuaModel;
 import gui.frmTrace;
 import main.Variable;
 import math.Interpreter;
+import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
 
@@ -75,25 +76,66 @@ public class MarkovCohort{
 		//Get innate variable 't'
 		int indexT=myModel.getInnateVariableIndex("t");
 		curT=myModel.innateVariables.get(indexT);
-
-		//Initialize state prevalence
-		for(int s=0; s<numStates; s++){
-			newPrev[s]=myModel.cohortSize*states[s].curProb;
-			curPrev[s]=myModel.cohortSize*states[s].curProb;
-		}
+		curT.value=new Numeric(0);
 
 		//Initialize variables
 		for(int c=0; c<numVariables; c++){
 			variables[c].value=Interpreter.evaluate(variables[c].expression, myModel,false);
 		}
 		
+		//Perform Markov Chain variable updates for t=0
+		if(chainRoot.hasVarUpdates){
+			myModel.unlockVars();
+			//Perform variable updates
+			for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
+				chainRoot.curVariableUpdates[u].update(false);
+			}
+			//Update any dependent variables
+			for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
+				chainRoot.curVariableUpdates[u].variable.updateDependents(myModel);
+			}
+		}
+		
+		//Calculate initial state prevalence
+		double sumProb=0;
+		int indexCompProb=-1;
+		for(int s=0; s<numStates; s++){
+			if(states[s].prob.matches("C") || states[s].prob.matches("c")){ //Complementary
+				states[s].curProb=-1;
+				indexCompProb=s;
+			}
+			else{ //Evaluate text
+				states[s].curProb=Interpreter.evaluate(states[s].prob,myModel,false).getDouble();
+				sumProb+=states[s].curProb;
+			}
+		}
+		if(indexCompProb==-1){
+			if(Math.abs(1.0-sumProb)>MathUtils.tolerance){ //throw error
+				throw new Exception("Error: Probabilities sum to "+sumProb+" ("+chainRoot.name+")");
+			}
+		}
+		else{
+			if(sumProb>1.0 || sumProb<0.0){ //throw error
+				throw new Exception("Error: Probabilities sum to "+sumProb+" ("+chainRoot.name+")");
+			}
+			else{
+				states[indexCompProb].curProb=1.0-sumProb;
+			}
+		}
+		
+		//Initialize state prevalence
+		for(int s=0; s<numStates; s++){
+			newPrev[s]=myModel.cohortSize*states[s].curProb;
+			curPrev[s]=myModel.cohortSize*states[s].curProb;
+		}
+		
 		//Simulate cycles
 		int t=0;
-		curT.value=new Numeric(0);
+		
 		boolean terminate=false;
 		while(terminate==false && t<markovTree.maxCycles){
 			//chain root variable updates
-			if(chainRoot.hasVarUpdates){
+			if(t>0 && chainRoot.hasVarUpdates){
 				myModel.unlockVars();
 				//Perform variable updates
 				for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
@@ -209,13 +251,13 @@ public class MarkovCohort{
 				}
 			}
 			if(indexCompProb==-1){
-				if(sumProb!=1.0){ //throw error
-					throw new Exception("Probability error: "+node.name);
+				if(Math.abs(1.0-sumProb)>MathUtils.tolerance){ //throw error
+					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.name+")");
 				}
 			}
 			else{
 				if(sumProb>1.0 || sumProb<0.0){ //throw error
-					throw new Exception("Probability error: "+node.name);
+					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.name+")");
 				}
 				else{
 					MarkovNode curChild=node.children[indexCompProb];

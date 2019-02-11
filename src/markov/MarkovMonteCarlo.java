@@ -25,6 +25,7 @@ import gui.frmTrace;
 import main.MersenneTwisterFast;
 import main.Variable;
 import math.Interpreter;
+import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
 
@@ -98,8 +99,9 @@ public class MarkovMonteCarlo{
 		//Get innate variable 't'
 		int indexT=myModel.getInnateVariableIndex("t");
 		curT=myModel.innateVariables.get(indexT);
-
-		//Initialize state prevalence
+		curT.value=new Numeric(0);
+		
+		//Initialize state prevalence (assume static probs)
 		double initPrev[]=new double[numStates];
 		initPrev[0]=states[0].curProb;
 		curPrev[0]=0; newPrev[0]=0;
@@ -108,23 +110,51 @@ public class MarkovMonteCarlo{
 			curPrev[s]=0; newPrev[s]=0;
 		}
 		
+		//Initialize people
 		for(int p=0; p<numPeople; p++){
 			people[p]=new MarkovPerson();
-			double rand=generator.nextDouble();
-			int k=0;
-			while(rand>initPrev[k]){k++;}
-			people[p].curState=k;
-			curPrev[k]++; newPrev[k]++;
 			//initialize variables
 			people[p].variableVals=new Numeric[numVariables];
 			for(int c=0; c<numVariables; c++){
 				people[p].variableVals[c]=Interpreter.evaluate(variables[c].expression, myModel,false);
 			}
+			//chain root variable updates
+			if(chainRoot.hasVarUpdates){
+				//re-point variables
+				for(int c=0; c<numVariables; c++){
+					variables[c].value=people[p].variableVals[c];
+				}
+				myModel.unlockVars();
+				//Perform variable updates
+				for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
+					chainRoot.curVariableUpdates[u].update(true);
+				}
+				//Update any dependent variables
+				for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
+					chainRoot.curVariableUpdates[u].variable.updateDependents(myModel);
+				}
+			}
+			//assign starting state
+			if(chainRoot.childHasProbVariables){
+				evalChildProbs(chainRoot,false);
+				initPrev=new double[numStates];
+				initPrev[0]=states[0].curProb;
+				for(int s=1; s<numStates; s++){
+					initPrev[s]=initPrev[s-1]+states[s].curProb;
+				}
+			}
+			
+			double rand=generator.nextDouble();
+			int k=0;
+			while(rand>initPrev[k]){k++;}
+			people[p].curState=k;
+			curPrev[k]++; newPrev[k]++;
 		}
+		
 		
 		//Simulate cycles
 		int t=0;
-		curT.value=new Numeric(0);
+		
 		boolean terminate=false;
 		boolean cancelled=false;
 		progress.setMaximum(markovTree.maxCycles);
@@ -154,7 +184,7 @@ public class MarkovMonteCarlo{
 				}
 				
 				//chain root variable updates
-				if(chainRoot.hasVarUpdates){
+				if(t>0 && chainRoot.hasVarUpdates){
 					myModel.unlockVars();
 					//Perform variable updates
 					for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
@@ -345,13 +375,13 @@ public class MarkovMonteCarlo{
 				}
 			}
 			if(indexCompProb==-1){
-				if(sumProb!=1.0){ //throw error
-					throw new Exception("Probability error: "+node.name);
+				if(Math.abs(1.0-sumProb)>MathUtils.tolerance){ //throw error
+					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.name+")");
 				}
 			}
 			else{
 				if(sumProb>1.0 || sumProb<0.0){ //throw error
-					throw new Exception("Probability error: "+node.name);
+					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.name+")");
 				}
 				else{
 					MarkovNode curChild=node.children[indexCompProb];
