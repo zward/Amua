@@ -21,6 +21,7 @@ package markov;
 import javax.swing.ProgressMonitor;
 
 import base.AmuaModel;
+import base.MicroStats;
 import gui.frmTrace;
 import main.MersenneTwisterFast;
 import main.Variable;
@@ -49,6 +50,8 @@ public class MarkovMonteCarlo{
 	AmuaModel myModel;
 	MersenneTwisterFast generator;
 	ProgressMonitor progress;
+	MicroStats microStats;
+	double discountFactor[];
 	
 	//Constructor
 	public MarkovMonteCarlo(MarkovNode chainRoot){
@@ -110,9 +113,15 @@ public class MarkovMonteCarlo{
 			curPrev[s]=0; newPrev[s]=0;
 		}
 		
+		microStats=new MicroStats(myModel, numPeople);
+		
 		//Initialize people
 		for(int p=0; p<numPeople; p++){
 			people[p]=new MarkovPerson();
+			
+			people[p].rewards=new double[numDim];
+			people[p].rewardsDis=new double[numDim];
+			
 			//initialize variables
 			people[p].variableVals=new Numeric[numVariables];
 			for(int c=0; c<numVariables; c++){
@@ -154,6 +163,7 @@ public class MarkovMonteCarlo{
 		
 		//Simulate cycles
 		int t=0;
+		discountFactor=new double[numDim];
 		
 		boolean terminate=false;
 		boolean cancelled=false;
@@ -162,6 +172,18 @@ public class MarkovMonteCarlo{
 		while(terminate==false && t<markovTree.maxCycles){
 			progress.setProgress(t);
 			progress.setNote("t = "+t);
+			
+			//Update discount factor
+			if(markovTree.discountRewards){
+				int disCycle=t;
+				if(t<markovTree.discountStartCycle){disCycle=0;} //don't discount yet
+				else{disCycle=(t-markovTree.discountStartCycle)+1;}
+				
+				for(int d=0; d<numDim; d++){
+					double discountRate=markovTree.discountRates[d]/100.0;
+					discountFactor[d]=1.0/Math.pow(1+discountRate, disCycle);
+				}
+			}
 			
 			//Update expressions for costs/rewards
 			evalCosts(chainRoot);
@@ -202,12 +224,15 @@ public class MarkovMonteCarlo{
 				for(int d=0; d<numDim; d++){ //Update state rewards
 					if(states[curState].rewardHasVariables[d]==false){ //use pre-calculated reward
 						cycleRewards[d]+=states[curState].curRewards[d];
+						people[p].rewards[d]+=states[curState].curRewards[d];
+						people[p].rewardsDis[d]+=states[curState].curRewards[d]*discountFactor[d];
 					}
 					else{ //has variable, re-evaluate reward
 						double curReward=Interpreter.evaluate(states[curState].rewards[d],myModel,false).getDouble();
 						cycleRewards[d]+=curReward;
+						people[p].rewards[d]+=curReward;
+						people[p].rewardsDis[d]+=curReward*discountFactor[d];
 					}
-					
 				}
 				//state transition
 				traverseNode(states[curState],people[p]);
@@ -254,6 +279,22 @@ public class MarkovMonteCarlo{
 		//Reset variable 't'
 		curT.value.setInt(0);
 
+		//record results
+		int numVars=myModel.variables.size();
+		for(int p=0; p<numPeople; p++){
+			for(int d=0; d<numDim; d++){
+				if(markovTree.discountRewards){
+					microStats.outcomes[d][p]=people[p].rewardsDis[d];
+				}
+				else{
+					microStats.outcomes[d][p]=people[p].rewards[d];
+				}
+			}
+			for(int v=0; v<numVars; v++){
+				microStats.variables[v][p]=people[p].variableVals[v].getValue();
+			}
+		}
+		
 		//repoint variable vals
 		for(int c=0; c<numVariables; c++){
 			variables[c].value=origVariableVals[c];
@@ -305,10 +346,14 @@ public class MarkovMonteCarlo{
 			for(int d=0; d<numDim; d++){
 				if(node.costHasVariables[d]==false){ //use pre-calculated cost
 					cycleRewards[d]+=node.curCosts[d];
+					curPerson.rewards[d]+=node.curCosts[d];
+					curPerson.rewardsDis[d]+=node.curCosts[d]*discountFactor[d];
 				}
 				else{ //has variable, re-evaluate cost
 					double curCost=Interpreter.evaluate(node.cost[d],myModel,false).getDouble();
 					cycleRewards[d]+=curCost;
+					curPerson.rewards[d]+=curCost;
+					curPerson.rewardsDis[d]+=curCost*discountFactor[d];
 				}
 			}
 		}
@@ -425,13 +470,7 @@ public class MarkovMonteCarlo{
 			trace.cycleRewards[d].add(cycleRewards[d]);
 			trace.cumRewards[d].add(cumRewards[d]);
 			if(markovTree.discountRewards){
-				double discountRate=markovTree.discountRates[d]/100.0;
-				int disCycle=t;
-				if(t<markovTree.discountStartCycle){disCycle=0;} //don't discount yet
-				else{disCycle=(t-markovTree.discountStartCycle)+1;}
-				double discountFactor=1.0/Math.pow(1+discountRate, disCycle);
-				
-				cycleRewardsDis[d]=cycleRewards[d]*discountFactor;
+				cycleRewardsDis[d]=cycleRewards[d]*discountFactor[d];
 				cumRewardsDis[d]+=cycleRewardsDis[d];
 				trace.cycleRewardsDis[d].add(cycleRewardsDis[d]);
 				trace.cumRewardsDis[d].add(cumRewardsDis[d]);

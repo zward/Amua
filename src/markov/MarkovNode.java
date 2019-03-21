@@ -275,8 +275,8 @@ public class MarkovNode extends ModelNode{
 					textProb.setBounds(xPos-scale(140), yPos+(height/2),scale(140),scale(28));
 					lblCost.setBounds(xPos-scale(150),(int)(yPos+2.5*(height/2)),scale(12),scale(28));
 					textCost.setBounds(xPos-scale(140),(int)(yPos+2.5*(height/2)),scale(140),scale(28));
-					lblVarUpdates.setBounds(xPos+width-scale(112), (int)(yPos+5*(height/2)),scale(15),scale(28));
-					textVarUpdates.setBounds(xPos+width-scale(100),(int)(yPos+5*(height/2)),scale(100),scale(28));
+					lblVarUpdates.setBounds(xPos+width-scale(112), (int)(yPos+3.5*(height/2)),scale(15),scale(28));
+					textVarUpdates.setBounds(xPos+width-scale(100),(int)(yPos+3.5*(height/2)),scale(100),scale(28));
 				}
 				else{
 					lblCost.setBounds(xPos-scale(150),yPos+(height/2),scale(12),scale(28));

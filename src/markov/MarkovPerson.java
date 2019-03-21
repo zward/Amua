@@ -23,6 +23,8 @@ import math.Numeric;
 public class MarkovPerson{
 	int curState;
 	Numeric variableVals[];
+	double rewards[];
+	double rewardsDis[];
 	
 	//Constructor
 	public MarkovPerson(){

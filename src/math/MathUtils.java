@@ -93,6 +93,14 @@ public final class MathUtils{
 		}
 		return(new int[]{lb,ub});
 	}
+	
+	public static int getQuantileIndex(double dNum, double quantile){
+		int num=(int)dNum;
+		int index=(int) Math.round(quantile*num)-1;
+		index=Math.max(0, index); //floor of 0
+		index=Math.min(num-1, index); //ceiling of num-1
+		return(index);
+	}
 		
 	/**
 	 * Calculates the variance

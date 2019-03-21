@@ -19,6 +19,7 @@
 package gui;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -119,7 +120,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.1.7";
+	public String version="0.1.8";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -563,6 +564,26 @@ public class frmMain {
 		});
 		mnSensitivityAnalysis.add(mntmTwoway);
 		mnSensitivityAnalysis.add(mntmProbabilisticpsa);
+		
+		JMenuItem mntmBatchRuns = new JMenuItem("Batch Runs");
+		mntmBatchRuns.setIcon(new ImageIcon(frmMain.class.getResource("/images/runBatch.png")));
+		mntmBatchRuns.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				frmBatch window = new frmBatch(curModel);
+				window.frmBatch.setVisible(true);
+			}
+		});
+		mnRun.add(mntmBatchRuns);
+		
+		JMenuItem mntmScenarios = new JMenuItem("Scenarios");
+		mntmScenarios.setIcon(new ImageIcon(frmMain.class.getResource("/images/scenario_16.png")));
+		mntmScenarios.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frmScenarios window = new frmScenarios(curModel);
+				window.frmScenarios.setVisible(true);
+			}
+		});
+		mnRun.add(mntmScenarios);
 
 		JSeparator separator_10 = new JSeparator();
 		mnRun.add(separator_10);
@@ -1475,7 +1496,9 @@ public class frmMain {
 		btnOCD.setToolTipText("Optimize Current Display");
 		btnOCD.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.ocd("OCD");
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 		toolBar.add(btnOCD);
@@ -1487,7 +1510,9 @@ public class frmMain {
 		btnEqualY.setIcon(new ImageIcon(imageURL,"Vertical Spacing"));
 		btnEqualY.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.equalY();
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 		toolBar.add(btnEqualY);
@@ -1512,6 +1537,7 @@ public class frmMain {
 		btnAlignLeft.setIcon(new ImageIcon(imageURL,"Align Left"));
 		btnAlignLeft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.alignRight=false;
 				curModel.ocd("Align Left");
 
@@ -1519,6 +1545,7 @@ public class frmMain {
 				btnAlignLeft.setIcon(new ImageIcon(imageURL,"Align Left"));
 				imageURL = frmMain.class.getResource("/images/alignRight.png");
 				btnAlignRight.setIcon(new ImageIcon(imageURL,"Align Right"));
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 		toolBar.add(btnAlignLeft);
@@ -1528,6 +1555,7 @@ public class frmMain {
 		btnAlignRight.setIcon(new ImageIcon(imageURL,"Align Right"));
 		btnAlignRight.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.alignRight=true;
 				curModel.ocd("Align Right");
 
@@ -1535,6 +1563,7 @@ public class frmMain {
 				btnAlignRight.setIcon(new ImageIcon(imageURL,"Align Right"));
 				imageURL = frmMain.class.getResource("/images/alignLeft.png");
 				btnAlignLeft.setIcon(new ImageIcon(imageURL,"Align Left"));
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 		toolBar.add(btnAlignRight);
@@ -1550,7 +1579,9 @@ public class frmMain {
 		toolBar.add(btnCheckModel);
 		btnCheckModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.checkModel(console,true);
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 
@@ -1577,7 +1608,9 @@ public class frmMain {
 		toolBar.add(btnClearAnnotations);
 		btnClearAnnotations.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.clearAnnotations();
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 
@@ -1614,7 +1647,9 @@ public class frmMain {
 				int rem=curScale%10;
 				if(rem!=0){curScale+=(10-rem);}
 				int newScale=Math.max(curScale-10,20); //Floor of 20
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				setZoomVal(newScale);
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 		btnZoomOut.setToolTipText("Zoom Out");
@@ -1633,7 +1668,9 @@ public class frmMain {
 				int rem=curScale%10;
 				curScale-=rem;
 				int newScale=Math.min(curScale+10,500); //Ceiling of 500
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				setZoomVal(newScale);
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 		btnZoomIn.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -1652,6 +1689,7 @@ public class frmMain {
 
 		btnSnapshot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				BufferedImage bi=new BufferedImage(curModel.getPanel().getWidth(), curModel.getPanel().getHeight(), BufferedImage.TYPE_INT_RGB);
 				Graphics2D g = bi.createGraphics();
 				curModel.getPanel().print(g);
@@ -1659,6 +1697,7 @@ public class frmMain {
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 				ImageTransferable selection = new ImageTransferable(bi);
 				clipboard.setContents(selection, null);
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 
@@ -1942,6 +1981,8 @@ public class frmMain {
 						
 			//Not open, open it
 			if(isOpen==false){
+				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				
 				JAXBContext context = JAXBContext.newInstance(AmuaModel.class);
 				Unmarshaller un = context.createUnmarshaller();
 				AmuaModel newModel = (AmuaModel) un.unmarshal(new File(filepath));
@@ -1963,6 +2004,8 @@ public class frmMain {
 				recentFiles.updateList(filepath,newModel.type);
 
 				checkAnyModels();
+				
+				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		}catch(Exception e){
 			console.print("Error: "+e.getMessage()); console.newLine();

@@ -47,6 +47,7 @@ import main.MersenneTwisterFast;
 import main.Metadata;
 import main.Parameter;
 import main.ParameterSet;
+import main.Scenario;
 import main.Table;
 import main.Variable;
 import markov.MarkovNode;
@@ -60,6 +61,7 @@ import math.Numeric;
 import tree.DecisionTree;
 import tree.PanelTree;
 import tree.TreeNode;
+import tree.TreeReport;
 
 @XmlRootElement(name="Model")
 public class AmuaModel{
@@ -77,11 +79,13 @@ public class AmuaModel{
 	@XmlElement public String parameterNames[];
 	@XmlElement public boolean simParamSets;
 	@XmlElement(name="ParameterSet", type=ParameterSet.class) public ParameterSet[] parameterSets;
+	@XmlElement(name="Scenario", type=Scenario.class) public ArrayList<Scenario> scenarios;
 	//Simulation settings
 	@XmlElement public int simType=0; //0=Cohort, 1=Monte Carlo
 	@XmlElement public int cohortSize=1000;
 	@XmlElement public boolean CRN; //common random numbers
 	@XmlElement public int crnSeed; //CRN seed
+	@XmlElement public boolean displayIndResults;
 	//Model types
 	@XmlElement public DecisionTree tree;
 	@XmlElement public MarkovTree markov;
@@ -759,41 +763,42 @@ public class AmuaModel{
 		else if(simType==1){console.print("Monte Carlo simulations:\t"+cohortSize+"\n");}
 	}
 	
-	public void runModel(Console console,boolean display){
+	public RunReport runModel(Console console,boolean display){
+		RunReport report=new RunReport(this);
 		if(type==0){ //Decision tree
-			runDecisionTree(console,display);
+			runDecisionTree(console,display,report);
 		}
 		else if(type==1){ //Markov model
 			if(display){panelMarkov.tree.showEV=true;}
 			if(simParamSets==false){ //Base case
-				runMarkov(console,display);
+				runMarkov(console,display,report);
 			}
 			else{ //sim parameter sets
 				runMarkovParamSets(console,display);
 			}	
-
 		}
+		
+		return(report);
 	}
 	
-	private void runDecisionTree(Console console,boolean display){
+	
+	private void runDecisionTree(Console console,boolean display,RunReport runReport){
 		try{
 			if(display){
 				console.print("Running tree... ");
 				panelTree.tree.showEV=true;
 			}
 			evaluateParameters(); //get parameters
-			panelTree.tree.runModel(display); //run model
+			panelTree.tree.runModel(display,runReport); //run model
+			runReport.getResults(true);
 			unlockParams(); //unlock parameters
-
+			
 			if(display){
 				console.print("done!\n");
 				printSimInfo(console);
-
-				if(dimInfo.analysisType>0){
-					panelTree.tree.runCEA(console);
-				}
-				else{ //Display output on console
-					panelTree.tree.displayResults(console);
+				runReport.printResults(console,true);
+				if(dimInfo.analysisType>0){ //display ICERS/NMB on tree
+					panelTree.tree.displayCEAResults(runReport);
 				}
 			}
 		}catch(Exception e){
@@ -802,30 +807,31 @@ public class AmuaModel{
 		}
 	}
 	
-	private void runMarkov(Console console, boolean display){
+	private void runMarkov(Console console, boolean display, RunReport runReport){
 		try{
 			evaluateParameters(); //get parameters
 			if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, run all chains
 				if(display){console.print("Running model... ");}
-				panelMarkov.tree.runModel(display);
+				markov.runModel(display,runReport);
+				runReport.getResults(true);
 				if(display){
 					console.print(" done!\n");
 					printSimInfo(console);
-					if(dimInfo.analysisType>0){
-						panelMarkov.tree.runCEA(console);
-					}
-					else{
-						panelMarkov.tree.displayModelResults(console);
+					runReport.printResults(console,true);
+					if(dimInfo.analysisType>0){ //display ICERs/NMB on tree
+						markov.displayCEAResults(runReport);
 					}
 				}
 			}
-			else{ //Markov Chain selected
+			else{ //Single Markov Chain selected
 				if(display){console.print("Running Markov Chain: "+panelMarkov.curNode.name);}
-				panelMarkov.tree.runMarkovChain(panelMarkov.curNode, display);
+				markov.runMarkovChain(panelMarkov.curNode, display, runReport);
+				//runReport.getResults(false); //single chain
+				
 				if(display){
 					console.print(" done!\n");
-					printSimInfo(console);
-					panelMarkov.tree.displayChainResults(console,panelMarkov.curNode);
+					//printSimInfo(console);
+					//runReport.printResults(console,true);
 				}
 			}
 			unlockParams(); //unlock parameters
@@ -861,13 +867,16 @@ public class AmuaModel{
 			int numDim=dimInfo.dimNames.length;
 			double results[][][]=new double[numDim][numStrat][numSets];
 			boolean cancelled=false;
+			RunReport runReports[]=new RunReport[numSets];
 			for(int i=0; i<numSets; i++){
 				prog++;
 				if(display){progress.setProgress(prog);}
+				runReports[i]=new RunReport(this);
 				parameterSets[i].setParameters(this);
-				ArrayList<MarkovTrace> curTraces=markov.runModel(false);
+				markov.runModel(false,runReports[i]);
+				runReports[i].getResults(true);
 				for(int c=0; c<numChains; c++){
-					traces[c][i]=curTraces.get(c);
+					traces[c][i]=runReports[i].markovTraces.get(c);
 				}
 				//Get EVs
 				for(int d=0; d<numDim; d++){
@@ -928,6 +937,16 @@ public class AmuaModel{
 						}
 					}
 					curTable.print();
+					if(simType==1 && displayIndResults==true){
+						console.print("\nIndividual-level Results:\n");
+						RunReportSummary summary=new RunReportSummary(runReports);
+						for(int s=0; s<numChains; s++){
+							console.print("Chain: "+chainRoots.get(s).name+"\n");
+							summary.microStatsSummary[s].printSummary(console);
+						}
+					}
+					
+					
 					console.newLine();
 				}
 				//get trace summary
@@ -966,10 +985,10 @@ public class AmuaModel{
 
 				if(display){
 					if(dimInfo.analysisType>0){
-						panelMarkov.tree.runCEA(console);
+						//panelMarkov.tree.runCEA(console);
 					}
 					else{
-						panelMarkov.tree.displayModelResults(console);
+						//panelMarkov.tree.displayModelResults(console);
 					}
 				}
 			} //end check cancelled == false

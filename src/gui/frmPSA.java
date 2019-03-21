@@ -66,6 +66,8 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
 
 import base.AmuaModel;
+import base.RunReport;
+import base.RunReportSummary;
 import filters.CSVFilter;
 import main.CEAHelper;
 import main.Console;
@@ -117,6 +119,8 @@ public class frmPSA {
 	JCheckBox chckbxSeed;
 	private JTextField textSeed;
 	String outcome;
+	
+	RunReport reports[];
 
 	public frmPSA(AmuaModel myModel){
 		this.myModel=myModel;
@@ -593,6 +597,8 @@ public class frmPSA {
 									
 									long startTime=System.currentTimeMillis();
 									
+									reports=new RunReport[numIterations];
+									
 									for(int n=0; n<numIterations; n++){
 										//Update progress
 										double prog=((n+1)/(numIterations*1.0))*100;
@@ -646,17 +652,26 @@ public class frmPSA {
 
 										//Run model
 										myModel.curGenerator=myModel.generatorVar;
-										if(myModel.type==0){ //Decision tree
-											myModel.runModel(null, false);
+										reports[n]=myModel.runModel(null, false);
+										
+										if(myModel.type==1){ //Markov model
+											for(int c=0; c<numChains; c++){
+												traces[c][n]=reports[n].markovTraces.get(c);
+											}
+										}
+										
+										/*if(myModel.type==0){ //Decision tree
+											reports[n]=myModel.runModel(null, false);
 										}
 										else if(myModel.type==1){ //Markov model
 											myModel.evaluateParameters(); //get parameters
-											ArrayList<MarkovTrace> curTraces=myModel.markov.runModel(false);
+											reports[n]=new RunReport(myModel);
+											myModel.markov.runModel(false,reports[n]);
 											myModel.unlockParams(); //unlock parameters
 											for(int c=0; c<numChains; c++){
-												traces[c][n]=curTraces.get(c);
+												traces[c][n]=reports[n].markovTraces.get(c);
 											}
-										}
+										}*/
 																				
 										//Get EVs
 										for(int d=0; d<numDim; d++){
@@ -834,9 +849,16 @@ public class frmPSA {
 											}
 										}
 										curTable.print();
+										
+										if(myModel.simType==1 && myModel.displayIndResults==true){
+											console.print("\nIndividual-level Results:\n");
+											RunReportSummary summary=new RunReportSummary(reports);
+											for(int s=0; s<numStrat; s++){
+												console.print("Strategy: "+myModel.strategyNames[s]+"\n");
+												summary.microStatsSummary[s].printSummary(console);
+											}
+										}
 										console.newLine();
-										
-										
 									}
 									progress.close();
 								}

@@ -57,6 +57,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
 
 import base.AmuaModel;
+import base.RunReport;
 import main.Constraint;
 import main.DimInfo;
 import main.MersenneTwisterFast;
@@ -532,7 +533,8 @@ public class frmCalibrate {
 								}
 								else{
 									//initial run to build trace
-									myModel.markov.runMarkovChain(curChain,false);
+									RunReport curReport=new RunReport(myModel);
+									myModel.markov.runMarkovChain(curChain,false,curReport);
 								}
 								
 								//try evaluate score expression
@@ -578,7 +580,8 @@ public class frmCalibrate {
 										for(int i=0; i<numSets; i++){
 											progress.setProgress(i+1);
 											sampleAll();
-											myModel.markov.runMarkovChain(curChain,false);
+											RunReport curReport=new RunReport(myModel);
+											myModel.markov.runMarkovChain(curChain,false,curReport);
 											double curScore=Interpreter.evaluate(strScore, myModel, false).getDouble();
 											params[i]=new ParameterSet(myModel);
 											params[i].id=(i+1)+"";
@@ -605,7 +608,8 @@ public class frmCalibrate {
 											double curScore=thresh+1;
 											while(curScore>thresh){
 												sampleAll();
-												myModel.markov.runMarkovChain(curChain,false);
+												RunReport curReport=new RunReport(myModel);
+												myModel.markov.runMarkovChain(curChain,false,curReport);
 												curScore=Interpreter.evaluate(strScore, myModel, false).getDouble();
 												if(progress.isCanceled()){ //listen for cancel
 													curScore=thresh-1; //end while loop

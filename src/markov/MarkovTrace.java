@@ -18,6 +18,9 @@
 
 package markov;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.table.DefaultTableModel;
@@ -301,6 +304,31 @@ public class MarkovTrace{
 			}
 		}
 		return(col);
+	}
+	
+	public void write(String filepath) throws IOException{
+		FileWriter fstream = new FileWriter(filepath+"_"+traceName+".csv"); //Create new file
+		BufferedWriter out = new BufferedWriter(fstream);
+		
+		int numRows=modelTraceRaw.getRowCount();
+		int numCols=modelTraceRaw.getColumnCount();
+		
+		//Headers
+		out.write(modelTraceRaw.getColumnName(0));
+		for(int i=1; i<numCols; i++){
+			out.write(","+modelTraceRaw.getColumnName(i));
+		}
+		out.newLine();
+		
+		//Data
+		for(int r=0; r<numRows; r++){
+			out.write(modelTraceRaw.getValueAt(r, 0)+"");
+			for(int i=1; i<numCols; i++){
+				out.write(","+modelTraceRaw.getValueAt(r,i));
+			}
+			out.newLine();
+		}
+		out.close();
 	}
 
 }

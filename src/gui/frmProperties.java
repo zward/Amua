@@ -35,6 +35,7 @@ import javax.swing.JSeparator;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.SystemColor;
 
 import javax.swing.DefaultCellEditor;
@@ -99,6 +100,7 @@ public class frmProperties {
 	private JTextField textCohortSize;
 	JCheckBox chckbxCRN;
 	private JTextField textCRNSeed;
+	JCheckBox chckbxDisplayIndResults;
 	
 	//Markov
 	private JTextField textMarkovMaxCycles;
@@ -409,12 +411,14 @@ public class frmProperties {
 						lblCohortSize.setText("Cohort size:");
 						chckbxCRN.setEnabled(false);
 						textCRNSeed.setEnabled(false);
+						chckbxDisplayIndResults.setEnabled(false);
 					}
 					else if(selected==1){ //Monte Carlo
 						lblCohortSize.setText("# simulations:");
 						chckbxCRN.setEnabled(true);
 						if(chckbxCRN.isSelected()){textCRNSeed.setEnabled(true);}
 						else{textCRNSeed.setEnabled(false);}
+						chckbxDisplayIndResults.setEnabled(true);
 					}
 				}
 			});
@@ -459,6 +463,11 @@ public class frmProperties {
 			lblstOrder.setFont(new Font("SansSerif", Font.PLAIN, 9));
 			lblstOrder.setBounds(269, 11, 98, 16);
 			panel_3.add(lblstOrder);
+			
+			chckbxDisplayIndResults = new JCheckBox("Display individual-level results");
+			chckbxDisplayIndResults.setEnabled(false);
+			chckbxDisplayIndResults.setBounds(15, 105, 193, 18);
+			panel_3.add(chckbxDisplayIndResults);
 			
 			JPanel panelMarkov = new JPanel();
 			panelMarkov.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -614,7 +623,7 @@ public class frmProperties {
 			textCRNSeed.setEnabled(true);
 			textCRNSeed.setText(myModel.crnSeed+"");
 		}
-		
+		chckbxDisplayIndResults.setSelected(myModel.displayIndResults);
 	}
 	
 	private void displayMarkovSettings(){
@@ -786,6 +795,7 @@ public class frmProperties {
 		int cohortSize=-1;
 		boolean CRN=false;
 		int crnSeed=-1;
+		boolean displayIndResults=false;
 		if(simType==0){ //Cohort
 			try{
 				String text=textCohortSize.getText().replaceAll(",",""); //remove commas
@@ -813,6 +823,7 @@ public class frmProperties {
 			}
 			
 			CRN=chckbxCRN.isSelected(); //CRN
+			displayIndResults=chckbxDisplayIndResults.isSelected();
 			if(CRN){ //get seed
 				try{
 					String text=textCRNSeed.getText().replaceAll(",",""); //remove commas
@@ -882,6 +893,8 @@ public class frmProperties {
 		}
 		
 		if(valid==true){ //Apply changes
+			frmProperties.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			
 			//add to undo
 			myModel.saveSnapshot("Change Properties");
 			
@@ -910,6 +923,7 @@ public class frmProperties {
 			myModel.cohortSize=cohortSize;
 			myModel.CRN=CRN;
 			myModel.crnSeed=crnSeed;
+			myModel.displayIndResults=displayIndResults;
 			
 			//markov settings
 			if(myModel.type==1){
@@ -927,6 +941,7 @@ public class frmProperties {
 					}
 				}
 			}
+			frmProperties.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
 		
 		return(valid);

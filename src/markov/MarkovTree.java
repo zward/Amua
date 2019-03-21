@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import base.AmuaModel;
+import base.RunReport;
 import main.CEAHelper;
 import main.Console;
 import main.ConsoleTable;
@@ -522,36 +523,37 @@ public class MarkovTree{
 	 * @throws Exception 
 	 * @throws NumericException 
 	 */
-	public ArrayList<MarkovTrace> runModel(boolean display) throws NumericException, Exception{
-		ArrayList<MarkovTrace> traces=new ArrayList<MarkovTrace>();
+	public void runModel(boolean display, RunReport runReport) throws NumericException, Exception{
 		MarkovNode root=nodes.get(0);
 		//Run all chains and then get expected values
 		for(int n=0; n<nodes.size(); n++){
 			MarkovNode curNode=nodes.get(n);
 			if(curNode.type==1){
-				traces.add(runMarkovChain(curNode,display));
+				runMarkovChain(curNode,display,runReport);
 			}
 		}
-
+		
 		//Get EVs
 		for(int c=0; c<root.numChildren; c++){
 			getEVs(root.children[c],display);
 		}
 
-		return(traces);
+		
 	}
 	
-	public MarkovTrace runMarkovChain(MarkovNode node, boolean display) throws NumericException, Exception{
-		MarkovTrace trace=null;
+	public void runMarkovChain(MarkovNode node, boolean display, RunReport runReport) throws NumericException, Exception{
 		if(myModel.simType==0){ //Markov
 			MarkovCohort cohortModel=new MarkovCohort(node);
 			cohortModel.simulate(display && showTrace);
-			trace=cohortModel.trace;
+			runReport.names.add(node.name);
+			runReport.markovTraces.add(cohortModel.trace);
 		}
 		else if(myModel.simType==1){ //Monte Carlo
 			MarkovMonteCarlo microModel=new MarkovMonteCarlo(node);
 			microModel.simulate(display && showTrace);
-			trace=microModel.trace;
+			runReport.names.add(node.name);
+			runReport.markovTraces.add(microModel.trace);
+			runReport.microStats.add(microModel.microStats);
 		}
 		
 		if(display==true && myModel.dimInfo.analysisType==0){
@@ -573,8 +575,6 @@ public class MarkovTree{
 				node.textEV.setVisible(true);
 			}
 		}
-		
-		return(trace);
 	}
 	
 	public int getParentIndex(int childIndex){
@@ -598,8 +598,9 @@ public class MarkovTree{
 			updateMarkovChain(child);
 		}
 	}
-
-	public void displayModelResults(Console console){
+	
+	
+	public void printModelResults(Console console){
 		//Display output for each strategy
 		DimInfo dimInfo=myModel.dimInfo;
 		int numDimensions=dimInfo.dimSymbols.length;
@@ -617,6 +618,7 @@ public class MarkovTree{
 			for(int d=0; d<numDimensions; d++){headers[numDimensions+d+1]=dimInfo.dimNames[d]+" (Dis)";}
 		}
 		curTable.addRow(headers);
+		
 		//strategy results
 		MarkovNode root=nodes.get(0);
 		for(int c=0; c<root.numChildren; c++){
@@ -641,7 +643,7 @@ public class MarkovTree{
 		console.newLine();
 	}
 	
-	public void displayChainResults(Console console, MarkovNode curChain){
+	public void printChainResults(Console console, MarkovNode curChain){
 		DimInfo dimInfo=myModel.dimInfo;
 		int numDimensions=dimInfo.dimSymbols.length;
 		console.print("\n");
@@ -677,78 +679,20 @@ public class MarkovTree{
 		console.newLine();
 	}
 	
-	public void runCEA(Console console){
-		DimInfo dimInfo=myModel.dimInfo;
-		Object table[][]=null;
-		int numStrat=0;
-
-		if(dimInfo.analysisType==1){ //CEA
-			table=new CEAHelper().calculateICERs(myModel);
-			
-			//Round results
-			numStrat=table.length;
-			for(int s=0; s<numStrat; s++){
-				table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.costDim]); //Cost
-				table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.effectDim]); //Effect
-				double icer=(double) table[s][4];
-				if(Double.isNaN(icer)){
-					table[s][4]="---";
-				}
-				else{
-					table[s][4]=MathUtils.round(icer,dimInfo.decimals[dimInfo.costDim]);
-				}
-			}
-			
-			//Print results
-			console.print("\nCEA Results:\n");
-			boolean colTypes[]=new boolean[]{false,true,true,true,false}; //is column number (true), or text (false)
-			ConsoleTable curTable=new ConsoleTable(console,colTypes);
-			String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.costDim],dimInfo.dimNames[dimInfo.effectDim],"ICER","Notes"};
-			curTable.addRow(headers);
-			for(int s=0; s<numStrat; s++){
-				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+"",table[s][5]+""};
-				curTable.addRow(row);
-			}
-			curTable.print();
-			console.newLine();
-		}
-		else if(dimInfo.analysisType==2){ //BCA
-			table=new CEAHelper().calculateNMB(myModel);
-			
-			//Round results
-			numStrat=table.length;
-			for(int s=0; s<numStrat; s++){
-				table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.effectDim]); //Benefit
-				table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.costDim]); //Cost
-				table[s][4]=MathUtils.round((double)table[s][4],dimInfo.decimals[dimInfo.costDim]); //NMB
-			}
-			
-			console.print("\nBCA Results:\n");
-			boolean colTypes[]=new boolean[]{false,true,true,true};
-			ConsoleTable curTable=new ConsoleTable(console,colTypes);
-			String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB"};
-			curTable.addRow(headers);
-			for(int s=0; s<numStrat; s++){
-				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+""};
-				curTable.addRow(row);
-			}
-			curTable.print();
-			console.newLine();
-		}
-		
+	public void displayCEAResults(RunReport report){
 		//Display on tree
 		MarkovNode root=nodes.get(0);
-		for(int s=0; s<numStrat; s++){
-			int origStrat=(int) table[s][0];
+		for(int s=0; s<report.numStrat; s++){
+			int origStrat=(int) report.table[s][0];
 			if(origStrat!=-1){
 				int index=root.childIndices.get(origStrat);
 				MarkovNode child=nodes.get(index);
-				String icer=""+table[s][4];
+				String icer=""+report.table[s][4];
 				if(icer.matches("---")){
-					icer=(String)table[s][5];
+					icer=(String)report.table[s][5];
 				}
-				if(dimInfo.analysisType==1){icer="ICER: "+icer;}
-				else if(dimInfo.analysisType==2){icer="NMB: "+icer;}
+				if(report.dimInfo.analysisType==1){icer="ICER: "+icer;}
+				else if(report.dimInfo.analysisType==2){icer="NMB: "+icer;}
 				child.icer=icer;
 				child.textICER.setText(icer);
 				if(child.visible){
@@ -757,7 +701,6 @@ public class MarkovTree{
 			}
 		}
 	}
-
 		
 	public void updateDimensions(int numDimensions){
 		int numNodes=nodes.size();

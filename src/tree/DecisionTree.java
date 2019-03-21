@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import base.AmuaModel;
+import base.RunReport;
 import main.CEAHelper;
 import main.Console;
 import main.ConsoleTable;
@@ -274,7 +275,7 @@ public class DecisionTree{
 	 * @param node Current node - passed recursively
 	 * @throws Exception 
 	 */
-	public void runModel(boolean display) throws Exception{
+	public void runModel(boolean display, RunReport runReport) throws Exception{
 		if(myModel.simType==0){ //Cohort Tree
 			TreeCohort cohortModel=new TreeCohort(nodes.get(0)); //send root
 			cohortModel.simulate(display);
@@ -282,7 +283,13 @@ public class DecisionTree{
 		else if(myModel.simType==1){ //Monte Carlo
 			TreeMonteCarlo microModel=new TreeMonteCarlo(nodes.get(0)); //send root
 			microModel.simulate(display);
+			int numMicro=microModel.microStats.length;
+			for(int s=0; s<numMicro; s++){
+				runReport.microStats.add(microModel.microStats[s]);
+				runReport.names.add(microModel.strategyNames[s]);
+			}
 		}
+		runReport.treeReport=new TreeReport(this);
 	}
 		
 	public int getParentIndex(int childIndex){
@@ -294,89 +301,8 @@ public class DecisionTree{
 		}
 		return(parentIndex);
 	}
-
-	public void runCEA(Console console){
-		DimInfo dimInfo=myModel.dimInfo;
-		Object table[][]=null;
-		int numStrat=0;
-
-		if(dimInfo.analysisType==1){ //CEA
-			table=new CEAHelper().calculateICERs(myModel);
-			
-			//Round results
-			numStrat=table.length;
-			for(int s=0; s<numStrat; s++){
-				table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.costDim]); //Cost
-				table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.effectDim]); //Effect
-				double icer=(double) table[s][4];
-				if(Double.isNaN(icer)){
-					table[s][4]="---";
-				}
-				else{
-					table[s][4]=MathUtils.round(icer,dimInfo.decimals[dimInfo.costDim]);
-				}
-			}
-			
-			//Print results
-			console.print("\nCEA Results:\n");
-			boolean colTypes[]=new boolean[]{false,true,true,true,false}; //is column number (true), or text (false)
-			ConsoleTable curTable=new ConsoleTable(console,colTypes);
-			String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.costDim],dimInfo.dimNames[dimInfo.effectDim],"ICER","Notes"};
-			curTable.addRow(headers);
-			for(int s=0; s<numStrat; s++){
-				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+"",table[s][5]+""};
-				curTable.addRow(row);
-			}
-			curTable.print();
-			console.newLine();
-		}
-		else if(dimInfo.analysisType==2){ //BCA
-			table=new CEAHelper().calculateNMB(myModel);
-			
-			//Round results
-			numStrat=table.length;
-			for(int s=0; s<numStrat; s++){
-				table[s][2]=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.effectDim]); //Benefit
-				table[s][3]=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.costDim]); //Cost
-				table[s][4]=MathUtils.round((double)table[s][4],dimInfo.decimals[dimInfo.costDim]); //NMB
-			}
-			
-			console.print("\nBCA Results:\n");
-			boolean colTypes[]=new boolean[]{false,true,true,true};
-			ConsoleTable curTable=new ConsoleTable(console,colTypes);
-			String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB"};
-			curTable.addRow(headers);
-			for(int s=0; s<numStrat; s++){
-				String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+""};
-				curTable.addRow(row);
-			}
-			curTable.print();
-			console.newLine();
-		}
-		
-		//Display on tree
-		TreeNode root=nodes.get(0);
-		for(int s=0; s<numStrat; s++){
-			int origStrat=(int) table[s][0];
-			if(origStrat!=-1){
-				int index=root.childIndices.get(origStrat);
-				TreeNode child=nodes.get(index);
-				String icer=""+table[s][4];
-				if(icer.matches("---")){
-					icer=(String)table[s][5];
-				}
-				if(dimInfo.analysisType==1){icer="ICER: "+icer;}
-				else if(dimInfo.analysisType==2){icer="NMB: "+icer;}
-				child.icer=icer;
-				child.textICER.setText(icer);
-				if(child.visible){
-					child.textICER.setVisible(true);
-				}
-			}
-		}
-	}
-
-	public void displayResults(Console console){
+	
+	public void printEVResults(Console console){
 		//Display output for each strategy
 		DimInfo dimInfo=myModel.dimInfo;
 		TreeNode root=nodes.get(0);
@@ -404,18 +330,28 @@ public class DecisionTree{
 		console.newLine();
 	}
 
-	/*public void appendResults(TreeNode curNode, Console console){
-		int numChildren=curNode.childIndices.size();
-		for(int i=0; i<numChildren; i++){
-			TreeNode child=nodes.get(curNode.childIndices.get(i));
-			console.print(child.name+"	");
-			for(int d=0; d<child.numDimensions-1; d++){
-				console.print(MathUtils.round(child.expectedValues[d],myModel.dimInfo.decimals[d])+"	");
+	public void displayCEAResults(RunReport report){
+		//Display on tree
+		TreeNode root=nodes.get(0);
+		for(int s=0; s<report.numStrat; s++){
+			int origStrat=(int) report.table[s][0];
+			if(origStrat!=-1){
+				int index=root.childIndices.get(origStrat);
+				TreeNode child=nodes.get(index);
+				String icer=""+report.table[s][4];
+				if(icer.matches("---")){
+					icer=(String)report.table[s][5];
+				}
+				if(report.dimInfo.analysisType==1){icer="ICER: "+icer;}
+				else if(report.dimInfo.analysisType==2){icer="NMB: "+icer;}
+				child.icer=icer;
+				child.textICER.setText(icer);
+				if(child.visible){
+					child.textICER.setVisible(true);
+				}
 			}
-			console.print(MathUtils.round(child.expectedValues[child.numDimensions-1],myModel.dimInfo.decimals[child.numDimensions-1])+"\n");
-			appendResults(child,console);
 		}
-	}*/
+	}
 
 	public void updateDimensions(int numDimensions){
 		int numNodes=nodes.size();

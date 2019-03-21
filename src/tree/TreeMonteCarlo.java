@@ -21,6 +21,7 @@ package tree;
 import javax.swing.ProgressMonitor;
 
 import base.AmuaModel;
+import base.MicroStats;
 import main.MersenneTwisterFast;
 import main.Variable;
 import math.Interpreter;
@@ -40,6 +41,8 @@ public class TreeMonteCarlo{
 	AmuaModel myModel;
 	//MersenneTwisterFast generator;
 	ProgressMonitor progress;
+	MicroStats microStats[];
+	String strategyNames[];
 	
 	//Constructor
 	public TreeMonteCarlo(TreeNode root){
@@ -81,24 +84,50 @@ public class TreeMonteCarlo{
 		progress.setMaximum(numPeople);
 		person=new TreePerson();
 		person.variableVals=new Numeric[numVars];
+		person.costs=new double[numDim];
+		person.payoffs=new double[numDim];
 		
 		long startTime=System.currentTimeMillis();
 		
-		for(int p=0; p<numPeople; p++){
-			//initialize variables
-			for(int c=0; c<numVars; c++){
-				person.variableVals[c]=Interpreter.evaluate(variables[c].expression, myModel,false);
-				variables[c].value=person.variableVals[c];
-			}
+		int numStrat=root.numChildren;
+		strategyNames=new String[numStrat];
+		microStats=new MicroStats[numStrat];
+		for(int s=0; s<numStrat; s++){
+			strategyNames[s]=root.children[s].name;
+			microStats[s]=new MicroStats(myModel, numPeople);
+		}
 		
+		for(int p=0; p<numPeople; p++){
 			//run all strategies
 			for(int s=0; s<root.numChildren; s++){
 				if(myModel.CRN){ //Common random numbers
 					myModel.generatorVar.setSeed(myModel.crnSeed+p);
 				}
 				myModel.curGenerator=myModel.generatorVar;
+				
+				//initialize outcomes
+				for(int d=0; d<numDim; d++){
+					person.costs[d]=0;
+					person.payoffs[d]=0;
+				}
+				
+				//initialize variables
+				for(int v=0; v<numVars; v++){
+					person.variableVals[v]=Interpreter.evaluate(variables[v].expression, myModel,false);
+					variables[v].value=person.variableVals[v];
+				}
+				
+				//run model
 				TreeNode child=root.children[s];
 				traverseNode(child);
+				
+				//record results
+				for(int d=0; d<numDim; d++){
+					microStats[s].outcomes[d][p]=person.costs[d]+person.payoffs[d];
+				}
+				for(int v=0; v<numVars; v++){
+					microStats[s].variables[v][p]=variables[v].value.getValue();
+				}
 			}
 			
 			//update progress
@@ -184,23 +213,27 @@ public class TreeMonteCarlo{
 			for(int d=0; d<numDim; d++){
 				if(node.costHasVar[d]==false){ //use pre-calculated cost
 					node.totalCosts[d]+=node.curCosts[d];
+					person.costs[d]+=node.curCosts[d];
 				}
 				else{ //has variable, re-evaluate cost
 					double curCost=Interpreter.evaluate(node.cost[d],myModel,false).getDouble();
 					node.totalCosts[d]+=curCost;
+					person.costs[d]+=curCost;
 				}
 			}
 		}
 		
 		//Update payoffs
 		if(node.type==2){ //terminal node
-			for(int c=0; c<numDim; c++){
-				if(node.payoffHasVar[c]==false){ //use pre-calculated payoff
-					node.totalPayoffs[c]+=node.curPayoffs[c];
+			for(int d=0; d<numDim; d++){
+				if(node.payoffHasVar[d]==false){ //use pre-calculated payoff
+					node.totalPayoffs[d]+=node.curPayoffs[d];
+					person.payoffs[d]+=node.curPayoffs[d];
 				}
 				else{ //has variable, re-evaluate payoff
-					double curPayoff=Interpreter.evaluate(node.payoff[c],myModel,false).getDouble();
-					node.totalPayoffs[c]+=curPayoff;
+					double curPayoff=Interpreter.evaluate(node.payoff[d],myModel,false).getDouble();
+					node.totalPayoffs[d]+=curPayoff;
+					person.payoffs[d]+=curPayoff;
 				}
 			}
 		}

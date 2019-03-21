@@ -624,19 +624,52 @@ public class PanelTree extends ModelPanel{
 		if(node.visible && node.collapsed){this.add(node.lblCollapsed);}
 		if(node.selected){textAreaNotes.setText(node.notes);}
 	}
-
-	public void alignNodeY(TreeNode curNode){
-		int numChildren=curNode.childIndices.size();
-		if(numChildren==0){
-			moveNode(curNode,curNode.xPos,maxY);
-			if(curNode.hasVarUpdates==false){maxY+=curNode.scale(60);}
-			else{maxY+=curNode.scale(80);} //give extra line
+	
+	/**
+	 * Aligns all nodes
+	 * @param actionName
+	 * @param alignRight
+	 */
+	public void ocd(String actionName, boolean alignRight){
+		xOffset=0; yOffset=0;
+		saveSnapshot(actionName);
+		this.setVisible(false);
+		int size=tree.nodes.size();
+		int maxLevel=0;
+		for(int i=0; i<size; i++){
+			TreeNode curNode=tree.nodes.get(i);
+			maxLevel=Math.max(maxLevel, curNode.level);
 		}
-		else{ //has children
+		TreeNode root=tree.nodes.get(0);
+		maxY=root.scale(25);
+		alignNode(root,alignRight,maxLevel);
+		
+		resizeCanvas();
+		revalidate();
+		repaint();
+		this.setVisible(true);
+	}
+	
+	private void alignNode(TreeNode node, boolean alignRight, int maxLevel){
+		//set x
+		int curX=(node.level*node.scale(185))+node.scale(50);
+		if(alignRight==true && node.type==2){
+			curX=(maxLevel*node.scale(185))+node.scale(50);
+		}
+
+		//set y
+		int curY=node.xPos;
+		int numChildren=node.childIndices.size();
+		if(numChildren==0 || node.collapsed){
+			curY=maxY;
+			if(node.hasVarUpdates==false){maxY+=node.scale(60);}
+			else{maxY+=node.scale(80);} //give extra line
+		}
+		else{ //has visible children
 			//update order of child indices based on current position
 			Object childY[][]=new Object[numChildren][2]; //[y pos][cur position in child indices]
 			for(int c=0; c<numChildren; c++){
-				int curIndex=curNode.childIndices.get(c);
+				int curIndex=node.childIndices.get(c);
 				childY[c][0]=tree.nodes.get(curIndex).yPos;
 				childY[c][1]=curIndex;
 			}
@@ -648,60 +681,33 @@ public class PanelTree extends ModelPanel{
 					return y1.compareTo(y2);
 				}
 			});
-			curNode.childIndices.clear();
+			node.childIndices.clear();
 			for(int c=0; c<numChildren; c++){ //update order
-				curNode.childIndices.add((Integer) childY[c][1]);
+				node.childIndices.add((Integer) childY[c][1]);
 			}
-			
+
 			//adjust Y
 			int totalY=0;
 			for(int c=0; c<numChildren; c++){
-				TreeNode child=tree.nodes.get(curNode.childIndices.get(c));
-				alignNodeY(child);
+				TreeNode child=tree.nodes.get(node.childIndices.get(c));
+				alignNode(child,alignRight,maxLevel);
 				totalY+=child.yPos;
 			}
 			totalY=totalY/(numChildren);
-			curNode.yPos=totalY;//Move node
-			//Update parent position for children
-			totalY+=(curNode.height/2); //Midpoint
-			for(int c=0; c<numChildren; c++){tree.nodes.get(curNode.childIndices.get(c)).parentY=totalY;}
-		}
-	}
-	
-	public void ocd(String actionName, boolean alignRight){
-		xOffset=0; yOffset=0;
-		saveSnapshot(actionName);
-		//Align x
-		int size=tree.nodes.size();
-		int maxLevel=0;
-		int minY=0;
-		//Default to alignBelow
-		for(int i=0; i<size; i++){
-			TreeNode curNode=tree.nodes.get(i);
-			int curX=(curNode.level*curNode.scale(185))+curNode.scale(50);
-			maxLevel=Math.max(maxLevel, tree.nodes.get(i).level);
-			moveNode(curNode,curX,curNode.yPos);
-			minY=Math.min(minY, curNode.yPos);
-		}
-		if(alignRight){
-			for(int i=0; i<size; i++){
-				TreeNode curNode=tree.nodes.get(i);
-				if(curNode.type==2){ //Align terminal nodes
-					int curX=(maxLevel*curNode.scale(185))+curNode.scale(50);
-					moveNode(curNode,curX,curNode.yPos);
-				}
-			}
+			curY=totalY;
 		}
 
-		TreeNode root=tree.nodes.get(0);
-		if(minY<0){ //Ensure all nodes are visible
-			root=tree.nodes.get(0);
-			moveNode(root,root.xPos,root.yPos+(25-minY)); //Shift root
+		//set new position
+		node.xPos=curX;
+		node.yPos=curY;
+		//Update parent position for children
+		curX+=node.width;
+		curY+=(node.height/2); //Midpoint
+		for(int c=0; c<numChildren; c++){
+			TreeNode child=tree.nodes.get(node.childIndices.get(c));
+			child.parentX=curX;
+			child.parentY=curY;
 		}
-
-		maxY=root.scale(25);
-		alignNodeY(root);
-		repaint();
 	}
 	
 	public void equalY(){

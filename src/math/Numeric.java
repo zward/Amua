@@ -237,6 +237,22 @@ public class Numeric{
 		}
 	}
 	
+	/**
+	 * Returns double/int values, casts boolean to indicator variable {0,1}, and returns NaN for matrix
+	 * @return double value
+	 */
+	public double getValue(){
+		double value=0;
+		if(format==Format.DOUBLE){value=doubleNum;}
+		else if(format==Format.INTEGER){value=intNum;}
+		else if(format==Format.BOOL){ //indicator
+			if(bool==true){value=1.0;}
+			else{value=0;}
+		}
+		else{value=Double.NaN;} //matrix
+		return(value);
+	}
+	
 	public void setInt(int newInt){
 		format=Format.INTEGER;
 		intNum=newInt;

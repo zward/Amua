@@ -25,6 +25,7 @@ import main.DimInfo;
 import main.Metadata;
 import main.Parameter;
 import main.ParameterSet;
+import main.Scenario;
 import main.Table;
 import main.Variable;
 import markov.MarkovTree;
@@ -46,10 +47,12 @@ public class ModelSnapshot{
 	public boolean simParamSets;
 	public String parameterNames[];
 	public ParameterSet[] parameterSets;
+	public ArrayList<Scenario> scenarios;
 	public int simType=0; //0=Cohort, 1=Monte Carlo
 	public int cohortSize=1000;
 	public boolean CRN;
 	public int crnSeed;
+	public boolean displayIndResults;
 	
 	//Model types
 	DecisionTree tree;
@@ -98,11 +101,21 @@ public class ModelSnapshot{
 				parameterSets[i]=model.parameterSets[i].copy();
 			}
 		}
+		//scenarios
+		if(model.scenarios!=null){
+			scenarios=new ArrayList<Scenario>();
+			int numRuns=model.scenarios.size();
+			for(int i=0; i<numRuns; i++){
+				scenarios.add(model.scenarios.get(i).copy());
+			}
+		}
+		
 		//simulation settings
 		simType=model.simType;
 		cohortSize=model.cohortSize;
 		CRN=model.CRN;
 		crnSeed=model.crnSeed;
+		displayIndResults=model.displayIndResults;
 		
 		if(type==0){tree=model.tree.snapshot();}
 		else if(type==1){markov=model.markov.snapshot();}
@@ -124,11 +137,13 @@ public class ModelSnapshot{
 		model.simParamSets=simParamSets;
 		model.parameterNames=parameterNames;
 		model.parameterSets=parameterSets;
+		model.scenarios=scenarios;
 		
 		model.simType=simType;
 		model.cohortSize=cohortSize;
 		model.CRN=CRN;
 		model.crnSeed=crnSeed;
+		model.displayIndResults=displayIndResults;
 		
 		if(type==0){
 			model.tree=tree;

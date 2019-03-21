@@ -22,6 +22,8 @@ import math.Numeric;
 
 public class TreePerson{
 	Numeric variableVals[];
+	double costs[];
+	double payoffs[];
 	
 	//Constructor
 	public TreePerson(){
