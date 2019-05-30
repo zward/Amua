@@ -39,8 +39,8 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import base.ModelNode;
 import main.VariableUpdate;
-import markov.MarkovTextField;
 import math.MathUtils;
+import math.Token;
 
 @XmlRootElement(name="node")
 public class TreeNode extends ModelNode{
@@ -50,17 +50,24 @@ public class TreeNode extends ModelNode{
 	//Numeric data - parsed/calculated
 	@XmlTransient int numChildren;
 	@XmlTransient TreeNode children[];
-	@XmlTransient double curProb; //Current probability used to run the model - not saved
+	@XmlTransient Token curProbTokens[]; //[token]
+	@XmlTransient Token curCostTokens[][], curPayoffTokens[][]; //[dim][token]
+	@XmlTransient double curProb[]; //[thread] //Current probability used to run the model - not saved
 	@XmlTransient double curCosts[], curPayoffs[];
-	@XmlTransient public double expectedValues[];
+	@XmlTransient public double expectedValues[], expectedValuesGroup[][];
 	@XmlTransient public VariableUpdate curVariableUpdates[];
 	//Monte Carlo
 	@XmlTransient boolean probHasVar, childHasProbVar;
 	@XmlTransient boolean costHasVar[];
 	@XmlTransient boolean payoffHasVar[];
-	@XmlTransient public double curChildProbs[];
+	@XmlTransient public double curChildProbs[][]; //[thread][child]
 	@XmlTransient double totalDenom, totalCosts[], totalPayoffs[], totalNet[];
-
+	@XmlTransient double totalDenomGroup[],	totalCostsGroup[][], totalPayoffsGroup[][], totalNetGroup[][]; //subgroups
+	//multi-threaded
+	@XmlTransient int numThreads, numDim, numSubgroups;
+	@XmlTransient double nTotalDenom[], nTotalCosts[][], nTotalPayoffs[][];
+	@XmlTransient double nTotalDenomGroup[][], nTotalCostsGroup[][][], nTotalPayoffsGroup[][][];
+	
 	//Visual Attributes
 	@XmlTransient PanelTree panel;
 	@XmlTransient DecisionTree tree;
@@ -673,6 +680,44 @@ public class TreeNode extends ModelNode{
 		}
 		else{ //Update
 			textVarUpdates.setText(varUpdates);
+		}
+	}
+	
+	public void setThreads(int numThreads, int numDim, int numSubgroups){
+		this.numThreads=numThreads;
+		this.numDim=numDim;
+		this.numSubgroups=numSubgroups;
+		curProb=new double[numThreads];
+		if(type==1){curChildProbs=new double[numThreads][numChildren];}
+		nTotalDenom=new double[numThreads];
+		nTotalDenomGroup=new double[numThreads][numSubgroups];
+		nTotalCosts=new double[numThreads][numDim];
+		nTotalCostsGroup=new double[numThreads][numSubgroups][numDim];
+		nTotalPayoffs=new double[numThreads][numDim];
+		nTotalPayoffsGroup=new double[numThreads][numSubgroups][numDim];
+	}
+	
+	public void sumThreads(){
+		totalDenom=0;
+		totalDenomGroup=new double[numSubgroups];
+		totalCosts=new double[numDim];
+		totalCostsGroup=new double[numSubgroups][numDim];
+		totalPayoffs=new double[numDim];
+		totalPayoffsGroup=new double[numSubgroups][numDim];
+		for(int n=0; n<numThreads; n++){
+			totalDenom+=nTotalDenom[n];
+			for(int d=0; d<numDim; d++){
+				totalCosts[d]+=nTotalCosts[n][d];
+				totalPayoffs[d]+=nTotalPayoffs[n][d];
+			}
+			for(int g=0; g<numSubgroups; g++){
+				totalDenomGroup[g]+=nTotalDenomGroup[n][g];
+				for(int d=0; d<numDim; d++){
+					totalCostsGroup[g][d]+=nTotalCostsGroup[n][g][d];
+					totalPayoffsGroup[g][d]+=nTotalPayoffsGroup[n][g][d];
+				}
+			}
+			
 		}
 	}
 }

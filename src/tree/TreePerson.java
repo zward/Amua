@@ -24,6 +24,9 @@ public class TreePerson{
 	Numeric variableVals[];
 	double costs[];
 	double payoffs[];
+	boolean inSubgroup[];
+	int subgroupIndex[];
+	Numeric initVariableVals[];
 	
 	//Constructor
 	public TreePerson(){

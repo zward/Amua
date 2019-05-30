@@ -73,7 +73,10 @@ import javax.swing.DefaultComboBoxModel;
 public class frmTraceSummary {
 
 	public JFrame frmTraceSummary;
-	MarkovTraceSummary trace;
+	MarkovTraceSummary traces[];
+	MarkovTraceSummary curTrace;
+	String groupNames[];
+	JComboBox comboPlot, comboGroup;
 	XYSeriesCollection mean, bounds[];
 	JFreeChart chartTrace;
 	XYLineAndShapeRenderer renderer;
@@ -85,9 +88,11 @@ public class frmTraceSummary {
 	/**
 	 *  Default Constructor
 	 */
-	public frmTraceSummary(MarkovTraceSummary trace, ErrorLog errorLog1) {
-		this.trace=trace;
+	public frmTraceSummary(MarkovTraceSummary traces[], ErrorLog errorLog1, String groupNames[]) {
+		this.traces=traces;
 		this.errorLog=errorLog1;
+		curTrace=traces[0]; //overall
+		this.groupNames=groupNames;
 		initialize();
 	}
 
@@ -97,7 +102,7 @@ public class frmTraceSummary {
 	private void initialize() {
 		try{
 			frmTraceSummary = new JFrame();
-			frmTraceSummary.setTitle("Amua - Markov Trace Summary: "+trace.traceName);
+			frmTraceSummary.setTitle("Amua - Markov Trace Summary: "+traces[0].traceName);
 			frmTraceSummary.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
 			frmTraceSummary.setBounds(100, 100, 1000, 600);
 			frmTraceSummary.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -126,7 +131,7 @@ public class frmTraceSummary {
 			lblNewLabel.setBounds(6, 6, 55, 16);
 			panel.add(lblNewLabel);
 			
-			final JComboBox comboPlot = new JComboBox();
+			comboPlot = new JComboBox();
 			comboPlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					updateChart(comboPlot.getSelectedIndex());
@@ -135,6 +140,31 @@ public class frmTraceSummary {
 			comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)"}));
 			comboPlot.setBounds(41, 1, 157, 26);
 			panel.add(comboPlot);
+			
+			JLabel lblGroup = new JLabel("Group:");
+			lblGroup.setVisible(false);
+			lblGroup.setBounds(210, 6, 37, 16);
+			panel.add(lblGroup);
+			
+			comboGroup = new JComboBox();
+			comboGroup.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					int selected=comboGroup.getSelectedIndex();
+					curTrace=traces[selected];
+					table.setModel(curTrace.modelTraceRounded);
+					updateChart(comboPlot.getSelectedIndex());
+				}
+			});
+			comboGroup.setVisible(false);
+			comboGroup.setBounds(255, 1, 157, 26);
+			panel.add(comboGroup);
+			
+			if(traces.length>1){
+				comboGroup.setModel(new DefaultComboBoxModel(groupNames));
+				lblGroup.setVisible(true);
+				comboGroup.setVisible(true);
+			}
+			
 			
 			ChartPanel panelChart = new ChartPanel(chartTrace);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
@@ -172,19 +202,19 @@ public class frmTraceSummary {
 							BufferedWriter out = new BufferedWriter(fstream);
 							
 							//Write headers
-							int numCol=trace.modelTraceRounded.getColumnCount();
-							int numRow=trace.modelTraceRounded.getRowCount();
+							int numCol=curTrace.modelTraceRounded.getColumnCount();
+							int numRow=curTrace.modelTraceRounded.getRowCount();
 							for(int c=0; c<numCol-1; c++){
-								out.write(trace.modelTraceRounded.getColumnName(c)+",");
+								out.write(curTrace.modelTraceRounded.getColumnName(c)+",");
 							}
-							out.write(trace.modelTraceRounded.getColumnName(numCol-1)); out.newLine();
+							out.write(curTrace.modelTraceRounded.getColumnName(numCol-1)); out.newLine();
 							
 							//Write trace rows
 							for(int r=0; r<numRow; r++){
 								for(int c=0; c<numCol-1; c++){
-									out.write(trace.modelTraceRounded.getValueAt(r, c)+",");
+									out.write(curTrace.modelTraceRounded.getValueAt(r, c)+",");
 								}
-								out.write(trace.modelTraceRounded.getValueAt(r, numCol-1)+""); out.newLine();
+								out.write(curTrace.modelTraceRounded.getValueAt(r, numCol-1)+""); out.newLine();
 							}
 							
 							out.close();
@@ -205,17 +235,17 @@ public class frmTraceSummary {
 			JButton btnCopy = new JButton("Copy");
 			btnCopy.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					int numCol=trace.modelTraceRounded.getColumnCount();
-					int numRow=trace.modelTraceRounded.getRowCount();
+					int numCol=curTrace.modelTraceRounded.getColumnCount();
+					int numRow=curTrace.modelTraceRounded.getRowCount();
 					String data[][]=new String[numRow+1][numCol];
 					//Get headers
 					for(int c=0; c<numCol; c++){
-						data[0][c]=trace.modelTraceRounded.getColumnName(c);
+						data[0][c]=curTrace.modelTraceRounded.getColumnName(c);
 					}
 					//Get row
 					for(int r=0; r<numRow; r++){
 						for(int c=0; c<numCol; c++){
-							data[r+1][c]=trace.modelTraceRounded.getValueAt(r, c)+"";
+							data[r+1][c]=curTrace.modelTraceRounded.getValueAt(r, c)+"";
 						}
 					}
 					
@@ -240,7 +270,7 @@ public class frmTraceSummary {
 			table = new JTable();
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			table.setEnabled(false);
-			table.setModel(trace.modelTraceRounded);
+			table.setModel(curTrace.modelTraceRounded);
 			table.setShowVerticalLines(true);
 			table.getTableHeader().setReorderingAllowed(false);
 			scrollPane.setViewportView(table);
@@ -290,14 +320,14 @@ public class frmTraceSummary {
 		}
 				
 		if(type==0){ //Prevalence
-			int numStates=trace.stateNames.length;
+			int numStates=curTrace.stateNames.length;
 			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numStates];
 			bounds=new XYSeriesCollection[numStates];
 			for(int s=0; s<numStates; s++){
-				mean.addSeries(getSeries(trace.stateNames[s],trace.prev[s],0));
+				mean.addSeries(getSeries(curTrace.stateNames[s],curTrace.prev[s],0));
 				bounds[s]=new XYSeriesCollection();
-				bounds[s].addSeries(getSeries(trace.stateNames[s],trace.prev[s],1)); //lb
-				bounds[s].addSeries(getSeries(trace.stateNames[s],trace.prev[s],2)); //ub
+				bounds[s].addSeries(getSeries(curTrace.stateNames[s],curTrace.prev[s],1)); //lb
+				bounds[s].addSeries(getSeries(curTrace.stateNames[s],curTrace.prev[s],2)); //ub
 				
 				Paint curPaint=supplier.getNextPaint();
 				renderer.setSeriesPaint(s, curPaint);
@@ -323,22 +353,22 @@ public class frmTraceSummary {
 	        plot.setFixedLegendItems(legendItemsNew);
 		}
 		else if(type==1){ //Rewards - Cycle
-			int numLines=trace.numDim;
-			if(trace.discounted){numLines*=2;}
+			int numLines=curTrace.numDim;
+			if(curTrace.discounted){numLines*=2;}
 			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numLines];
 			bounds=new XYSeriesCollection[numLines];
-			for(int d=0; d<trace.numDim; d++){
-				mean.addSeries(getSeries(trace.dimNames[d],trace.cycleRewards[d],0));
+			for(int d=0; d<curTrace.numDim; d++){
+				mean.addSeries(getSeries(curTrace.dimNames[d],curTrace.cycleRewards[d],0));
 				bounds[d]=new XYSeriesCollection();
-				bounds[d].addSeries(getSeries(trace.dimNames[d],trace.cycleRewards[d],1)); //lb
-				bounds[d].addSeries(getSeries(trace.dimNames[d],trace.cycleRewards[d],2)); //ub
+				bounds[d].addSeries(getSeries(curTrace.dimNames[d],curTrace.cycleRewards[d],1)); //lb
+				bounds[d].addSeries(getSeries(curTrace.dimNames[d],curTrace.cycleRewards[d],2)); //ub
 			}
-			if(trace.discounted){
-				for(int d=0; d<trace.numDim; d++){
-					mean.addSeries(getSeries(trace.dimNames[d]+" (Discounted)",trace.cycleRewardsDis[d],0));
-					bounds[trace.numDim+d]=new XYSeriesCollection();
-					bounds[trace.numDim+d].addSeries(getSeries(trace.dimNames[d]+" (Discounted)",trace.cycleRewardsDis[d],1)); //lb
-					bounds[trace.numDim+d].addSeries(getSeries(trace.dimNames[d]+" (Discounted)",trace.cycleRewardsDis[d],2)); //ub
+			if(curTrace.discounted){
+				for(int d=0; d<curTrace.numDim; d++){
+					mean.addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cycleRewardsDis[d],0));
+					bounds[curTrace.numDim+d]=new XYSeriesCollection();
+					bounds[curTrace.numDim+d].addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cycleRewardsDis[d],1)); //lb
+					bounds[curTrace.numDim+d].addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cycleRewardsDis[d],2)); //ub
 				}
 			}
 			for(int d=0; d<numLines; d++){
@@ -367,22 +397,22 @@ public class frmTraceSummary {
 	        plot.setFixedLegendItems(legendItemsNew);
 		}
 		else if(type==2){ //Rewards - Cumulative
-			int numLines=trace.numDim;
-			if(trace.discounted){numLines*=2;}
+			int numLines=curTrace.numDim;
+			if(curTrace.discounted){numLines*=2;}
 			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numLines];
 			bounds=new XYSeriesCollection[numLines];
-			for(int d=0; d<trace.numDim; d++){
-				mean.addSeries(getSeries(trace.dimNames[d],trace.cumRewards[d],0));
+			for(int d=0; d<curTrace.numDim; d++){
+				mean.addSeries(getSeries(curTrace.dimNames[d],curTrace.cumRewards[d],0));
 				bounds[d]=new XYSeriesCollection();
-				bounds[d].addSeries(getSeries(trace.dimNames[d],trace.cumRewards[d],1)); //lb
-				bounds[d].addSeries(getSeries(trace.dimNames[d],trace.cumRewards[d],2)); //ub
+				bounds[d].addSeries(getSeries(curTrace.dimNames[d],curTrace.cumRewards[d],1)); //lb
+				bounds[d].addSeries(getSeries(curTrace.dimNames[d],curTrace.cumRewards[d],2)); //ub
 			}
-			if(trace.discounted){
-				for(int d=0; d<trace.numDim; d++){
-					mean.addSeries(getSeries(trace.dimNames[d]+" (Discounted)",trace.cumRewardsDis[d],0));
-					bounds[trace.numDim+d]=new XYSeriesCollection();
-					bounds[trace.numDim+d].addSeries(getSeries(trace.dimNames[d]+" (Discounted)",trace.cumRewardsDis[d],1)); //lb
-					bounds[trace.numDim+d].addSeries(getSeries(trace.dimNames[d]+" (Discounted)",trace.cumRewardsDis[d],2)); //ub
+			if(curTrace.discounted){
+				for(int d=0; d<curTrace.numDim; d++){
+					mean.addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cumRewardsDis[d],0));
+					bounds[curTrace.numDim+d]=new XYSeriesCollection();
+					bounds[curTrace.numDim+d].addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cumRewardsDis[d],1)); //lb
+					bounds[curTrace.numDim+d].addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cumRewardsDis[d],2)); //ub
 				}
 			}
 			for(int d=0; d<numLines; d++){

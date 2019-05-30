@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2019 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -25,6 +25,9 @@ public class MarkovPerson{
 	Numeric variableVals[];
 	double rewards[];
 	double rewardsDis[];
+	boolean inSubgroup[];
+	int subgroupIndex[];
+	Numeric initVariableVals[];
 	
 	//Constructor
 	public MarkovPerson(){

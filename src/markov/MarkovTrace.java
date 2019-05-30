@@ -207,7 +207,7 @@ public class MarkovTrace{
 		int cohortSize=myModel.cohortSize;
 		for(int s=0; s<numStates; s++){
 			int index=chainRoot.childIndices.get(s);
-			double initProb=chainRoot.tree.nodes.get(index).curProb;
+			double initProb=chainRoot.tree.nodes.get(index).curProb[0];
 			double curPrev=cohortSize*initProb;
 			prev[s].add(curPrev);
 		}

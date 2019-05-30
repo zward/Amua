@@ -44,6 +44,7 @@ public class MicroStats{
 	int numDim;
 	int numVars;
 	
+	
 	/**
 	 * [Dimension][Person]
 	 */
@@ -200,11 +201,11 @@ public class MicroStats{
 		}
 		
 		//quantiles
-		outcomesMin=new double[numDim]; varsMin=new double[numDim];
-		outcomesQ1=new double[numDim]; varsQ1=new double[numDim];
-		outcomesMed=new double[numDim]; varsMed=new double[numDim];
-		outcomesQ3=new double[numDim]; varsQ3=new double[numDim];
-		outcomesMax=new double[numDim]; varsMax=new double[numDim];
+		outcomesMin=new double[numDim]; varsMin=new double[numVars];
+		outcomesQ1=new double[numDim]; varsQ1=new double[numVars];
+		outcomesMed=new double[numDim]; varsMed=new double[numVars];
+		outcomesQ3=new double[numDim]; varsQ3=new double[numVars];
+		outcomesMax=new double[numDim]; varsMax=new double[numVars];
 		
 		int indexQ1=MathUtils.getQuantileIndex(numPeople, 0.25);
 		int indexMed=MathUtils.getQuantileIndex(numPeople, 0.50);

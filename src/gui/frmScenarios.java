@@ -70,7 +70,9 @@ import javax.swing.JToolBar;
 import javax.swing.JTabbedPane;
 import javax.swing.JList;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 
 /**
  *
@@ -90,19 +92,23 @@ public class frmScenarios {
 	int numScenarios;
 	String scenarioNames[];
 	
+	JComboBox comboGroup;
+	int numSubgroups=0;
+	String subgroupNames[];
+	
 	/**
-	 * [Scenario][Outcome][Strategy][Iteration]
+	 * [Scenario][Group][Outcome][Strategy][Iteration]
 	 */
-	double results[][][][];
-	double meanResults[][][];
-	double lbResults[][][];
-	double ubResults[][][];
-	double curResults[][][];
+	double results[][][][][];
+	double meanResults[][][][];
+	double lbResults[][][][];
+	double ubResults[][][][];
+	double curResults[][][][];
 	
 	RunReport runReports[][];
 	RunReportSummary runReportSummaries[];
 	
-	String CEAnotes[][][];
+	String CEAnotes[][][][];
 	ArrayList<Scenario> scenarios;
 
 	int numParams, numVars, numConstraints;
@@ -112,7 +118,7 @@ public class frmScenarios {
 	String origParams[], origVars[];
 	
 	JTabbedPane tabbedPane;
-	DefaultTableModel modelResults, modelIndResults;
+	DefaultTableModel modelResults[], modelIndResults[];
 	private JTable tableResults, tableIndResults;
 	JCheckBox chckbxExportIterations;
 	
@@ -138,7 +144,7 @@ public class frmScenarios {
 			frmScenarios = new JFrame();
 			frmScenarios.setTitle("Amua - Scenarios");
 			frmScenarios.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
-			frmScenarios.setBounds(100, 100, 1000, 500);
+			frmScenarios.setBounds(100, 100, 1100, 500);
 			frmScenarios.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.columnWidths = new int[]{460, 250, 180, 0};
@@ -289,15 +295,53 @@ public class frmScenarios {
 
 			JScrollPane scrollPaneResults = new JScrollPane();
 			panel_3.add(scrollPaneResults);
+			
+			JPanel panel_2 = new JPanel();
+			GridBagConstraints gbc_panel_2 = new GridBagConstraints();
+			gbc_panel_2.gridwidth = 3;
+			gbc_panel_2.fill = GridBagConstraints.BOTH;
+			gbc_panel_2.insets = new Insets(0, 0, 0, 5);
+			gbc_panel_2.gridx = 0;
+			gbc_panel_2.gridy = 2;
+			frmScenarios.getContentPane().add(panel_2, gbc_panel_2);
+			panel_2.setBorder(null);
+			panel_2.setLayout(null);
 
-			modelResults=new DefaultTableModel(
-					new Object[][] {,},
-					new String[] {}) {
-				public boolean isCellEditable(int row, int column) {return false;}
-			};
+			comboGroup = new JComboBox();
+			comboGroup.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					int selected=comboGroup.getSelectedIndex();
+					tableResults.setModel(modelResults[selected]);
+					tableIndResults.setModel(modelIndResults[selected]);
+				}
+			});
+			comboGroup.setVisible(false);
+			comboGroup.setBounds(935, 1, 136, 26);
+			panel_2.add(comboGroup);
+
+			if(myModel.simType==1 && myModel.reportSubgroups){
+				numSubgroups=myModel.subgroupNames.size();
+				subgroupNames=new String[numSubgroups+1];
+				subgroupNames[0]="Overall";
+				for(int g=0; g<numSubgroups; g++){
+					subgroupNames[g+1]=myModel.subgroupNames.get(g);
+				}
+				comboGroup.setModel(new DefaultComboBoxModel(subgroupNames));
+				comboGroup.setVisible(true);
+			}
+			
+			
+			modelResults=new DefaultTableModel[numSubgroups+1];
+			for(int g=0; g<numSubgroups+1; g++){
+				modelResults[g]=new DefaultTableModel(
+						new Object[][] {,},
+						new String[] {}) {
+					public boolean isCellEditable(int row, int column) {return false;}
+				};
+			}
 			
 			tableResults = new JTable();
-			tableResults.setModel(modelResults);
+			tableResults.setModel(modelResults[0]);
 			tableResults.setRowSelectionAllowed(false);
 			tableResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableResults.setShowVerticalLines(true);
@@ -313,14 +357,17 @@ public class frmScenarios {
 			JScrollPane scrollPane_1 = new JScrollPane();
 			panel.add(scrollPane_1);
 			
-			modelIndResults=new DefaultTableModel(
-					new Object[][] {,},
-					new String[] {}) {
-				public boolean isCellEditable(int row, int column) {return false;}
-			};
+			modelIndResults=new DefaultTableModel[numSubgroups+1];
+			for(int g=0; g<numSubgroups+1; g++){
+				modelIndResults[g]=new DefaultTableModel(
+						new Object[][] {,},
+						new String[] {}) {
+					public boolean isCellEditable(int row, int column) {return false;}
+				};
+			}
 			
 			tableIndResults = new JTable();
-			tableIndResults.setModel(modelIndResults);
+			tableIndResults.setModel(modelIndResults[0]);
 			tableIndResults.setRowSelectionAllowed(false);
 			tableIndResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableIndResults.setShowVerticalLines(true);
@@ -390,16 +437,7 @@ public class frmScenarios {
 			listSchedule.setModel(listModelSchedule);
 			scrollPane.setViewportView(listSchedule);
 
-			JPanel panel_2 = new JPanel();
-			GridBagConstraints gbc_panel_2 = new GridBagConstraints();
-			gbc_panel_2.gridwidth = 3;
-			gbc_panel_2.fill = GridBagConstraints.BOTH;
-			gbc_panel_2.insets = new Insets(0, 0, 0, 5);
-			gbc_panel_2.gridx = 0;
-			gbc_panel_2.gridy = 2;
-			frmScenarios.getContentPane().add(panel_2, gbc_panel_2);
-			panel_2.setBorder(null);
-			panel_2.setLayout(null);
+			
 
 			final JButton btnExport = new JButton("Export");
 			btnExport.setEnabled(false);
@@ -487,6 +525,7 @@ public class frmScenarios {
 									out.newLine();
 
 									//Results
+									int group=comboGroup.getSelectedIndex();
 									Scenario curScenario=scenarios.get(scenarioIndices[r]);
 									int numIterations=curScenario.numIterations;
 									for(int i=0; i<numIterations; i++){
@@ -499,13 +538,13 @@ public class frmScenarios {
 											out.write(",");
 											if(analysisType==1){ //CEA
 												for(int s=0; s<numStrat; s++){
-													double icer=results[r][numDim][s][i];
+													double icer=results[r][group][numDim][s][i];
 													if(!Double.isNaN(icer)){out.write(","+icer);} //valid ICER
-													else{out.write(","+CEAnotes[r][s][i]);} //invalid ICER
+													else{out.write(","+CEAnotes[r][group][s][i]);} //invalid ICER
 												}
 											}
 											else if(analysisType==2){ //BCA
-												for(int s=0; s<numStrat; s++){out.write(","+results[r][numDim][s][i]);}
+												for(int s=0; s<numStrat; s++){out.write(","+results[r][group][numDim][s][i]);}
 											}
 										}
 										out.newLine();
@@ -558,10 +597,11 @@ public class frmScenarios {
 			panel_2.add(btnRun);
 			
 			chckbxExportIterations = new JCheckBox("Export iterations");
-			chckbxExportIterations.setBounds(806, 5, 165, 18);
+			chckbxExportIterations.setBounds(806, 5, 117, 18);
 			panel_2.add(chckbxExportIterations);
-
-
+			
+			
+			
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					btnExport.setEnabled(false);
@@ -620,84 +660,88 @@ public class frmScenarios {
 									}
 									progress.setMaximum(totalIterations);
 									
-									modelResults.setRowCount(0);
-									modelResults.setColumnCount(0);
-									modelResults.addColumn("Scenario");
-									if(maxIterations==1){ //no uncertainty
-										for(int d=0; d<numDim; d++){
-											for(int s=0; s<numStrat; s++){
-												modelResults.addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]);
+									for(int g=0; g<numSubgroups+1; g++){
+										modelResults[g].setRowCount(0);
+										modelResults[g].setColumnCount(0);
+										modelResults[g].addColumn("Scenario");
+										if(maxIterations==1){ //no uncertainty
+											for(int d=0; d<numDim; d++){
+												for(int s=0; s<numStrat; s++){
+													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]);
+												}
+											}
+											if(analysisType==1){ //cea
+												for(int s=0; s<numStrat; s++){
+													modelResults[g].addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]);
+												}
+											}
+											else if(analysisType==2){ //bca
+												for(int s=0; s<numStrat; s++){
+													modelResults[g].addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]);
+												}
 											}
 										}
-										if(analysisType==1){ //cea
-											for(int s=0; s<numStrat; s++){
-												modelResults.addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]);
+										else{ //mean and bounds
+											for(int d=0; d<numDim; d++){
+												for(int s=0; s<numStrat; s++){
+													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (Mean)");
+													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (95% LB)");
+													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (95% UB)");
+												}
 											}
-										}
-										else if(analysisType==2){ //bca
-											for(int s=0; s<numStrat; s++){
-												modelResults.addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]);
+											if(analysisType==1){ //cea
+												for(int s=0; s<numStrat; s++){
+													modelResults[g].addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]+ "(Mean)");
+													modelResults[g].addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]+ "(95% LB)");
+													modelResults[g].addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]+ "(95% UB)");
+												}
 											}
-										}
-									}
-									else{ //mean and bounds
-										for(int d=0; d<numDim; d++){
-											for(int s=0; s<numStrat; s++){
-												modelResults.addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (Mean)");
-												modelResults.addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (95% LB)");
-												modelResults.addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (95% UB)");
-											}
-										}
-										if(analysisType==1){ //cea
-											for(int s=0; s<numStrat; s++){
-												modelResults.addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]+ "(Mean)");
-												modelResults.addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]+ "(95% LB)");
-												modelResults.addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]+ "(95% UB)");
-											}
-										}
-										else if(analysisType==2){ //bca
-											for(int s=0; s<numStrat; s++){
-												modelResults.addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]+ "(Mean)");
-												modelResults.addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]+ "(95% LB)");
-												modelResults.addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]+ "(95% UB)");
+											else if(analysisType==2){ //bca
+												for(int s=0; s<numStrat; s++){
+													modelResults[g].addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]+ "(Mean)");
+													modelResults[g].addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]+ "(95% LB)");
+													modelResults[g].addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]+ "(95% UB)");
+												}
 											}
 										}
 									}
 									
 									if(myModel.simType==1 && myModel.displayIndResults==true){
 										tabbedPane.setEnabledAt(1, true);
-										modelIndResults.setRowCount(0);
-										modelIndResults.setColumnCount(0);
-										modelIndResults.addColumn("Scenario");
-										modelIndResults.addColumn("Strategy");
-										modelIndResults.addColumn("Outcome");
-										if(maxIterations==1){ //no uncertainty
-											modelIndResults.addColumn("Mean");
-											modelIndResults.addColumn("SD");
-											modelIndResults.addColumn("Min");
-											modelIndResults.addColumn("Q1");
-											modelIndResults.addColumn("Median");
-											modelIndResults.addColumn("Q3");
-											modelIndResults.addColumn("Max");
-										}
-										else{ //mean and bounds
-											modelIndResults.addColumn("Mean: Mean (95% UI)");
-											modelIndResults.addColumn("SD: Mean (95% UI)");
-											modelIndResults.addColumn("Min: Mean (95% UI)");
-											modelIndResults.addColumn("Q1: Mean (95% UI)");
-											modelIndResults.addColumn("Median: Mean (95% UI)");
-											modelIndResults.addColumn("Q3: Mean (95% UI)");
-											modelIndResults.addColumn("Max: Mean (95% UI)");
+										for(int g=0; g<numSubgroups+1; g++){
+											modelIndResults[g].setRowCount(0);
+											modelIndResults[g].setColumnCount(0);
+											modelIndResults[g].addColumn("Scenario");
+											modelIndResults[g].addColumn("Strategy");
+											modelIndResults[g].addColumn("Outcome");
+											if(maxIterations==1){ //no uncertainty
+												modelIndResults[g].addColumn("Mean");
+												modelIndResults[g].addColumn("SD");
+												modelIndResults[g].addColumn("Min");
+												modelIndResults[g].addColumn("Q1");
+												modelIndResults[g].addColumn("Median");
+												modelIndResults[g].addColumn("Q3");
+												modelIndResults[g].addColumn("Max");
+											}
+											else{ //mean and bounds
+												modelIndResults[g].addColumn("Mean: Mean (95% UI)");
+												modelIndResults[g].addColumn("SD: Mean (95% UI)");
+												modelIndResults[g].addColumn("Min: Mean (95% UI)");
+												modelIndResults[g].addColumn("Q1: Mean (95% UI)");
+												modelIndResults[g].addColumn("Median: Mean (95% UI)");
+												modelIndResults[g].addColumn("Q3: Mean (95% UI)");
+												modelIndResults[g].addColumn("Max: Mean (95% UI)");
+											}
 										}
 									}
 																		
-									results=new double[numScenarios][numOutcomes][numStrat][maxIterations];
-									if(analysisType==1){CEAnotes=new String[numScenarios][numStrat][maxIterations];} //CEA
+									results=new double[numScenarios][numSubgroups+1][numOutcomes][numStrat][maxIterations];
+									if(analysisType==1){CEAnotes=new String[numScenarios][numSubgroups+1][numStrat][maxIterations];} //CEA
 									else{CEAnotes=null;}
 									
-									meanResults=new double[numScenarios][numOutcomes][numStrat];
-									lbResults=new double[numScenarios][numOutcomes][numStrat];
-									ubResults=new double[numScenarios][numOutcomes][numStrat];
+									meanResults=new double[numScenarios][numSubgroups+1][numOutcomes][numStrat];
+									lbResults=new double[numScenarios][numSubgroups+1][numOutcomes][numStrat];
+									ubResults=new double[numScenarios][numSubgroups+1][numOutcomes][numStrat];
 									
 									runReports=new RunReport[numScenarios][];
 									runReportSummaries=new RunReportSummary[numScenarios];
@@ -723,7 +767,7 @@ public class frmScenarios {
 										}
 
 										//Run model
-										curResults=new double[numOutcomes][numStrat][curScenario.numIterations];
+										curResults=new double[numSubgroups+1][numOutcomes][numStrat][curScenario.numIterations];
 										runReports[n]=new RunReport[curScenario.numIterations];
 										
 										myModel.cohortSize=curScenario.cohortSize;
@@ -765,7 +809,7 @@ public class frmScenarios {
 											progress.setNote("Time left: "+minutes+":"+seconds);
 
 											if(curScenario.sampleParams){
-												myModel.curGenerator=myModel.generatorParam;
+												myModel.curGenerator[0]=myModel.generatorParam;
 												boolean validParams=false;
 												while(validParams==false){
 													for(int v=0; v<numParams; v++){ //Reset 'fixed' for all parameters and orig values
@@ -799,28 +843,70 @@ public class frmScenarios {
 											//Get EVs
 											for(int d=0; d<numDim; d++){
 												for(int s=0; s<numStrat; s++){
-													results[n][d][s][i]=curReport.outcomeEVs[d][s];
-													curResults[d][s][i]=results[n][d][s][i];
-													meanResults[n][d][s]+=results[n][d][s][i];
+													//overall
+													results[n][0][d][s][i]=curReport.outcomeEVs[d][s];
+													curResults[0][d][s][i]=results[n][0][d][s][i];
+													meanResults[n][0][d][s]+=results[n][0][d][s][i];
+													//subgroups
+													for(int g=0; g<numSubgroups; g++){
+														results[n][g+1][d][s][i]=curReport.outcomeEVsGroup[g][d][s];
+														curResults[g+1][d][s][i]=results[n][g+1][d][s][i];
+														meanResults[n][g+1][d][s]+=results[n][g+1][d][s][i];
+													}
 												}
 											}
 											if(analysisType>0){ //CEA or BCA
 												if(analysisType==1){ //CEA
+													//overall
 													for(int s=0; s<curReport.table.length; s++){	
 														int origStrat=(int) curReport.table[s][0];
 														if(origStrat!=-1){
-															results[n][numDim][origStrat][i]=(double) curReport.table[s][4];
-															curResults[numDim][origStrat][i]=(double) curReport.table[s][4];
-															CEAnotes[n][origStrat][i]=(String) curReport.table[s][5];
+															double val=Double.NaN;
+															try{
+																val=Double.parseDouble((String) curReport.table[s][4]);
+															} catch(Exception err){
+																//do nothing
+															}
+															results[n][0][numDim][origStrat][i]=val;
+															curResults[0][numDim][origStrat][i]=val;
+															CEAnotes[n][0][origStrat][i]=(String) curReport.table[s][5];
 														}
 													}
+													//subgroups
+													for(int g=0; g<numSubgroups; g++){
+														for(int s=0; s<curReport.tableGroup[g].length; s++){	
+															int origStrat=(int) curReport.tableGroup[g][s][0];
+															if(origStrat!=-1){
+																double val=Double.NaN;
+																try{
+																	val=Double.parseDouble((String) curReport.tableGroup[g][s][4]);
+																} catch(Exception err){
+																	//do nothing
+																}
+																results[n][g+1][numDim][origStrat][i]=val;
+																curResults[g+1][numDim][origStrat][i]=val;
+																CEAnotes[n][g+1][origStrat][i]=(String) curReport.tableGroup[g][s][5];
+															}
+														}
+													}
+													
 												}
 												else if(analysisType==2){
+													//overall
 													for(int s=0; s<curReport.table.length; s++){	
 														int origStrat=(int) curReport.table[s][0];
-														results[n][numDim][origStrat][i]=(double) curReport.table[s][4];
-														curResults[numDim][origStrat][i]=(double) curReport.table[s][4];
-														meanResults[n][numDim][origStrat]+=(double) curReport.table[s][4];
+														results[n][0][numDim][origStrat][i]=(double) curReport.table[s][4];
+														curResults[0][numDim][origStrat][i]=(double) curReport.table[s][4];
+														meanResults[n][0][numDim][origStrat]+=(double) curReport.table[s][4];
+													}
+													//subgroups
+													for(int g=0; g<numSubgroups; g++){
+														for(int s=0; s<curReport.tableGroup[g].length; s++){	
+															int origStrat=(int) curReport.tableGroup[g][s][0];
+															results[n][g+1][numDim][origStrat][i]=(double) curReport.tableGroup[g][s][4];
+															curResults[g+1][numDim][origStrat][i]=(double) curReport.tableGroup[g][s][4];
+															meanResults[n][g+1][numDim][origStrat]+=(double) curReport.tableGroup[g][s][4];
+														}
 													}
 												}
 											}
@@ -838,43 +924,46 @@ public class frmScenarios {
 											int indexLB=bounds[0], indexUB=bounds[1];
 											for(int d=0; d<numOutcomes; d++){
 												for(int s=0; s<numStrat; s++){
-													meanResults[n][d][s]/=(curScenario.numIterations*1.0);
-													//bounds
-													Arrays.sort(curResults[d][s]);
-													lbResults[n][d][s]=curResults[d][s][indexLB];
-													ubResults[n][d][s]=curResults[d][s][indexUB];
+													for(int g=0; g<numSubgroups+1; g++){ //overall + subgroups
+														meanResults[n][g][d][s]/=(curScenario.numIterations*1.0);
+														Arrays.sort(curResults[g][d][s]);//bounds
+														lbResults[n][g][d][s]=curResults[g][d][s][indexLB];
+														ubResults[n][g][d][s]=curResults[g][d][s][indexUB];
+													}
 												}
 											}
 
 											//Append results to table
-											modelResults.addRow(new Object[]{null});
-											modelResults.setValueAt(curScenario.name, n, 0);
-											int curCol=1;
-											if(maxIterations==1){ //no uncertainty
-												for(int d=0; d<numDim; d++){
-													for(int s=0; s<numStrat; s++){
-														modelResults.setValueAt(MathUtils.round(meanResults[n][d][s],info.decimals[d]), n, curCol); curCol++;
+											for(int g=0; g<numSubgroups+1; g++){
+												modelResults[g].addRow(new Object[]{null});
+												modelResults[g].setValueAt(curScenario.name, n, 0);
+												int curCol=1;
+												if(maxIterations==1){ //no uncertainty
+													for(int d=0; d<numDim; d++){
+														for(int s=0; s<numStrat; s++){
+															modelResults[g].setValueAt(MathUtils.round(meanResults[n][g][d][s],info.decimals[d]), n, curCol); curCol++;
+														}
+													}
+													if(analysisType==1 || analysisType==2){ //cea or bca
+														for(int s=0; s<numStrat; s++){
+															modelResults[g].setValueAt(MathUtils.round(meanResults[n][g][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
+														}
 													}
 												}
-												if(analysisType==1 || analysisType==2){ //cea or bca
-													for(int s=0; s<numStrat; s++){
-														modelResults.setValueAt(MathUtils.round(meanResults[n][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
+												else{ //mean and bounds
+													for(int d=0; d<numDim; d++){
+														for(int s=0; s<numStrat; s++){
+															modelResults[g].setValueAt(MathUtils.round(meanResults[n][g][d][s],info.decimals[d]), n, curCol); curCol++;
+															modelResults[g].setValueAt(MathUtils.round(lbResults[n][g][d][s],info.decimals[d]), n, curCol); curCol++;
+															modelResults[g].setValueAt(MathUtils.round(ubResults[n][g][d][s],info.decimals[d]), n, curCol); curCol++;
+														}
 													}
-												}
-											}
-											else{ //mean and bounds
-												for(int d=0; d<numDim; d++){
-													for(int s=0; s<numStrat; s++){
-														modelResults.setValueAt(MathUtils.round(meanResults[n][d][s],info.decimals[d]), n, curCol); curCol++;
-														modelResults.setValueAt(MathUtils.round(lbResults[n][d][s],info.decimals[d]), n, curCol); curCol++;
-														modelResults.setValueAt(MathUtils.round(ubResults[n][d][s],info.decimals[d]), n, curCol); curCol++;
-													}
-												}
-												if(analysisType==1 || analysisType==2){ //cea or bca
-													for(int s=0; s<numStrat; s++){
-														modelResults.setValueAt(MathUtils.round(meanResults[n][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
-														modelResults.setValueAt(MathUtils.round(lbResults[n][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
-														modelResults.setValueAt(MathUtils.round(ubResults[n][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
+													if(analysisType==1 || analysisType==2){ //cea or bca
+														for(int s=0; s<numStrat; s++){
+															modelResults[g].setValueAt(MathUtils.round(meanResults[n][g][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
+															modelResults[g].setValueAt(MathUtils.round(lbResults[n][g][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
+															modelResults[g].setValueAt(MathUtils.round(ubResults[n][g][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
+														}
 													}
 												}
 											}
@@ -887,32 +976,63 @@ public class frmScenarios {
 										if(cancelled==false && myModel.simType==1 && myModel.displayIndResults==true){
 											for(int s=0; s<numStrat; s++){
 												String stratName=myModel.strategyNames[s];
+												//overall
 												MicroStatsSummary curSummary=runReportSummaries[n].microStatsSummary[s];
 												//outcomes
 												int maxDec=0;
 												for(int d=0; d<numDim; d++){
 													int dec=myModel.dimInfo.decimals[d];
 													maxDec=Math.max(dec, maxDec);
-													modelIndResults.addRow(new Object[]{null});
-													int r=modelIndResults.getRowCount()-1;
-													modelIndResults.setValueAt(curScenario.name, r, 0);
-													modelIndResults.setValueAt(stratName, r, 1);
-													modelIndResults.setValueAt(myModel.dimInfo.dimNames[d], r, 2);
+													modelIndResults[0].addRow(new Object[]{null});
+													int r=modelIndResults[0].getRowCount()-1;
+													modelIndResults[0].setValueAt(curScenario.name, r, 0);
+													modelIndResults[0].setValueAt(stratName, r, 1);
+													modelIndResults[0].setValueAt(myModel.dimInfo.dimNames[d], r, 2);
 													for(int j=0; j<7; j++){ //estimate
 														String cell=curSummary.getCell(curSummary.outcomesSummary[d][j], dec);
-														modelIndResults.setValueAt(cell, r, 3+j);
+														modelIndResults[0].setValueAt(cell, r, 3+j);
 													}
 												}
 												//variables
 												for(int v=0; v<numVars; v++){
-													modelIndResults.addRow(new Object[]{null});
-													int r=modelIndResults.getRowCount()-1;
-													modelIndResults.setValueAt(curScenario.name, r, 0);
-													modelIndResults.setValueAt(stratName, r, 1);
-													modelIndResults.setValueAt(myModel.variables.get(v).name, r, 2);
+													modelIndResults[0].addRow(new Object[]{null});
+													int r=modelIndResults[0].getRowCount()-1;
+													modelIndResults[0].setValueAt(curScenario.name, r, 0);
+													modelIndResults[0].setValueAt(stratName, r, 1);
+													modelIndResults[0].setValueAt(myModel.variables.get(v).name, r, 2);
 													for(int j=0; j<7; j++){ //estimate
 														String cell=curSummary.getCell(curSummary.varsSummary[v][j], maxDec);
-														modelIndResults.setValueAt(cell, r, 3+j);
+														modelIndResults[0].setValueAt(cell, r, 3+j);
+													}
+												}
+												
+												//subgroups
+												for(int g=0; g<numSubgroups; g++){
+													curSummary=runReportSummaries[n].microStatsSummaryGroup[g][s];
+													//outcomes
+													for(int d=0; d<numDim; d++){
+														int dec=myModel.dimInfo.decimals[d];
+														modelIndResults[g+1].addRow(new Object[]{null});
+														int r=modelIndResults[g+1].getRowCount()-1;
+														modelIndResults[g+1].setValueAt(curScenario.name, r, 0);
+														modelIndResults[g+1].setValueAt(stratName, r, 1);
+														modelIndResults[g+1].setValueAt(myModel.dimInfo.dimNames[d], r, 2);
+														for(int j=0; j<7; j++){ //estimate
+															String cell=curSummary.getCell(curSummary.outcomesSummary[d][j], dec);
+															modelIndResults[g+1].setValueAt(cell, r, 3+j);
+														}
+													}
+													//variables
+													for(int v=0; v<numVars; v++){
+														modelIndResults[g+1].addRow(new Object[]{null});
+														int r=modelIndResults[g+1].getRowCount()-1;
+														modelIndResults[g+1].setValueAt(curScenario.name, r, 0);
+														modelIndResults[g+1].setValueAt(stratName, r, 1);
+														modelIndResults[g+1].setValueAt(myModel.variables.get(v).name, r, 2);
+														for(int j=0; j<7; j++){ //estimate
+															String cell=curSummary.getCell(curSummary.varsSummary[v][j], maxDec);
+															modelIndResults[g+1].setValueAt(cell, r, 3+j);
+														}
 													}
 												}
 											}

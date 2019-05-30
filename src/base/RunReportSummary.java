@@ -36,6 +36,9 @@ public class RunReportSummary{
 	
 	AmuaModel myModel;
 	
+	public int numSubgroups=0;
+	public String subgroupNames[];
+	
 	int numMicro;
 	String microNames[];
 
@@ -49,6 +52,7 @@ public class RunReportSummary{
 	public Object table[][];
 
 	public MicroStatsSummary microStatsSummary[];
+	public MicroStatsSummary microStatsSummaryGroup[][];
 	
 	TreeReportSummary treeReportSummary;
 	public MarkovTraceSummary markovTraceSummary[];
@@ -59,6 +63,8 @@ public class RunReportSummary{
 		type=reports[0].type;
 		myModel=reports[0].myModel;
 		simType=myModel.simType;
+		numSubgroups=reports[0].numSubgroups;
+		subgroupNames=reports[0].subgroupNames;
 	
 		//Get summary
 		TreeReport treeReports[]=null;
@@ -93,8 +99,15 @@ public class RunReportSummary{
 			microNames=new String[numMicro];
 			microStatsSummary=new MicroStatsSummary[numMicro];
 			for(int s=0; s<numMicro; s++){
-				microStatsSummary[s]=new MicroStatsSummary(reports,s);
+				microStatsSummary[s]=new MicroStatsSummary(reports,s,-1);
 				microNames[s]=reports[0].names.get(s);
+			}
+			//subgroups
+			microStatsSummaryGroup=new MicroStatsSummary[numSubgroups][numMicro];
+			for(int g=0; g<numSubgroups; g++){
+				for(int s=0; s<numMicro; s++){
+					microStatsSummaryGroup[g][s]=new MicroStatsSummary(reports,s,g);
+				}
 			}
 		}
 		
@@ -113,9 +126,6 @@ public class RunReportSummary{
 				microStatsSummary[s].write(filepath+microNames[s]+"_IndResultsSummary.csv");
 			}
 		}
-		
 	}
 	
-
-
 }

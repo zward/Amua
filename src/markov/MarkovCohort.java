@@ -41,12 +41,14 @@ public class MarkovCohort{
 	MarkovTrace trace;
 	Variable curT;
 	AmuaModel myModel;
+	int curThread;
 	
 	//Constructor
-	public MarkovCohort(MarkovNode chainRoot){
+	public MarkovCohort(MarkovNode chainRoot, int curThread){
 		this.chainRoot=chainRoot;
 		this.markovTree=chainRoot.tree;
 		this.myModel=chainRoot.myModel;
+		this.curThread=curThread;
 		//Get Markov States
 		numStates=chainRoot.stateNames.size();
 		states=new MarkovNode[numStates];
@@ -76,23 +78,23 @@ public class MarkovCohort{
 		//Get innate variable 't'
 		int indexT=myModel.getInnateVariableIndex("t");
 		curT=myModel.innateVariables.get(indexT);
-		curT.value=new Numeric(0);
+		curT.value[curThread]=new Numeric(0);
 
 		//Initialize variables
 		for(int c=0; c<numVariables; c++){
-			variables[c].value=Interpreter.evaluate(variables[c].expression, myModel,false);
+			variables[c].value[curThread]=Interpreter.evaluateTokens(variables[c].parsedTokens, curThread, false);
 		}
 		
 		//Perform Markov Chain variable updates for t=0
 		if(chainRoot.hasVarUpdates){
-			myModel.unlockVars();
+			myModel.unlockVars(curThread);
 			//Perform variable updates
 			for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
-				chainRoot.curVariableUpdates[u].update(false);
+				chainRoot.curVariableUpdates[u].update(false,curThread);
 			}
 			//Update any dependent variables
 			for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
-				chainRoot.curVariableUpdates[u].variable.updateDependents(myModel);
+				chainRoot.curVariableUpdates[u].variable.updateDependents(myModel,curThread);
 			}
 		}
 		
@@ -101,12 +103,12 @@ public class MarkovCohort{
 		int indexCompProb=-1;
 		for(int s=0; s<numStates; s++){
 			if(states[s].prob.matches("C") || states[s].prob.matches("c")){ //Complementary
-				states[s].curProb=-1;
+				states[s].curProb[0]=-1;
 				indexCompProb=s;
 			}
 			else{ //Evaluate text
-				states[s].curProb=Interpreter.evaluate(states[s].prob,myModel,false).getDouble();
-				sumProb+=states[s].curProb;
+				states[s].curProb[0]=Interpreter.evaluateTokens(states[s].curProbTokens, curThread, false).getDouble();
+				sumProb+=states[s].curProb[0];
 			}
 		}
 		if(indexCompProb==-1){
@@ -119,14 +121,14 @@ public class MarkovCohort{
 				throw new Exception("Error: Probabilities sum to "+sumProb+" ("+chainRoot.name+")");
 			}
 			else{
-				states[indexCompProb].curProb=1.0-sumProb;
+				states[indexCompProb].curProb[0]=1.0-sumProb;
 			}
 		}
 		
 		//Initialize state prevalence
 		for(int s=0; s<numStates; s++){
-			newPrev[s]=myModel.cohortSize*states[s].curProb;
-			curPrev[s]=myModel.cohortSize*states[s].curProb;
+			newPrev[s]=myModel.cohortSize*states[s].curProb[0];
+			curPrev[s]=myModel.cohortSize*states[s].curProb[0];
 		}
 		
 		//Simulate cycles
@@ -136,20 +138,20 @@ public class MarkovCohort{
 		while(terminate==false && t<markovTree.maxCycles){
 			//chain root variable updates
 			if(t>0 && chainRoot.hasVarUpdates){
-				myModel.unlockVars();
+				myModel.unlockVars(curThread);
 				//Perform variable updates
 				for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
-					chainRoot.curVariableUpdates[u].update(false);
+					chainRoot.curVariableUpdates[u].update(false,curThread);
 				}
 				//Update any dependent variables
 				for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
-					chainRoot.curVariableUpdates[u].variable.updateDependents(myModel);
+					chainRoot.curVariableUpdates[u].variable.updateDependents(myModel,curThread);
 				}
 			}
 			
 			for(int s=0; s<numStates; s++){ //Update each state
 				for(int d=0; d<numDim; d++){ //Update state rewards
-					double curReward=Interpreter.evaluate(states[s].rewards[d],myModel,false).getDouble();
+					double curReward=Interpreter.evaluateTokens(states[s].curRewardTokens[d], curThread, false).getDouble();
 					cycleRewards[d]+=curReward*curPrev[s];
 				}
 				traverseNode(states[s],curPrev[s]);
@@ -168,7 +170,7 @@ public class MarkovCohort{
 			}
 
 			t++; //next cycle
-			curT.value.setInt(t);
+			curT.value[curThread].setInt(t);
 		}
 
 		//Get chain EVs
@@ -180,10 +182,10 @@ public class MarkovCohort{
 		}
 
 		//Reset variable 't'
-		curT.value.setInt(0);
+		curT.value[curThread].setInt(0);
 
 		if(showTrace){//Show trace
-			frmTrace window=new frmTrace(trace,chainRoot.panel.errorLog);
+			frmTrace window=new frmTrace(trace,chainRoot.panel.errorLog,null,null);
 			window.frmTrace.setVisible(true);
 		}
 	}
@@ -191,14 +193,14 @@ public class MarkovCohort{
 	private boolean checkTerminationCondition(){
 		boolean terminate=false;
 		try{
-			Numeric check=Interpreter.evaluate(chainRoot.terminationCondition, myModel,false);
+			Numeric check=Interpreter.evaluateTokens(chainRoot.curTerminationTokens, curThread, false);
 			if(check.getBool()){ //termination condition true
 				terminate=true;
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 			chainRoot.panel.errorLog.recordError(e);
-			curT.value.setInt(0);
+			curT.value[curThread].setInt(0);
 		}
 		return(terminate);
 	}
@@ -212,26 +214,26 @@ public class MarkovCohort{
 		//Update prev at current node
 		double nodePrev=parentPrev;
 		if(node.type!=2){ //not state, update prev
-			nodePrev=parentPrev*node.curProb;
+			nodePrev=parentPrev*node.curProb[0];
 		}
 		
 		//Update costs
 		if(node.hasCost){
 			for(int d=0; d<numDim; d++){
-				double curCost=Interpreter.evaluate(node.cost[d],myModel,false).getDouble();
+				double curCost=Interpreter.evaluateTokens(node.curCostTokens[d],curThread,false).getDouble();
 				cycleRewards[d]+=curCost*nodePrev;
 			}
 		}
 		//Update variables
 		if(node.hasVarUpdates){
-			myModel.unlockVars();
+			myModel.unlockVars(curThread);
 			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
-				node.curVariableUpdates[u].update(false);
+				node.curVariableUpdates[u].update(false,curThread);
 			}
 			//Update any dependent variables
 			for(int u=0; u<node.curVariableUpdates.length; u++){
-				node.curVariableUpdates[u].variable.updateDependents(myModel);
+				node.curVariableUpdates[u].variable.updateDependents(myModel,curThread);
 			}
 		}
 		
@@ -242,12 +244,12 @@ public class MarkovCohort{
 			for(int c=0; c<node.numChildren; c++){
 				MarkovNode curChild=node.children[c];
 				if(curChild.prob.matches("C") || curChild.prob.matches("c")){ //Complementary
-					curChild.curProb=-1;
+					curChild.curProb[0]=-1;
 					indexCompProb=c;
 				}
 				else{ //Evaluate text
-					curChild.curProb=Interpreter.evaluate(curChild.prob,myModel,false).getDouble();
-					sumProb+=curChild.curProb;
+					curChild.curProb[0]=Interpreter.evaluateTokens(curChild.curProbTokens, curThread, false).getDouble();
+					sumProb+=curChild.curProb[0];
 				}
 			}
 			if(indexCompProb==-1){
@@ -261,7 +263,7 @@ public class MarkovCohort{
 				}
 				else{
 					MarkovNode curChild=node.children[indexCompProb];
-					curChild.curProb=1.0-sumProb;
+					curChild.curProb[0]=1.0-sumProb;
 				}
 			}
 		}
@@ -316,7 +318,7 @@ public class MarkovCohort{
 		}
 		//Update variables
 		for(int c=0; c<numVariables; c++){
-			cycleVariables[c]=variables[c].value.getDouble();
+			cycleVariables[c]=variables[c].value[curThread].getDouble();
 			trace.cycleVariables[c].add(cycleVariables[c]);
 		}
 		

@@ -435,9 +435,6 @@ public class frmDefineTable {
 						JOptionPane.showMessageDialog(frmDefineTable,er.getMessage());
 						errorLog.recordError(er);
 					}
-					
-					
-					
 				}
 			});
 			btnExport.setToolTipText("Export Table");

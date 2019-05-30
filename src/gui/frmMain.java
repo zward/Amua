@@ -120,7 +120,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.1.8";
+	public String version="0.2.0";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -624,14 +624,14 @@ public class frmMain {
 		});
 		mnTools.add(mntmPlotSurface);
 	
-		/*JMenuItem mntmTestExpressions = new JMenuItem("Test Expressions");
+		JMenuItem mntmTestExpressions = new JMenuItem("Test Expressions");
 		mntmTestExpressions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				frmTestExpressions window=new frmTestExpressions(curModel);
 				window.frmTestExpressions.setVisible(true);
 			}
 		});
-		mnTools.add(mntmTestExpressions);*/
+		//mnTools.add(mntmTestExpressions);
 		
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
@@ -780,30 +780,34 @@ public class frmMain {
 		btnDeleteVariable.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(tabbedPaneRight.getSelectedIndex()==0){ //Parameters
-					int selected=tableParameters.getSelectedRow();
-					if(selected!=-1){
-						curModel.deleteParameter(selected);
+					int selectedRow=tableParameters.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableParameters.convertRowIndexToModel(selectedRow);
+						curModel.deleteParameter(dataRow);
 						curModel.rescale(curModel.scale); //Re-validates textfields
 					}
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==1){ //Variables
-					int selected=tableVariables.getSelectedRow();
-					if(selected!=-1){
-						curModel.deleteVariable(selected);
+					int selectedRow=tableVariables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableVariables.convertRowIndexToModel(selectedRow);
+						curModel.deleteVariable(dataRow);
 						curModel.rescale(curModel.scale); //Re-validates textfields
 					}
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==2){ //Tables
-					int selected=tableTables.getSelectedRow();
-					if(selected!=-1){
-						curModel.deleteTable(selected);
+					int selectedRow=tableTables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableTables.convertRowIndexToModel(selectedRow);
+						curModel.deleteTable(dataRow);
 						curModel.rescale(curModel.scale); //Re-validates textfields
 					}
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==3){ //Constraint
-					int selected=tableConstraints.getSelectedRow();
-					if(selected!=-1){
-						curModel.deleteConstraint(selected);
+					int selectedRow=tableConstraints.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableConstraints.convertRowIndexToModel(selectedRow);
+						curModel.deleteConstraint(dataRow);
 					}
 				}
 			}
@@ -816,30 +820,34 @@ public class frmMain {
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(tabbedPaneRight.getSelectedIndex()==0){ //Parameters
-					int selected=tableParameters.getSelectedRow();
-					if(selected!=-1){
-						frmDefineParameter window=new frmDefineParameter(curModel,selected);
+					int selectedRow=tableParameters.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableParameters.convertRowIndexToModel(selectedRow);
+						frmDefineParameter window=new frmDefineParameter(curModel,dataRow);
 						window.frmDefineParameter.setVisible(true);
 					}
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==1){ //Variables
-					int selected=tableVariables.getSelectedRow();
-					if(selected!=-1){
-						frmDefineVariable window=new frmDefineVariable(curModel,selected);
+					int selectedRow=tableVariables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableVariables.convertRowIndexToModel(selectedRow);
+						frmDefineVariable window=new frmDefineVariable(curModel,dataRow);
 						window.frmDefineVariable.setVisible(true);
 					}
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==2){ //Tables
-					int selected=tableTables.getSelectedRow();
-					if(selected!=-1){
-						frmDefineTable window=new frmDefineTable(curModel,selected,fc,errorLog);
+					int selectedRow=tableTables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableTables.convertRowIndexToModel(selectedRow);
+						frmDefineTable window=new frmDefineTable(curModel,dataRow,fc,errorLog);
 						window.frmDefineTable.setVisible(true);
 					}
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==3){ //Constraints
-					int selected=tableConstraints.getSelectedRow();
-					if(selected!=-1){
-						frmDefineConstraint window=new frmDefineConstraint(curModel,selected);
+					int selectedRow=tableConstraints.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableConstraints.convertRowIndexToModel(selectedRow);
+						frmDefineConstraint window=new frmDefineConstraint(curModel,dataRow);
 						window.frmDefineConstraint.setVisible(true);
 					}
 				}
@@ -854,16 +862,25 @@ public class frmMain {
 		btnShowuse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(tabbedPaneRight.getSelectedIndex()==0){ //Parameters
-					int selected=tableParameters.getSelectedRow();
-					if(selected!=-1){curModel.highlightParameter(selected);}
+					int selectedRow=tableParameters.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableParameters.convertColumnIndexToModel(selectedRow);
+						curModel.highlightParameter(dataRow);
+					}
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==1){ //Variables
-					int selected=tableVariables.getSelectedRow();
-					if(selected!=-1){curModel.highlightVariable(selected);}
+					int selectedRow=tableVariables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableVariables.convertRowIndexToModel(selectedRow);
+						curModel.highlightVariable(dataRow);
+					}
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==2){ //Tables
-					int selected=tableTables.getSelectedRow();
-					if(selected!=-1){curModel.highlightTable(selected);}
+					int selectedRow=tableTables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableTables.convertRowIndexToModel(selectedRow);
+						curModel.highlightTable(dataRow);
+					}
 				}
 			}
 		});
@@ -924,17 +941,19 @@ public class frmMain {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode()==KeyEvent.VK_ENTER){ //Enter
-					int selected=tableParameters.getSelectedRow();
-					if(selected!=-1){
-						frmDefineParameter window=new frmDefineParameter(curModel,selected);
+					int selectedRow=tableParameters.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableParameters.convertRowIndexToModel(selectedRow);
+						frmDefineParameter window=new frmDefineParameter(curModel,dataRow);
 						window.frmDefineParameter.setVisible(true);
 					}
 				}
 				else if(e.getKeyCode()==KeyEvent.VK_DELETE){ //Delete
-					int selected=tableParameters.getSelectedRow();
-					if(selected!=-1){
+					int selectedRow=tableParameters.getSelectedRow();
+					if(selectedRow!=-1){
 						e.consume();
-						curModel.deleteParameter(selected);
+						int dataRow=tableParameters.convertRowIndexToModel(selectedRow);
+						curModel.deleteParameter(dataRow);
 						curModel.rescale(curModel.scale); //Re-validates textfields
 					}
 				}
@@ -944,9 +963,10 @@ public class frmMain {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount()==2){
-					int selected=tableParameters.getSelectedRow();
-					if(selected!=-1){
-						frmDefineParameter window=new frmDefineParameter(curModel,selected);
+					int selectedRow=tableParameters.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableParameters.convertRowIndexToModel(selectedRow);
+						frmDefineParameter window=new frmDefineParameter(curModel,dataRow);
 						window.frmDefineParameter.setVisible(true);
 					}
 				}
@@ -956,7 +976,8 @@ public class frmMain {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-				Parameter curParam=curModel.parameters.get(row);
+				int dataRow=tableParameters.convertRowIndexToModel(row);
+				Parameter curParam=curModel.parameters.get(dataRow);
 				if(curParam.valid){setForeground(table.getForeground());}
 				else{setForeground(Color.RED);}
 				return this;
@@ -965,6 +986,7 @@ public class frmMain {
 		tableParameters.setShowVerticalLines(true);
 		tableParameters.setModel(modelParameters);
 		tableParameters.getTableHeader().setReorderingAllowed(false);
+		tableParameters.setAutoCreateRowSorter(true);
 		scrollPaneParameters.setViewportView(tableParameters);
 
 		//Variables
@@ -998,17 +1020,19 @@ public class frmMain {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode()==KeyEvent.VK_ENTER){ //Enter
-					int selected=tableVariables.getSelectedRow();
-					if(selected!=-1){
-						frmDefineVariable window=new frmDefineVariable(curModel,selected);
+					int selectedRow=tableVariables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableVariables.convertRowIndexToModel(selectedRow);
+						frmDefineVariable window=new frmDefineVariable(curModel,dataRow);
 						window.frmDefineVariable.setVisible(true);
 					}
 				}
 				else if(e.getKeyCode()==KeyEvent.VK_DELETE){ //Delete
-					int selected=tableVariables.getSelectedRow();
-					if(selected!=-1){
+					int selectedRow=tableVariables.getSelectedRow();
+					if(selectedRow!=-1){
 						e.consume();
-						curModel.deleteVariable(selected);
+						int dataRow=tableVariables.convertRowIndexToModel(selectedRow);
+						curModel.deleteVariable(dataRow);
 						curModel.rescale(curModel.scale); //Re-validates textfields
 					}
 				}
@@ -1018,9 +1042,10 @@ public class frmMain {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount()==2){
-					int selected=tableVariables.getSelectedRow();
-					if(selected!=-1){
-						frmDefineVariable window=new frmDefineVariable(curModel,selected);
+					int selectedRow=tableVariables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableVariables.convertRowIndexToModel(selectedRow);
+						frmDefineVariable window=new frmDefineVariable(curModel,dataRow);
 						window.frmDefineVariable.setVisible(true);
 					}
 				}
@@ -1030,7 +1055,8 @@ public class frmMain {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-				Variable curVar=curModel.variables.get(row);
+				int dataRow=tableVariables.convertRowIndexToModel(row);
+				Variable curVar=curModel.variables.get(dataRow);
 				if(curVar.valid){setForeground(table.getForeground());}
 				else{setForeground(Color.RED);}
 				return this;
@@ -1039,6 +1065,7 @@ public class frmMain {
 		tableVariables.setShowVerticalLines(true);
 		tableVariables.setModel(modelVariables);
 		tableVariables.getTableHeader().setReorderingAllowed(false);
+		tableVariables.setAutoCreateRowSorter(true);
 		scrollPaneVariables.setViewportView(tableVariables);
 
 		//Tables
@@ -1067,21 +1094,24 @@ public class frmMain {
 		tableTables.setModel(modelTables);
 		tableTables.setRowSelectionAllowed(false);
 		tableTables.getTableHeader().setReorderingAllowed(false);
+		tableTables.setAutoCreateRowSorter(true);
 		tableTables.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode()==KeyEvent.VK_ENTER){ //Enter
-					int selected=tableTables.getSelectedRow();
-					if(selected!=-1){
-						frmDefineTable window=new frmDefineTable(curModel,selected,fc,errorLog);
+					int selectedRow=tableTables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableTables.convertRowIndexToModel(selectedRow);
+						frmDefineTable window=new frmDefineTable(curModel,dataRow,fc,errorLog);
 						window.frmDefineTable.setVisible(true);
 					}
 				}
 				else if(e.getKeyCode()==KeyEvent.VK_DELETE){ //Delete
-					int selected=tableTables.getSelectedRow();
-					if(selected!=-1){
+					int selectedRow=tableTables.getSelectedRow();
+					if(selectedRow!=-1){
 						e.consume();
-						curModel.deleteTable(selected);
+						int dataRow=tableTables.convertRowIndexToModel(selectedRow);
+						curModel.deleteTable(dataRow);
 						curModel.rescale(curModel.scale); //Re-validates textfields
 					}
 				}
@@ -1091,9 +1121,10 @@ public class frmMain {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount()==2){
-					int selected=tableTables.getSelectedRow();
-					if(selected!=-1){
-						frmDefineTable window=new frmDefineTable(curModel,selected,fc,errorLog);
+					int selectedRow=tableTables.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableTables.convertRowIndexToModel(selectedRow);
+						frmDefineTable window=new frmDefineTable(curModel,dataRow,fc,errorLog);
 						window.frmDefineTable.setVisible(true);
 					}
 				}
@@ -1131,17 +1162,19 @@ public class frmMain {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode()==KeyEvent.VK_ENTER){ //Enter
-					int selected=tableConstraints.getSelectedRow();
-					if(selected!=-1){
-						frmDefineConstraint window=new frmDefineConstraint(curModel,selected);
+					int selectedRow=tableConstraints.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableConstraints.convertRowIndexToModel(selectedRow);
+						frmDefineConstraint window=new frmDefineConstraint(curModel,dataRow);
 						window.frmDefineConstraint.setVisible(true);
 					}
 				}
 				else if(e.getKeyCode()==KeyEvent.VK_DELETE){ //Delete
-					int selected=tableConstraints.getSelectedRow();
-					if(selected!=-1){
+					int selectedRow=tableConstraints.getSelectedRow();
+					if(selectedRow!=-1){
 						e.consume();
-						curModel.deleteConstraint(selected);
+						int dataRow=tableConstraints.convertRowIndexToModel(selectedRow);
+						curModel.deleteConstraint(dataRow);
 						curModel.rescale(curModel.scale); //Re-validates textfields
 					}
 				}
@@ -1151,9 +1184,10 @@ public class frmMain {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount()==2){
-					int selected=tableConstraints.getSelectedRow();
-					if(selected!=-1){
-						frmDefineConstraint window=new frmDefineConstraint(curModel,selected);
+					int selectedRow=tableConstraints.getSelectedRow();
+					if(selectedRow!=-1){
+						int dataRow=tableConstraints.convertRowIndexToModel(selectedRow);
+						frmDefineConstraint window=new frmDefineConstraint(curModel,dataRow);
 						window.frmDefineConstraint.setVisible(true);
 					}
 				}
@@ -1163,7 +1197,8 @@ public class frmMain {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-				Constraint curConst=curModel.constraints.get(row);
+				int dataRow=tableConstraints.convertRowIndexToModel(row);
+				Constraint curConst=curModel.constraints.get(dataRow);
 				if(curConst.valid){setForeground(table.getForeground());}
 				else{setForeground(Color.RED);}
 				return this;
@@ -1172,6 +1207,7 @@ public class frmMain {
 		tableConstraints.setShowVerticalLines(true);
 		tableConstraints.setModel(modelConstraints);
 		tableConstraints.getTableHeader().setReorderingAllowed(false);
+		tableConstraints.setAutoCreateRowSorter(true);
 		scrollPaneConst.setViewportView(tableConstraints);
 		
 		//Parameter sets
@@ -1594,7 +1630,10 @@ public class frmMain {
 			public void actionPerformed(ActionEvent arg0) {
 				Thread SimThread = new Thread(){ //Non-UI
 					public void run(){
+						//long startTime=System.currentTimeMillis(); //time testing
 						runModel();
+						//long endTime=System.currentTimeMillis();
+						//System.out.println(endTime-startTime);
 					}
 				};
 				SimThread.start();

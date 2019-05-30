@@ -154,7 +154,7 @@ public class frmDefineVariable {
 								variable.name=testName;
 								variable.expression=testExp;
 								variable.notes=testNotes;
-								variable.value=testVal;
+								variable.value[0]=testVal;
 								myModel.variables.add(variable);
 								myModel.addVariable(variable);
 							}
@@ -169,7 +169,7 @@ public class frmDefineVariable {
 								variable.name=testName;
 								variable.expression=testExp;
 								variable.notes=testNotes;
-								variable.value=testVal;
+								variable.value[0]=testVal;
 								myModel.editVariable(varNum);
 							}
 							myModel.validateModelObjects(); //Update all model objects

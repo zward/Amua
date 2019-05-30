@@ -88,7 +88,7 @@ public class CppMarkovMonteCarlo{
 			int numVars=myModel.variables.size();
 			for(int v=0; v<numVars; v++){
 				Variable curVar=myModel.variables.get(v);
-				writeLine("		"+cppModel.defNumeric(curVar.name,curVar.value));
+				writeLine("		"+cppModel.defNumeric(curVar.name,curVar.value[0]));
 			}
 			writeLine("");
 			writeLine("	//Constructor");

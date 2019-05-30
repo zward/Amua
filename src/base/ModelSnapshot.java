@@ -53,6 +53,9 @@ public class ModelSnapshot{
 	public boolean CRN;
 	public int crnSeed;
 	public boolean displayIndResults;
+	public int numThreads;
+	public boolean reportSubgroups;
+	public ArrayList<String> subgroupNames, subgroupDefinitions;
 	
 	//Model types
 	DecisionTree tree;
@@ -116,7 +119,16 @@ public class ModelSnapshot{
 		CRN=model.CRN;
 		crnSeed=model.crnSeed;
 		displayIndResults=model.displayIndResults;
+		numThreads=model.numThreads;
 		
+		//subgroup settings
+		reportSubgroups=model.reportSubgroups;
+		subgroupNames=new ArrayList<String>(); subgroupDefinitions=new ArrayList<String>();
+		for(int i=0; i<model.subgroupNames.size(); i++){
+			subgroupNames.add(model.subgroupNames.get(i));
+			subgroupDefinitions.add(model.subgroupDefinitions.get(i));
+		}
+				
 		if(type==0){tree=model.tree.snapshot();}
 		else if(type==1){markov=model.markov.snapshot();}
 	}
@@ -144,6 +156,11 @@ public class ModelSnapshot{
 		model.CRN=CRN;
 		model.crnSeed=crnSeed;
 		model.displayIndResults=displayIndResults;
+		model.numThreads=numThreads;
+		
+		model.reportSubgroups=reportSubgroups;
+		model.subgroupNames=subgroupNames;
+		model.subgroupDefinitions=subgroupDefinitions;
 		
 		if(type==0){
 			model.tree=tree;

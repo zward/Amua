@@ -22,11 +22,14 @@ import base.AmuaModel;
 import math.Interpreter;
 import math.Numeric;
 import math.NumericException;
+import math.Token;
 
 
 public class VariableUpdate{
 	public Variable variable;
 	String exprUpdate; //expression to evaluate when updating
+	Token exprTokens[];
+	
 	/**
 	 * 0:=, 1:++, 2:--, 3:+=, 4:-=, 5:*=, 6:/=
 	 */
@@ -88,16 +91,17 @@ public class VariableUpdate{
 			}
 		}
 		//validate expression
-		testVal=Interpreter.evaluate(exprUpdate, myModel, false);
+		exprTokens=Interpreter.parse(exprUpdate, myModel);
+		testVal=Interpreter.evaluateTokens(exprTokens, 0, false);
 	}
 			
 	private static boolean isOperator(char ch){ //operators: =, +, -, *, /
 		return(ch=='=' || ch=='+' || ch=='-' || ch=='*' || ch=='/');
 	}
 	
-	public void update(boolean sample) throws Exception{
-		variable.locked=true;
-		Numeric value=variable.value;
+	public void update(boolean sample, int curThread) throws Exception{
+		variable.locked[curThread]=true;
+		Numeric value=variable.value[curThread];
 		if(operation==1){ //++
 			if(value.isInteger()){value.setInt(value.getInt()+1);}
 			else{value.setDouble(value.getDouble()+1);}
@@ -107,7 +111,7 @@ public class VariableUpdate{
 			else{value.setDouble(value.getDouble()-1);}
 		} 
 		else{
-			Numeric eval=Interpreter.evaluate(exprUpdate, myModel,sample);
+			Numeric eval=Interpreter.evaluateTokens(exprTokens, curThread,sample);
 			if(operation==0){
 				if(eval.isInteger()){value.setInt(eval.getInt());}
 				else{value.setDouble(eval.getDouble());}

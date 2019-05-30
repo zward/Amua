@@ -73,6 +73,7 @@ import javax.swing.ProgressMonitor;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.ComboBoxModel;
 
 /**
  *
@@ -89,7 +90,8 @@ public class frmSensTwoWay {
 	SurfaceCanvas surfaceCanvas;
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboStrategy;
-
+	JComboBox<String> comboGroup;
+	
 	double dataEV[][][];
 	double dataSurface[][][];
 	SurfaceModel surfaceModel;
@@ -131,7 +133,7 @@ public class frmSensTwoWay {
 			frmSensTwoWay.getContentPane().add(panel_1, gbc_panel_1);
 			GridBagLayout gbl_panel_1 = new GridBagLayout();
 			gbl_panel_1.columnWidths = new int[]{455, 0};
-			gbl_panel_1.rowHeights = new int[]{466, 137, 0};
+			gbl_panel_1.rowHeights = new int[]{466, 160, 0};
 			gbl_panel_1.columnWeights = new double[]{0.0, Double.MIN_VALUE};
 			gbl_panel_1.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
 			panel_1.setLayout(gbl_panel_1);
@@ -177,7 +179,7 @@ public class frmSensTwoWay {
 			panel_1.add(panel_2, gbc_panel_2);
 
 			final JLabel lblOutcome = new JLabel("Outcome:");
-			lblOutcome.setBounds(12, 75, 81, 16);
+			lblOutcome.setBounds(12, 69, 81, 16);
 			panel_2.add(lblOutcome);
 
 			DimInfo info=myModel.dimInfo;
@@ -218,11 +220,11 @@ public class frmSensTwoWay {
 					}
 				}
 			});
-			comboDimensions.setBounds(94, 70, 227, 26);
+			comboDimensions.setBounds(94, 64, 227, 26);
 			panel_2.add(comboDimensions);
 
 			JButton btnRun = new JButton("Run");
-			btnRun.setBounds(353, 7, 90, 28);
+			btnRun.setBounds(353, 27, 90, 28);
 			panel_2.add(btnRun);
 
 			final JButton btnExport = new JButton("Export");
@@ -272,54 +274,74 @@ public class frmSensTwoWay {
 					}
 				}
 			});
-			btnExport.setBounds(353, 36, 90, 28);
+			btnExport.setBounds(353, 125, 90, 28);
 			panel_2.add(btnExport);
 
 			JLabel lblParameter = new JLabel("Parameter 1:");
-			lblParameter.setBounds(12, 13, 81, 16);
+			lblParameter.setBounds(12, 9, 81, 16);
 			panel_2.add(lblParameter);
 
 			final JComboBox<String> comboParam1 = new JComboBox<String>(new DefaultComboBoxModel<String>(paramNames));
-			comboParam1.setBounds(94, 8, 227, 26);
+			comboParam1.setBounds(94, 4, 227, 26);
 			panel_2.add(comboParam1);
 			if(paramNames.length>0){comboParam1.setSelectedIndex(0);}
 
 			JLabel lblParameter_1 = new JLabel("Parameter 2:");
-			lblParameter_1.setBounds(12, 42, 81, 16);
+			lblParameter_1.setBounds(12, 39, 81, 16);
 			panel_2.add(lblParameter_1);
 			
 			final JComboBox<String> comboParam2 = new JComboBox<String>(new DefaultComboBoxModel<String>(paramNames));
-			comboParam2.setBounds(94, 38, 227, 26);
+			comboParam2.setBounds(94, 34, 227, 26);
 			panel_2.add(comboParam2);
 			if(paramNames.length>1){comboParam2.setSelectedIndex(1);}
 
 			comboMinMax = new JComboBox<String>();
 			comboMinMax.setModel(new DefaultComboBoxModel<String>(new String[] {"Min", "Max"}));
 			comboMinMax.setSelectedIndex(1);
-			comboMinMax.setBounds(353, 70, 90, 26);
+			comboMinMax.setBounds(353, 64, 90, 26);
 			panel_2.add(comboMinMax);
 			
 			JLabel lblIntervals = new JLabel("Intervals:");
-			lblIntervals.setBounds(333, 108, 55, 16);
+			lblIntervals.setBounds(333, 100, 55, 16);
 			panel_2.add(lblIntervals);
 			
 			textIntervals = new JTextField();
 			textIntervals.setHorizontalAlignment(SwingConstants.CENTER);
 			textIntervals.setText("10");
-			textIntervals.setBounds(388, 102, 55, 28);
+			textIntervals.setBounds(388, 94, 55, 28);
 			panel_2.add(textIntervals);
 			textIntervals.setColumns(10);
 			
 			lblCEThresh = new JLabel("Cost-Effectiveness Threshold:");
 			lblCEThresh.setEnabled(false);
-			lblCEThresh.setBounds(12, 108, 171, 16);
+			lblCEThresh.setBounds(12, 100, 171, 16);
 			panel_2.add(lblCEThresh);
 			
 			textCEThresh = new JTextField();
 			textCEThresh.setEnabled(false);
-			textCEThresh.setBounds(181, 102, 122, 28);
+			textCEThresh.setBounds(181, 94, 122, 28);
 			panel_2.add(textCEThresh);
 			textCEThresh.setColumns(10);
+			
+			JLabel lblGroup = new JLabel("Group:");
+			lblGroup.setEnabled(false);
+			lblGroup.setBounds(12, 131, 55, 16);
+			panel_2.add(lblGroup);
+			
+			comboGroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{"Overall"}));
+			comboGroup.setEnabled(false);
+			comboGroup.setBounds(94, 126, 227, 26);
+			panel_2.add(comboGroup);
+			
+			if(myModel.simType==1 && myModel.reportSubgroups){
+				int numGroups=myModel.subgroupNames.size();
+				String groups[]=new String[numGroups+1];
+				groups[0]="Overall";
+				for(int i=0; i<numGroups; i++){groups[i+1]=myModel.subgroupNames.get(i);}
+				comboGroup.setModel(new DefaultComboBoxModel(groups));
+				comboGroup.setEnabled(true);
+				lblGroup.setEnabled(true);
+			}
 
 			final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 			
@@ -418,10 +440,17 @@ public class frmSensTwoWay {
 										boolean cancelled=false;
 										//Run model...
 										
+										int group=-1;
+										if(comboGroup.isEnabled()){group=comboGroup.getSelectedIndex()-1;}
+										
 										int numStrat=myModel.strategyNames.length;
 										dataEV=new double[numStrat][2][(intervals+1)*(intervals+1)];
 										dataSurface=new double[numStrat][intervals+1][intervals+1];
-										progress.setMaximum((intervals+1)*(intervals+1));
+										int numRuns=(intervals+1)*(intervals+1);
+										progress.setMaximum(numRuns);
+										
+										long startTime=System.currentTimeMillis();
+										
 										int count=0;
 										for(int i=0; i<=intervals; i++){
 											double curVal1=min1+(step1*i);
@@ -440,7 +469,9 @@ public class frmSensTwoWay {
 													for(int s=0; s<numStrat; s++){
 														dataEV[s][0][count]=curVal1;
 														dataEV[s][1][count]=Double.NaN;
-														double curOutcome=myModel.getStrategyEV(s, dim);
+														double curOutcome;
+														if(group==-1){curOutcome=myModel.getStrategyEV(s, dim);}
+														else{curOutcome=myModel.getSubgroupEV(group, s, dim);}
 														if(curOutcome>maxEV){maxEV=curOutcome; maxStrat=s;}
 														if(curOutcome<minEV){minEV=curOutcome; minStrat=s;}
 														dataSurface[s][i][j]=curOutcome;
@@ -449,7 +480,7 @@ public class frmSensTwoWay {
 													else{dataEV[minStrat][1][count]=curVal2;}
 												}
 												else if(analysisType==1){ //CEA
-													Object table[][]=new CEAHelper().calculateICERs(myModel);
+													Object table[][]=new CEAHelper().calculateICERs(myModel,group);
 													double bestICER=Double.NEGATIVE_INFINITY;
 													int bestStrat=-1;
 													for(int s=0; s<table.length; s++){	
@@ -470,7 +501,7 @@ public class frmSensTwoWay {
 													}
 												}
 												else if(analysisType==2){ //BCA
-													Object table[][]=new CEAHelper().calculateNMB(myModel);
+													Object table[][]=new CEAHelper().calculateNMB(myModel,group);
 													double maxNMB=Double.NEGATIVE_INFINITY;
 													int maxStrat=-1;
 													for(int s=0; s<table.length; s++){	
@@ -488,7 +519,18 @@ public class frmSensTwoWay {
 												}
 												
 												count++;
+												//Update progress
+												double prog=(count/(numRuns*1.0))*100;
+												long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
+												remTime=(long) (remTime*(100-prog));
+												remTime=remTime/1000;
+												String seconds = Integer.toString((int)(remTime % 60));
+												String minutes = Integer.toString((int)(remTime/60));
+												if(seconds.length()<2){seconds="0"+seconds;}
+												if(minutes.length()<2){minutes="0"+minutes;}
 												progress.setProgress(count);
+												progress.setNote("Time left: "+minutes+":"+seconds);
+																								
 												if(progress.isCanceled()){ //End loop
 													cancelled=true;
 													j=intervals+1;

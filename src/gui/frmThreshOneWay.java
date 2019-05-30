@@ -57,6 +57,8 @@ import math.Numeric;
 import javax.swing.border.LineBorder;
 
 import java.awt.Color;
+import java.awt.Cursor;
+
 import javax.swing.JComboBox;
 import javax.swing.border.EtchedBorder;
 import javax.swing.ListSelectionModel;
@@ -64,6 +66,7 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
 import javax.swing.JTextField;
 import java.awt.Font;
+import javax.swing.ComboBoxModel;
 
 /**
  *
@@ -83,6 +86,7 @@ public class frmThreshOneWay {
 	private JTextField textIntervals;
 	String CEAnotes[][];
 	Parameter curParam;
+	private JTextField textTolerance;
 		
 	public frmThreshOneWay(AmuaModel model){
 		this.myModel=model;
@@ -116,7 +120,7 @@ public class frmThreshOneWay {
 			frmThreshOneWay.getContentPane().add(panel_1, gbc_panel_1);
 			GridBagLayout gbl_panel_1 = new GridBagLayout();
 			gbl_panel_1.columnWidths = new int[]{455, 0};
-			gbl_panel_1.rowHeights = new int[]{401, 125, 0};
+			gbl_panel_1.rowHeights = new int[]{401, 149, 0};
 			gbl_panel_1.columnWeights = new double[]{0.0, Double.MIN_VALUE};
 			gbl_panel_1.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
 			panel_1.setLayout(gbl_panel_1);
@@ -158,7 +162,7 @@ public class frmThreshOneWay {
 			panel_1.add(panel_2, gbc_panel_2);
 
 			final JLabel lblOutcome = new JLabel("Outcome:");
-			lblOutcome.setBounds(6, 85, 81, 16);
+			lblOutcome.setBounds(6, 73, 81, 16);
 			panel_2.add(lblOutcome);
 
 			DimInfo info=myModel.dimInfo;
@@ -183,11 +187,11 @@ public class frmThreshOneWay {
 			}
 			
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
-			comboDimensions.setBounds(88, 80, 227, 26);
+			comboDimensions.setBounds(88, 68, 227, 26);
 			panel_2.add(comboDimensions);
 			
 			JButton btnRun = new JButton("Run");
-			btnRun.setBounds(348, 7, 90, 28);
+			btnRun.setBounds(345, 115, 90, 28);
 			panel_2.add(btnRun);
 
 			JLabel lblStrategy = new JLabel("Strategy 1:");
@@ -197,14 +201,16 @@ public class frmThreshOneWay {
 			final JComboBox<String> comboStrat1 = new JComboBox<String>(new DefaultComboBoxModel<String>(myModel.strategyNames));
 			comboStrat1.setBounds(88, 8, 227, 26);
 			panel_2.add(comboStrat1);
+			if(myModel.strategyNames.length>0){comboStrat1.setSelectedIndex(0);}
 
 			JLabel lblStrategy_1 = new JLabel("Strategy 2:");
-			lblStrategy_1.setBounds(6, 51, 67, 16);
+			lblStrategy_1.setBounds(6, 43, 67, 16);
 			panel_2.add(lblStrategy_1);
 
 			final JComboBox<String> comboStrat2 = new JComboBox<String>(new DefaultComboBoxModel<String>(myModel.strategyNames));
-			comboStrat2.setBounds(88, 46, 227, 26);
+			comboStrat2.setBounds(88, 38, 227, 26);
 			panel_2.add(comboStrat2);
+			if(myModel.strategyNames.length>1){comboStrat2.setSelectedIndex(1);}
 
 			JLabel lblThreshold = new JLabel("Threshold:");
 			lblThreshold.setFont(new Font("SansSerif", Font.BOLD, 12));
@@ -220,36 +226,81 @@ public class frmThreshOneWay {
 			textThresh.setColumns(10);
 			
 			JLabel lblIntervals = new JLabel("Intervals:");
-			lblIntervals.setBounds(327, 47, 55, 16);
+			lblIntervals.setBounds(338, 16, 55, 16);
 			panel_2.add(lblIntervals);
 			
 			textIntervals = new JTextField();
 			textIntervals.setHorizontalAlignment(SwingConstants.CENTER);
 			textIntervals.setText("10");
-			textIntervals.setBounds(383, 39, 55, 28);
+			textIntervals.setBounds(394, 8, 55, 28);
 			panel_2.add(textIntervals);
 			textIntervals.setColumns(10);
-
+			
+			JLabel lblGroup = new JLabel("Group:");
+			lblGroup.setEnabled(false);
+			lblGroup.setBounds(6, 103, 55, 16);
+			panel_2.add(lblGroup);
+			
+			final JComboBox<String> comboGroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{"Overall"}));
+			comboGroup.setEnabled(false);
+			comboGroup.setBounds(88, 98, 227, 26);
+			panel_2.add(comboGroup);
+			
+			JLabel lblTolerance = new JLabel("Tolerance:");
+			lblTolerance.setBounds(327, 44, 66, 16);
+			panel_2.add(lblTolerance);
+			
+			textTolerance = new JTextField();
+			textTolerance.setText("0.001");
+			textTolerance.setBounds(394, 38, 55, 28);
+			panel_2.add(textTolerance);
+			textTolerance.setColumns(10);
+			
+			if(myModel.simType==1 && myModel.reportSubgroups){
+				int numGroups=myModel.subgroupNames.size();
+				String groups[]=new String[numGroups+1];
+				groups[0]="Overall";
+				for(int i=0; i<numGroups; i++){groups[i+1]=myModel.subgroupNames.get(i);}
+				comboGroup.setModel(new DefaultComboBoxModel(groups));
+				comboGroup.setEnabled(true);
+				lblGroup.setEnabled(true);
+			}
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmThreshOneWay, "Threshold analysis", "Analyzing...", 0, 100);
-
+					final ProgressMonitor progress=new ProgressMonitor(frmThreshOneWay, "Threshold analysis", "Running intervals...", 0, 100);
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
-
+								boolean proceed=true;
+								
 								int strat1=comboStrat1.getSelectedIndex();
 								int strat2=comboStrat2.getSelectedIndex();
+								double tol=0.001;
+								try{
+									tol=Double.parseDouble(textTolerance.getText());
+								}catch(Exception err){
+									JOptionPane.showMessageDialog(frmThreshOneWay, "Invalid tolerance entered!");
+									proceed=false;
+								}
+								if(tol<=0){
+									JOptionPane.showMessageDialog(frmThreshOneWay, "Invalid tolerance entered!");
+									proceed=false;
+								}
+								
 								//Check model first
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
 									JOptionPane.showMessageDialog(frmThreshOneWay, "Errors in base case model!");
+									proceed=false;
 								}
 								else if(strat1==strat2){
 									JOptionPane.showMessageDialog(frmThreshOneWay, "Please select 2 different strategies!");
+									proceed=false;
 								}
-								else{
+								
+								
+								if(proceed==true){
 									//Get parameter
 									int intervals=Integer.parseInt(textIntervals.getText());
 									int row=tableParams.getSelectedRow();
@@ -272,6 +323,9 @@ public class frmThreshOneWay {
 											decimalDim=myModel.dimInfo.costDim;
 										}
 									} 
+									
+									int group=-1;
+									if(comboGroup.isEnabled()){group=comboGroup.getSelectedIndex()-1;}
 									
 									boolean error=false;
 									//Test parameter at min and max...
@@ -317,11 +371,12 @@ public class frmThreshOneWay {
 											if(analysisType==0){ //EV
 												for(int s=0; s<numStrat; s++){
 													dataEV[s][0][i]=curVal;
-													dataEV[s][1][i]=myModel.getStrategyEV(s, dim);
+													if(group==-1){dataEV[s][1][i]=myModel.getStrategyEV(s, dim);}
+													else{dataEV[s][1][i]=myModel.getSubgroupEV(group, s, dim);}
 												}
 											}
 											else if(analysisType==1){ //CEA
-												Object table[][]=new CEAHelper().calculateICERs(myModel);
+												Object table[][]=new CEAHelper().calculateICERs(myModel,group);
 												for(int s=0; s<table.length; s++){	
 													int origStrat=(int) table[s][0];
 													if(origStrat!=-1){
@@ -332,7 +387,7 @@ public class frmThreshOneWay {
 												}
 											}
 											else if(analysisType==2){ //BCA
-												Object table[][]=new CEAHelper().calculateNMB(myModel);
+												Object table[][]=new CEAHelper().calculateNMB(myModel,group);
 												for(int s=0; s<table.length; s++){	
 													int origStrat=(int) table[s][0];
 													dataEV[origStrat][0][i]=curVal;
@@ -363,10 +418,15 @@ public class frmThreshOneWay {
 													JOptionPane.showMessageDialog(frmThreshOneWay, "No intersection found in current range!");
 												}
 												else{ //Search neighbourhood for intersection
+													frmThreshOneWay.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+													
 													double minVal=dataEV[0][0][minIndex];
-													double thresh=Math.pow(10, -(myModel.dimInfo.decimals[decimalDim]+1));
+													
+													int dec=myModel.dimInfo.decimals[decimalDim]+1;
 													int i=0;
-													while(minDist>thresh && i<1000){ //Binary search of neighbourhood until convergence
+													while(minDist>tol && i<100){ //Binary search of neighbourhood until convergence
+														progress.setNote("Distance: "+MathUtils.round(minDist, dec));
+														
 														//Left
 														double valL=minVal-(step/2.0);
 														curParam.value.setDouble(valL);
@@ -376,11 +436,17 @@ public class frmThreshOneWay {
 														
 														double result1L=0, result2L=0;
 														if(analysisType==0){ //EV
-															result1L=myModel.getStrategyEV(strat1, dim);
-															result2L=myModel.getStrategyEV(strat2, dim);
+															if(group==-1){
+																result1L=myModel.getStrategyEV(strat1, dim);
+																result2L=myModel.getStrategyEV(strat2, dim);
+															}
+															else{
+																result1L=myModel.getSubgroupEV(group,strat1, dim);
+																result2L=myModel.getSubgroupEV(group,strat2, dim);
+															}
 														}
 														else if(analysisType==1){ //CEA
-															Object table[][]=new CEAHelper().calculateICERs(myModel);
+															Object table[][]=new CEAHelper().calculateICERs(myModel,group);
 															for(int s=0; s<table.length; s++){	
 																int origStrat=(int) table[s][0];
 																if(origStrat==strat1){result1L=(double) table[s][4];}
@@ -388,7 +454,7 @@ public class frmThreshOneWay {
 															}
 														}
 														else if(analysisType==2){ //BCA
-															Object table[][]=new CEAHelper().calculateNMB(myModel);
+															Object table[][]=new CEAHelper().calculateNMB(myModel,group);
 															for(int s=0; s<table.length; s++){	
 																int origStrat=(int) table[s][0];
 																if(origStrat==strat1){result1L=(double) table[s][4];}
@@ -406,11 +472,17 @@ public class frmThreshOneWay {
 														
 														double result1R=0, result2R=0;
 														if(analysisType==0){ //EV
-															result1R=myModel.getStrategyEV(strat1, dim);
-															result2R=myModel.getStrategyEV(strat2, dim);
+															if(group==-1){
+																result1R=myModel.getStrategyEV(strat1, dim);
+																result2R=myModel.getStrategyEV(strat2, dim);
+															}
+															else{
+																result1R=myModel.getSubgroupEV(group,strat1, dim);
+																result2R=myModel.getSubgroupEV(group,strat2, dim);
+															}
 														}
 														else if(analysisType==1){ //CEA
-															Object table[][]=new CEAHelper().calculateICERs(myModel);
+															Object table[][]=new CEAHelper().calculateICERs(myModel,group);
 															for(int s=0; s<table.length; s++){	
 																int origStrat=(int) table[s][0];
 																if(origStrat==strat1){result1R=(double) table[s][4];}
@@ -418,7 +490,7 @@ public class frmThreshOneWay {
 															}
 														}
 														else if(analysisType==2){ //BCA
-															Object table[][]=new CEAHelper().calculateNMB(myModel);
+															Object table[][]=new CEAHelper().calculateNMB(myModel,group);
 															for(int s=0; s<table.length; s++){	
 																int origStrat=(int) table[s][0];
 																if(origStrat==strat1){result1R=(double) table[s][4];}
@@ -437,13 +509,19 @@ public class frmThreshOneWay {
 															minDist=distR;
 														}
 														step/=2.0;
+														
+														if(progress.isCanceled()){ //End loop
+															cancelled=true;
+															i=1000; //end
+														}
 													}
-													if(minDist<thresh){ //Convergence achieved
+													if(minDist<tol){ //Convergence achieved
 														intersection=minVal;
 													}
 													else{
-														JOptionPane.showMessageDialog(frmThreshOneWay, "No intersection found in current range!");
+														JOptionPane.showMessageDialog(frmThreshOneWay, "No intersection found! Try increasing tolerance.");
 													}
+													frmThreshOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 												}
 											}
 											textThresh.setText(MathUtils.round(intersection,myModel.dimInfo.decimals[decimalDim])+"");
@@ -482,6 +560,7 @@ public class frmThreshOneWay {
 									}
 								}
 							} catch (Exception e) {
+								frmThreshOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 								curParam.locked=false;
 								myModel.validateModelObjects();
 								e.printStackTrace();

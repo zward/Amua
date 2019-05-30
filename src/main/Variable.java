@@ -24,37 +24,36 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import base.AmuaModel;
-import math.Constants;
-import math.Distributions;
-import math.Functions;
 import math.Interpreter;
-import math.MatrixFunctions;
 import math.Numeric;
+import math.Token;
 
 @XmlRootElement(name="Variable")
 public class Variable{
 	@XmlElement public String name;
-	//@XmlElement public String initValue; //initial value
 	@XmlElement public String expression;
 	@XmlElement public String notes;
 	
 	@XmlTransient public boolean valid=true;
-	@XmlTransient public Numeric value;
 	@XmlTransient public ArrayList<Variable> dependents; //variables that depend on me
 	@XmlTransient public boolean independent;
-	@XmlTransient public boolean locked=false;
+	
+	@XmlTransient public Numeric value[]; //thread-specific
+	@XmlTransient public boolean locked[]; //thread-specific
+	@XmlTransient public Token parsedTokens[];
 	
 	//Constructor
 	public Variable(){
-
+		value=new Numeric[1]; //construct test values
+		locked=new boolean[1];
 	}
 
 	public Variable copy(){
 		Variable copyVar=new Variable();
 		copyVar.name=name;
-		//copyVar.initValue=initValue;
 		copyVar.expression=expression;
 		copyVar.notes=notes;
+		copyVar.parsedTokens=parsedTokens;
 		copyVar.value=value;
 		return(copyVar);
 	}
@@ -84,13 +83,13 @@ public class Variable{
 		}
 	}
 	
-	public void updateDependents(AmuaModel myModel) throws Exception{
+	public void updateDependents(AmuaModel myModel, int curThread) throws Exception{
 		for(int d=0; d<dependents.size(); d++){
 			Variable curDep=dependents.get(d);
-			if(curDep.locked==false){
-				curDep.locked=true;
-				curDep.value=Interpreter.evaluate(curDep.expression, myModel, false);
-				curDep.updateDependents(myModel);
+			if(curDep.locked[curThread]==false){
+				curDep.locked[curThread]=true;
+				curDep.value[curThread]=Interpreter.evaluateTokens(curDep.parsedTokens, curThread, false);
+				curDep.updateDependents(myModel, curThread);
 			}
 		}
 	}

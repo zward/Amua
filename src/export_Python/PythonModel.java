@@ -190,7 +190,7 @@ public class PythonModel{
 			else if(curText.charAt(0)=='['){ //new defined matrix or vector
 				int close=Interpreter.findRightBracket(curText,0);
 				String strMatrix=curText.substring(1,close);
-				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel,false);
+				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel).getNumeric()[0];
 				//write out
 				if(matrix.nrow>1){exportText+=writeMatrix(matrix.matrix);}
 				else{exportText+=writeArray(matrix.matrix[0]);}
@@ -249,7 +249,7 @@ public class PythonModel{
 				if(!curVar.notes.isEmpty()){
 					writeLine(0,"\"\"\""+curVar.notes+"\"\"\"");
 				}
-				String init=initNumeric(curVar.name,curVar.value);
+				String init=initNumeric(curVar.name,curVar.value[0]);
 				writeLine(0,init);
 			}
 			writeLine(0,"");

@@ -262,10 +262,10 @@ public class frmPlotSurface {
 								}*/
 
 								double x=minX+stepX*i;
-								curX.value=new Numeric(x);
+								curX.value[0]=new Numeric(x);
 								
 								double y=minY+stepY*j;
-								curY.value=new Numeric(y);
+								curY.value[0]=new Numeric(y);
 								
 								double curVal;
 								try{

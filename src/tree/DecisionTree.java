@@ -27,13 +27,13 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import base.AmuaModel;
 import base.RunReport;
-import main.CEAHelper;
 import main.Console;
 import main.ConsoleTable;
 import main.DimInfo;
 import main.VariableUpdate;
 import math.Interpreter;
 import math.MathUtils;
+import math.Token;
 
 @XmlRootElement(name="DecisionTree")
 /**
@@ -110,8 +110,8 @@ public class DecisionTree{
 		//Initialize root
 		TreeNode root=nodes.get(0);
 		int numDim=myModel.dimInfo.dimSymbols.length;
-		root.curCosts=new double[numDim]; 
-		root.curPayoffs=new double[numDim]; 
+		root.curCosts=new double[numDim]; root.curCostTokens=new Token[numDim][];
+		root.curPayoffs=new double[numDim]; root.curPayoffTokens=new Token[numDim][];
 		root.numChildren=root.childIndices.size();
 		root.children=new TreeNode[root.numChildren];
 		for(int j=0; j<root.numChildren; j++){
@@ -129,8 +129,8 @@ public class DecisionTree{
 		int size=nodes.size();
 		for(int i=1; i<size; i++){ //Exclude root node
 			TreeNode curNode=nodes.get(i);
-			curNode.curCosts=new double[numDim]; 
-			curNode.curPayoffs=new double[numDim]; 
+			curNode.curCosts=new double[numDim]; curNode.curCostTokens=new Token[numDim][];
+			curNode.curPayoffs=new double[numDim]; curNode.curPayoffTokens=new Token[numDim][];
 
 			if(curNode.type==0 && myModel.simType==1){
 				errors.add("Node "+curNode.name+": Sequential decision nodes are not allowed in Monte Carlo simulations");
@@ -138,16 +138,18 @@ public class DecisionTree{
 			
 			if(curNode.parentType!=0){ //Validate probability
 				curNode.highlightTextField(0,null); //Prob
-				if(curNode.prob.matches("C") || curNode.prob.matches("c")){curNode.curProb=-1;} //Complementary
+				curNode.curProb=new double[1]; //single thread as default
+				if(curNode.prob.matches("C") || curNode.prob.matches("c")){curNode.curProb[0]=-1;} //Complementary
 				else{ //Evaluate text
 					try{
-						curNode.curProb=Interpreter.evaluate(curNode.prob,myModel,false).getDouble();
+						curNode.curProbTokens=Interpreter.parse(curNode.prob, myModel);
+						curNode.curProb[0]=Interpreter.evaluateTokens(curNode.curProbTokens, 0, false).getDouble();
 					}catch(Exception e){
 						validProbs=false;
 						curNode.highlightTextField(0, Color.YELLOW); //Prob
 						errors.add("Node "+curNode.name+": Probability Error ("+curNode.prob+")");
 					}
-					if(curNode.curProb<0 || curNode.curProb>1 || Double.isNaN(curNode.curProb)){
+					if(curNode.curProb[0]<0 || curNode.curProb[0]>1 || Double.isNaN(curNode.curProb[0])){
 						validProbs=false;
 						curNode.highlightTextField(0, Color.YELLOW); //Prob
 						errors.add("Node "+curNode.name+": Probability Error ("+curNode.prob+")");
@@ -162,7 +164,9 @@ public class DecisionTree{
 				curNode.highlightTextField(1,null); //Cost
 				for(int c=0; c<numDim; c++){
 					try{
-						curNode.curCosts[c]=Interpreter.evaluate(curNode.cost[c],myModel,false).getDouble();
+						curNode.curCostTokens[c]=Interpreter.parse(curNode.cost[c], myModel);
+						curNode.curCosts[c]=Interpreter.evaluateTokens(curNode.curCostTokens[c], 0, false).getDouble();
+						
 						if(Double.isNaN(curNode.curCosts[c])){
 							curNode.highlightTextField(1, Color.YELLOW); //Cost
 							errors.add("Node "+curNode.name+": Cost Error ("+curNode.cost[c]+")");
@@ -177,7 +181,8 @@ public class DecisionTree{
 				curNode.highlightTextField(2,null); //Payoff
 				for(int c=0; c<numDim; c++){
 					try{
-						curNode.curPayoffs[c]=Interpreter.evaluate(curNode.payoff[c],myModel,false).getDouble();
+						curNode.curPayoffTokens[c]=Interpreter.parse(curNode.payoff[c],myModel);
+						curNode.curPayoffs[c]=Interpreter.evaluateTokens(curNode.curPayoffTokens[c], 0, false).getDouble();
 						if(Double.isNaN(curNode.curPayoffs[c])){
 							curNode.highlightTextField(2, Color.YELLOW); //Payoff
 							errors.add("Node "+curNode.name+": Payoff Error ("+curNode.payoff[c]+")");
@@ -229,8 +234,8 @@ public class DecisionTree{
 						for(int j=0; j<curNode.numChildren; j++){
 							TreeNode child=nodes.get(curNode.childIndices.get(j));
 							curNode.children[j]=child;
-							if(child.curProb==-1){numCompProb++;}
-							else{sumProb+=child.curProb;}
+							if(child.curProb[0]==-1){numCompProb++;}
+							else{sumProb+=child.curProb[0];}
 						}
 						if(numCompProb==0){
 							if(sumProb!=1.0){
@@ -246,13 +251,13 @@ public class DecisionTree{
 								errors.add("Node "+curNode.name+": Entered probabilities sum to "+sumProb+"!");
 								for(int j=0; j<curNode.numChildren; j++){
 									TreeNode child=nodes.get(curNode.childIndices.get(j));
-									if(child.curProb!=-1){child.highlightTextField(0, Color.YELLOW);} //Entered prob
+									if(child.curProb[0]!=-1){child.highlightTextField(0, Color.YELLOW);} //Entered prob
 								}
 							}
 							else{ //Calculate complementary prob
 								for(int j=0; j<curNode.numChildren; j++){
 									TreeNode child=nodes.get(curNode.childIndices.get(j));
-									if(child.curProb==-1){child.curProb=1.0-sumProb;}
+									if(child.curProb[0]==-1){child.curProb[0]=1.0-sumProb;}
 								}
 							}
 						}
@@ -260,7 +265,7 @@ public class DecisionTree{
 							errors.add("Node "+curNode.name+": At most 1 probability can be complementary!");
 							for(int j=0; j<curNode.numChildren; j++){
 								TreeNode child=nodes.get(curNode.childIndices.get(j));
-								if(child.curProb==-1){child.highlightTextField(0, Color.YELLOW);} //Comp. prob
+								if(child.curProb[0]==-1){child.highlightTextField(0, Color.YELLOW);} //Comp. prob
 							}
 						}
 					}
@@ -283,10 +288,18 @@ public class DecisionTree{
 		else if(myModel.simType==1){ //Monte Carlo
 			TreeMonteCarlo microModel=new TreeMonteCarlo(nodes.get(0)); //send root
 			microModel.simulate(display);
+			
 			int numMicro=microModel.microStats.length;
 			for(int s=0; s<numMicro; s++){
 				runReport.microStats.add(microModel.microStats[s]);
 				runReport.names.add(microModel.strategyNames[s]);
+			}
+
+			for(int g=0; g<runReport.numSubgroups; g++){
+				runReport.subgroupSizes[g]=microModel.subgroupSize[g];
+				for(int s=0; s<numMicro; s++){
+					runReport.microStatsGroup[g].add(microModel.microStatsGroup[g][s]);
+				}
 			}
 		}
 		runReport.treeReport=new TreeReport(this);
@@ -302,7 +315,7 @@ public class DecisionTree{
 		return(parentIndex);
 	}
 	
-	public void printEVResults(Console console){
+	public void printEVResults(Console console, RunReport report){
 		//Display output for each strategy
 		DimInfo dimInfo=myModel.dimInfo;
 		TreeNode root=nodes.get(0);
@@ -327,6 +340,27 @@ public class DecisionTree{
 		}
 		console.print("\nEV Results:\n");
 		curTable.print();
+		
+		if(myModel.simType==1 && myModel.reportSubgroups){ //subgroups
+			int numSubgroups=myModel.subgroupNames.size();
+			for(int g=0; g<numSubgroups; g++){
+				ConsoleTable groupTable=new ConsoleTable(console,colTypes);
+				groupTable.addRow(headers);
+				for(int i=0; i<numChildren; i++){ //strategy results
+					TreeNode child=root.children[i];
+					String row[]=new String[numDimensions+1];
+					row[0]=child.name;
+					for(int d=0; d<numDimensions; d++){
+						//row[d+1]=MathUtils.round(child.expectedValuesGroup[g][d]*report.subgroupSize[g],dimInfo.decimals[d])+"";
+						row[d+1]=MathUtils.round(child.totalNetGroup[g][d], dimInfo.decimals[d])+"";
+					}
+					groupTable.addRow(row);
+				}
+				console.print("\nSubgroup Results: "+report.subgroupNames[g]+" (n="+report.subgroupSizes[g]+")\n");
+				groupTable.print();
+			}
+		}
+		
 		console.newLine();
 	}
 

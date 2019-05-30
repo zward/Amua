@@ -171,7 +171,7 @@ public class CppModel{
 			else if(curText.charAt(0)=='['){ //anonymous matrix
 				int close=Interpreter.findRightBracket(curText,0);
 				String strMatrix=curText.substring(1,close);
-				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel,false);
+				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel).getNumeric()[0];
 				//write out
 				if(matrix.nrow==1){exportText+=writeArray(matrix.matrix[0]);} //row vector
 				else{
@@ -253,7 +253,7 @@ public class CppModel{
 				if(!curVar.notes.isEmpty()){
 					writeLine("	/*"+curVar.notes+"*/");
 				}
-				String init=initNumeric(curVar.name,curVar.value);
+				String init=initNumeric(curVar.name,curVar.value[0]);
 				writeLine(init);
 			}
 			writeLine("");

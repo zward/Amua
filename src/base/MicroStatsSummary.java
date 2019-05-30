@@ -50,7 +50,7 @@ public class MicroStatsSummary{
 	AmuaModel myModel;
 	
 	//Constructor
-	public MicroStatsSummary(RunReport reports[], int s){
+	public MicroStatsSummary(RunReport reports[], int s, int group){
 		int numReports=reports.length;
 		int numEst=7; //Mean, SD, Min, Q1, Med, Q3, Max
 		numDim=reports[0].numDim;
@@ -62,8 +62,15 @@ public class MicroStatsSummary{
 		varsSummary=new double[numVars][numEst][3];
 		
 		//calculate underlying summaries
-		for(int r=0; r<numReports; r++){
-			reports[r].microStats.get(s).calcSummary();
+		if(group==-1){ //overall
+			for(int r=0; r<numReports; r++){
+				reports[r].microStats.get(s).calcSummary();
+			}
+		}
+		else{ //subgroup
+			for(int r=0; r<numReports; r++){
+				reports[r].microStatsGroup[group].get(s).calcSummary();
+			}
 		}
 		
 		//get mean and 95% UIs
@@ -74,7 +81,10 @@ public class MicroStatsSummary{
 			double means[]=new double[7]; 
 			double vals[][]=new double[7][numReports];
 			for(int i=0; i<numReports; i++){
-				MicroStats curStats=reports[i].microStats.get(s);
+				MicroStats curStats;
+				if(group==-1){curStats=reports[i].microStats.get(s);} //overall
+				else{curStats=reports[i].microStatsGroup[group].get(s);} //subgroup
+				
 				means[0]+=curStats.outcomesMean[d]; vals[0][i]=curStats.outcomesMean[d];
 				means[1]+=curStats.outcomesSD[d]; vals[1][i]=curStats.outcomesSD[d];
 				means[2]+=curStats.outcomesMin[d]; vals[2][i]=curStats.outcomesMin[d];
@@ -98,7 +108,10 @@ public class MicroStatsSummary{
 			double means[]=new double[7]; 
 			double vals[][]=new double[7][numReports];
 			for(int i=0; i<numReports; i++){
-				MicroStats curStats=reports[i].microStats.get(s);
+				MicroStats curStats;
+				if(group==-1){curStats=reports[i].microStats.get(s);} //overall
+				else{curStats=reports[i].microStatsGroup[group].get(s);} //subgroup
+				
 				means[0]+=curStats.varsMean[v]; vals[0][i]=curStats.varsMean[v];
 				means[1]+=curStats.varsSD[v]; vals[1][i]=curStats.varsSD[v];
 				means[2]+=curStats.varsMin[v]; vals[2][i]=curStats.varsMin[v];

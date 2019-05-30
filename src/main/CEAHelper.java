@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2019 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -27,14 +27,16 @@ import base.AmuaModel;
 public class CEAHelper{
 	int numStrat;
 	double costs[], effects[];
+	double extendedDim[];
 
 	public CEAHelper(){ //Constructor
 		
 	}
 	
 	//ErrorLog errorLog;
-	public Object[][] calculateICERs(AmuaModel myModel){
-		getResults(myModel); //Get EVs
+	public Object[][] calculateICERs(AmuaModel myModel, int group){
+		getResults(myModel,group); //Get EVs
+		
 		int baseline=-1;
 		int strat=0;
 		while(baseline==-1 && strat<numStrat){
@@ -164,20 +166,36 @@ public class CEAHelper{
 		return(table);
 	}
 
-	private void getResults(AmuaModel myModel){
+	private void getResults(AmuaModel myModel, int group){
 		//Get EVs
 		numStrat=myModel.getStrategies();
 		costs=new double[numStrat];
 		effects=new double[numStrat];
-		for(int s=0; s<numStrat; s++){
-			costs[s]=myModel.getStrategyEV(s, myModel.dimInfo.costDim);
-			effects[s]=myModel.getStrategyEV(s, myModel.dimInfo.effectDim);
+		boolean ECEA=false;
+		if(myModel.dimInfo.analysisType==3){
+			ECEA=true;
+			extendedDim=new double[numStrat];
+		}
+		
+		if(group==-1){ //overall
+			for(int s=0; s<numStrat; s++){
+				costs[s]=myModel.getStrategyEV(s, myModel.dimInfo.costDim);
+				effects[s]=myModel.getStrategyEV(s, myModel.dimInfo.effectDim);
+				if(ECEA){extendedDim[s]=myModel.getStrategyEV(s, myModel.dimInfo.extendedDim);}
+			}
+		}
+		else{ //subgroup
+			for(int s=0; s<numStrat; s++){
+				costs[s]=myModel.getSubgroupEV(group, s, myModel.dimInfo.costDim);
+				effects[s]=myModel.getSubgroupEV(group, s, myModel.dimInfo.effectDim);
+				if(ECEA){extendedDim[s]=myModel.getSubgroupEV(group, s, myModel.dimInfo.extendedDim);}
+			}
 		}
 	}
 
 
-	public Object[][] calculateNMB(AmuaModel myModel){
-		getResults(myModel); //Get EVs
+	public Object[][] calculateNMB(AmuaModel myModel, int group){
+		getResults(myModel,group); //Get EVs
 		Object table[][]=new Object[numStrat][6];
 		
 		//Get EVs
@@ -205,4 +223,35 @@ public class CEAHelper{
 		return(table);
 	}
 
+	public Object[][] calculateECEA(AmuaModel myModel, int group){
+		getResults(myModel,group); //Get EVs
+		Object table[][]=new Object[numStrat][7];
+		
+		//Get EVs
+		for(int s=0; s<numStrat; s++){
+			table[s][0]=s; //Row
+			table[s][1]=myModel.strategyNames[s]; //Name
+			double cost, benefit;
+			cost=costs[s];
+			benefit=effects[s];
+			table[s][2]=benefit;
+			table[s][3]=cost;
+			table[s][4]=(benefit*myModel.dimInfo.WTP)-cost; //NMB
+			table[s][5]=extendedDim[s]; //Extended dimension
+		}
+
+		//Sort by NMB
+		Arrays.sort(table, new Comparator<Object[]>() {
+			@Override
+			public int compare(final Object[] row1, final Object[] row2) {
+				Double cost1 = (Double) row1[4];
+				Double cost2 = (Double) row2[4];
+				return cost1.compareTo(cost2);
+			}
+		});
+
+		return(table);
+	}
+
+	
 }

@@ -316,8 +316,8 @@ public class frmPlotFx {
 							}*/
 
 							double x=minX+step*i;
-							if(discrete==false){curX.value=new Numeric(x);}
-							else{curX.value=new Numeric((int)x);}
+							if(discrete==false){curX.value[0]=new Numeric(x);}
+							else{curX.value[0]=new Numeric((int)x);}
 							
 							double curY;
 							try{

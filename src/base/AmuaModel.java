@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2019 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -58,10 +58,10 @@ import markov.PanelMarkov;
 import math.Interpreter;
 import math.MathUtils;
 import math.Numeric;
+import math.Token;
 import tree.DecisionTree;
 import tree.PanelTree;
 import tree.TreeNode;
-import tree.TreeReport;
 
 @XmlRootElement(name="Model")
 public class AmuaModel{
@@ -86,6 +86,10 @@ public class AmuaModel{
 	@XmlElement public boolean CRN; //common random numbers
 	@XmlElement public int crnSeed; //CRN seed
 	@XmlElement public boolean displayIndResults;
+	@XmlElement public int numThreads=1;
+	//Subgroup settings
+	@XmlElement public boolean reportSubgroups;
+	@XmlElement public ArrayList<String> subgroupNames, subgroupDefinitions;
 	//Model types
 	@XmlElement public DecisionTree tree;
 	@XmlElement public MarkovTree markov;
@@ -98,9 +102,10 @@ public class AmuaModel{
 	@XmlTransient public boolean unsavedChanges;
 	@XmlTransient public int strategyIndices[];
 	@XmlTransient public String strategyNames[];
+	@XmlTransient public Token subgroupTokens[][];
 	//sampling
 	@XmlTransient public boolean sampleParam, sampleVar;
-	@XmlTransient public MersenneTwisterFast generatorParam, generatorVar, curGenerator;
+	@XmlTransient public MersenneTwisterFast generatorParam, generatorVar[], curGenerator[]; //thread-specific
 	//innate vars
 	@XmlTransient public ArrayList<Variable> innateVariables;
 	@XmlTransient public MarkovTrace traceMarkov;
@@ -123,6 +128,8 @@ public class AmuaModel{
 		innateVariables=new ArrayList<Variable>();
 		tables=new ArrayList<Table>();
 		constraints=new ArrayList<Constraint>();
+		subgroupNames=new ArrayList<String>();
+		subgroupDefinitions=new ArrayList<String>();
 		
 		actionStackUndo=new Stack<String>();
 		actionStackRedo=new Stack<String>();
@@ -173,10 +180,17 @@ public class AmuaModel{
 			//Construct splines if needed
 			for(int t=0; t<tables.size(); t++){
 				Table curTable=tables.get(t);
+				curTable.myModel=this;
 				if(curTable.interpolate!=null && curTable.interpolate.matches("Cubic Splines")){
 					curTable.constructSplines();
 				}
 			}
+			if(subgroupNames==null){
+				subgroupNames=new ArrayList<String>();
+				subgroupDefinitions=new ArrayList<String>();
+			}
+			
+			validateModelObjects();
 			
 			refreshParamTable();
 			refreshVarTable();
@@ -502,9 +516,12 @@ public class AmuaModel{
 			curParam.valid=true;
 			if(curParam.locked==false){
 				try{
-					curParam.value=Interpreter.evaluate(curParam.expression, this,false);
+					curParam.parsedTokens=Interpreter.parse(curParam.expression,this);
+					curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, false);
+					
 				}catch(Exception e){
 					curParam.valid=false;
+					curParam.parsedTokens=null;
 					curParam.value=null;
 				}
 			}
@@ -516,10 +533,12 @@ public class AmuaModel{
 			Variable curVar=variables.get(i);
 			curVar.valid=true;
 			try{
-				curVar.value=Interpreter.evaluate(curVar.expression, this,false);
+				curVar.parsedTokens=Interpreter.parse(curVar.expression, this);
+				curVar.value[0]=Interpreter.evaluateTokens(curVar.parsedTokens, 0, false);
 				curVar.dependents=new ArrayList<Variable>();
 			}catch(Exception e){
 				curVar.valid=false;
+				curVar.parsedTokens=null;
 				curVar.value=null;
 			}
 		}
@@ -764,7 +783,9 @@ public class AmuaModel{
 	}
 	
 	public RunReport runModel(Console console,boolean display){
+		long startTime=System.currentTimeMillis();
 		RunReport report=new RunReport(this);
+		
 		if(type==0){ //Decision tree
 			runDecisionTree(console,display,report);
 		}
@@ -777,6 +798,9 @@ public class AmuaModel{
 				runMarkovParamSets(console,display);
 			}	
 		}
+		
+		long endTime=System.currentTimeMillis();
+		report.runTime=endTime-startTime;
 		
 		return(report);
 	}
@@ -812,7 +836,7 @@ public class AmuaModel{
 			evaluateParameters(); //get parameters
 			if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, run all chains
 				if(display){console.print("Running model... ");}
-				markov.runModel(display,runReport);
+				markov.runModel(display,runReport,true);
 				runReport.getResults(true);
 				if(display){
 					console.print(" done!\n");
@@ -825,13 +849,10 @@ public class AmuaModel{
 			}
 			else{ //Single Markov Chain selected
 				if(display){console.print("Running Markov Chain: "+panelMarkov.curNode.name);}
-				markov.runMarkovChain(panelMarkov.curNode, display, runReport);
-				//runReport.getResults(false); //single chain
+				markov.runModel(display,runReport,false);
 				
 				if(display){
 					console.print(" done!\n");
-					//printSimInfo(console);
-					//runReport.printResults(console,true);
 				}
 			}
 			unlockParams(); //unlock parameters
@@ -873,7 +894,7 @@ public class AmuaModel{
 				if(display){progress.setProgress(prog);}
 				runReports[i]=new RunReport(this);
 				parameterSets[i].setParameters(this);
-				markov.runModel(false,runReports[i]);
+				markov.runModel(false,runReports[i],true);
 				runReports[i].getResults(true);
 				for(int c=0; c<numChains; c++){
 					traces[c][i]=runReports[i].markovTraces.get(c);
@@ -951,14 +972,15 @@ public class AmuaModel{
 				}
 				//get trace summary
 				for(int c=0; c<numChains; c++){
-					MarkovTraceSummary traceSummary=new MarkovTraceSummary(traces[c]);
+					MarkovTraceSummary traceSummary[]=new MarkovTraceSummary[1];
+					traceSummary[0]=new MarkovTraceSummary(traces[c]);
 					MarkovNode curNode=chainRoots.get(c);
 					for(int d=0; d<numDim; d++){
-						curNode.expectedValues[d]=traceSummary.expectedValues[d][0];
+						curNode.expectedValues[d]=traceSummary[0].expectedValues[d][0];
 					}
 					if(markov.discountRewards){
 						for(int d=0; d<numDim; d++){
-							curNode.expectedValuesDis[d]=traceSummary.expectedValuesDis[d][0];
+							curNode.expectedValuesDis[d]=traceSummary[0].expectedValuesDis[d][0];
 						}
 					}
 
@@ -977,7 +999,7 @@ public class AmuaModel{
 							if(curNode.visible){curNode.textEV.setVisible(true);}
 						}
 
-						frmTraceSummary showSummary=new frmTraceSummary(traceSummary,errorLog);
+						frmTraceSummary showSummary=new frmTraceSummary(traceSummary,errorLog,null);
 						showSummary.frmTraceSummary.setVisible(true);
 					}
 				}
@@ -1004,9 +1026,9 @@ public class AmuaModel{
 		}
 	}
 	
-	public void unlockVars(){
+	public void unlockVars(int curThread){
 		for(int v=0; v<variables.size(); v++){
-			variables.get(v).locked=false;
+			variables.get(v).locked[curThread]=false;
 		}
 	}
 	
@@ -1050,6 +1072,23 @@ public class AmuaModel{
 		return(ev);
 	}
 	
+	public double getSubgroupEV(int g, int s, int dim){
+		double ev=Double.NaN;
+		if(type==0){ //Decision tree
+			ev=tree.nodes.get(strategyIndices[s]).expectedValuesGroup[g][dim];
+		}
+		else if(type==1){ //Markov
+			if(markov.discountRewards==false){
+				ev=markov.nodes.get(strategyIndices[s]).expectedValuesGroup[g][dim];
+			}
+			else{ //discounted
+				ev=markov.nodes.get(strategyIndices[s]).expectedValuesDisGroup[g][dim];
+			}
+		}
+		
+		return(ev);
+	}
+	
 	public int getStrategyIndex(String strat){
 		int numStrat=getStrategies();
 		int index=-1;
@@ -1073,13 +1112,13 @@ public class AmuaModel{
 	public void addT(){
 		Variable curT=new Variable();
 		curT.name="t";
-		curT.value=new Numeric(0);
+		curT.value[0]=new Numeric(0);
 		innateVariables.add(curT);
 	}
 	
 	public void resetT(){
 		int indexT=getInnateVariableIndex("t");
-		innateVariables.get(indexT).value=new Numeric(0);
+		innateVariables.get(indexT).value[0]=new Numeric(0);
 	}
 	
 	public boolean isParameter(String word){
@@ -1148,20 +1187,9 @@ public class AmuaModel{
 		while(len>0){
 			int index=Interpreter.getNextBreakIndex(text);
 			String word=text.substring(0, index);
-			int varIndex=getVariableIndex(word);
-			if(varIndex!=-1){ //is variable
+			if(isVariable(word)){
 				return(true);
 			}
-			int paramIndex=getParameterIndex(word);
-			if(paramIndex!=-1){ //Check nested variable
-				Parameter param=parameters.get(paramIndex);
-				String paramExpr=param.expression;
-				hasVariable=textHasVariable(paramExpr);
-				if(hasVariable){
-					return(true);
-				}
-			}
-			
 			if(index==len){len=0;} //End of word
 			else{
 				text=text.substring(index+1);
@@ -1169,6 +1197,25 @@ public class AmuaModel{
 			}
 		}
 		return(hasVariable);
+	}
+	
+	public boolean textHasInnateVariable(String text){
+		boolean hasVariable=false;
+		int len=text.length();
+		while(len>0){
+			int index=Interpreter.getNextBreakIndex(text);
+			String word=text.substring(0, index);
+			if(isInnateVariable(word)){
+				return(true);
+			}
+			if(index==len){len=0;} //End of word
+			else{
+				text=text.substring(index+1);
+				len=text.length();
+			}
+		}
+		return(hasVariable);
+	
 	}
 	
 	public String getTableType(String name){
@@ -1205,7 +1252,7 @@ public class AmuaModel{
 		Variable curVar=variables.get(index);
 		des="<html><b>"+curVar.name+"</b><br>";
 		des+="Expression: <br>"+MathUtils.consoleFont(curVar.expression)+"<br><br>";
-		String strEV=curVar.value.toString().replaceAll("\\n", "<br>");
+		String strEV=curVar.value[0].toString().replaceAll("\\n", "<br>");
 		//strEV=strEV.replaceAll("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
 		des+="Expected Value: <br>"+MathUtils.consoleFont(strEV)+"<br><br>";
 		if(curVar.notes!=null && !curVar.notes.isEmpty()){
@@ -1297,16 +1344,28 @@ public class AmuaModel{
 	}
 	
 	public void evaluateParameters() throws Exception{
+		if(curGenerator==null){curGenerator=new MersenneTwisterFast[1];}
+		if(generatorVar==null){generatorVar=new MersenneTwisterFast[1];}
+		
 		//Get parameter values for this run
-		curGenerator=generatorParam;
+		curGenerator[0]=generatorParam;
 		int numParams=parameters.size();
 		for(int p=0; p<numParams; p++){
 			Parameter curParam=parameters.get(p);
 			if(curParam.locked==false){
-				curParam.value=Interpreter.evaluate(curParam.expression, this,sampleParam);
+				//curParam.value=Interpreter.evaluate(curParam.expression, this,sampleParam);
+				curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, sampleParam);
 				curParam.locked=true;
 			}
 		}
-		curGenerator=generatorVar; //repoint
+		curGenerator[0]=generatorVar[0]; //repoint
+	}
+	
+	public void parseSubgroups() throws Exception{
+		int numSubgroups=subgroupDefinitions.size();
+		subgroupTokens=new Token[numSubgroups][];
+		for(int g=0; g<numSubgroups; g++){
+			subgroupTokens[g]=Interpreter.parse(subgroupDefinitions.get(g), this);
+		}
 	}
 }

@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import base.AmuaModel;
 import base.RunReport;
-import main.CEAHelper;
 import main.Console;
 import main.ConsoleTable;
 import main.DimInfo;
@@ -36,7 +35,7 @@ import math.Interpreter;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
-import tree.TreeNode;
+import math.Token;
 
 
 @XmlRootElement(name="MarkovTree")
@@ -47,7 +46,7 @@ import tree.TreeNode;
  */
 public class MarkovTree{
 	@XmlElement(name = "Node", type = MarkovNode.class)public ArrayList<MarkovNode> nodes; //Save ArrayList of nodes for direct access to children
-	@XmlElement	public int maxCycles=10000;
+	@XmlElement	public int maxCycles=1000;
 	@XmlElement public int stateDecimals=4;
 	@XmlElement public boolean halfCycleCorrection;
 	@XmlElement public boolean discountRewards;
@@ -59,6 +58,8 @@ public class MarkovTree{
 	@XmlTransient boolean validProbs;
 	@XmlTransient ArrayList<String> errors;
 	@XmlTransient public AmuaModel myModel;
+	@XmlTransient ArrayList<MarkovNode> chains;
+	@XmlTransient Exception threadError; //caught inside multithread and thrown outside
 	
 	//Constructor
 	/**
@@ -134,7 +135,9 @@ public class MarkovTree{
 		errors=new ArrayList<String>();
 		//Initialize root
 		MarkovNode root=nodes.get(0);
-		root.curCosts=new double[myModel.dimInfo.dimNames.length];
+		root.curCosts=new double[myModel.dimInfo.dimNames.length][1];
+		
+		chains=new ArrayList<MarkovNode>();
 		
 		//Parse tree inputs and variables
 		validProbs=true;
@@ -165,6 +168,8 @@ public class MarkovTree{
 	}
 	
 	public ArrayList<String> parseChain(MarkovNode chainRoot){
+		chains=new ArrayList<MarkovNode>();
+		chains.add(chainRoot);
 		myModel.validateModelObjects();
 		errors=new ArrayList<String>();
 		//Parse chain inputs and variables
@@ -181,16 +186,18 @@ public class MarkovTree{
 	private void parseNode(MarkovNode curNode){
 		if(curNode.parentType!=0){ //Validate probability
 			curNode.highlightTextField(0,null); //Prob
-			if(curNode.prob.matches("C") || curNode.prob.matches("c")){curNode.curProb=-1;} //Complementary
+			curNode.curProb=new double[1];
+			if(curNode.prob.matches("C") || curNode.prob.matches("c")){curNode.curProb[0]=-1;} //Complementary
 			else{ //Evaluate text
 				try{
-					curNode.curProb=Interpreter.evaluate(curNode.prob, myModel,false).getDouble();
+					curNode.curProbTokens=Interpreter.parse(curNode.prob, myModel);
+					curNode.curProb[0]=Interpreter.evaluateTokens(curNode.curProbTokens, 0, false).getDouble();
 				}catch(Exception e){
 					validProbs=false;
 					curNode.highlightTextField(0, Color.YELLOW); //Prob
 					errors.add("Node "+curNode.name+": Probability Error ("+curNode.prob+")");
 				}
-				if(curNode.curProb<0 || curNode.curProb>1 || Double.isNaN(curNode.curProb)){
+				if(curNode.curProb[0]<0 || curNode.curProb[0]>1 || Double.isNaN(curNode.curProb[0])){
 					validProbs=false;
 					curNode.highlightTextField(0, Color.YELLOW); //Prob
 					errors.add("Node "+curNode.name+": Probability Error ("+curNode.prob+")");
@@ -216,9 +223,13 @@ public class MarkovTree{
 		
 		if(curNode.type!=2){ //Not state, validate cost
 			curNode.highlightTextField(1,null); //Cost
-			for(int c=0; c<myModel.dimInfo.dimNames.length; c++){
+			int numDim=myModel.dimInfo.dimNames.length;
+			curNode.curCostTokens=new Token[numDim][];
+			for(int c=0; c<numDim; c++){
 				try{
-					double testVal=Interpreter.evaluate(curNode.cost[c],myModel,false).getDouble();
+					curNode.curCostTokens[c]=Interpreter.parse(curNode.cost[c], myModel);
+					double testVal=Interpreter.evaluateTokens(curNode.curCostTokens[c], 0, false).getDouble();
+					
 					if(Double.isNaN(testVal)){
 						curNode.highlightTextField(1, Color.YELLOW); //Cost
 						errors.add("Node "+curNode.name+": Cost Error ("+curNode.cost[c]+")");
@@ -231,9 +242,13 @@ public class MarkovTree{
 		}
 		else{ //State, validate rewards
 			curNode.highlightTextField(3, null); //rewards
-			for(int c=0; c<myModel.dimInfo.dimNames.length; c++){
+			int numDim=myModel.dimInfo.dimNames.length;
+			curNode.curRewardTokens=new Token[numDim][];
+			for(int c=0; c<numDim; c++){
 				try{
-					double testVal=Interpreter.evaluate(curNode.rewards[c],myModel,false).getDouble();
+					curNode.curRewardTokens[c]=Interpreter.parse(curNode.rewards[c], myModel);
+					double testVal=Interpreter.evaluateTokens(curNode.curRewardTokens[c], 0, false).getDouble();
+					
 					if(Double.isNaN(testVal)){
 						curNode.highlightTextField(3, Color.YELLOW); //rewards
 						errors.add("Node "+curNode.name+": Rewards Error ("+curNode.rewards[c]+")");
@@ -246,6 +261,7 @@ public class MarkovTree{
 		}
 		
 		if(curNode.type==1){ //Chain, check name
+			chains.add(curNode);
 			curNode.highlightTextField(5, null);
 			if(curNode.name==null || curNode.name.isEmpty()){
 				curNode.highlightTextField(5, Color.YELLOW);
@@ -297,8 +313,8 @@ public class MarkovTree{
 				int numCompProb=0;
 				for(int j=0; j<numChildren; j++){
 					MarkovNode child=nodes.get(curNode.childIndices.get(j));
-					if(child.curProb==-1){numCompProb++;}
-					else{sumProb+=child.curProb;}
+					if(child.curProb[0]==-1){numCompProb++;}
+					else{sumProb+=child.curProb[0];}
 				}
 				if(numCompProb==0){
 					if(Math.abs(1.0-sumProb)>MathUtils.tolerance){
@@ -314,13 +330,13 @@ public class MarkovTree{
 						errors.add("Node "+curNode.name+": Entered probabilities sum to "+sumProb+"!");
 						for(int j=0; j<numChildren; j++){
 							MarkovNode child=nodes.get(curNode.childIndices.get(j));
-							if(child.curProb!=-1){child.highlightTextField(0, Color.YELLOW);} //Entered prob
+							if(child.curProb[0]!=-1){child.highlightTextField(0, Color.YELLOW);} //Entered prob
 						}
 					}
 					else{ //Calculate complementary prob
 						for(int j=0; j<numChildren; j++){
 							MarkovNode child=nodes.get(curNode.childIndices.get(j));
-							if(child.curProb==-1){child.curProb=1.0-sumProb;}
+							if(child.curProb[0]==-1){child.curProb[0]=1.0-sumProb;}
 						}
 					}
 				}
@@ -328,13 +344,13 @@ public class MarkovTree{
 					errors.add("Node "+curNode.name+": At most 1 probability can be complementary!");
 					for(int j=0; j<numChildren; j++){
 						MarkovNode child=nodes.get(curNode.childIndices.get(j));
-						if(child.curProb==-1){child.highlightTextField(0, Color.YELLOW);} //Comp. prob
+						if(child.curProb[0]==-1){child.highlightTextField(0, Color.YELLOW);} //Comp. prob
 					}
 				}
 			}
 		}
 		int numChildren=curNode.childIndices.size();
-		curNode.curChildProbs=new double[numChildren];
+		curNode.curChildProbs=new double[numChildren][1];
 		for(int c=0; c<numChildren; c++){
 			int childIndex=curNode.childIndices.get(c);
 			MarkovNode child=nodes.get(childIndex);
@@ -349,7 +365,8 @@ public class MarkovTree{
 				myModel.traceMarkov=new MarkovTrace(curNode);
 				myModel.traceMarkov.setT0(curNode);
 				
-				Numeric check=Interpreter.evaluate(curNode.terminationCondition,myModel,false);
+				curNode.curTerminationTokens=Interpreter.parse(curNode.terminationCondition, myModel);
+				Numeric check=Interpreter.evaluateTokens(curNode.curTerminationTokens, 0, false);
 				if(check==null){ //if not parseable
 					//curNode.lblTermination.setBackground(Color.YELLOW);
 					errors.add("Node "+curNode.name+": Termination Condition Error ("+curNode.terminationCondition+")");
@@ -377,10 +394,10 @@ public class MarkovTree{
 		int numDim=myModel.dimInfo.dimNames.length;
 		
 		//Update costs
-		if(node.curCosts==null){node.curCosts=new double[numDim];}
+		if(node.curCosts==null){node.curCosts=new double[numDim][1];}
 		if(node.hasCost){
 			for(int c=0; c<numDim; c++){
-				node.curCosts[c]=Interpreter.evaluate(node.cost[c],myModel,false).getDouble();
+				node.curCosts[c][0]=Interpreter.evaluateTokens(node.curCostTokens[c], 0, false).getDouble();
 			}
 		}
 		
@@ -389,8 +406,8 @@ public class MarkovTree{
 			node.expectedValues=new double[numDim]; node.expectedValuesDis=new double[numDim];
 			//Apply cost
 			for(int i=0; i<numDim; i++){
-				node.expectedValues[i]=node.curCosts[i];
-				node.expectedValuesDis[i]=node.curCosts[i];
+				node.expectedValues[i]=node.curCosts[i][0];
+				node.expectedValuesDis[i]=node.curCosts[i][0];
 			}
 			//Get children EVs
 			int disIndex=0;
@@ -454,12 +471,12 @@ public class MarkovTree{
 			for(int c=0; c<node.numChildren; c++){
 				MarkovNode curChild=node.children[c];
 				if(curChild.prob.matches("C") || curChild.prob.matches("c")){ //Complementary
-					curChild.curProb=-1;
+					curChild.curProb[0]=-1;
 					indexCompProb=c;
 				}
 				else{ //Evaluate text
-					curChild.curProb=Interpreter.evaluate(curChild.prob,myModel,false).getDouble();
-					sumProb+=curChild.curProb;
+					curChild.curProb[0]=Interpreter.evaluateTokens(curChild.curProbTokens, 0, false).getDouble();
+					sumProb+=curChild.curProb[0];
 				}
 			}
 			if(indexCompProb==-1){
@@ -473,7 +490,7 @@ public class MarkovTree{
 				}
 				else{
 					MarkovNode curChild=node.children[indexCompProb];
-					curChild.curProb=1.0-sumProb;
+					curChild.curProb[0]=1.0-sumProb;
 				}
 			}
 			
@@ -481,15 +498,15 @@ public class MarkovTree{
 			node.expectedValues=new double[numDim]; node.expectedValuesDis=new double[numDim];
 			//Apply cost
 			for(int i=0; i<numDim; i++){
-				node.expectedValues[i]=node.curCosts[i];
-				node.expectedValuesDis[i]=node.curCosts[i];
+				node.expectedValues[i]=node.curCosts[i][0];
+				node.expectedValuesDis[i]=node.curCosts[i][0];
 			}
 			for(int c=0; c<node.numChildren; c++){
 				MarkovNode child=node.children[c];
 				getEVs(child,display);
 				for(int d=0; d<numDim; d++){
-					node.expectedValues[d]+=child.curProb*child.expectedValues[d];
-					node.expectedValuesDis[d]+=child.curProb*child.expectedValuesDis[d];
+					node.expectedValues[d]+=child.curProb[0]*child.expectedValues[d];
+					node.expectedValuesDis[d]+=child.curProb[0]*child.expectedValuesDis[d];
 				}
 			}
 		}
@@ -515,68 +532,106 @@ public class MarkovTree{
 		}
 	}
 	
-	/**
-	 * Run selected Markov chain
-	 * @param node  Root
-	 * @param display
-	 * @return 
-	 * @throws Exception 
-	 * @throws NumericException 
-	 */
-	public void runModel(boolean display, RunReport runReport) throws NumericException, Exception{
-		MarkovNode root=nodes.get(0);
+	public void runModel(boolean display, RunReport runReport, boolean allChains) throws NumericException, Exception{
 		//Run all chains and then get expected values
-		for(int n=0; n<nodes.size(); n++){
-			MarkovNode curNode=nodes.get(n);
-			if(curNode.type==1){
-				runMarkovChain(curNode,display,runReport);
-			}
-		}
+		MarkovNode root=nodes.get(0);
+		long startTime=System.currentTimeMillis();
 		
-		//Get EVs
-		for(int c=0; c<root.numChildren; c++){
-			getEVs(root.children[c],display);
-		}
-
-		
-	}
-	
-	public void runMarkovChain(MarkovNode node, boolean display, RunReport runReport) throws NumericException, Exception{
-		if(myModel.simType==0){ //Markov
-			MarkovCohort cohortModel=new MarkovCohort(node);
-			cohortModel.simulate(display && showTrace);
-			runReport.names.add(node.name);
-			runReport.markovTraces.add(cohortModel.trace);
+		if(myModel.simType==0){ //Cohort
+			runCohort(runReport,display);
 		}
 		else if(myModel.simType==1){ //Monte Carlo
-			MarkovMonteCarlo microModel=new MarkovMonteCarlo(node);
-			microModel.simulate(display && showTrace);
-			runReport.names.add(node.name);
-			runReport.markovTraces.add(microModel.trace);
-			runReport.microStats.add(microModel.microStats);
+			//MarkovMonteCarlo microModel=new MarkovMonteCarlo(this, runReport); //orig
+			//MarkovMonteCarloTEST microModel=new MarkovMonteCarloTEST(this, runReport); //flip loops
+			MarkovMonteCarloPOOL microModel=new MarkovMonteCarloPOOL(this, runReport); //thread pool
+			
+			microModel.simulate(showTrace, display);
+		}
+		
+		if(allChains==true){//Get EVs
+			for(int c=0; c<root.numChildren; c++){
+				getEVs(root.children[c],display);
+			}
 		}
 		
 		if(display==true && myModel.dimInfo.analysisType==0){
-			String buildString="";
-			if(discountRewards==false){
-				for(int i=0; i<node.numDimensions-1; i++){
-					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(node.expectedValues[i],myModel.dimInfo.decimals[i])+"; ";
+			for(int c=0; c<chains.size(); c++){
+				displayChainResults(chains.get(c));
+			}
+		}
+		
+		long endTime=System.currentTimeMillis();
+		runReport.runTime=endTime-startTime;
+	}
+	
+	private void runCohort(final RunReport runReport, final boolean display) throws Exception{
+		//multithread
+		final int numChains=chains.size();
+		final int numThreads=Math.min(myModel.numThreads,numChains);
+		for(int v=0; v<myModel.variables.size(); v++){
+			myModel.variables.get(v).value=new Numeric[numThreads];
+		}
+		int indexT=myModel.getInnateVariableIndex("t");
+		myModel.innateVariables.get(indexT).value=new Numeric[numThreads];
+		
+		final int blockSize= numChains/numThreads;
+		Thread[] threads = new Thread[numThreads];
+		for(int n=0; n<numThreads; n++){
+			final int finalN = n;
+			threads[n] = new Thread() {
+				public void run(){
+					try{
+						final int beginIndex = finalN * blockSize;
+						final int endIndex = (finalN==numThreads-1) ? numChains :(finalN+1)*blockSize;
+						for(int c=beginIndex; c<endIndex; c++){
+							MarkovNode curChain=chains.get(c);
+							MarkovCohort cohortModel=new MarkovCohort(curChain,finalN);
+							cohortModel.simulate(display && showTrace);
+							runReport.names.add(curChain.name);
+							runReport.markovTraces.add(cohortModel.trace);
+						}
+					} catch(Exception e){
+						threadError=e;
+					}
 				}
-				buildString+="("+myModel.dimInfo.dimSymbols[node.numDimensions-1]+") "+MathUtils.round(node.expectedValues[node.numDimensions-1],myModel.dimInfo.decimals[node.numDimensions-1]);
+			};
+			threads[n].start();
+		}
+		//Wait for threads to finish
+		for(int n=0; n<numThreads; n++){
+			try{
+				threads[n].join();
+			} catch (InterruptedException e){
+				System.exit(-1);
 			}
-			else{
-				for(int i=0; i<node.numDimensions-1; i++){
-					buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(node.expectedValuesDis[i],myModel.dimInfo.decimals[i])+"; ";
-				}
-				buildString+="("+myModel.dimInfo.dimSymbols[node.numDimensions-1]+") "+MathUtils.round(node.expectedValuesDis[node.numDimensions-1],myModel.dimInfo.decimals[node.numDimensions-1]);
-			}
-			node.textEV.setText(buildString);
-			if(node.visible){
-				node.textEV.setVisible(true);
-			}
+		}
+		//Check for error
+		if(threadError!=null){
+			throw threadError;
 		}
 	}
 	
+	private void displayChainResults(MarkovNode curChain){
+		String buildString="";
+		if(discountRewards==false){
+			for(int i=0; i<curChain.numDimensions-1; i++){
+				buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(curChain.expectedValues[i],myModel.dimInfo.decimals[i])+"; ";
+			}
+			buildString+="("+myModel.dimInfo.dimSymbols[curChain.numDimensions-1]+") "+MathUtils.round(curChain.expectedValues[curChain.numDimensions-1],myModel.dimInfo.decimals[curChain.numDimensions-1]);
+		}
+		else{
+			for(int i=0; i<curChain.numDimensions-1; i++){
+				buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+MathUtils.round(curChain.expectedValuesDis[i],myModel.dimInfo.decimals[i])+"; ";
+			}
+			buildString+="("+myModel.dimInfo.dimSymbols[curChain.numDimensions-1]+") "+MathUtils.round(curChain.expectedValuesDis[curChain.numDimensions-1],myModel.dimInfo.decimals[curChain.numDimensions-1]);
+		}
+		curChain.textEV.setText(buildString);
+		if(curChain.visible){
+			curChain.textEV.setVisible(true);
+		}
+
+	}
+
 	public int getParentIndex(int childIndex){
 		int parentIndex=-1;
 		int i=0;
@@ -600,7 +655,7 @@ public class MarkovTree{
 	}
 	
 	
-	public void printModelResults(Console console){
+	public void printModelResults(Console console, RunReport report){
 		//Display output for each strategy
 		DimInfo dimInfo=myModel.dimInfo;
 		int numDimensions=dimInfo.dimSymbols.length;
@@ -640,10 +695,36 @@ public class MarkovTree{
 		}
 		
 		curTable.print();
+		
+		//subgroups
+		for(int g=0; g<report.numSubgroups; g++){
+			console.print("\nSubgroup Results: "+report.subgroupNames[g]+" (n="+report.subgroupSizes[g]+")\n");
+			curTable=new ConsoleTable(console,colTypes);
+			curTable.addRow(headers);
+			for(int c=0; c<root.numChildren; c++){
+				MarkovNode curNode=root.children[c];
+				String row[]=new String[numDimensions+1];
+				if(discountRewards){row=new String[numDimensions*2+1];}
+				row[0]=curNode.name;
+				if(curNode.expectedValuesGroup[g]!=null){
+					for(int d=0; d<numDimensions; d++){
+						row[d+1]=MathUtils.round(curNode.expectedValuesGroup[g][d], myModel.dimInfo.decimals[d])+"";
+					}
+					if(discountRewards){
+						for(int d=0; d<numDimensions; d++){
+							row[numDimensions+d+1]=MathUtils.round(curNode.expectedValuesDisGroup[g][d], myModel.dimInfo.decimals[d])+"";
+						}
+					}
+				}
+				curTable.addRow(row);
+			}
+			curTable.print();
+		}
+		
 		console.newLine();
 	}
 	
-	public void printChainResults(Console console, MarkovNode curChain){
+	public void printChainResults(Console console, MarkovNode curChain, RunReport report){
 		DimInfo dimInfo=myModel.dimInfo;
 		int numDimensions=dimInfo.dimSymbols.length;
 		console.print("\n");
@@ -676,6 +757,29 @@ public class MarkovTree{
 		}
 		curTable.addRow(row);
 		curTable.print();
+		
+		//subgroups
+		for(int g=0; g<report.numSubgroups; g++){
+			console.print("\nSubgroup Results: "+report.subgroupNames[g]+" (n="+report.subgroupSizes[g]+")\n");
+			curTable=new ConsoleTable(console,colTypes);
+			curTable.addRow(headers);
+			row=new String[numDimensions+1];
+			if(discountRewards){row=new String[numDimensions*2+1];}
+			row[0]=curChain.name;
+			if(curChain.expectedValuesGroup[g]!=null){
+				for(int d=0; d<numDimensions; d++){
+					row[d+1]=MathUtils.round(curChain.expectedValuesGroup[g][d], myModel.dimInfo.decimals[d])+"";
+				}
+				if(discountRewards){
+					for(int d=0; d<numDimensions; d++){
+						row[numDimensions+d+1]=MathUtils.round(curChain.expectedValuesDisGroup[g][d], myModel.dimInfo.decimals[d])+"";
+					}
+				}
+			}
+			curTable.addRow(row);
+			curTable.print();
+		}
+		
 		console.newLine();
 	}
 	
@@ -698,6 +802,7 @@ public class MarkovTree{
 				if(child.visible){
 					child.textICER.setVisible(true);
 				}
+				child.textEV.setVisible(false);
 			}
 		}
 	}

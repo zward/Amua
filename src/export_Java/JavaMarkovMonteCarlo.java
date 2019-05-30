@@ -302,7 +302,7 @@ public class JavaMarkovMonteCarlo{
 			writeLine("		int state;");
 			for(int v=0; v<numVars; v++){
 				Variable curVar=myModel.variables.get(v);
-				writeLine("		"+javaModel.defNumeric(curVar.name,curVar.value));
+				writeLine("		"+javaModel.defNumeric(curVar.name,curVar.value[0]));
 			}
 			writeLine("");
 			writeLine("		//Constructor");

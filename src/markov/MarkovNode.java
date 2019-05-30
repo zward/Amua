@@ -46,6 +46,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import base.ModelNode;
 import main.VariableUpdate;
 import math.MathUtils;
+import math.Token;
 
 @XmlRootElement(name="node")
 public class MarkovNode extends ModelNode{
@@ -59,16 +60,23 @@ public class MarkovNode extends ModelNode{
 	@XmlTransient public int numChildren;
 	@XmlTransient public MarkovNode children[];
 	//Numeric data - parsed/calculated
-	@XmlTransient double curProb; //Current probability used to run the model - not saved
-	@XmlTransient double curCosts[];
+	@XmlTransient Token curProbTokens[]; //[token]
+	@XmlTransient Token curCostTokens[][], curRewardTokens[][]; //[dim][token]
+	@XmlTransient Token curTerminationTokens[];
+	@XmlTransient double curProb[]; //Current probability used to run the model - not saved
+	@XmlTransient double curCosts[][]; //thread-specific
+	@XmlTransient double curRewards[][];
+	@XmlTransient double curChildProbs[][]; //cumulative
 	@XmlTransient int transFrom, transTo; //Index of cur state and next state
 	@XmlTransient public double expectedValues[], expectedValuesDis[]; //For each chain
-	@XmlTransient double curRewards[];
-	@XmlTransient double curChildProbs[]; //cumulative
+	@XmlTransient public double expectedValuesGroup[][], expectedValuesDisGroup[][];
 	@XmlTransient public VariableUpdate curVariableUpdates[];
 	@XmlTransient boolean probHasVariables, childHasProbVariables;
 	@XmlTransient boolean costHasVariables[];
 	@XmlTransient boolean rewardHasVariables[];
+	
+	@XmlTransient boolean probHasTime, childHasProbTime;
+	@XmlTransient boolean costHasTime[], rewardHasTime[];
 	
 	//Visual Attributes
 	@XmlTransient PanelMarkov panel;
@@ -190,7 +198,7 @@ public class MarkovNode extends ModelNode{
 		if(childIndices==null){childIndices=new ArrayList<Integer>();}
 		textHighlights=new Color[]{null,null,null,null,null,null};
 	}
-
+	
 	public void paintComponent(Graphics g){
 		if(visible){
 			if(type==0){ //Decision 

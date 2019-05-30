@@ -82,7 +82,7 @@ public class PythonMarkovMonteCarlo{
 			int numVars=myModel.variables.size();
 			for(int v=0; v<numVars; v++){
 				Variable curVar=myModel.variables.get(v);
-				if(curVar.value.isMatrix()){writeLine(1,curVar.name+"=[]");}
+				if(curVar.value[0].isMatrix()){writeLine(1,curVar.name+"=[]");}
 				else{writeLine(1,curVar.name+"=0");}
 			}
 			writeLine(0,"");

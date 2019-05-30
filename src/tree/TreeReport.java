@@ -22,9 +22,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import math.MathUtils;
+import base.AmuaModel;
 
 public class TreeReport{
 	DecisionTree tree;
@@ -33,6 +31,9 @@ public class TreeReport{
 	int maxLevels=1;
 	ArrayList<String> rowNames[];
 	double rowValues[];
+	
+	int numSubgroups=0;
+	double rowValuesGroup[][];
 	
 	//Constructor
 	public TreeReport(DecisionTree tree1){
@@ -49,6 +50,12 @@ public class TreeReport{
 		}
 		
 		rowValues=new double[numRows];
+		AmuaModel myModel=tree1.myModel;
+		if(myModel.simType==1 && myModel.reportSubgroups){
+			numSubgroups=myModel.subgroupNames.size();
+			rowValuesGroup=new double[numRows][numSubgroups];
+		}
+		
 		rowIndex=0;
 		getBranchValues(tree.nodes.get(0));
 	}
@@ -56,6 +63,7 @@ public class TreeReport{
 	private void getBranchValues(TreeNode node){
 		if(node.type==2){ //Terminal
 			rowValues[rowIndex]=node.totalDenom;
+			for(int g=0; g<numSubgroups; g++){rowValuesGroup[rowIndex][g]=node.totalDenomGroup[g];}
 			rowIndex++;
 		}
 		else{
@@ -106,6 +114,7 @@ public class TreeReport{
 		//Headers
 		for(int i=0; i<maxLevels; i++){out.write("Level "+i+",");}
 		out.write("#");
+		for(int g=0; g<numSubgroups; g++){out.write(","+tree.myModel.subgroupNames.get(g));}
 		out.newLine();
 		
 		//Data
@@ -115,6 +124,7 @@ public class TreeReport{
 			for(int i=0; i<numNames; i++){out.write(names.get(i)+",");}
 			for(int i=numNames; i<maxLevels; i++){out.write(",");}
 			out.write(rowValues[r]+"");
+			for(int g=0; g<numSubgroups; g++){out.write(","+rowValuesGroup[r][g]);}
 			out.newLine();
 		}
 		

@@ -80,13 +80,16 @@ public class frmSensOneWay {
 	DefaultXYDataset chartData;
 	JFreeChart chart;
 	JComboBox<String> comboDimensions;
+	JComboBox<String> comboGroup;
 	int numStrat;
 	/**
 	 * [Outcome][Strategy][x,y][Iteration]
 	 */
 	double results[][][][];
+	int numSubgroups=0;
+	double resultsGroup[][][][][];
 	private JTextField textIntervals;
-	String CEAnotes[][];
+	String CEAnotes[][], CEAnotesGroup[][][];
 	Parameter curParam;
 	
 	public frmSensOneWay(AmuaModel myModel){
@@ -105,9 +108,9 @@ public class frmSensOneWay {
 			frmSensOneWay.setBounds(100, 100, 1000, 499);
 			frmSensOneWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
-			gridBagLayout.columnWidths = new int[]{460, 180, 0, 0};
+			gridBagLayout.columnWidths = new int[]{460, 180, 180, 0, 0};
 			gridBagLayout.rowHeights = new int[]{0, 514, 0};
-			gridBagLayout.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 			gridBagLayout.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 			frmSensOneWay.getContentPane().setLayout(gridBagLayout);
 			
@@ -241,27 +244,59 @@ public class frmSensOneWay {
 							out.newLine();
 							
 							//Results
-							int numPoints=results[0][0][0].length;
-							for(int i=0; i<numPoints; i++){
-								out.write(results[0][0][0][i]+""); //Param value
-								for(int d=0; d<numDim; d++){ //EVs
-									out.write(",");
-									for(int s=0; s<numStrat; s++){out.write(","+results[d][s][1][i]);}
-								}
-								if(analysisType>0){
-									out.write(",");
-									if(analysisType==1){ //CEA
-										for(int s=0; s<numStrat; s++){
-											double icer=results[numDim][s][1][i];
-											if(!Double.isNaN(icer)){out.write(","+icer);} //valid ICER
-											else{out.write(","+CEAnotes[s][i]);} //invalid ICER
+							
+							int group=0; //overall
+							if(numSubgroups>0){
+								group=comboGroup.getSelectedIndex();
+							}
+							if(group==0){ //overall
+								int numPoints=results[0][0][0].length;
+								for(int i=0; i<numPoints; i++){
+									out.write(results[0][0][0][i]+""); //Param value
+									for(int d=0; d<numDim; d++){ //EVs
+										out.write(",");
+										for(int s=0; s<numStrat; s++){out.write(","+results[d][s][1][i]);}
+									}
+									if(analysisType>0){
+										out.write(",");
+										if(analysisType==1){ //CEA
+											for(int s=0; s<numStrat; s++){
+												double icer=results[numDim][s][1][i];
+												if(!Double.isNaN(icer)){out.write(","+icer);} //valid ICER
+												else{out.write(","+CEAnotes[s][i]);} //invalid ICER
+											}
+										}
+										else if(analysisType==2){ //BCA
+											for(int s=0; s<numStrat; s++){out.write(","+results[numDim][s][1][i]);}
 										}
 									}
-									else if(analysisType==2){ //BCA
-										for(int s=0; s<numStrat; s++){out.write(","+results[numDim][s][1][i]);}
-									}
+									out.newLine();
 								}
-								out.newLine();
+							}
+							else{ //subgroup
+								group--;
+								int numPoints=resultsGroup[group][0][0][0].length;
+								for(int i=0; i<numPoints; i++){
+									out.write(resultsGroup[group][0][0][0][i]+""); //Param value
+									for(int d=0; d<numDim; d++){ //EVs
+										out.write(",");
+										for(int s=0; s<numStrat; s++){out.write(","+resultsGroup[group][d][s][1][i]);}
+									}
+									if(analysisType>0){
+										out.write(",");
+										if(analysisType==1){ //CEA
+											for(int s=0; s<numStrat; s++){
+												double icer=resultsGroup[group][numDim][s][1][i];
+												if(!Double.isNaN(icer)){out.write(","+icer);} //valid ICER
+												else{out.write(","+CEAnotesGroup[group][s][i]);} //invalid ICER
+											}
+										}
+										else if(analysisType==2){ //BCA
+											for(int s=0; s<numStrat; s++){out.write(","+resultsGroup[group][numDim][s][1][i]);}
+										}
+									}
+									out.newLine();
+								}
 							}
 							out.close();
 
@@ -345,10 +380,18 @@ public class frmSensOneWay {
 										int numOutcomes=comboDimensions.getItemCount();
 										int numDim=myModel.dimInfo.dimNames.length;
 										results=new double[numOutcomes][numStrat][2][intervals+1];
+										resultsGroup=new double[numSubgroups][numOutcomes][numStrat][2][intervals+1];
 										progress.setMaximum(intervals+1);
 										int analysisType=myModel.dimInfo.analysisType;
-										if(analysisType==1){CEAnotes=new String[numStrat][intervals+1];} //CEA
-										else{CEAnotes=null;}
+										if(analysisType==1){ //CEA
+											CEAnotes=new String[numStrat][intervals+1];
+											CEAnotesGroup=new String[numSubgroups][numStrat][intervals+1];
+										}
+										else{
+											CEAnotes=null; CEAnotesGroup=null;
+										}
+										
+										long startTime=System.currentTimeMillis();
 										
 										for(int i=0; i<=intervals; i++){
 											double curVal=min+(step*i);
@@ -362,11 +405,17 @@ public class frmSensOneWay {
 												for(int s=0; s<numStrat; s++){
 													results[d][s][0][i]=curVal;
 													results[d][s][1][i]=myModel.getStrategyEV(s, d);
+													//subgroups
+													for(int g=0; g<numSubgroups; g++){
+														resultsGroup[g][d][s][0][i]=curVal;
+														resultsGroup[g][d][s][1][i]=myModel.getSubgroupEV(g,s,d);
+													}
 												}
 											}
 											if(analysisType>0){ //CEA or BCA
 												if(analysisType==1){ //CEA
-													Object table[][]=new CEAHelper().calculateICERs(myModel);
+													//overall
+													Object table[][]=new CEAHelper().calculateICERs(myModel,-1);
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														if(origStrat!=-1){
@@ -375,18 +424,51 @@ public class frmSensOneWay {
 															CEAnotes[origStrat][i]=(String) table[s][5];
 														}
 													}
+													//subgroups
+													for(int g=0; g<numSubgroups; g++){
+														table=new CEAHelper().calculateICERs(myModel, g);
+														for(int s=0; s<table.length; s++){
+															int origStrat=(int) table[s][0];
+															if(origStrat!=-1){
+																resultsGroup[g][numDim][origStrat][0][i]=curVal;
+																resultsGroup[g][numDim][origStrat][1][i]=(double) table[s][4];
+																CEAnotesGroup[g][origStrat][i]=(String) table[s][5];
+															}
+														}
+													}
 												}
 												else if(analysisType==2){
-													Object table[][]=new CEAHelper().calculateNMB(myModel);
+													Object table[][]=new CEAHelper().calculateNMB(myModel,-1);
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														results[numDim][origStrat][0][i]=curVal;
 														results[numDim][origStrat][1][i]=(double) table[s][4];
 													}
+													//subgroups
+													for(int g=0; g<numSubgroups; g++){
+														table=new CEAHelper().calculateNMB(myModel, g);
+														for(int s=0; s<table.length; s++){
+															int origStrat=(int) table[s][0];
+															resultsGroup[g][numDim][origStrat][0][i]=curVal;
+															resultsGroup[g][numDim][origStrat][1][i]=(double) table[s][4];
+														}
+													}
 												}
 											}
 											
+											//Update progress
+											double prog=(i/(intervals*1.0))*100;
+											long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
+											remTime=(long) (remTime*(100-prog));
+											remTime=remTime/1000;
+											String seconds = Integer.toString((int)(remTime % 60));
+											String minutes = Integer.toString((int)(remTime/60));
+											if(seconds.length()<2){seconds="0"+seconds;}
+											if(minutes.length()<2){minutes="0"+minutes;}
 											progress.setProgress(i);
+											progress.setNote("Time left: "+minutes+":"+seconds);
+											
+											
 											if(progress.isCanceled()){ //End loop
 												cancelled=true;
 												i=intervals+1;
@@ -402,6 +484,7 @@ public class frmSensOneWay {
 											if(numOutcomes>1){
 												comboDimensions.setEnabled(true);
 											}
+											comboGroup.setEnabled(true);
 											btnExport.setEnabled(true);
 										}
 										progress.close();
@@ -429,10 +512,37 @@ public class frmSensOneWay {
 			marker.setPaint(Color.black);
 			chart.getXYPlot().addDomainMarker(marker);
 			chart.getXYPlot().addRangeMarker(marker);
+			
+			comboGroup = new JComboBox<String>();
+			comboGroup.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					updateChart();
+				}
+			});
+			comboGroup.setVisible(false);
+			comboGroup.setEnabled(false);
+			if(myModel.simType==1 && myModel.reportSubgroups){
+				numSubgroups=myModel.subgroupNames.size();
+				String groups[]=new String[numSubgroups+1];
+				groups[0]="Overall";
+				for(int g=0; g<numSubgroups; g++){
+					groups[g+1]=myModel.subgroupNames.get(g);
+				}
+				comboGroup.setModel(new DefaultComboBoxModel<String>(groups));
+				comboGroup.setVisible(true);
+			}
+			
+			
+			GridBagConstraints gbc_comboGroup = new GridBagConstraints();
+			gbc_comboGroup.insets = new Insets(0, 0, 5, 5);
+			gbc_comboGroup.fill = GridBagConstraints.HORIZONTAL;
+			gbc_comboGroup.gridx = 2;
+			gbc_comboGroup.gridy = 0;
+			frmSensOneWay.getContentPane().add(comboGroup, gbc_comboGroup);
 
 			ChartPanel panelChart = new ChartPanel(chart);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
-			gbc_panelChart.gridwidth = 2;
+			gbc_panelChart.gridwidth = 3;
 			gbc_panelChart.fill = GridBagConstraints.BOTH;
 			gbc_panelChart.gridx = 1;
 			gbc_panelChart.gridy = 1;
@@ -456,6 +566,11 @@ public class frmSensOneWay {
 			}
 		}
 		
+		int group=0; //overall
+		if(numSubgroups>0){
+			group=comboGroup.getSelectedIndex();
+		}
+		
 		//Update chart
 		chart.getXYPlot().getDomainAxis().setLabel(curParam.name);
 		if(analysisType==0){chart.getXYPlot().getRangeAxis().setLabel("EV ("+info.dimSymbols[dim]+")");}
@@ -467,9 +582,17 @@ public class frmSensOneWay {
 				chartData.removeSeries(myModel.strategyNames[s]);
 			}
 		}
-		for(int s=0; s<numStrat; s++){
-			chartData.addSeries(myModel.strategyNames[s],results[dim][s]);
+		if(group==0){ //overall
+			for(int s=0; s<numStrat; s++){
+				chartData.addSeries(myModel.strategyNames[s],results[dim][s]);
+			}
 		}
+		else{ //subgroup
+			for(int s=0; s<numStrat; s++){
+				chartData.addSeries(myModel.strategyNames[s], resultsGroup[group-1][dim][s]);
+			}
+		}
+		
 		XYPlot plot = chart.getXYPlot();
 
 		XYLineAndShapeRenderer renderer1 = new XYLineAndShapeRenderer(true,false);

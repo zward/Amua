@@ -26,6 +26,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
@@ -56,6 +60,7 @@ import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
 import java.awt.Font;
+import java.awt.FlowLayout;
 
 /**
  *
@@ -69,6 +74,8 @@ public class frmProperties {
 	AmuaModel myModel;
 	DimInfo tempDimInfo;
 	JTabbedPane tabbedPane;
+	
+	frmProperties form=this;
 	
 	//Metadata
 	JLabel lblName;
@@ -101,6 +108,10 @@ public class frmProperties {
 	JCheckBox chckbxCRN;
 	private JTextField textCRNSeed;
 	JCheckBox chckbxDisplayIndResults;
+	JCheckBox chckbxMultithread;
+	private JTextField textNumThreads;
+	JLabel lblThreads;
+	JButton btnSetToMax;
 	
 	//Markov
 	private JTextField textMarkovMaxCycles;
@@ -112,6 +123,14 @@ public class frmProperties {
 	private JTextField textDiscountStartCycle;
 	JCheckBox chckbxShowMarkovTrace;
 	private JTextField textMarkovStateDecimals;
+	
+	//Subgroups
+	JCheckBox chckbxSubgroups;
+	ArrayList<String> subgroupNames, subgroupDefs;
+	JButton btnRemoveSubgroup;
+	DefaultTableModel modelSubgroups;
+	private JTable tableSubgroups;
+	
 		
 	/**
 	 *  Default Constructor
@@ -162,98 +181,101 @@ public class frmProperties {
 			tabbedPane.setBounds(6, 6, 448, 234);
 			frmProperties.getContentPane().add(tabbedPane);
 
-			JPanel panel = new JPanel();
-			tabbedPane.addTab("General", null, panel, null);
-			panel.setBackground(SystemColor.window);
-			panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-			panel.setLayout(null);
+			//General ###############################################################################
+			
+			JPanel panelGeneral = new JPanel();
+			tabbedPane.addTab("General", null, panelGeneral, null);
+			panelGeneral.setBackground(SystemColor.window);
+			panelGeneral.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			panelGeneral.setLayout(null);
 
 			JLabel lblModelName = new JLabel("Model Name:");
 			lblModelName.setBounds(6, 8, 73, 16);
-			panel.add(lblModelName);
+			panelGeneral.add(lblModelName);
 			
 			lblName = new JLabel("[Name]");
 			lblName.setBounds(120, 8, 325, 16);
-			panel.add(lblName);
+			panelGeneral.add(lblName);
 			
 			JLabel lblAuthor = new JLabel("Created by:");
 			lblAuthor.setBounds(6, 56, 66, 16);
-			panel.add(lblAuthor);
+			panelGeneral.add(lblAuthor);
 
 			lblDispAuthor = new JLabel("[Author]");
 			lblDispAuthor.setBounds(120, 56, 325, 16);
-			panel.add(lblDispAuthor);
+			panelGeneral.add(lblDispAuthor);
 
 			JLabel lblCreated = new JLabel("Created:");
 			lblCreated.setBounds(6, 80, 55, 16);
-			panel.add(lblCreated);
+			panelGeneral.add(lblCreated);
 
 			lblDispCreated = new JLabel("[Date created]");
 			lblDispCreated.setBounds(120, 80, 325, 16);
-			panel.add(lblDispCreated);
+			panelGeneral.add(lblDispCreated);
 
 			JLabel lblVersionCreated = new JLabel("Version created:");
 			lblVersionCreated.setBounds(6, 104, 105, 16);
-			panel.add(lblVersionCreated);
+			panelGeneral.add(lblVersionCreated);
 
 			JLabel lblModifiedBy = new JLabel("Modified by:");
 			lblModifiedBy.setBounds(6, 128, 73, 16);
-			panel.add(lblModifiedBy);
+			panelGeneral.add(lblModifiedBy);
 
 			JLabel lblModelType = new JLabel("Model Type:");
 			lblModelType.setBounds(6, 32, 73, 16);
-			panel.add(lblModelType);
+			panelGeneral.add(lblModelType);
 
 			JLabel lblModified = new JLabel("Modified:");
 			lblModified.setBounds(6, 152, 56, 16);
-			panel.add(lblModified);
+			panelGeneral.add(lblModified);
 
 			JLabel lblVersionModified = new JLabel("Version modified:");
 			lblVersionModified.setBounds(6, 176, 105, 16);
-			panel.add(lblVersionModified);
+			panelGeneral.add(lblVersionModified);
 
 			lblDispVCreated = new JLabel("[Version]");
 			lblDispVCreated.setBounds(120, 104, 325, 16);
-			panel.add(lblDispVCreated);
+			panelGeneral.add(lblDispVCreated);
 
 			lblDispModifer = new JLabel("[Modifier]");
 			lblDispModifer.setBounds(120, 128, 325, 16);
-			panel.add(lblDispModifer);
+			panelGeneral.add(lblDispModifer);
 
 			lblDispModified = new JLabel("[Date modified]");
 			lblDispModified.setBounds(120, 152, 325, 16);
-			panel.add(lblDispModified);
+			panelGeneral.add(lblDispModified);
 
 			lblVModified = new JLabel("[Version]");
 			lblVModified.setBounds(120, 176, 325, 16);
-			panel.add(lblVModified);
+			panelGeneral.add(lblVModified);
 
 			lblModel = new JLabel("[Model]");
 			lblModel.setBounds(120, 32, 325, 16);
-			panel.add(lblModel);
+			panelGeneral.add(lblModel);
 
 			JSeparator separator = new JSeparator();
 			separator.setBounds(6, 52, 438, 2);
-			panel.add(separator);
+			panelGeneral.add(separator);
 
 			JSeparator separator_1 = new JSeparator();
 			separator_1.setBounds(6, 124, 438, 2);
-			panel.add(separator_1);
+			panelGeneral.add(separator_1);
 
 			lblIcon = new JLabel("icon");
-			//lblIcon.setIcon(new ImageIcon(frmProperties.class.getResource("/images/modelTree_16.png")));
 			lblIcon.setBounds(100, 32, 16, 16);
-			panel.add(lblIcon);
+			panelGeneral.add(lblIcon);
 			
-			JPanel panel_1 = new JPanel();
-			panel_1.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-			panel_1.setBackground(SystemColor.window);
-			tabbedPane.addTab("Analysis", null, panel_1, null);
-			panel_1.setLayout(null);
+			//Analysis ###############################################################################
+			
+			JPanel panelAnalysis = new JPanel();
+			panelAnalysis.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			panelAnalysis.setBackground(SystemColor.window);
+			tabbedPane.addTab("Analysis", null, panelAnalysis, null);
+			panelAnalysis.setLayout(null);
 
 			JScrollPane scrollPane = new JScrollPane();
 			scrollPane.setBounds(6, 6, 273, 73);
-			panel_1.add(scrollPane);
+			panelAnalysis.add(scrollPane);
 
 			modelDimensions=new DefaultTableModel(new Object[][] {}, new String[] {"Dimension", "Symbol", "Decimals"});
 			tableDimensions = new JTable();
@@ -277,7 +299,7 @@ public class frmProperties {
 			btnAddDimension.setToolTipText("Add Dimension");
 			btnAddDimension.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/add.png")));
 			btnAddDimension.setBounds(282, 11, 35, 28);
-			panel_1.add(btnAddDimension);
+			panelAnalysis.add(btnAddDimension);
 
 			btnRemoveDimension = new JButton("");
 			btnRemoveDimension.addActionListener(new ActionListener() {
@@ -296,11 +318,11 @@ public class frmProperties {
 			btnRemoveDimension.setBounds(282, 46, 35, 28);
 			btnRemoveDimension.setToolTipText("Remove Dimension");
 			btnRemoveDimension.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/remove.png")));
-			panel_1.add(btnRemoveDimension);
+			panelAnalysis.add(btnRemoveDimension);
 			
 			JLabel lblAnalysisType = new JLabel("Analysis type:");
 			lblAnalysisType.setBounds(6, 91, 85, 16);
-			panel_1.add(lblAnalysisType);
+			panelAnalysis.add(lblAnalysisType);
 			
 			comboAnalysis = new JComboBox<String>();
 			comboAnalysis.addActionListener(new ActionListener() {
@@ -308,13 +330,13 @@ public class frmProperties {
 					setAnalysisType(comboAnalysis.getSelectedIndex());
 				}
 			});
-			comboAnalysis.setModel(new DefaultComboBoxModel<String>(new String[] {"Expected Value (EV)", "Cost-Effectiveness Analysis (CEA)", "Benefit-Cost Analysis (BCA)"}));
-			comboAnalysis.setBounds(92, 86, 225, 26);
-			panel_1.add(comboAnalysis);
+			comboAnalysis.setModel(new DefaultComboBoxModel(new String[] {"Expected Value (EV)", "Cost-Effectiveness Analysis (CEA)", "Benefit-Cost Analysis (BCA)", "Extended Cost-Effectiveness Analysis (ECEA)"}));
+			comboAnalysis.setBounds(92, 86, 282, 26);
+			panelAnalysis.add(comboAnalysis);
 			
 			JScrollPane scrollPane_2 = new JScrollPane();
 			scrollPane_2.setBounds(6, 122, 432, 76);
-			panel_1.add(scrollPane_2);
+			panelAnalysis.add(scrollPane_2);
 			
 			modelAnalysis=new DefaultTableModel(
 					new Object[][] {
@@ -382,7 +404,7 @@ public class frmProperties {
 			});
 			btnRefreshDim.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/refresh_16.png")));
 			btnRefreshDim.setBounds(329, 30, 109, 28);
-			panel_1.add(btnRefreshDim);
+			panelAnalysis.add(btnRefreshDim);
 			
 			tableAnalysis.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
 			    @Override
@@ -394,14 +416,16 @@ public class frmProperties {
 			    }   
 			});
 			
-			JPanel panel_3 = new JPanel();
-			panel_3.setBackground(SystemColor.window);
-			tabbedPane.addTab("Simulation", null, panel_3, null);
-			panel_3.setLayout(null);
+			//Simulation ###############################################################################
+			
+			JPanel panelSimulation = new JPanel();
+			panelSimulation.setBackground(SystemColor.window);
+			tabbedPane.addTab("Simulation", null, panelSimulation, null);
+			panelSimulation.setLayout(null);
 			
 			JLabel label = new JLabel("Simulation type:");
 			label.setBounds(6, 11, 92, 16);
-			panel_3.add(label);
+			panelSimulation.add(label);
 			
 			comboSimType = new JComboBox();
 			comboSimType.addActionListener(new ActionListener() {
@@ -412,6 +436,7 @@ public class frmProperties {
 						chckbxCRN.setEnabled(false);
 						textCRNSeed.setEnabled(false);
 						chckbxDisplayIndResults.setEnabled(false);
+						tabbedPane.setEnabledAt(4, false); //no subgroups
 					}
 					else if(selected==1){ //Monte Carlo
 						lblCohortSize.setText("# simulations:");
@@ -419,22 +444,23 @@ public class frmProperties {
 						if(chckbxCRN.isSelected()){textCRNSeed.setEnabled(true);}
 						else{textCRNSeed.setEnabled(false);}
 						chckbxDisplayIndResults.setEnabled(true);
+						tabbedPane.setEnabledAt(4, true);
 					}
 				}
 			});
 			comboSimType.setModel(new DefaultComboBoxModel(new String[] {"Cohort (Deterministic)", "Monte Carlo (Stochastic)"}));
 			comboSimType.setBounds(100, 6, 167, 26);
-			panel_3.add(comboSimType);
+			panelSimulation.add(comboSimType);
 			
 			lblCohortSize = new JLabel("Cohort size:");
 			lblCohortSize.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblCohortSize.setBounds(6, 45, 92, 16);
-			panel_3.add(lblCohortSize);
+			panelSimulation.add(lblCohortSize);
 			
 			textCohortSize = new JTextField();
 			textCohortSize.setColumns(10);
 			textCohortSize.setBounds(103, 39, 105, 28);
-			panel_3.add(textCohortSize);
+			panelSimulation.add(textCohortSize);
 			
 			chckbxCRN = new JCheckBox("Seed RNG");
 			chckbxCRN.setEnabled(false);
@@ -445,29 +471,74 @@ public class frmProperties {
 				}
 			});
 			chckbxCRN.setBounds(15, 78, 92, 18);
-			panel_3.add(chckbxCRN);
+			panelSimulation.add(chckbxCRN);
 			
 			JLabel lblSeed = new JLabel("Seed:");
 			lblSeed.setBounds(107, 80, 37, 16);
-			panel_3.add(lblSeed);
+			panelSimulation.add(lblSeed);
 			
 			textCRNSeed = new JTextField();
 			textCRNSeed.setEnabled(false);
 			textCRNSeed.setText("999");
 			textCRNSeed.setBounds(142, 73, 66, 28);
-			panel_3.add(textCRNSeed);
+			panelSimulation.add(textCRNSeed);
 			textCRNSeed.setColumns(10);
 			
 			JLabel lblstOrder = new JLabel("(1st-order uncertainty)");
 			lblstOrder.setHorizontalAlignment(SwingConstants.CENTER);
 			lblstOrder.setFont(new Font("SansSerif", Font.PLAIN, 9));
 			lblstOrder.setBounds(269, 11, 98, 16);
-			panel_3.add(lblstOrder);
+			panelSimulation.add(lblstOrder);
 			
 			chckbxDisplayIndResults = new JCheckBox("Display individual-level results");
 			chckbxDisplayIndResults.setEnabled(false);
 			chckbxDisplayIndResults.setBounds(15, 105, 193, 18);
-			panel_3.add(chckbxDisplayIndResults);
+			panelSimulation.add(chckbxDisplayIndResults);
+						
+			lblThreads = new JLabel("threads");
+			lblThreads.setEnabled(false);
+			lblThreads.setBounds(92, 159, 55, 16);
+			panelSimulation.add(lblThreads);
+			
+			btnSetToMax = new JButton("Set to max");
+			btnSetToMax.setEnabled(false);
+			btnSetToMax.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int threads=Runtime.getRuntime().availableProcessors();
+					textNumThreads.setText(threads+"");
+				}
+			});
+			btnSetToMax.setBounds(142, 153, 85, 28);
+			panelSimulation.add(btnSetToMax);
+			
+			chckbxMultithread = new JCheckBox("Multi-thread simulation");
+			chckbxMultithread.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(chckbxMultithread.isSelected()){
+						textNumThreads.setEnabled(true);
+						lblThreads.setEnabled(true);
+						btnSetToMax.setEnabled(true);
+					}
+					else{
+						textNumThreads.setEnabled(false);
+						lblThreads.setEnabled(false);
+						btnSetToMax.setEnabled(false);
+					}
+				}
+			});
+			chckbxMultithread.setBounds(15, 135, 158, 18);
+			panelSimulation.add(chckbxMultithread);
+			
+			textNumThreads = new JTextField();
+			textNumThreads.setEnabled(false);
+			textNumThreads.setText("1");
+			textNumThreads.setBounds(52, 153, 37, 28);
+			panelSimulation.add(textNumThreads);
+			textNumThreads.setColumns(10);
+			
+			
+			
+			//Markov #######################################################################
 			
 			JPanel panelMarkov = new JPanel();
 			panelMarkov.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -553,6 +624,110 @@ public class frmProperties {
 			panelMarkov.add(chckbxShowMarkovTrace);
 			
 			
+			//Subgroups ###########################################################################
+			
+			JPanel panelSubgroups = new JPanel();
+			panelSubgroups.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			panelSubgroups.setBackground(SystemColor.window);
+			tabbedPane.addTab("Subgroups", null, panelSubgroups, null);
+			tabbedPane.setEnabledAt(4, false);
+			panelSubgroups.setLayout(null);
+			
+			chckbxSubgroups = new JCheckBox("Report subgroup-specific outcomes");
+			chckbxSubgroups.setBounds(6, 11, 241, 18);
+			panelSubgroups.add(chckbxSubgroups);
+			
+			JScrollPane scrollPaneSubgroups = new JScrollPane();
+			scrollPaneSubgroups.setBounds(6, 36, 436, 149);
+			panelSubgroups.add(scrollPaneSubgroups);
+			
+			modelSubgroups=new DefaultTableModel(
+					new Object[][] {},
+					new String[] {"Subgroup", "Definition"}
+					) {
+				boolean[] columnEditables = new boolean[] {false, false};
+				public boolean isCellEditable(int row, int column) {
+					return columnEditables[column];
+				}
+			};
+
+			tableSubgroups = new JTable();
+			tableSubgroups.setRowSelectionAllowed(false);
+			tableSubgroups.setShowVerticalLines(true);
+			tableSubgroups.getTableHeader().setReorderingAllowed(false);
+			tableSubgroups.setModel(modelSubgroups);
+			scrollPaneSubgroups.setViewportView(tableSubgroups);
+			
+			tableSubgroups.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if(e.getKeyCode()==KeyEvent.VK_ENTER){ //Enter
+						int selected=tableSubgroups.getSelectedRow();
+						if(selected!=-1){
+							defineSubgroup(selected);
+						}
+					}
+					else if(e.getKeyCode()==KeyEvent.VK_DELETE){ //Delete
+						int selected=tableSubgroups.getSelectedRow();
+						if(selected!=-1){
+							e.consume();
+							removeSubgroup(selected);
+						}
+					}
+				}
+			});
+			tableSubgroups.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if(e.getClickCount()==2){
+						int selected=tableSubgroups.getSelectedRow();
+						if(selected!=-1){
+							defineSubgroup(selected);
+						}
+					}
+				}
+			});
+			
+			JButton btnAddSubgroup = new JButton("");
+			btnAddSubgroup.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					defineSubgroup(-1);
+				}
+			});
+			btnAddSubgroup.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/add.png")));
+			btnAddSubgroup.setToolTipText("Add Subgroup");
+			btnAddSubgroup.setBounds(335, 6, 35, 28);
+			panelSubgroups.add(btnAddSubgroup);
+			
+			btnRemoveSubgroup = new JButton("");
+			btnRemoveSubgroup.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int selected=tableSubgroups.getSelectedRow();
+					if(selected!=-1){
+						removeSubgroup(selected);
+					}
+				}
+			});
+			btnRemoveSubgroup.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/remove.png")));
+			btnRemoveSubgroup.setToolTipText("Remove Subgroup");
+			btnRemoveSubgroup.setBounds(407, 6, 35, 28);
+			panelSubgroups.add(btnRemoveSubgroup);
+			
+			JButton btnEditSubgroup = new JButton("");
+			btnEditSubgroup.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int selected=tableSubgroups.getSelectedRow();
+					if(selected!=-1){ //selected
+						defineSubgroup(selected);
+					}
+				}
+			});
+			btnEditSubgroup.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/edit.png")));
+			btnEditSubgroup.setToolTipText("Edit Subgroup");
+			btnEditSubgroup.setBounds(371, 6, 35, 28);
+			panelSubgroups.add(btnEditSubgroup);
+			
+			
 		} catch (Exception ex){
 			ex.printStackTrace();
 			myModel.errorLog.recordError(ex);
@@ -563,9 +738,8 @@ public class frmProperties {
 		displayMetadata(myModel.meta);
 		displayAnalysisSettings();
 		displaySimSettings();
-		if(myModel.type==1){
-			displayMarkovSettings();
-		}
+		if(myModel.type==1){displayMarkovSettings();}
+		displaySubgroupSettings();
 	}
 	
 	private void displayMetadata(Metadata meta){
@@ -594,8 +768,7 @@ public class frmProperties {
 		if(tempDimInfo.dimNames.length<2){
 			btnRemoveDimension.setEnabled(false);
 		}
-		
-		
+				
 		comboAnalysis.setSelectedIndex(tempDimInfo.analysisType);
 		
 		setAnalysisType(tempDimInfo.analysisType);
@@ -604,13 +777,16 @@ public class frmProperties {
 			else if(tempDimInfo.objective==1){tableAnalysis.setValueAt("Minimize", 0, 1);}
 			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.objectiveDim], 1, 1);
 		}
-		else if(tempDimInfo.analysisType>0){ //CEA or BCA
+		else{ //CEA, BCA, or ECEA
 			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.costDim], 0, 1);
 			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.effectDim], 1, 1);
 			if(tempDimInfo.analysisType==1){ //CEA
 				tableAnalysis.setValueAt(tempDimInfo.baseScenario, 2, 1);
 			}
 			tableAnalysis.setValueAt(tempDimInfo.WTP+"",3,1);
+			if(tempDimInfo.analysisType==3){ //ECEA
+				tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.extendedDim], 4, 1);
+			}
 		}
 		
 	}
@@ -624,6 +800,13 @@ public class frmProperties {
 			textCRNSeed.setText(myModel.crnSeed+"");
 		}
 		chckbxDisplayIndResults.setSelected(myModel.displayIndResults);
+		if(myModel.numThreads>1){
+			chckbxMultithread.setSelected(true);
+			textNumThreads.setText(myModel.numThreads+"");
+			textNumThreads.setEnabled(true);
+			lblThreads.setEnabled(true);
+			btnSetToMax.setEnabled(true);
+		}
 	}
 	
 	private void displayMarkovSettings(){
@@ -647,6 +830,44 @@ public class frmProperties {
 				modelDiscountRates.setValueAt(myModel.markov.discountRates[i]+"", i, 1);
 			}
 		}
+	}
+	
+	private void displaySubgroupSettings(){
+		if(myModel.simType==1){tabbedPane.setEnabledAt(4, true);}
+		subgroupNames=new ArrayList<String>();
+		subgroupDefs=new ArrayList<String>();
+		chckbxSubgroups.setSelected(myModel.reportSubgroups);
+		int numSubgroups=myModel.subgroupNames.size();
+		for(int i=0; i<numSubgroups; i++){
+			subgroupNames.add(myModel.subgroupNames.get(i));
+			subgroupDefs.add(myModel.subgroupDefinitions.get(i));
+		}
+		refreshSubgroupTable();
+	}
+	
+	private void defineSubgroup(int selected){
+		frmDefineSubgroup window=new frmDefineSubgroup(myModel, selected, form);
+		window.frmDefineSubgroup.setVisible(true);
+	}
+	
+	private void removeSubgroup(int selected){
+		modelSubgroups.removeRow(selected);
+		subgroupNames.remove(selected);
+		subgroupDefs.remove(selected);
+		if(modelSubgroups.getRowCount()>0){btnRemoveSubgroup.setEnabled(true);}
+		else{btnRemoveSubgroup.setEnabled(false);}
+	}
+	
+	public void refreshSubgroupTable(){
+		modelSubgroups.setRowCount(0);
+		int numSubgroups=subgroupNames.size();
+		for(int i=0; i<numSubgroups; i++){
+			modelSubgroups.addRow(new Object[]{null});
+			modelSubgroups.setValueAt(subgroupNames.get(i), i, 0);
+			modelSubgroups.setValueAt(subgroupDefs.get(i), i, 1);
+		}
+		if(numSubgroups>0){btnRemoveSubgroup.setEnabled(true);}
+		else{btnRemoveSubgroup.setEnabled(false);}
 	}
 	
 	private boolean validateDimensions(){
@@ -720,11 +941,12 @@ public class frmProperties {
 		valid=validateDimensions();
 		
 		//Check analysis settings
+		int analysisType=comboAnalysis.getSelectedIndex();
 		int objective=0, objectiveDim=0;
-		int costDim=-1, effectDim=-1;
+		int costDim=-1, effectDim=-1, extendedDim=-1;
 		String baseStrategy = null;
 		double WTP=0;
-		if(comboAnalysis.getSelectedIndex()==0){ //EV
+		if(analysisType==0){ //EV
 			String strObj=(String) tableAnalysis.getValueAt(0, 1);
 			if(strObj==null){
 				valid=false;
@@ -743,7 +965,7 @@ public class frmProperties {
 				objectiveDim=getDimIndex(strDim);
 			}
 		}
-		else if(comboAnalysis.getSelectedIndex()>0){ //CEA or BCA
+		else{ //CEA, BCA, or ECEA
 			String strCostDim=(String) tableAnalysis.getValueAt(0, 1);
 			if(strCostDim==null){
 				valid=false;
@@ -752,22 +974,23 @@ public class frmProperties {
 			else{costDim=getDimIndex(strCostDim);}
 			String strEffectDim=(String) tableAnalysis.getValueAt(1, 1);
 			if(strEffectDim==null){
-				if(comboAnalysis.getSelectedIndex()==1){JOptionPane.showMessageDialog(frmProperties, "Please select an Effect!");} //CEA
-				else if(comboAnalysis.getSelectedIndex()==2){JOptionPane.showMessageDialog(frmProperties, "Please select a Benefit!");} //BCA
+				valid=false;
+				if(analysisType==1 || analysisType==3){JOptionPane.showMessageDialog(frmProperties, "Please select an Effect!");} //CEA or ECEA
+				else if(analysisType==2){JOptionPane.showMessageDialog(frmProperties, "Please select a Benefit!");} //BCA
 			}
 			else{
 				effectDim=getDimIndex(strEffectDim);
 			}
 			if(costDim==effectDim){
 				valid=false;
-				if(comboAnalysis.getSelectedIndex()==1){ //CEA
+				if(analysisType==1 || analysisType==3){ //CEA or ECEA
 					JOptionPane.showMessageDialog(frmProperties, "Cost and Effect must be different!");
 				}
-				else if(comboAnalysis.getSelectedIndex()==2){ //BCA
+				else if(analysisType==2){ //BCA
 					JOptionPane.showMessageDialog(frmProperties, "Cost and Benefit must be different!");
 				}
 			}
-			if(comboAnalysis.getSelectedIndex()==1){ //CEA
+			if(analysisType==1){ //CEA
 				baseStrategy=(String)tableAnalysis.getValueAt(2, 1);
 				if(baseStrategy==null || baseStrategy.isEmpty()){
 					valid=false;
@@ -788,6 +1011,20 @@ public class frmProperties {
 				valid=false;
 				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid willingness-to-pay!");
 			}
+			if(analysisType==3){ //ECEA
+				String strExtendedDim=(String) tableAnalysis.getValueAt(4, 1);
+				if(strExtendedDim==null){
+					valid=false;
+					JOptionPane.showMessageDialog(frmProperties, "Please select an Additional Dimension!");
+				}
+				else{
+					extendedDim=getDimIndex(strExtendedDim);
+				}
+				if(extendedDim==costDim || extendedDim==effectDim){
+					valid=false;
+					JOptionPane.showMessageDialog(frmProperties, "Additional Dimension must be different from Cost and Effect!");
+				}
+			}
 		}
 		
 		//Check simulation settings
@@ -796,6 +1033,7 @@ public class frmProperties {
 		boolean CRN=false;
 		int crnSeed=-1;
 		boolean displayIndResults=false;
+		int numThreads=1;
 		if(simType==0){ //Cohort
 			try{
 				String text=textCohortSize.getText().replaceAll(",",""); //remove commas
@@ -832,6 +1070,18 @@ public class frmProperties {
 					valid=false;
 					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid CRN seed!");
 				}
+			}
+		}
+		if(chckbxMultithread.isSelected()){
+			try{
+				numThreads=Integer.parseInt(textNumThreads.getText());
+			} catch(Exception er){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of threads!");
+			}
+			if(numThreads<1){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of threads!");
 			}
 		}
 		
@@ -890,6 +1140,11 @@ public class frmProperties {
 				}
 			}
 			
+			//subgroups
+			if(chckbxSubgroups.isSelected() && subgroupNames.size()==0){
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "No subgroups are defined!");
+			}
 		}
 		
 		if(valid==true){ //Apply changes
@@ -924,6 +1179,7 @@ public class frmProperties {
 			myModel.CRN=CRN;
 			myModel.crnSeed=crnSeed;
 			myModel.displayIndResults=displayIndResults;
+			myModel.numThreads=numThreads;
 			
 			//markov settings
 			if(myModel.type==1){
@@ -941,6 +1197,16 @@ public class frmProperties {
 					}
 				}
 			}
+			
+			//subgroup settings
+			myModel.reportSubgroups=chckbxSubgroups.isSelected();
+			int numSubgroups=modelSubgroups.getRowCount();
+			myModel.subgroupNames=new ArrayList<String>(); myModel.subgroupDefinitions=new ArrayList<String>();
+			for(int i=0; i<numSubgroups; i++){
+				myModel.subgroupNames.add((String) modelSubgroups.getValueAt(i, 0));
+				myModel.subgroupDefinitions.add((String) modelSubgroups.getValueAt(i, 1));
+			}
+						
 			frmProperties.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
 		
@@ -958,7 +1224,7 @@ public class frmProperties {
 			modelAnalysis.addRow(new Object[]{"Objective",null}); tableAnalysis.enabled[0]=true;
 			modelAnalysis.addRow(new Object[]{"Outcome",null}); tableAnalysis.enabled[1]=true;
 		}
-		else if(analysisType==1 || analysisType==2){ //CEA or BCA
+		else{ //CEA, BCA, or ECEA
 			modelAnalysis.setRowCount(0);
 			modelAnalysis.addRow(new Object[]{"Cost",null}); tableAnalysis.enabled[0]=true;
 			modelAnalysis.addRow(new Object[]{"Effect",null}); tableAnalysis.enabled[1]=true;
@@ -967,9 +1233,12 @@ public class frmProperties {
 			if(analysisType==1){ //CEA
 				tableAnalysis.setValueAt("Effect", 1, 0);
 			}
-			else{ //BCA
+			else if(analysisType==2){ //BCA
 				tableAnalysis.setValueAt("Benefit", 1, 0);
 				tableAnalysis.enabled[2]=false; //baseline strategy
+			}
+			else if(analysisType==3){ //ECEA
+				modelAnalysis.addRow(new Object[]{"Additional Dimension",null}); tableAnalysis.enabled[4]=true;
 			}
 		}
 		
@@ -1009,7 +1278,7 @@ public class frmProperties {
 
 class analysisTable extends JTable{
 	public int analysisType=0;
-	public boolean enabled[]=new boolean[]{false,false,false,false};
+	public boolean enabled[]=new boolean[]{false,false,false,false,false};
 	analysisTable thisTable=this;
 	public AmuaModel myModel;
 	public DimInfo tempDimInfo;;
@@ -1017,7 +1286,7 @@ class analysisTable extends JTable{
 	@Override
 	public void setEnabled(boolean enabled){
 		super.setEnabled(enabled);
-		for(int i=0; i<4; i++){this.enabled[i]=enabled;}
+		for(int i=0; i<5; i++){this.enabled[i]=enabled;}
 	}
 	
 	@Override
@@ -1034,7 +1303,7 @@ class analysisTable extends JTable{
 				}
 			}
 		}
-		else if(analysisType==1 || analysisType==2){ //CEA/BCA
+		else{ //CEA, BCA, or ECEA
 			if(column==1){
 				if(row==0 || row==1){ //Cost/Effect
 					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(tempDimInfo.dimNames));
@@ -1048,6 +1317,10 @@ class analysisTable extends JTable{
 				}
 				else if(row==3){ //Willingness to pay
 					return(thisTable.getDefaultEditor(Object.class));
+				}
+				else if(row==4){ //Additional Dimension
+					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(tempDimInfo.dimNames));
+					return(new DefaultCellEditor(comboDim));
 				}
 			}
 		}

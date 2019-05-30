@@ -171,7 +171,7 @@ public class JavaModel{
 			else if(curText.charAt(0)=='['){ //matrix
 				int close=Interpreter.findRightBracket(curText,0);
 				String strMatrix=curText.substring(1,close);
-				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel,false);
+				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel).getNumeric()[0];
 				//write out
 				if(matrix.nrow>1){exportText+="new double[][]"+writeMatrix(matrix.matrix);}
 				else{exportText+="new double[]"+writeArray(matrix.matrix[0]);}
@@ -237,7 +237,7 @@ public class JavaModel{
 				if(!curVar.notes.isEmpty()){
 					writeLine("		/*"+curVar.notes+"*/");
 				}
-				String init=initNumeric(curVar.name,curVar.value);
+				String init=initNumeric(curVar.name,curVar.value[0]);
 				writeLine(init);
 			}
 			writeLine("");

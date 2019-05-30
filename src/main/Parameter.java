@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import math.Numeric;
+import math.Token;
 
 @XmlRootElement(name="Parameter")
 public class Parameter{
@@ -32,6 +33,7 @@ public class Parameter{
 	@XmlTransient public boolean locked=false;
 	@XmlTransient public boolean valid=true;
 	@XmlTransient public Numeric value;
+	@XmlTransient public Token parsedTokens[];
 	
 	//Constructor
 	public Parameter(){
@@ -44,6 +46,7 @@ public class Parameter{
 		copyParam.expression=expression;
 		copyParam.notes=notes;
 		copyParam.value=value;
+		copyParam.parsedTokens=parsedTokens;
 		return(copyParam);
 	}
 	

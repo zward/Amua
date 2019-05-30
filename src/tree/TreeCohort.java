@@ -48,7 +48,7 @@ public class TreeCohort{
 	public void simulate(boolean display) throws NumericException, Exception{
 		//Initialize variables
 		for(int c=0; c<numVars; c++){
-			variables[c].value=Interpreter.evaluate(variables[c].expression, myModel,false);
+			variables[c].value[0]=Interpreter.evaluateTokens(variables[c].parsedTokens, 0, false);
 		}
 
 		root.totalDenom=myModel.cohortSize;
@@ -63,27 +63,27 @@ public class TreeCohort{
 		//Update costs
 		if(node.hasCost){
 			for(int c=0; c<numDim; c++){
-				node.curCosts[c]=Interpreter.evaluate(node.cost[c],myModel,false).getDouble();
+				node.curCosts[c]=Interpreter.evaluateTokens(node.curCostTokens[c], 0, false).getDouble();
 			}
 		}
 
 		//Update variables
 		if(node.hasVarUpdates){
-			myModel.unlockVars();
+			myModel.unlockVars(0);
 			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
-				node.curVariableUpdates[u].update(false);
+				node.curVariableUpdates[u].update(false,0);
 			}
 			//Update any dependent variables
 			for(int u=0; u<node.curVariableUpdates.length; u++){
-				node.curVariableUpdates[u].variable.updateDependents(myModel);
+				node.curVariableUpdates[u].variable.updateDependents(myModel,0);
 			}
 		}
 
 		//Update payoffs
 		if(node.type==2){ //terminal node
 			for(int c=0; c<numDim; c++){
-				node.curPayoffs[c]=Interpreter.evaluate(node.payoff[c],myModel,false).getDouble();
+				node.curPayoffs[c]=Interpreter.evaluateTokens(node.curPayoffTokens[c], 0, false).getDouble();
 			}
 		}
 
@@ -96,12 +96,12 @@ public class TreeCohort{
 			for(int c=0; c<node.numChildren; c++){
 				TreeNode curChild=node.children[c];
 				if(curChild.prob.matches("C") || curChild.prob.matches("c")){ //Complementary
-					curChild.curProb=-1;
+					curChild.curProb[0]=-1;
 					indexCompProb=c;
 				}
 				else{ //Evaluate text
-					curChild.curProb=Interpreter.evaluate(curChild.prob,myModel,false).getDouble();
-					sumProb+=curChild.curProb;
+					curChild.curProb[0]=Interpreter.evaluateTokens(curChild.curProbTokens, 0, false).getDouble();
+					sumProb+=curChild.curProb[0];
 				}
 			}
 			if(indexCompProb==-1){
@@ -115,7 +115,7 @@ public class TreeCohort{
 				}
 				else{
 					TreeNode curChild=node.children[indexCompProb];
-					curChild.curProb=1.0-sumProb;
+					curChild.curProb[0]=1.0-sumProb;
 				}
 			}
 		}
@@ -134,10 +134,10 @@ public class TreeCohort{
 			//Get branch EVs
 			for(int c=0; c<node.numChildren; c++){
 				TreeNode child=node.children[c];
-				child.totalDenom=node.totalDenom*child.curProb;
+				child.totalDenom=node.totalDenom*child.curProb[0];
 				traverseNode(child,display);
 				for(int i=0; i<numDim; i++){
-					node.expectedValues[i]+=(child.curProb*child.expectedValues[i]);
+					node.expectedValues[i]+=(child.curProb[0]*child.expectedValues[i]);
 				}
 			}
 		}

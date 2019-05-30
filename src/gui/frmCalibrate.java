@@ -527,6 +527,8 @@ public class frmCalibrate {
 							try{
 								//Check model first
 								MarkovNode curChain=chainRoots.get(comboChain.getSelectedIndex());
+								myModel.panelMarkov.curNode=curChain; //select current chain
+								
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
 									JOptionPane.showMessageDialog(frmCalibrate, "Errors in base case model!");
@@ -534,7 +536,7 @@ public class frmCalibrate {
 								else{
 									//initial run to build trace
 									RunReport curReport=new RunReport(myModel);
-									myModel.markov.runMarkovChain(curChain,false,curReport);
+									myModel.markov.runModel(false,curReport,false);
 								}
 								
 								//try evaluate score expression
@@ -558,7 +560,7 @@ public class frmCalibrate {
 									
 									myModel.sampleParam=true;
 									myModel.generatorParam=new MersenneTwisterFast();
-									myModel.curGenerator=myModel.generatorParam;
+									myModel.curGenerator[0]=myModel.generatorParam;
 									
 									//Get orig values for all parameters
 									Numeric origValues[]=new Numeric[numParams];
@@ -581,7 +583,7 @@ public class frmCalibrate {
 											progress.setProgress(i+1);
 											sampleAll();
 											RunReport curReport=new RunReport(myModel);
-											myModel.markov.runMarkovChain(curChain,false,curReport);
+											myModel.markov.runModel(false,curReport,false);
 											double curScore=Interpreter.evaluate(strScore, myModel, false).getDouble();
 											params[i]=new ParameterSet(myModel);
 											params[i].id=(i+1)+"";
@@ -609,7 +611,7 @@ public class frmCalibrate {
 											while(curScore>thresh){
 												sampleAll();
 												RunReport curReport=new RunReport(myModel);
-												myModel.markov.runMarkovChain(curChain,false,curReport);
+												myModel.markov.runModel(false,curReport,false);
 												curScore=Interpreter.evaluate(strScore, myModel, false).getDouble();
 												if(progress.isCanceled()){ //listen for cancel
 													curScore=thresh-1; //end while loop

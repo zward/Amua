@@ -337,6 +337,7 @@ public class Numeric{
 	 * @return
 	 */
 	public boolean isEqual(Numeric test){
+		double tolerance=Math.pow(10, -6);
 		boolean equal=true;
 		if(format==Format.INTEGER){
 			if(test.format==Format.INTEGER){
@@ -349,7 +350,7 @@ public class Numeric{
 		}
 		else if(format==Format.DOUBLE){
 			if(test.format==Format.DOUBLE){
-				if(test.doubleNum==doubleNum){return(true);}
+				if(Math.abs(test.doubleNum-doubleNum)<=tolerance){return(true);}
 				else{return(false);}
 			}
 			else{ //not same type
@@ -370,7 +371,7 @@ public class Numeric{
 				if(test.ncol==ncol && test.nrow==nrow){ //same shape
 					for(int i=0; i<nrow; i++){
 						for(int j=0; j<ncol; j++){
-							if(test.matrix[i][j]!=matrix[i][j]){
+							if(Math.abs(test.matrix[i][j]-matrix[i][j])>tolerance){	
 								return(false);
 							}
 						}

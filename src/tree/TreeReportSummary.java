@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.swing.JOptionPane;
-
-import base.AmuaModel;
 import math.MathUtils;
 
 public class TreeReportSummary{
@@ -34,6 +31,9 @@ public class TreeReportSummary{
 	int maxLevels=1;
 	ArrayList<String> rowNames[];
 	double rowValues[][];
+	int numSubgroups=0;
+	double rowValuesGroup[][][];
+	ArrayList<String> groupNames;
 	
 	//Constructor
 	public TreeReportSummary(TreeReport reports[]){
@@ -42,10 +42,15 @@ public class TreeReportSummary{
 		rowNames=reports[0].rowNames;
 		numRows=reports[0].numRows;
 		maxLevels=reports[0].maxLevels;
+		numSubgroups=reports[0].numSubgroups;
+		if(numSubgroups>0){
+			groupNames=reports[0].tree.myModel.subgroupNames;
+		}
 		
 		int boundIndices[]=MathUtils.getBoundIndices(numReports);
 		//Calculate mean and bounds
 		rowValues=new double[numRows][3];
+		rowValuesGroup=new double[numSubgroups][numRows][3];
 		for(int r=0; r<numRows; r++){
 			double vals[]=new double[numReports];
 			for(int i=0; i<numReports; i++){
@@ -56,6 +61,18 @@ public class TreeReportSummary{
 			Arrays.sort(vals);
 			rowValues[r][1]=vals[boundIndices[0]];
 			rowValues[r][2]=vals[boundIndices[1]];
+			//subgroups
+			for(int g=0; g<numSubgroups; g++){
+				vals=new double[numReports];
+				for(int i=0; i<numReports; i++){
+					rowValuesGroup[g][r][0]+=reports[i].rowValuesGroup[r][g];
+					vals[i]=reports[i].rowValuesGroup[r][g];
+				}
+				rowValuesGroup[g][r][0]/=(numReports*1.0);
+				Arrays.sort(vals);
+				rowValuesGroup[g][r][1]=vals[boundIndices[0]];
+				rowValuesGroup[g][r][2]=vals[boundIndices[1]];
+			}
 		}
 	}
 	
@@ -66,6 +83,9 @@ public class TreeReportSummary{
 		//Headers
 		for(int i=0; i<maxLevels; i++){out.write("Level "+i+",");}
 		out.write("Mean,95% LB,95% UB");
+		for(int g=0; g<numSubgroups; g++){
+			out.write(","+groupNames.get(g)+",95% LB,95% UB");
+		}
 		out.newLine();
 		
 		//Data
@@ -77,6 +97,11 @@ public class TreeReportSummary{
 			out.write(rowValues[r][0]+",");
 			out.write(rowValues[r][1]+",");
 			out.write(rowValues[r][2]+"");
+			for(int g=0; g<numSubgroups; g++){
+				out.write(","+rowValuesGroup[g][r][0]);
+				out.write(","+rowValuesGroup[g][r][1]);
+				out.write(","+rowValuesGroup[g][r][2]);
+			}
 			out.newLine();
 		}
 		

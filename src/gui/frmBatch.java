@@ -97,15 +97,18 @@ public class frmBatch {
 	JFreeChart chartResults, chartScatter;
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboResults;
+	JComboBox<String> comboGroup;
 	JComboBox<String> comboScatterType;
 
 	int numStrat;
+	int numSubgroups=0;
+	String subgroupNames[];
 	/**
-	 * [Outcome][Strategy][x,y][Iteration]
+	 * [Group][Outcome][Strategy][x,y][Iteration]
 	 */
-	double dataResultsIter[][][][], dataResultsVal[][][][], dataResultsDens[][][], dataResultsCumDens[][][][];
-	double dataScatterAbs[][][], dataScatterRel[][][];
-	String CEAnotes[][];
+	double dataResultsIter[][][][][], dataResultsVal[][][][][], dataResultsDens[][][][], dataResultsCumDens[][][][][];
+	double dataScatterAbs[][][][], dataScatterRel[][][][];
+	String CEAnotes[][][];
 	private JTextField textIterations;
 	int numIterations;
 	String outcome;
@@ -166,9 +169,9 @@ public class frmBatch {
 			JPanel panelResults = new JPanel();
 			tabbedPane.addTab("Results", null, panelResults, null);
 			GridBagLayout gbl_panelResults = new GridBagLayout();
-			gbl_panelResults.columnWidths = new int[]{180, 160, 0, 0};
+			gbl_panelResults.columnWidths = new int[]{264, 371, 0, 0};
 			gbl_panelResults.rowHeights = new int[]{0, 73, 0};
-			gbl_panelResults.columnWeights = new double[]{1.0, 0.0, 1.0, Double.MIN_VALUE};
+			gbl_panelResults.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
 			gbl_panelResults.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
 			panelResults.setLayout(gbl_panelResults);
 
@@ -233,6 +236,29 @@ public class frmBatch {
 				}
 			});
 			comboResults.setModel(new DefaultComboBoxModel<String>(new String[] {"Density","Histogram","Cumulative Distribution","Quantiles","Iteration"}));
+			
+			comboGroup = new JComboBox<String>();
+			comboGroup.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					updateResultsChart();
+					updateScatter();
+				}
+			});
+			comboGroup.setVisible(false);
+			comboGroup.setBounds(458, 0, 170, 26);
+			panel.add(comboGroup);
+			
+			if(myModel.simType==1 && myModel.reportSubgroups){
+				numSubgroups=myModel.subgroupNames.size();
+				subgroupNames=new String[numSubgroups+1];
+				subgroupNames[0]="Overall";
+				for(int i=0; i<numSubgroups; i++){
+					subgroupNames[i+1]=myModel.subgroupNames.get(i);
+				}
+				comboGroup.setModel(new DefaultComboBoxModel(subgroupNames));
+				comboGroup.setVisible(true);
+			}
+			
 			comboDimensions.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateResultsChart();
@@ -264,6 +290,9 @@ public class frmBatch {
 							int numDim=info.dimNames.length;
 							int analysisType=info.analysisType;
 							int numStrat=myModel.strategyNames.length;
+							int group=0; //overall
+							if(comboGroup.isVisible()){group=comboGroup.getSelectedIndex();}
+							
 							out.write("Iteration");
 							for(int d=0; d<numDim; d++){ //EVs
 								out.write(","+info.dimNames[d]);
@@ -277,25 +306,25 @@ public class frmBatch {
 							out.newLine();
 
 							//Results
-							int numPoints=dataResultsIter[0][0][0].length;
+							int numPoints=dataResultsIter[group][0][0][0].length;
 							for(int i=0; i<numPoints; i++){
 								out.write((i+1)+""); //Iteration
 								//Outcomes
 								for(int d=0; d<numDim; d++){ //EVs
 									out.write(",");
-									for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[d][s][1][i]);}
+									for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][d][s][1][i]);}
 								}
 								if(analysisType>0){
 									out.write(",");
 									if(analysisType==1){ //CEA
 										for(int s=0; s<numStrat; s++){
-											double icer=dataResultsIter[numDim][s][1][i];
+											double icer=dataResultsIter[group][numDim][s][1][i];
 											if(!Double.isNaN(icer)){out.write(","+icer);} //valid ICER
-											else{out.write(","+CEAnotes[s][i]);} //invalid ICER
+											else{out.write(","+CEAnotes[group][s][i]);} //invalid ICER
 										}
 									}
 									else if(analysisType==2){ //BCA
-										for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[numDim][s][1][i]);}
+										for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][numDim][s][1][i]);}
 									}
 								}
 
@@ -392,15 +421,15 @@ public class frmBatch {
 									int numOutcomes=comboDimensions.getItemCount();
 									int numDim=myModel.dimInfo.dimNames.length;
 									int analysisType=myModel.dimInfo.analysisType;
-									if(analysisType==1){CEAnotes=new String[numStrat][numIterations];} //CEA
+									if(analysisType==1){CEAnotes=new String[numSubgroups+1][numStrat][numIterations];} //CEA
 									else{CEAnotes=null;}
 
-									dataResultsIter=new double[numOutcomes][numStrat][2][numIterations];
-									dataResultsVal=new double[numOutcomes][numStrat][2][numIterations];
-									dataResultsCumDens=new double[numOutcomes][numStrat][2][numIterations];
+									dataResultsIter=new double[numSubgroups+1][numOutcomes][numStrat][2][numIterations];
+									dataResultsVal=new double[numSubgroups+1][numOutcomes][numStrat][2][numIterations];
+									dataResultsCumDens=new double[numSubgroups+1][numOutcomes][numStrat][2][numIterations];
 
-									dataScatterAbs=new double[numStrat][2][numIterations];
-									dataScatterRel=new double[numStrat][2][numIterations];
+									dataScatterAbs=new double[numSubgroups+1][numStrat][2][numIterations];
+									dataScatterRel=new double[numSubgroups+1][numStrat][2][numIterations];
 
 									reports=new RunReport[numIterations];
 								
@@ -428,66 +457,77 @@ public class frmBatch {
 										//Get EVs
 										for(int d=0; d<numDim; d++){
 											for(int s=0; s<numStrat; s++){
-												dataResultsIter[d][s][0][n]=n; dataResultsVal[d][s][0][n]=n;
+												//overall
+												dataResultsIter[0][d][s][0][n]=n; dataResultsVal[0][d][s][0][n]=n;
 												double curOutcome=myModel.getStrategyEV(s, d);
-												dataResultsIter[d][s][1][n]=curOutcome; dataResultsVal[d][s][1][n]=curOutcome;
+												dataResultsIter[0][d][s][1][n]=curOutcome; dataResultsVal[0][d][s][1][n]=curOutcome;
+												//subgroups
+												for(int g=0; g<numSubgroups; g++){
+													dataResultsIter[g+1][d][s][0][n]=n; dataResultsVal[g+1][d][s][0][n]=n;
+													curOutcome=myModel.getSubgroupEV(g,s,d);
+													dataResultsIter[g+1][d][s][1][n]=curOutcome; dataResultsVal[g+1][d][s][1][n]=curOutcome;
+												}
 											}
 										}
 										if(analysisType>0){ //CEA or BCA
 											if(analysisType==1){ //CEA
-												Object table[][]=new CEAHelper().calculateICERs(myModel);
-												//get baseline row
-												int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
-												int baseRow=-1,curRow=0;
-												while(baseRow==-1 && curRow<table.length){
-													if((int)table[curRow][0]==baseIndex){
-														baseRow=curRow;
+												for(int g=0; g<numSubgroups+1; g++){
+													Object table[][]=new CEAHelper().calculateICERs(myModel,g-1);
+													//get baseline row
+													int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
+													int baseRow=-1,curRow=0;
+													while(baseRow==-1 && curRow<table.length){
+														if((int)table[curRow][0]==baseIndex){
+															baseRow=curRow;
+														}
+														curRow++;
 													}
-													curRow++;
-												}
 
-												for(int s=0; s<table.length; s++){	
-													int origStrat=(int) table[s][0];
-													if(origStrat!=-1){
-														dataResultsIter[numDim][origStrat][0][n]=n; dataResultsVal[numDim][origStrat][0][n]=n;
-														double curOutcome=(double) table[s][4];
-														dataResultsIter[numDim][origStrat][1][n]=curOutcome; dataResultsVal[numDim][origStrat][1][n]=curOutcome;
-														CEAnotes[origStrat][n]=(String) table[s][5];
-														double cost=(double) table[s][2];
-														double benefit=(double) table[s][3];
-														dataScatterAbs[origStrat][0][n]=benefit;
-														dataScatterAbs[origStrat][1][n]=cost;
-														double baseCost=(double) table[baseRow][2];
-														double baseBenefit=(double) table[baseRow][3];
-														dataScatterRel[origStrat][0][n]=benefit-baseBenefit;
-														dataScatterRel[origStrat][1][n]=cost-baseCost;
+													for(int s=0; s<table.length; s++){	
+														int origStrat=(int) table[s][0];
+														if(origStrat!=-1){
+															dataResultsIter[g][numDim][origStrat][0][n]=n; dataResultsVal[g][numDim][origStrat][0][n]=n;
+															double curOutcome=(double) table[s][4];
+															dataResultsIter[g][numDim][origStrat][1][n]=curOutcome; dataResultsVal[g][numDim][origStrat][1][n]=curOutcome;
+															CEAnotes[g][origStrat][n]=(String) table[s][5];
+															double cost=(double) table[s][2];
+															double benefit=(double) table[s][3];
+															dataScatterAbs[g][origStrat][0][n]=benefit;
+															dataScatterAbs[g][origStrat][1][n]=cost;
+															double baseCost=(double) table[baseRow][2];
+															double baseBenefit=(double) table[baseRow][3];
+															dataScatterRel[g][origStrat][0][n]=benefit-baseBenefit;
+															dataScatterRel[g][origStrat][1][n]=cost-baseCost;
+														}
 													}
 												}
 											}
 											else if(analysisType==2){ //BCA
-												Object table[][]=new CEAHelper().calculateNMB(myModel);
-												//get baseline row
-												int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
-												int baseRow=-1,curRow=0;
-												while(baseRow==-1 && curRow<table.length){
-													if((int)table[curRow][0]==baseIndex){
-														baseRow=curRow;
+												for(int g=0; g<numSubgroups+1; g++){
+													Object table[][]=new CEAHelper().calculateNMB(myModel,g-1);
+													//get baseline row
+													int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
+													int baseRow=-1,curRow=0;
+													while(baseRow==-1 && curRow<table.length){
+														if((int)table[curRow][0]==baseIndex){
+															baseRow=curRow;
+														}
+														curRow++;
 													}
-													curRow++;
-												}
-												for(int s=0; s<table.length; s++){	
-													int origStrat=(int) table[s][0];
-													dataResultsIter[numDim][origStrat][0][n]=n;	dataResultsVal[numDim][origStrat][0][n]=n;
-													double curOutcome=(double) table[s][4];
-													dataResultsIter[numDim][origStrat][1][n]=curOutcome; dataResultsVal[numDim][origStrat][1][n]=curOutcome;
-													double cost=(double) table[s][2];
-													double benefit=(double) table[s][3];
-													dataScatterAbs[origStrat][0][n]=benefit;
-													dataScatterAbs[origStrat][1][n]=cost;
-													double baseCost=(double) table[baseRow][2];
-													double baseBenefit=(double) table[baseRow][3];
-													dataScatterRel[origStrat][0][n]=benefit-baseBenefit;
-													dataScatterRel[origStrat][1][n]=cost-baseCost;
+													for(int s=0; s<table.length; s++){	
+														int origStrat=(int) table[s][0];
+														dataResultsIter[g][numDim][origStrat][0][n]=n;	dataResultsVal[g][numDim][origStrat][0][n]=n;
+														double curOutcome=(double) table[s][4];
+														dataResultsIter[g][numDim][origStrat][1][n]=curOutcome; dataResultsVal[g][numDim][origStrat][1][n]=curOutcome;
+														double cost=(double) table[s][2];
+														double benefit=(double) table[s][3];
+														dataScatterAbs[g][origStrat][0][n]=benefit;
+														dataScatterAbs[g][origStrat][1][n]=cost;
+														double baseCost=(double) table[baseRow][2];
+														double baseBenefit=(double) table[baseRow][3];
+														dataScatterRel[g][origStrat][0][n]=benefit-baseBenefit;
+														dataScatterRel[g][origStrat][1][n]=cost-baseCost;
+													}
 												}
 											}
 										}
@@ -500,25 +540,27 @@ public class frmBatch {
 									myModel.unlockParams();
 																		
 									if(cancelled==false){
-										double meanResults[][]=new double[numOutcomes][numStrat];
-										double lbResults[][]=new double[numOutcomes][numStrat];
-										double ubResults[][]=new double[numOutcomes][numStrat];
+										double meanResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];
+										double lbResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];
+										double ubResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];
 										int bounds[]=MathUtils.getBoundIndices(numIterations);
 										int indexLB=bounds[0], indexUB=bounds[1];
 
 										//Sort ordered arrays
 										for(int d=0; d<numOutcomes; d++){
 											for(int s=0; s<numStrat; s++){
-												Arrays.sort(dataResultsVal[d][s][1]);
-												for(int n=0; n<numIterations; n++){
-													dataResultsVal[d][s][0][n]=n/(numIterations*1.0);
-													dataResultsCumDens[d][s][0][n]=dataResultsVal[d][s][1][n];
-													dataResultsCumDens[d][s][1][n]=dataResultsVal[d][s][0][n];
-													meanResults[d][s]+=dataResultsVal[d][s][1][n];
+												for(int g=0; g<numSubgroups+1; g++){
+													Arrays.sort(dataResultsVal[g][d][s][1]);
+													for(int n=0; n<numIterations; n++){
+														dataResultsVal[g][d][s][0][n]=n/(numIterations*1.0);
+														dataResultsCumDens[g][d][s][0][n]=dataResultsVal[g][d][s][1][n];
+														dataResultsCumDens[g][d][s][1][n]=dataResultsVal[g][d][s][0][n];
+														meanResults[g][d][s]+=dataResultsVal[g][d][s][1][n];
+													}
+													meanResults[g][d][s]/=(numIterations*1.0);
+													lbResults[g][d][s]=dataResultsVal[g][d][s][1][indexLB];
+													ubResults[g][d][s]=dataResultsVal[g][d][s][1][indexUB];
 												}
-												meanResults[d][s]/=(numIterations*1.0);
-												lbResults[d][s]=dataResultsVal[d][s][1][indexLB];
-												ubResults[d][s]=dataResultsVal[d][s][1][indexUB];
 											}
 										}
 
@@ -548,12 +590,19 @@ public class frmBatch {
 											//get mean and bounds of results
 											int numChains=reports[0].markovTraces.size();
 											for(int c=0; c<numChains; c++){
-												MarkovTrace curTraces[]=new MarkovTrace[numIterations];
+												MarkovTrace curTraces[][]=new MarkovTrace[numSubgroups+1][numIterations];
 												for(int i=0; i<numIterations; i++){
-													curTraces[i]=reports[i].markovTraces.get(c);
+													curTraces[0][i]=reports[i].markovTraces.get(c);
+													for(int g=0; g<numSubgroups; g++){
+														curTraces[g+1][i]=reports[i].markovTracesGroup[g].get(c);
+													}
 												}
-												MarkovTraceSummary traceSummary=new MarkovTraceSummary(curTraces);
-												frmTraceSummary showSummary=new frmTraceSummary(traceSummary,myModel.errorLog);
+												MarkovTraceSummary traceSummaries[]=new MarkovTraceSummary[numSubgroups+1];
+												traceSummaries[0]=new MarkovTraceSummary(curTraces[0]);
+												for(int g=0; g<numSubgroups; g++){
+													traceSummaries[g+1]=new MarkovTraceSummary(curTraces[g+1]);
+												}
+												frmTraceSummary showSummary=new frmTraceSummary(traceSummaries,myModel.errorLog,subgroupNames);
 												showSummary.frmTraceSummary.setVisible(true);
 											}
 										}
@@ -572,14 +621,34 @@ public class frmBatch {
 											for(int d=0; d<numDim; d++){
 												String dimName=myModel.dimInfo.dimNames[d];
 												if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" (Dis)";}
-												double mean=MathUtils.round(meanResults[d][s],myModel.dimInfo.decimals[d]);
-												double lb=MathUtils.round(lbResults[d][s],myModel.dimInfo.decimals[d]);
-												double ub=MathUtils.round(ubResults[d][s],myModel.dimInfo.decimals[d]);
+												double mean=MathUtils.round(meanResults[0][d][s],myModel.dimInfo.decimals[d]);
+												double lb=MathUtils.round(lbResults[0][d][s],myModel.dimInfo.decimals[d]);
+												double ub=MathUtils.round(ubResults[0][d][s],myModel.dimInfo.decimals[d]);
 												String curRow[]=new String[]{stratName,dimName,mean+"",lb+"",ub+""};
 												curTable.addRow(curRow);
 											}
 										}
 										curTable.print();
+										
+										//subgroups
+										for(int g=0; g<numSubgroups; g++){
+											console.print("\nSubgroup Results: "+reports[0].subgroupNames[g]+"\n");
+											curTable=new ConsoleTable(console,colTypes);
+											curTable.addRow(headers);
+											for(int s=0; s<numStrat; s++){
+												String stratName=myModel.strategyNames[s];
+												for(int d=0; d<numDim; d++){
+													String dimName=myModel.dimInfo.dimNames[d];
+													if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" (Dis)";}
+													double mean=MathUtils.round(meanResults[g+1][d][s],myModel.dimInfo.decimals[d]);
+													double lb=MathUtils.round(lbResults[g+1][d][s],myModel.dimInfo.decimals[d]);
+													double ub=MathUtils.round(ubResults[g+1][d][s],myModel.dimInfo.decimals[d]);
+													String curRow[]=new String[]{stratName,dimName,mean+"",lb+"",ub+""};
+													curTable.addRow(curRow);
+												}
+											}
+											curTable.print();
+										}
 										
 										if(myModel.simType==1 && myModel.displayIndResults==true){
 											console.print("\nIndividual-level Results:\n");
@@ -587,6 +656,14 @@ public class frmBatch {
 											for(int s=0; s<numStrat; s++){
 												console.print("Strategy: "+myModel.strategyNames[s]+"\n");
 												summary.microStatsSummary[s].printSummary(console);
+											}
+											//subgroups
+											for(int g=0; g<numSubgroups; g++){
+												console.print("\nSubgroup Results: "+summary.subgroupNames[g]+"\n");
+												for(int s=0; s<numStrat; s++){
+													console.print("Strategy: "+myModel.strategyNames[s]+"\n");
+													summary.microStatsSummaryGroup[g][s].printSummary(console);
+												}
 											}
 										}
 										console.print("\n");
@@ -667,6 +744,10 @@ public class frmBatch {
 		if(analysisType==0){outcome="EV ("+info.dimSymbols[dim]+")";}
 		else if(analysisType==1){outcome="ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")";}
 		else if(analysisType==2){outcome="NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")";}
+		
+		int group=0; //overall
+		if(comboGroup.isVisible()){group=comboGroup.getSelectedIndex();}
+		
 		if(chartDataResults.getSeriesCount()>0){
 			for(int s=0; s<numStrat; s++){
 				chartDataResults.removeSeries(myModel.strategyNames[s]);
@@ -690,7 +771,7 @@ public class frmBatch {
 			chartResults.getXYPlot().getDomainAxis().setLabel("Value");
 			chartResults.getXYPlot().getRangeAxis().setLabel("Density");
 			for(int s=0; s<numStrat; s++){
-				double kde[][]=KernelSmooth.density(dataResultsIter[dim][s][1], 100);
+				double kde[][]=KernelSmooth.density(dataResultsIter[group][dim][s][1], 100);
 				chartDataResults.addSeries(myModel.strategyNames[s],kde);
 			}
 		}
@@ -698,7 +779,7 @@ public class frmBatch {
 			chartResults.getXYPlot().getDomainAxis().setLabel("Value");
 			chartResults.getXYPlot().getRangeAxis().setLabel("Frequency");
 			for(int s=0; s<numStrat; s++){
-				double kde[][]=KernelSmooth.histogram(dataResultsIter[dim][s][1], 100, 10);
+				double kde[][]=KernelSmooth.histogram(dataResultsIter[group][dim][s][1], 100, 10);
 				chartDataResults.addSeries(myModel.strategyNames[s],kde);
 			}
 		}
@@ -706,7 +787,7 @@ public class frmBatch {
 			chartResults.getXYPlot().getDomainAxis().setLabel("Value");
 			chartResults.getXYPlot().getRangeAxis().setLabel("Cumulative Distribution");
 			for(int s=0; s<numStrat; s++){
-				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsCumDens[dim][s]);
+				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsCumDens[group][dim][s]);
 			}
 
 		}
@@ -714,14 +795,14 @@ public class frmBatch {
 			chartResults.getXYPlot().getDomainAxis().setLabel("Quantile");
 			chartResults.getXYPlot().getRangeAxis().setLabel("Value");
 			for(int s=0; s<numStrat; s++){
-				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsVal[dim][s]);
+				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsVal[group][dim][s]);
 			}
 		}
 		else if(selected==4){ //Iteration
 			chartResults.getXYPlot().getDomainAxis().setLabel("Iteration");
 			chartResults.getXYPlot().getRangeAxis().setLabel("Value");
 			for(int s=0; s<numStrat; s++){
-				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsIter[dim][s]);
+				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsIter[group][dim][s]);
 			}
 		}
 	}
@@ -729,23 +810,25 @@ public class frmBatch {
 	private void updateScatter(){
 		int type=comboScatterType.getSelectedIndex();
 		int numStrat=myModel.strategyNames.length;
+		int group=0; //overall
+		if(comboGroup.isVisible()){group=comboGroup.getSelectedIndex();}
 
 		DimInfo info=myModel.dimInfo;
 		if(chartDataScatter.getSeriesCount()>0){
-			for(int s=0; s<numStrat; s++){chartDataResults.removeSeries(myModel.strategyNames[s]);}
+			for(int s=0; s<numStrat; s++){chartDataScatter.removeSeries(myModel.strategyNames[s]);}
 		}		
 		if(type==0){ //absolute
 			chartScatter.getXYPlot().getRangeAxis().setLabel(info.dimNames[info.costDim]);
 			chartScatter.getXYPlot().getDomainAxis().setLabel(info.dimNames[info.effectDim]);
 			for(int s=0; s<numStrat; s++){
-				chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterAbs[s]);
+				chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterAbs[group][s]);
 			}
 		}
 		else if(type==1){ //relative to baseline
 			chartScatter.getXYPlot().getRangeAxis().setLabel("∆ "+info.dimNames[info.costDim]);
 			chartScatter.getXYPlot().getDomainAxis().setLabel("∆ "+info.dimNames[info.effectDim]);
 			for(int s=0; s<numStrat; s++){
-				chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterRel[s]);
+				chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterRel[group][s]);
 			}
 		}
 	}

@@ -151,8 +151,7 @@ public class ModelNode{
 	public boolean validateText(String text){
 		boolean valid=true;
 		try{
-			//double test=myModel.varHelper.evaluateExpression(text,false);
-			double test=Interpreter.evaluate(text, myModel,false).getDouble();
+			double test=Interpreter.evaluate(text, myModel, false).getDouble();
 			if(Double.isNaN(test)){valid=false;}
 		}catch(Exception e){
 			valid=false;
