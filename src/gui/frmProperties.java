@@ -60,7 +60,7 @@ import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
 import java.awt.Font;
-import java.awt.FlowLayout;
+import java.awt.Toolkit;
 
 /**
  *
@@ -149,6 +149,7 @@ public class frmProperties {
 	private void initialize() {
 		try{
 			frmProperties = new JDialog();
+			frmProperties.setIconImage(Toolkit.getDefaultToolkit().getImage(frmProperties.class.getResource("/images/propertiesBase.png")));
 			frmProperties.getContentPane().setBackground(SystemColor.control);
 			frmProperties.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmProperties.setTitle("Amua - Properties");

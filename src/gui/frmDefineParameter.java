@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -34,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 
 import base.AmuaModel;
 import main.Parameter;
@@ -41,6 +43,7 @@ import main.StyledTextPane;
 import main.Variable;
 import math.Interpreter;
 import math.Numeric;
+import java.awt.Toolkit;
 
 /**
  *
@@ -73,6 +76,7 @@ public class frmDefineParameter {
 	private void initialize() {
 		try{
 			frmDefineParameter = new JDialog();
+			frmDefineParameter.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineParameter.class.getResource("/images/parameters2.png")));
 			frmDefineParameter.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineParameter.setTitle("Amua - Define Parameter");
 			frmDefineParameter.setResizable(false);
@@ -208,7 +212,7 @@ public class frmDefineParameter {
 			frmDefineParameter.getContentPane().add(lblValue);
 			
 			JLabel lblExpression = new JLabel("Expression:");
-			lblExpression.setBounds(6, 43, 71, 16);
+			lblExpression.setBounds(35, 43, 71, 16);
 			frmDefineParameter.getContentPane().add(lblExpression);
 
 			JButton btnEvaluate = new JButton("Evaluate");
@@ -254,6 +258,25 @@ public class frmDefineParameter {
 					}
 				}
 			});
+			
+			JToolBar toolBar = new JToolBar();
+			toolBar.setBorderPainted(false);
+			toolBar.setFloatable(false);
+			toolBar.setRollover(true);
+			toolBar.setBounds(1, 40, 48, 24);
+			frmDefineParameter.getContentPane().add(toolBar);
+			
+			JButton btnFx = new JButton("");
+			btnFx.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmExpressionBuilder window=new frmExpressionBuilder(myModel,paneExpression,false);
+					window.frmExpressionBuilder.setVisible(true);
+				}
+			});
+			btnFx.setToolTipText("Build Expression");
+			btnFx.setFocusPainted(false);
+			btnFx.setIcon(new ImageIcon(frmDefineParameter.class.getResource("/images/formula.png")));
+			toolBar.add(btnFx);
 
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -277,7 +300,8 @@ public class frmDefineParameter {
 			testVal=Interpreter.evaluate(testExp, myModel,false);
 		}catch(Exception e1){
 			update=false;
-			JOptionPane.showMessageDialog(frmDefineParameter, "Invalid expression!");
+			//JOptionPane.showMessageDialog(frmDefineParameter, "Invalid expression!");
+			paneValue.setText(e1.toString());
 		}
 		if(update){paneValue.setText(testVal.toString()+"");}
 	}

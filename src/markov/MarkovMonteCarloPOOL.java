@@ -299,16 +299,22 @@ public class MarkovMonteCarloPOOL{
 
 			trace=new MarkovTrace(curChain);
 			myModel.traceMarkov=trace;
-			microStats=new MicroStats(myModel, numPeople);
+			if(myModel.displayIndResults){
+				microStats=new MicroStats(myModel, numPeople);
+			}
 			
 			//Subgroups
 			traceGroup=null;
 			if(myModel.reportSubgroups){
-				microStatsGroup=new MicroStats[numSubgroups];
 				traceGroup=new MarkovTrace[numSubgroups];
 				for(int g=0; g<numSubgroups; g++){
 					traceGroup[g]=new MarkovTrace(curChain);
-					microStatsGroup[g]=new MicroStats(myModel,subgroupSize[g]);
+				}
+				if(myModel.displayIndResults){
+					microStatsGroup=new MicroStats[numSubgroups];
+					for(int g=0; g<numSubgroups; g++){
+						microStatsGroup[g]=new MicroStats(myModel,subgroupSize[g]);
+					}
 				}
 			}
 			
@@ -460,66 +466,71 @@ public class MarkovMonteCarloPOOL{
 				}
 			
 				//record individual results
-				Thread[] threads = new Thread[numThreads];
-				for(int n=0; n<numThreads; n++){
-					final int finalN = n;
-					threads[n] = new Thread() {
-						public void run(){
-							try{
-								final int beginIndex = finalN * blockSize;
-								final int endIndex = (finalN==numThreads-1) ? numPeople :(finalN+1)*blockSize;
-								//Update each person
-								for(int p=beginIndex; p<endIndex; p++){ 
-									MarkovPerson curPerson=people[p];
-									//overall
-									for(int d=0; d<numDim; d++){
-										if(markovTree.discountRewards){microStats.outcomes[d][p]=curPerson.rewardsDis[d];}
-										else{microStats.outcomes[d][p]=curPerson.rewards[d];}
-									}
-									for(int v=0; v<numVars; v++){
-										microStats.variables[v][p]=curPerson.variableVals[v].getValue();
-									}
-									//subgroups
-									for(int g=0; g<numSubgroups; g++){
-										if(curPerson.inSubgroup[g]){
-											int z=curPerson.subgroupIndex[g];
-											for(int d=0; d<numDim; d++){
-												if(markovTree.discountRewards){microStatsGroup[g].outcomes[d][z]=curPerson.rewardsDis[d];}
-												else{microStatsGroup[g].outcomes[d][z]=curPerson.rewards[d];}
-											}
-											for(int v=0; v<numVars; v++){
-												microStatsGroup[g].variables[v][z]=curPerson.variableVals[v].getValue();
+				if(myModel.displayIndResults){
+					Thread[] threads = new Thread[numThreads];
+					for(int n=0; n<numThreads; n++){
+						final int finalN = n;
+						threads[n] = new Thread() {
+							public void run(){
+								try{
+									final int beginIndex = finalN * blockSize;
+									final int endIndex = (finalN==numThreads-1) ? numPeople :(finalN+1)*blockSize;
+									//Update each person
+									for(int p=beginIndex; p<endIndex; p++){ 
+										MarkovPerson curPerson=people[p];
+										//overall
+										for(int d=0; d<numDim; d++){
+											if(markovTree.discountRewards){microStats.outcomes[d][p]=curPerson.rewardsDis[d];}
+											else{microStats.outcomes[d][p]=curPerson.rewards[d];}
+										}
+										for(int v=0; v<numVars; v++){
+											microStats.variables[v][p]=curPerson.variableVals[v].getValue();
+										}
+										//subgroups
+										for(int g=0; g<numSubgroups; g++){
+											if(curPerson.inSubgroup[g]){
+												int z=curPerson.subgroupIndex[g];
+												for(int d=0; d<numDim; d++){
+													if(markovTree.discountRewards){microStatsGroup[g].outcomes[d][z]=curPerson.rewardsDis[d];}
+													else{microStatsGroup[g].outcomes[d][z]=curPerson.rewards[d];}
+												}
+												for(int v=0; v<numVars; v++){
+													microStatsGroup[g].variables[v][z]=curPerson.variableVals[v].getValue();
+												}
 											}
 										}
 									}
+								} catch(Exception e){
+									threadError=e;
 								}
-							} catch(Exception e){
-								threadError=e;
 							}
-						}
-					};
-					threads[n].start();
-				}
-				//Wait for threads to finish
-				for(int n=0; n<numThreads; n++){
-					try{
-						threads[n].join();
-					} catch (InterruptedException e){
-						System.exit(-1);
+						};
+						threads[n].start();
 					}
-				}
+					//Wait for threads to finish
+					for(int n=0; n<numThreads; n++){
+						try{
+							threads[n].join();
+						} catch (InterruptedException e){
+							System.exit(-1);
+						}
+					}
 
-				//Check for error
-				if(threadError!=null){throw threadError;}
-				
+					//Check for error
+					if(threadError!=null){throw threadError;}
+				}
 				
 				//update run report
 				runReport.names.add(curChain.name);
 				runReport.markovTraces.add(trace);
-				runReport.microStats.add(microStats);
 				for(int g=0; g<runReport.numSubgroups; g++){
 					runReport.markovTracesGroup[g].add(traceGroup[g]);
-					runReport.microStatsGroup[g].add(microStatsGroup[g]);
+				}
+				if(myModel.displayIndResults){
+					runReport.microStats.add(microStats);
+					for(int g=0; g<runReport.numSubgroups; g++){
+						runReport.microStatsGroup[g].add(microStatsGroup[g]);
+					}
 				}
 				
 				if(showTrace){//Show trace

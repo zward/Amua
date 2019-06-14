@@ -37,6 +37,7 @@ import java.awt.Desktop;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
+import java.awt.Toolkit;
 
 /**
  *
@@ -63,6 +64,7 @@ public class frmAboutAmua {
 	private void initialize() {
 		try{
 			frmAboutAmua = new JDialog();
+			frmAboutAmua.setIconImage(Toolkit.getDefaultToolkit().getImage(frmAboutAmua.class.getResource("/images/logo_48.png")));
 			frmAboutAmua.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmAboutAmua.setTitle("About Amua");
 			frmAboutAmua.setResizable(false);

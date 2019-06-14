@@ -128,7 +128,7 @@ public class frmBatch {
 		try{
 			frmBatch = new JFrame();
 			frmBatch.setTitle("Amua - Batch Runs (1st-order uncertainty)");
-			frmBatch.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmBatch.setIconImage(Toolkit.getDefaultToolkit().getImage(frmBatch.class.getResource("/images/runBatch.png")));
 			frmBatch.setBounds(100, 100, 1000, 600);
 			frmBatch.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();

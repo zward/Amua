@@ -232,9 +232,9 @@ public final class Operators{
 			else{return(new Numeric(false));}
 		}
 		else{
-			//throw error
-			return(null);
+			throw new NumericException("Not defined for matrix","Equal");
 		}
+		//return(null);
 	}
 	
 	private static Numeric notEqual(Numeric arg1, Numeric arg2) throws NumericException{
@@ -243,8 +243,8 @@ public final class Operators{
 			else{return(new Numeric(false));}
 		}
 		else{
-			//throw error
-			return(null);
+			throw new NumericException("Not defined for matrix","Not Equal");
+			//return(null);
 		}
 	}
 	
@@ -254,8 +254,8 @@ public final class Operators{
 			else{return(new Numeric(false));}
 		}
 		else{
-			//throw error
-			return(null);
+			throw new NumericException("Not defined for matrix","Less Than");
+			//return(null);
 		}
 	}
 	
@@ -265,8 +265,8 @@ public final class Operators{
 			else{return(new Numeric(false));}
 		}
 		else{
-			//throw error
-			return(null);
+			throw new NumericException("Not defined for matrix","Greater Than");
+			//return(null);
 		}
 	}
 	
@@ -276,8 +276,8 @@ public final class Operators{
 			else{return(new Numeric(false));}
 		}
 		else{
-			//throw error
-			return(null);
+			throw new NumericException("Not defined for matrix","Less Than or Equal");
+			//return(null);
 		}
 	}
 	
@@ -287,8 +287,8 @@ public final class Operators{
 			else{return(new Numeric(false));}
 		}
 		else{
-			//throw error
-			return(null);
+			throw new NumericException("Not defined for matrix","Greater Than or Equal");
+			//return(null);
 		}
 	}
 	
@@ -298,8 +298,8 @@ public final class Operators{
 			else{return(new Numeric(false));}
 		}
 		else{
-			//throw error
-			return(null);
+			throw new NumericException("Both arguments must be boolean","And");
+			//return(null);
 		}
 	}
 	
@@ -309,8 +309,8 @@ public final class Operators{
 			else{return(new Numeric(false));}
 		}
 		else{
-			//throw error
-			return(null);
+			throw new NumericException("Both arguments must be boolean","Or");
+			//return(null);
 		}
 	}
 	
@@ -323,8 +323,139 @@ public final class Operators{
 			else{return(new Numeric(false));}
 		}
 		else{
-			//throw error
-			return(null);
+			throw new NumericException("Both arguments must be boolean","Exclusive Or");
+			//return(null);
 		}
+	}
+	
+	public static String getDescription(String text){
+		String des="";
+		switch(text){
+		case "+":
+			des="<html><b>Addition</b><br><br>";
+			des+="<u>Real Numbers</u><br>";
+			des+=MathUtils.consoleFont("a + b")+": Returns the sum of two real numbers<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("3 + 3 = 6")+"<br><br>";
+			des+="<u>Real Number and Matrix</u><br>";
+			des+=MathUtils.consoleFont("a + <b>X</b>")+" or "+MathUtils.consoleFont("<b>X</b> + a")+": Returns the sum of a real number "+MathUtils.consoleFont("a")+" and a matrix "+MathUtils.consoleFont("<b>X</b>")+"<br><br>";
+			des+="<i>Example:</i><br>"+MathUtils.consoleFont("2 + [3 , 2] = [5 , 4]")+"<br>"+MathUtils.consoleFont("[3 , 2] + 2 = [5 , 4]")+"<br><br>";
+			des+="<u>Matrices</u><br>";
+			des+=MathUtils.consoleFont("<b>A</b> + <b>B</b>")+": Returns the sum of two conformable matrices<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("[1 , 2] + [3 , 4] = [4 , 6]")+"<br>";
+			des+="</html>";
+			return(des);
+		case "-":
+			des="<html><b>Subtraction</b><br><br>";
+			des+="<u>Real Numbers</u><br>";
+			des+=MathUtils.consoleFont("a - b")+": Returns the difference of two real numbers<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("3 - 3 = 0")+"<br><br>";
+			des+="<u>Real Number and Matrix</u><br>";
+			des+=MathUtils.consoleFont("a - <b>X</b>")+" or "+MathUtils.consoleFont("<b>X</b> - a")+": Returns the difference of a real number "+MathUtils.consoleFont("a")+" and a matrix "+MathUtils.consoleFont("<b>X</b>")+"<br><br>";
+			des+="<i>Example:</i><br>"+MathUtils.consoleFont("2 - [3 , 2] = [-1 , 0]")+"<br>"+MathUtils.consoleFont("[3 , 2] - 2 = [1 , 0]")+"<br><br>";
+			des+="<u>Matrices</u><br>";
+			des+=MathUtils.consoleFont("<b>A</b> - <b>B</b>")+": Returns the difference of two conformable matrices<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("[1 , 2] - [3 , 4] = [-2 , -2]")+"<br>";
+			des+="</html>";
+			return(des);
+		case "*": 
+			des="<html><b>Multiplication</b><br><br>";
+			des+="<u>Real Numbers</u><br>";
+			des+=MathUtils.consoleFont("a * b")+": Returns the product of two real numbers<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("3 * 3 = 9")+"<br><br>";
+			des+="<u>Real Number and Matrix</u><br>";
+			des+=MathUtils.consoleFont("a * <b>X</b>")+" or "+MathUtils.consoleFont("<b> X </b>*a")+": Returns the product of a real number "+MathUtils.consoleFont("a")+" and a matrix "+MathUtils.consoleFont("<b>X</b>")+"<br><br>";
+			des+="<i>Example:</i><br>"+MathUtils.consoleFont("2 * [3 , 2] = [6 , 4]")+"<br>"+MathUtils.consoleFont("[3 , 2] * 2 = [6 , 4]")+"<br><br>";
+			des+="<u>Matrices</u><br>";
+			des+=MathUtils.consoleFont("<b>A</b> * <b>B</b>")+": Returns the product of two conformable matrices<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("[3 , 2] * ")+MathUtils.consoleFont("<b>tp</b>","#800000")+MathUtils.consoleFont("([1 , 4]) = 11")+"<br>";
+			des+="</html>";
+			return(des);
+		case "/":
+			des="<html><b>Division</b><br><br>";
+			des+="<u>Real Numbers</u><br>";
+			des+=MathUtils.consoleFont("a / b")+": Returns the quotient of two real numbers<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("3 / 3 = 1")+"<br><br>";
+			des+="<u>Matrix and Real Number</u><br>";
+			des+=MathUtils.consoleFont("<b>X</b> / a")+": Returns a matrix "+MathUtils.consoleFont("<b>X</b>")+" divided by a real number "+MathUtils.consoleFont("a")+"<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("[6 , 4] / 2 = [3 , 2]")+"<br>";
+			des+="</html>";
+			return(des);
+		case "^":
+			des="<html><b>Exponentiation</b><br><br>";
+			des+="<u>Real Numbers</u><br>";
+			des+=MathUtils.consoleFont("a ^ b")+": Returns "+MathUtils.consoleFont("a")+" raised to the power of "+MathUtils.consoleFont("b")+"<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("3 ^ 3 = 27")+"<br><br>";
+			des+="<u>Matrix and Positive Integer</u><br>";
+			des+=MathUtils.consoleFont("<b>X</b> ^ n")+": Returns a matrix "+MathUtils.consoleFont("<b>X</b>")+" multiplied by itself "+MathUtils.consoleFont("n")+" times<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("[[0.3 , 0.7] , [0.1 , 0.9]] ^ 10 = [[0.125 , 0.875] , [0.125 , 0.875]]")+"<br>";
+			des+="</html>";
+			return(des);
+		case "%":
+			des="<html><b>Modulus</b><br><br>";
+			des+="<u>Real Numbers</u><br>";
+			des+=MathUtils.consoleFont("a % b")+": Returns the remainder of "+MathUtils.consoleFont("a")+" divided by "+MathUtils.consoleFont("b")+"<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("6 % 3 = 0")+"<br><br>";
+			des+="<u>Matrix and Real Number</u><br>";
+			des+=MathUtils.consoleFont("<b>X</b> % a")+": Returns a matrix of remainders of "+MathUtils.consoleFont("<b>X</b>")+" divided by "+MathUtils.consoleFont("a")+"<br><br>";
+			des+="<i>Example:</i> "+MathUtils.consoleFont("[8 , 6] % 4 = [0 , 2]")+"<br>";
+			des+="</html>";
+			return(des);
+		//Logical
+		case "==":
+			des="<html><b>Equal</b><br>";
+			des+=MathUtils.consoleFont("a == b")+": Returns "+MathUtils.consoleFont("true")+" if two values are equal, and "+MathUtils.consoleFont("false")+" otherwise<br><br>";
+			des+="<i>Example</i><br>"+MathUtils.consoleFont("3 == 3")+" returns "+MathUtils.consoleFont("true")+"<br>";
+			des+="</html>";
+			return(des);
+		case "!=":
+			des="<html><b>Not Equal</b><br>";
+			des+=MathUtils.consoleFont("a != b")+": Returns "+MathUtils.consoleFont("true")+" if two values are not equal, and "+MathUtils.consoleFont("false")+" otherwise<br><br>";
+			des+="<i>Example</i><br>"+MathUtils.consoleFont("3 != 3")+" returns "+MathUtils.consoleFont("false")+"<br>";
+			des+="</html>";
+			return(des);
+		case "<":
+			des="<html><b>Less Than</b><br>";
+			des+=MathUtils.consoleFont("a &lt b")+": Returns "+MathUtils.consoleFont("true")+" if "+MathUtils.consoleFont("a")+" is less than "+MathUtils.consoleFont("b")+", and "+MathUtils.consoleFont("false")+" otherwise<br><br>";
+			des+="<i>Example</i><br>"+MathUtils.consoleFont("3 &lt 4")+" returns "+MathUtils.consoleFont("true")+"<br>";
+			des+="</html>";
+			return(des);
+		case ">":
+			des="<html><b>Greater Than</b><br>";
+			des+=MathUtils.consoleFont("a &gt b")+": Returns "+MathUtils.consoleFont("true")+" if "+MathUtils.consoleFont("a")+" is greater than "+MathUtils.consoleFont("b")+", and "+MathUtils.consoleFont("false")+" otherwise<br><br>";
+			des+="<i>Example</i><br>"+MathUtils.consoleFont("3 &gt 4")+" returns "+MathUtils.consoleFont("false")+"<br>";
+			des+="</html>";
+			return(des);
+		case "<=":
+			des="<html><b>Less Than Or Equal</b><br>";
+			des+=MathUtils.consoleFont("a &lt= b")+": Returns "+MathUtils.consoleFont("true")+" if "+MathUtils.consoleFont("a")+" is less than or equal to "+MathUtils.consoleFont("b")+", and "+MathUtils.consoleFont("false")+" otherwise<br><br>";
+			des+="<i>Example</i><br>"+MathUtils.consoleFont("3 &lt= 3")+" returns "+MathUtils.consoleFont("true")+"<br>";
+			des+="</html>";
+			return(des);
+		case ">=":
+			des="<html><b>Greater Than Or Equal</b><br>";
+			des+=MathUtils.consoleFont("a >= b")+": Returns "+MathUtils.consoleFont("true")+" if "+MathUtils.consoleFont("a")+" is greater than or equal to "+MathUtils.consoleFont("b")+", and "+MathUtils.consoleFont("false")+" otherwise<br><br>";
+			des+="<i>Example</i><br>"+MathUtils.consoleFont("3 >= 3")+" returns "+MathUtils.consoleFont("true")+"<br>";
+			des+="</html>";
+			return(des);
+		case "&":
+			des="<html><b>And</b><br>";
+			des+=MathUtils.consoleFont("<i>expr1</i> & <i>expr2</i>")+": Returns "+MathUtils.consoleFont("true")+" if both expressions are true, and "+MathUtils.consoleFont("false")+" otherwise<br><br>";
+			des+="<i>Example</i><br>"+MathUtils.consoleFont("(3 > 4) & (3 > 2)")+" returns "+MathUtils.consoleFont("false")+"<br>";
+			des+="</html>";
+			return(des);
+		case "|":
+			des="<html><b>Or</b><br>";
+			des+=MathUtils.consoleFont("<i>expr1</i> | <i>expr2</i>")+": Returns "+MathUtils.consoleFont("true")+" if at least one expression is true, and "+MathUtils.consoleFont("false")+" otherwise<br><br>";
+			des+="<i>Example</i><br>"+MathUtils.consoleFont("(3 > 4) | (3 > 2)")+" returns "+MathUtils.consoleFont("true")+"<br>";
+			des+="</html>";
+			return(des);
+		case "^|":
+			des="<html><b>Exclusive Or</b><br>";
+			des+=MathUtils.consoleFont("<i>expr1</i> ^| <i>expr2</i>")+": Returns "+MathUtils.consoleFont("true")+" if only one expression is true (i.e. not both), and "+MathUtils.consoleFont("false")+" otherwise<br><br>";
+			des+="<i>Example</i><br>"+MathUtils.consoleFont("(2 > 1) ^| (3 > 2)")+" returns "+MathUtils.consoleFont("false")+"<br>";
+			des+="</html>";
+			return(des);
+		}
+		return(des); //fell through
 	}
 }

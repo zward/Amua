@@ -25,12 +25,14 @@ import java.awt.Dialog.ModalityType;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 
 import base.AmuaModel;
 import main.Parameter;
@@ -43,6 +45,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import java.awt.Toolkit;
 
 /**
  *
@@ -78,6 +81,7 @@ public class frmDefineVariable {
 	private void initialize() {
 		try{
 			frmDefineVariable = new JDialog();
+			frmDefineVariable.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineVariable.class.getResource("/images/variable.png")));
 			frmDefineVariable.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineVariable.setTitle("Amua - Define Variable");
 			frmDefineVariable.setResizable(false);
@@ -206,7 +210,7 @@ public class frmDefineVariable {
 			frmDefineVariable.getContentPane().add(lblValue);
 			
 			JLabel lblExpression = new JLabel("Expression:");
-			lblExpression.setBounds(6, 43, 150, 16);
+			lblExpression.setBounds(35, 43, 150, 16);
 			frmDefineVariable.getContentPane().add(lblExpression);
 
 			JButton btnEvaluate = new JButton("Evaluate");
@@ -236,14 +240,15 @@ public class frmDefineVariable {
 			
 			textNotes = new JTextArea();
 			scrollPane_1.setViewportView(textNotes);
-			
+
 			JScrollPane scrollPaneValue = new JScrollPane();
 			scrollPaneValue.setBounds(6, 139, 418, 59);
 			frmDefineVariable.getContentPane().add(scrollPaneValue);
-			
-						paneValue = new JTextPane();
-						scrollPaneValue.setViewportView(paneValue);
-						paneValue.setEditable(false);
+
+			paneValue = new JTextPane();
+			scrollPaneValue.setViewportView(paneValue);
+			paneValue.setEditable(false);
+
 			paneExpression.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent e) {
@@ -252,6 +257,25 @@ public class frmDefineVariable {
 					}
 				}
 			});
+			
+			JToolBar toolBar = new JToolBar();
+			toolBar.setBorderPainted(false);
+			toolBar.setFloatable(false);
+			toolBar.setRollover(true);
+			toolBar.setBounds(1, 40, 48, 24);
+			frmDefineVariable.getContentPane().add(toolBar);
+			
+			JButton btnFx = new JButton("");
+			btnFx.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmExpressionBuilder window=new frmExpressionBuilder(myModel,paneExpression,false);
+					window.frmExpressionBuilder.setVisible(true);
+				}
+			});
+			btnFx.setToolTipText("Build Expression");
+			btnFx.setFocusPainted(false);
+			btnFx.setIcon(new ImageIcon(frmDefineVariable.class.getResource("/images/formula.png")));
+			toolBar.add(btnFx);
 
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -275,7 +299,8 @@ public class frmDefineVariable {
 			testVal=Interpreter.evaluate(testExp, myModel,false);
 		}catch(Exception e1){
 			update=false;
-			JOptionPane.showMessageDialog(frmDefineVariable, "Invalid expression!");
+			paneValue.setText(e1.toString());
+			//JOptionPane.showMessageDialog(frmDefineVariable, "Invalid expression!");
 		}
 		if(update){paneValue.setText(testVal.toString()+"");}
 	}

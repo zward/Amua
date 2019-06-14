@@ -99,29 +99,12 @@ public class ModelPanel extends JPanel{
 						}
 						paneFormula.setText("");
 						paneFormula.setEditable(false);
+						mainForm.btnFx.setEnabled(false);
 					}
 				}
 			}
 		});
-		paneFormula.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent e) {
-				formulaBarFocus=true;
-			}
-			public void focusLost(FocusEvent e){
-				if(!e.isTemporary()){
-					formulaBarFocus=false;
-					if(e.getOppositeComponent()!=curFocus){ //Not switching focus back to textfield
-						if(curFocus!=null){
-							curFocus.validateEntry();
-							curFocus.updateHistory();
-						}
-						paneFormula.setText("");
-						paneFormula.setEditable(false);
-					}
-				}
-			}
-		});
+		
 		paneFormula.getDocument().addDocumentListener(new DocumentListener(){
 			@Override public void insertUpdate(DocumentEvent e) {
 				//paneFormula.restyle();
@@ -132,6 +115,7 @@ public class ModelPanel extends JPanel{
 			}
 			@Override public void changedUpdate(DocumentEvent e) {}
 		});
+		
 		paneFormula.addKeyListener(new KeyAdapter(){ //Save text on Enter
 			@Override
 			public void keyPressed(KeyEvent e){

@@ -104,7 +104,7 @@ public class frmSensOneWay {
 		try{
 			frmSensOneWay = new JFrame();
 			frmSensOneWay.setTitle("Amua - One-way Sensitivity Analysis");
-			frmSensOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmSensOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensOneWay.class.getResource("/images/oneWay.png")));
 			frmSensOneWay.setBounds(100, 100, 1000, 499);
 			frmSensOneWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();

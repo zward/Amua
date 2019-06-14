@@ -75,7 +75,7 @@ public final class Cauchy{
 		des+=MathUtils.consoleFont("x\u2080")+": Location parameter <br>";
 		des+=MathUtils.consoleFont("γ")+": Scale parameter ("+MathUtils.consoleFont(">0")+")<br>";
 		des+="<br><i>Sample</i><br>";
-		des+=MathUtils.consoleFont("<b>Cauchy</b>","green")+MathUtils.consoleFont("(x\u2080,γ)")+": Returns a random variable (median in base case) from the Cauchy distribution. Real number<br>";
+		des+=MathUtils.consoleFont("<b>Cauchy</b>","green")+MathUtils.consoleFont("(x\u2080,γ,<b><i>~</i></b>)")+": Returns a random variable (median in base case) from the Cauchy distribution. Real number<br>";
 		des+="<br><i>Distribution Functions</i><br>";
 		des+=MathUtils.consoleFont("<b>Cauchy</b>","green")+MathUtils.consoleFont("(x,x\u2080,γ,<b><i>f</i></b>)")+": Returns the value of the Cauchy PDF at "+MathUtils.consoleFont("x")+"<br>";
 		des+=MathUtils.consoleFont("<b>Cauchy</b>","green")+MathUtils.consoleFont("(x,x\u2080,γ,<b><i>F</i></b>)")+": Returns the value of the Cauchy CDF at "+MathUtils.consoleFont("x")+"<br>";

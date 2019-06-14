@@ -462,7 +462,7 @@ public final class MatrixFunctions{
 			return(des);
 		case "nrow":
 			des="<html><b>Number of Rows</b><br>";
-			des+=MathUtils.consoleFont("<b>ncol</b>","#800000")+MathUtils.consoleFont("(<b>X</b>)")+": Returns the number of rows in "+MathUtils.consoleFont("<b>X</b>")+"<br>";
+			des+=MathUtils.consoleFont("<b>nrow</b>","#800000")+MathUtils.consoleFont("(<b>X</b>)")+": Returns the number of rows in "+MathUtils.consoleFont("<b>X</b>")+"<br>";
 			des+="<br><i>Arguments</i><br>";
 			des+=MathUtils.consoleFont("<b>X</b>")+": Matrix<br>";
 			des+="</html>";
@@ -525,6 +525,27 @@ public final class MatrixFunctions{
 			return(des);
 		}
 		return(des); //fell through
+	}
+	
+	public static String getDefaultArgs(String word){
+		switch(word){
+		case "chol": return("chol(X)");
+		case "det": return("det(X)");
+		case "diag": return("diag(X)");
+		case "iden": return("iden(n)");
+		case "inv": return("inv(X)");
+		case "ncol": return("ncol(X)");
+		case "norm": return("norm(X)");
+		case "nrow": return("nrow(X)");
+		case "renorm": return("renorm(X)");
+		case "rep": return("rep(x,n)");
+		case "seq": return("seq(a,b)");
+		case "softmax": return("softmax(X)");
+		case "stack": return("stack(X1,X2,...,Xn)");
+		case "tp": return("tp(X)");
+		case "tr": return("tr(X)");
+		}
+		return(""); //fell through
 	}
 
 }

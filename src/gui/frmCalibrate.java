@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -40,6 +41,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
@@ -79,7 +81,7 @@ public class frmCalibrate {
 	int numParams;
 	int numConst;
 	Numeric origValues[];
-	StyledTextPane textPaneDistanceScore;
+	StyledTextPane textPaneExpression;
 	ArrayList<MarkovNode> chainRoots;
 	
 	DefaultXYDataset chartData, chartDataScores;
@@ -111,13 +113,13 @@ public class frmCalibrate {
 		try{
 			frmCalibrate = new JFrame();
 			frmCalibrate.setTitle("Amua - Model Calibration");
-			frmCalibrate.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmCalibrate.setIconImage(Toolkit.getDefaultToolkit().getImage(frmCalibrate.class.getResource("/images/calibrate.png")));
 			frmCalibrate.setBounds(100, 100, 1000, 545);
 			frmCalibrate.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
-			gridBagLayout.columnWidths = new int[]{460, 0, 0};
+			gridBagLayout.columnWidths = new int[]{0, 460, 0, 0};
 			gridBagLayout.rowHeights = new int[]{24, 514, 0};
-			gridBagLayout.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+			gridBagLayout.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
 			gridBagLayout.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 			frmCalibrate.getContentPane().setLayout(gridBagLayout);
 			
@@ -130,20 +132,43 @@ public class frmCalibrate {
 				origValues[i]=myModel.parameters.get(i).value.copy();
 			}
 			
+			JToolBar toolBar = new JToolBar();
+			toolBar.setBorderPainted(false);
+			toolBar.setFloatable(false);
+			toolBar.setRollover(true);
+			toolBar.setBounds(1, 40, 48, 24);
+			GridBagConstraints gbc_toolBar = new GridBagConstraints();
+			gbc_toolBar.anchor = GridBagConstraints.SOUTHWEST;
+			gbc_toolBar.insets = new Insets(0, 0, 5, 5);
+			gbc_toolBar.gridx = 0;
+			gbc_toolBar.gridy = 0;
+			frmCalibrate.getContentPane().add(toolBar, gbc_toolBar);
+			
+			JButton btnFx = new JButton("");
+			btnFx.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmExpressionBuilder window=new frmExpressionBuilder(myModel,textPaneExpression,false);
+					window.frmExpressionBuilder.setVisible(true);
+				}
+			});
+			btnFx.setToolTipText("Build Expression");
+			btnFx.setFocusPainted(false);
+			btnFx.setIcon(new ImageIcon(frmCalibrate.class.getResource("/images/formula.png")));
+			toolBar.add(btnFx);
+			
 			JLabel lblLikelihooddistanceScore = new JLabel("Calibration Score Expression:");
 			GridBagConstraints gbc_lblLikelihooddistanceScore = new GridBagConstraints();
-			gbc_lblLikelihooddistanceScore.anchor = GridBagConstraints.SOUTH;
 			gbc_lblLikelihooddistanceScore.insets = new Insets(0, 0, 5, 5);
-			gbc_lblLikelihooddistanceScore.gridx = 0;
+			gbc_lblLikelihooddistanceScore.gridx = 1;
 			gbc_lblLikelihooddistanceScore.gridy = 0;
 			frmCalibrate.getContentPane().add(lblLikelihooddistanceScore, gbc_lblLikelihooddistanceScore);
 			
 			JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 			GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 			gbc_tabbedPane.gridheight = 2;
-			gbc_tabbedPane.insets = new Insets(0, 0, 5, 0);
+			gbc_tabbedPane.insets = new Insets(0, 0, 0, 5);
 			gbc_tabbedPane.fill = GridBagConstraints.BOTH;
-			gbc_tabbedPane.gridx = 1;
+			gbc_tabbedPane.gridx = 2;
 			gbc_tabbedPane.gridy = 0;
 			frmCalibrate.getContentPane().add(tabbedPane, gbc_tabbedPane);
 			
@@ -358,6 +383,7 @@ public class frmCalibrate {
 			
 			JPanel panel_1 = new JPanel();
 			GridBagConstraints gbc_panel_1 = new GridBagConstraints();
+			gbc_panel_1.gridwidth = 2;
 			gbc_panel_1.insets = new Insets(0, 0, 0, 5);
 			gbc_panel_1.fill = GridBagConstraints.BOTH;
 			gbc_panel_1.gridx = 0;
@@ -378,9 +404,9 @@ public class frmCalibrate {
 			gbc_scrollPane.gridy = 0;
 			panel_1.add(scrollPane, gbc_scrollPane);
 			
-			textPaneDistanceScore = new StyledTextPane(myModel);
-			textPaneDistanceScore.setFont(new Font("Consolas", Font.PLAIN, 15));
-			scrollPane.setViewportView(textPaneDistanceScore);
+			textPaneExpression = new StyledTextPane(myModel);
+			textPaneExpression.setFont(new Font("Consolas", Font.PLAIN, 15));
+			scrollPane.setViewportView(textPaneExpression);
 
 			JPanel panel_2 = new JPanel();
 			panel_2.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -540,7 +566,7 @@ public class frmCalibrate {
 								}
 								
 								//try evaluate score expression
-								String strScore=textPaneDistanceScore.getText();
+								String strScore=textPaneExpression.getText();
 								boolean go=true;
 								try{
 									Interpreter.evaluate(strScore, myModel, false);
@@ -735,8 +761,7 @@ public class frmCalibrate {
 			
 			for(int v=0; v<numParams; v++){ //sample all parameters
 				Parameter curParam=myModel.parameters.get(v);
-				curParam.locked=true;
-				curParam.value=Interpreter.evaluate(curParam.expression, myModel,true);
+				curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
 			}
 			//check constraints
 			validParams=true;

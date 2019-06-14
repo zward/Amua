@@ -19,6 +19,7 @@
 package gui;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -140,7 +141,7 @@ public class frmPSA {
 		try{
 			frmPSA = new JFrame();
 			frmPSA.setTitle("Amua - Probabilistic Sensitivity Analysis");
-			frmPSA.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmPSA.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPSA.class.getResource("/images/psa.png")));
 			frmPSA.setBounds(100, 100, 1000, 600);
 			frmPSA.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -579,6 +580,7 @@ public class frmPSA {
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
+								frmPSA.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 								tabbedPane.setEnabledAt(2, false);
 
 								//Check model first
@@ -679,8 +681,7 @@ public class frmPSA {
 									
 											for(int v=0; v<numParams; v++){ //sample all parameters
 												Parameter curParam=myModel.parameters.get(v);
-												curParam.locked=true;
-												curParam.value=Interpreter.evaluate(myModel.parameters.get(v).expression, myModel,true);
+												curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
 											}
 											//check constraints
 											validParams=true;
@@ -948,9 +949,11 @@ public class frmPSA {
 									}
 									progress.close();
 								}
-
+								frmPSA.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+								
 							} catch (Exception e) {
 								e.printStackTrace();
+								frmPSA.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 								JOptionPane.showMessageDialog(frmPSA, e.getMessage());
 								myModel.errorLog.recordError(e);
 							}

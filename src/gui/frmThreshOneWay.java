@@ -66,7 +66,6 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
 import javax.swing.JTextField;
 import java.awt.Font;
-import javax.swing.ComboBoxModel;
 
 /**
  *
@@ -101,7 +100,7 @@ public class frmThreshOneWay {
 		try{
 			frmThreshOneWay = new JFrame();
 			frmThreshOneWay.setTitle("Amua - Threshold Analysis");
-			frmThreshOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmThreshOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmThreshOneWay.class.getResource("/images/threshold.png")));
 			frmThreshOneWay.setBounds(100, 100, 1000, 500);
 			frmThreshOneWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();

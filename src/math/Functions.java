@@ -1104,5 +1104,52 @@ public final class Functions{
 		return(des); //fell through
 	}
 
+	public static String getDefaultArgs(String word){
+		switch(word){
+		case "abs": return("abs(x)");
+		case "acos": return("acos(x)");
+		case "asin": return("asin(x)");
+		case "atan": return("atan(x)");
+		case "bound": return("bound(x,a,b)");
+		case "cbrt": return("cbrt(x)");
+		case "ceil": return("ceil(x)");
+		case "choose": return("choose(n,k)");
+		case "cos": return("cos(x)");
+		case "cosh": return("cosh(x)");
+		case "erf": return("erf(x)");
+		case "exp": return("exp(x)");
+		case "fact": return("fact(n)");
+		case "floor": return("floor(x)");
+		case "gamma": return("gamma(x)");
+		case "hypot": return("hypot(x,y)");
+		case "if": return("if(expr,a,b)");
+		case "invErf": return("invErf(x)");
+		case "log": return("log(x)");
+		case "logb": return("log(x,b)");
+		case "logGamma": return("logGamma(x)");
+		case "log10": return("log10(x)");
+		case "max": return("max(a,b)");
+		case "min": return("min(a,b)");
+		case "probRescale": return("probRescale(p,t1,t2)");
+		case "probToRate": return("probToRate(p)");
+		case "rateToProb": return("rateToProb(r)");
+		case "round": return("round(x)");
+		case "sin": return("sin(x)");
+		case "sinh": return("sinh(x)");
+		case "sqrt": return("sqrt(x)");
+		case "tan": return("tan(x)");
+		case "tanh": return("tanh(x)");
+		case "signum": return("signum(x)");
+		//Summary functions
+		case "mean": return("mean(x1,x2,...,xn)");
+		case "product": return("product(x1,x2,...,xn)");
+		case "quantile": return("quantile(q,x1,x2,...,xn)");
+		case "sd": return("sd(x1,x2,...,xn)");
+		case "sum": return("sum(x1,x2,...,xn)");
+		case "var": return("var(x1,x2,...,xn)");
+		
+		}
+		return(""); //fell through
+	}
 
 }

@@ -103,7 +103,7 @@ public class frmTrace {
 		try{
 			frmTrace = new JFrame();
 			frmTrace.setTitle("Amua - Markov Trace: "+traceOverall.traceName);
-			frmTrace.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmTrace.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTrace.class.getResource("/images/logo_48.png")));
 			frmTrace.setBounds(100, 100, 1000, 600);
 			frmTrace.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();

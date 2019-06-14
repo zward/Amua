@@ -791,6 +791,7 @@ public class PanelTree extends ModelPanel{
 			//clearAll();
 			paneFormula.setText("");
 			paneFormula.setEditable(false);
+			mainForm.btnFx.setEnabled(false);
 			textAreaNotes.setText("");
 			textAreaNotes.setEditable(false);
 			
@@ -811,64 +812,6 @@ public class PanelTree extends ModelPanel{
 			this.setVisible(true); //Show updated panel
 			rescale(myModel.scale); //Refresh
 			
-			
-			/* OLD
-			this.setVisible(false); //Don't paint anything until updated
-			clearAll();
-			paneFormula.setText("");
-			paneFormula.setEditable(false);
-			textAreaNotes.setText("");
-			textAreaNotes.setEditable(false);
-			
-			JAXBContext context = JAXBContext.newInstance(DecisionTree.class);
-			Unmarshaller un = context.createUnmarshaller();
-			tree = (DecisionTree) un.unmarshal(new File(myModel.filepath));
-			rescalePanel=false; //Turn off re-scaling
-			mainForm.setZoomVal(myModel.scale);
-			rescalePanel=true;
-			myModel.varHelper=new VarHelper(myModel.variables,myModel.tables,myModel.dimSymbols,errorLog);
-			paneFormula.varHelper=myModel.varHelper;
-			
-			//Add new tree
-			//Initialize root
-			TreeNode root=tree.nodes.get(0);
-			root.setPanel(this);
-			root.cost=new String[myModel.dimNames.length];
-			root.numDimensions=myModel.dimNames.length;
-			int size=tree.nodes.size();
-			for(int i=1; i<size; i++){ //Skip root
-				TreeNode curNode=tree.nodes.get(i);
-				curNode.setPanel(this);
-				curNode.curScale=myModel.scale;
-				curNode.numDimensions=myModel.dimNames.length;
-				updateNodeDisplay(tree.nodes.get(i));
-			}
-			this.setVisible(true); //Show updated panel
-
-			//Update variables table
-			if(myModel.variables==null){
-				myModel.variables=new ArrayList<Variable>();
-				myModel.varHelper.variables=myModel.variables;
-			}
-			if(myModel.tables==null){
-				myModel.tables=new ArrayList<Table>();
-				myModel.varHelper.tables=myModel.tables;
-			}
-			refreshVarTable();
-			refreshTableTable();
-			refreshAlignment();
-			//Update undo stacks
-			myModel.modelStackUndo=new Stack<ModelSnapshot>();
-			myModel.modelStackRedo=new Stack<ModelSnapshot>();
-			myModel.actionStackUndo=new Stack<String>();
-			myModel.actionStackRedo=new Stack<String>();
-			mainForm.mntmUndo.setEnabled(false);
-			mainForm.mntmUndo.setText("Undo");
-			mainForm.mntmRedo.setEnabled(false);
-			mainForm.mntmRedo.setText("Redo");
-
-			rescale(myModel.scale); //Refresh
-			*/
 		}catch(Exception e){
 			e.printStackTrace();
 			errorLog.recordError(e);

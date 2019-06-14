@@ -40,6 +40,9 @@ import main.Constraint;
 import main.StyledTextPane;
 import math.Interpreter;
 import math.Numeric;
+import java.awt.Toolkit;
+import javax.swing.JToolBar;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -72,6 +75,7 @@ public class frmDefineConstraint {
 	private void initialize() {
 		try{
 			frmDefineConstraint = new JDialog();
+			frmDefineConstraint.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineConstraint.class.getResource("/images/constraint.png")));
 			frmDefineConstraint.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineConstraint.setTitle("Amua - Define Constraint");
 			frmDefineConstraint.setResizable(false);
@@ -149,7 +153,7 @@ public class frmDefineConstraint {
 			frmDefineConstraint.getContentPane().add(lblValue);
 			
 			JLabel lblExpression = new JLabel("Expression:");
-			lblExpression.setBounds(6, 43, 71, 16);
+			lblExpression.setBounds(35, 43, 71, 16);
 			frmDefineConstraint.getContentPane().add(lblExpression);
 
 			JButton btnEvaluate = new JButton("Evaluate");
@@ -187,6 +191,26 @@ public class frmDefineConstraint {
 			paneValue = new JTextPane();
 			scrollPaneValue.setViewportView(paneValue);
 			paneValue.setEditable(false);
+			
+			JToolBar toolBar = new JToolBar();
+			toolBar.setBorderPainted(false);
+			toolBar.setFloatable(false);
+			toolBar.setRollover(true);
+			toolBar.setBounds(1, 40, 48, 24);
+			frmDefineConstraint.getContentPane().add(toolBar);
+			
+			JButton btnFx = new JButton("");
+			btnFx.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmExpressionBuilder window=new frmExpressionBuilder(myModel,paneExpression,false);
+					window.frmExpressionBuilder.setVisible(true);
+				}
+			});
+			btnFx.setToolTipText("Build Expression");
+			btnFx.setFocusPainted(false);
+			btnFx.setIcon(new ImageIcon(frmDefineConstraint.class.getResource("/images/formula.png")));
+			toolBar.add(btnFx);
+			
 			paneExpression.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent e) {
@@ -216,18 +240,19 @@ public class frmDefineConstraint {
 				testVal=Interpreter.evaluate(allExp[i], myModel,false);
 			}catch(Exception e1){
 				update=false;
-				JOptionPane.showMessageDialog(frmDefineConstraint, "Invalid expression: "+allExp[i]);
+				paneValue.setText(e1.toString());
+				//JOptionPane.showMessageDialog(frmDefineConstraint, "Invalid expression: "+allExp[i]);
 				valid=false;
 			}
 
 			if(testVal.isBoolean()==false){
 				update=false;
-				JOptionPane.showMessageDialog(frmDefineConstraint, "Not a boolean expression: "+allExp[i]);
+				paneValue.setText("Error: Not a boolean expression: "+allExp[i]);
+				//JOptionPane.showMessageDialog(frmDefineConstraint, "Not a boolean expression: "+allExp[i]);
 				valid=false;
 			}
 
 			if(update){paneValue.setText(paneValue.getText()+testVal.toString()+"\n");}
-			else{paneValue.setText(paneValue.getText()+"Error\n");}
 		}
 		return(valid);
 	}

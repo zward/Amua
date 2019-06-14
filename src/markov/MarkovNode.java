@@ -626,6 +626,7 @@ public class MarkovNode extends ModelNode{
 				tempProb=prob; //Get existing value on field entry
 				panel.paneFormula.setEditable(true);
 				panel.paneFormula.setText(textProb.getText());
+				panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=false;
 				panel.curFocus=textProb;
 				textProb.setBorder(defaultBorder);
 			}
@@ -667,6 +668,7 @@ public class MarkovNode extends ModelNode{
 				tempTermination=terminationCondition; //Get existing value on field entry
 				panel.paneFormula.setEditable(true);
 				panel.paneFormula.setText(textTermination.getText());
+				panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=false;
 				panel.curFocus=textTermination;
 				textTermination.setBorder(defaultBorder);
 			}
@@ -716,6 +718,7 @@ public class MarkovNode extends ModelNode{
 				//panel.mainForm.tabbedPaneBottom.setSelectedIndex(1);
 				panel.paneFormula.setEditable(true);
 				panel.paneFormula.setText(textCost.getText());
+				panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=false;
 				panel.curFocus=textCost;
 				textCost.setBorder(defaultBorder);
 			}
@@ -759,6 +762,7 @@ public class MarkovNode extends ModelNode{
 				tempVarUpdates=varUpdates; //Get existing value on field entry
 				panel.paneFormula.setEditable(true);
 				panel.paneFormula.setText(textVarUpdates.getText());
+				panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=true;
 				panel.curFocus=textVarUpdates;
 				textVarUpdates.setBorder(defaultBorder);
 			}
@@ -801,6 +805,7 @@ public class MarkovNode extends ModelNode{
 				for(int i=0; i<numDimensions; i++){tempRewards[i]=rewards[i];} //Get existing values on field entry
 				panel.paneFormula.setEditable(true);
 				panel.paneFormula.setText(textRewards.getText());
+				panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=false;
 				panel.curFocus=textRewards;
 				textRewards.setBorder(defaultBorder);
 			}

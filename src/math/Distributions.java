@@ -647,4 +647,45 @@ public final class Distributions{
 		return(des);
 	}
 	
+	public static String getDefaultParams(String dist){
+		switch(dist){
+		//Discrete
+		case "Bern": return("Bern(p,~)");
+		case "Bin": return("Bin(n,p,~)");
+		case "Cat": return("Cat(p,~)");
+		case "DUnif": return("DUnif(a,b,~)");
+		case "Geom": return("Geom(p,~)");
+		case "HGeom": return("HGeom(w,b,n,~)");
+		case "NBin": return("NBin(r,p,~)");
+		case "Pois": return("Pois(λ,~)");
+		case "Zipf": return("Zipf(s,n,~)");
+		//Continuous
+		case "Beta": return("Beta(a,b,~)");
+		case "Cauchy": return("Cauchy(x₀,γ,~)");
+		case "ChiSq": return("ChiSq(k,~)");
+		case "Expo": return("Expo(λ,~)");
+		case "Gamma": return("Gamma(k,θ,~)");
+		case "Gumbel": return("Gumbel(μ,β,~)");
+		case "HalfCauchy": return("HalfCauchy(γ,~)");
+		case "HalfNorm": return("HalfNorm(σ,~)");
+		case "Laplace": return("Laplace(μ,b,~)");
+		case "Logistic": return("Logistic(μ,s,~)");
+		case "LogNorm": return("LogNorm(μ,σ,~)");
+		case "Norm": return("Norm(μ,σ,~)");
+		case "Pareto": return("Pareto(k,α,~)");
+		case "PERT": return("PERT(a,b,c,~)");
+		case "StudentT": return("StudentT(ν,~)");
+		case "Tri": return("Tri(a,b,c,~)");
+		case "Unif": return("Unif(a,b,~)");
+		case "Weibull": return("Weibull(a,b,~)");
+		//Truncated
+		case "TruncNorm": return("TruncNorm(μ,σ,a,b,~)");
+		//MultiVariate
+		case "Dir": return("Dir(α,~)");
+		case "MvNorm": return("MvNorm(μ,Σ)");
+		case "Multi": return("Multi(n,p,~)");
+		
+		}
+		return("");
+	}
 }

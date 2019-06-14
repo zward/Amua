@@ -85,6 +85,7 @@ public class MarkovTextField extends ModelTextField{
 		
 		panel.paneFormula.setText("");
 		panel.paneFormula.setEditable(false);
+		panel.mainForm.btnFx.setEnabled(false);
 		panel.curFocus=null;
 		this.setBorder(null);
 	}

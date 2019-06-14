@@ -82,7 +82,7 @@ public final class Weibull{
 		des+="Often used to model time-to-failure<br><br>";
 		des+="<i>Parameters</i><br>";
 		des+=MathUtils.consoleFont("a")+": Shape parameter ("+MathUtils.consoleFont(">0")+")<br>";
-		des+=MathUtils.consoleFont("b")+": Scale parameter ("+MathUtils.consoleFont(">0")+")<br><br>";
+		des+=MathUtils.consoleFont("b")+": Scale parameter ("+MathUtils.consoleFont(">0")+")<br>";
 		des+="<br><i>Sample</i><br>";
 		des+=MathUtils.consoleFont("<b>Weibull</b>","green")+MathUtils.consoleFont("(a,b,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the Weibull distribution. Positive real number<br>";
 		des+="<br><i>Distribution Functions</i><br>";

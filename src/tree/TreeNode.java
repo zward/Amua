@@ -375,6 +375,7 @@ public class TreeNode extends ModelNode{
 				tempProb=prob; //Get existing value on field entry
 				//panel.mainForm.tabbedPaneBottom.setSelectedIndex(1);
 				panel.paneFormula.setEditable(true);
+				panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=false;
 				panel.paneFormula.setText(textProb.getText());
 				panel.curFocus=textProb;
 				textProb.setBorder(defaultBorder);
@@ -421,6 +422,7 @@ public class TreeNode extends ModelNode{
 				for(int i=0; i<numDimensions; i++){tempCost[i]=cost[i];} //Get existing values on field entry
 				//panel.mainForm.tabbedPaneBottom.setSelectedIndex(1);
 				panel.paneFormula.setEditable(true);
+				panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=false;
 				panel.paneFormula.setText(textCost.getText());
 				panel.curFocus=textCost;
 				textCost.setBorder(defaultBorder);
@@ -461,6 +463,7 @@ public class TreeNode extends ModelNode{
 				for(int i=0; i<numDimensions; i++){tempPayoff[i]=payoff[i];} //Get existing values on field entry
 				//panel.mainForm.tabbedPaneBottom.setSelectedIndex(1);
 				panel.paneFormula.setEditable(true);
+				panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=false;
 				panel.paneFormula.setText(textPayoff.getText());
 				panel.curFocus=textPayoff;
 				textPayoff.setBorder(defaultBorder);
@@ -501,6 +504,7 @@ public class TreeNode extends ModelNode{
 			public void focusGained(FocusEvent e) {
 				tempVarUpdates=varUpdates; //Get existing value on field entry
 				panel.paneFormula.setEditable(true);
+				panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=true;
 				panel.paneFormula.setText(textVarUpdates.getText());
 				panel.curFocus=textVarUpdates;
 				textVarUpdates.setBorder(defaultBorder);

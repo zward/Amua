@@ -30,6 +30,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -38,6 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
@@ -82,7 +84,7 @@ public class frmPlotSurface {
 		try{
 			frmPlotSurface = new JFrame();
 			frmPlotSurface.setTitle("Amua - Plot Surface");
-			frmPlotSurface.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmPlotSurface.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotSurface.class.getResource("/images/plotSurface.png")));
 			frmPlotSurface.setBounds(100, 100, 1000, 600);
 			frmPlotSurface.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -123,12 +125,25 @@ public class frmPlotSurface {
 			btnPlot.setBounds(225, 26, 86, 28);
 			panel_1.add(btnPlot);
 
-			JLabel lblFunction = new JLabel("f(x,y):");
-			lblFunction.setHorizontalAlignment(SwingConstants.RIGHT);
-			lblFunction.setFont(new Font("SansSerif", Font.BOLD, 12));
-			lblFunction.setBounds(260, 6, 45, 16);
-			panel_1.add(lblFunction);
-
+			JToolBar toolBar = new JToolBar();
+			toolBar.setBorderPainted(false);
+			toolBar.setFloatable(false);
+			toolBar.setRollover(true);
+			toolBar.setBounds(281, 0, 36, 24);
+			panel_1.add(toolBar);
+			
+			JButton btnFx = new JButton("");
+			btnFx.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmExpressionBuilder window=new frmExpressionBuilder(myModel,paneFunction,false);
+					window.frmExpressionBuilder.setVisible(true);
+				}
+			});
+			btnFx.setToolTipText("Build Expression");
+			btnFx.setFocusPainted(false);
+			btnFx.setIcon(new ImageIcon(frmPlotSurface.class.getResource("/images/formula.png")));
+			toolBar.add(btnFx);
+			
 			JScrollPane scrollPane_1 = new JScrollPane();
 			scrollPane_1.setBounds(6, 0, 207, 61);
 			panel_1.add(scrollPane_1);

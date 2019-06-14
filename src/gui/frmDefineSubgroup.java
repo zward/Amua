@@ -26,6 +26,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -33,6 +34,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
+
 import base.AmuaModel;
 import main.StyledTextPane;
 import math.Interpreter;
@@ -139,7 +142,7 @@ public class frmDefineSubgroup {
 			textName.setColumns(10);
 			
 			JLabel lblExpression = new JLabel("Expression:");
-			lblExpression.setBounds(6, 43, 71, 16);
+			lblExpression.setBounds(35, 43, 71, 16);
 			frmDefineSubgroup.getContentPane().add(lblExpression);
 
 			JScrollPane scrollPane = new JScrollPane();
@@ -157,6 +160,25 @@ public class frmDefineSubgroup {
 					}
 				}
 			});
+			
+			JToolBar toolBar = new JToolBar();
+			toolBar.setBorderPainted(false);
+			toolBar.setFloatable(false);
+			toolBar.setRollover(true);
+			toolBar.setBounds(1, 40, 48, 24);
+			frmDefineSubgroup.getContentPane().add(toolBar);
+			
+			JButton btnFx = new JButton("");
+			btnFx.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmExpressionBuilder window=new frmExpressionBuilder(myModel,paneExpression,false);
+					window.frmExpressionBuilder.setVisible(true);
+				}
+			});
+			btnFx.setToolTipText("Build Expression");
+			btnFx.setFocusPainted(false);
+			btnFx.setIcon(new ImageIcon(frmDefineSubgroup.class.getResource("/images/formula.png")));
+			toolBar.add(btnFx);
 
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -172,7 +194,7 @@ public class frmDefineSubgroup {
 		try{
 			testVal=Interpreter.evaluate(testExp, myModel,false);
 		}catch(Exception e1){
-			JOptionPane.showMessageDialog(frmDefineSubgroup, "Invalid expression: "+testExp);
+			JOptionPane.showMessageDialog(frmDefineSubgroup, e1.toString());
 			valid=false;
 		}
 

@@ -110,7 +110,7 @@ public class frmDefineTable {
 	private void initialize() {
 		try{
 			frmDefineTable = new JDialog();
-			frmDefineTable.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineTable.class.getResource("/images/logo_16.png")));
+			frmDefineTable.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineTable.class.getResource("/images/table.png")));
 			frmDefineTable.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineTable.setTitle("Amua - Define Table");
 			frmDefineTable.setBounds(100, 100, 925, 600);

@@ -143,7 +143,7 @@ public class frmScenarios {
 		try{
 			frmScenarios = new JFrame();
 			frmScenarios.setTitle("Amua - Scenarios");
-			frmScenarios.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmScenarios.setIconImage(Toolkit.getDefaultToolkit().getImage(frmScenarios.class.getResource("/images/scenario_16.png")));
 			frmScenarios.setBounds(100, 100, 1100, 500);
 			frmScenarios.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -819,8 +819,7 @@ public class frmScenarios {
 													}
 													for(int v=0; v<numParams; v++){ //sample all parameters
 														Parameter curParam=myModel.parameters.get(v);
-														curParam.locked=true;
-														curParam.value=Interpreter.evaluate(myModel.parameters.get(v).expression, myModel,true);
+														curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
 													}
 													//check constraints
 													validParams=true;

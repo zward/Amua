@@ -35,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 
 import base.AmuaModel;
 import main.Parameter;
@@ -48,6 +49,9 @@ import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
+
+import java.awt.Toolkit;
 
 /**
  *
@@ -89,6 +93,7 @@ public class frmDefineScenario {
 	private void initialize() {
 		try{
 			frmDefineScenario = new JDialog();
+			frmDefineScenario.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineScenario.class.getResource("/images/scenario_16.png")));
 			frmDefineScenario.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineScenario.setTitle("Amua - Define Scenario");
 			frmDefineScenario.setResizable(false);
@@ -315,7 +320,7 @@ public class frmDefineScenario {
 
 			JLabel lblExpression = new JLabel("Object Updates");
 			lblExpression.setFont(new Font("SansSerif", Font.BOLD, 12));
-			lblExpression.setBounds(6, 6, 101, 16);
+			lblExpression.setBounds(35, 9, 101, 16);
 			panel_1.add(lblExpression);
 
 			JScrollPane scrollPane = new JScrollPane();
@@ -355,6 +360,25 @@ public class frmDefineScenario {
 					}
 				}
 			});
+			
+			JToolBar toolBar = new JToolBar();
+			toolBar.setBorderPainted(false);
+			toolBar.setFloatable(false);
+			toolBar.setRollover(true);
+			toolBar.setBounds(1, 6, 48, 24);
+			panel_1.add(toolBar);
+			
+			JButton btnFx = new JButton("");
+			btnFx.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmExpressionBuilder window=new frmExpressionBuilder(myModel,paneExpression,true);
+					window.frmExpressionBuilder.setVisible(true);
+				}
+			});
+			btnFx.setToolTipText("Build Expression");
+			btnFx.setFocusPainted(false);
+			btnFx.setIcon(new ImageIcon(frmDefineScenario.class.getResource("/images/formula.png")));
+			toolBar.add(btnFx);
 
 		} catch (Exception ex){
 			ex.printStackTrace();

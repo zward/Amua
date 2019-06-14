@@ -32,6 +32,7 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -40,6 +41,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JToolBar;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
@@ -100,7 +102,7 @@ public class frmPlotFx {
 		try{
 			frmPlotFx = new JFrame();
 			frmPlotFx.setTitle("Amua - Plot Function");
-			frmPlotFx.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmPlotFx.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotFx.class.getResource("/images/plotFx.png")));
 			frmPlotFx.setBounds(100, 100, 1000, 600);
 			frmPlotFx.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -152,13 +154,26 @@ public class frmPlotFx {
 			});
 			btnPlot.setBounds(225, 26, 86, 28);
 			panel_1.add(btnPlot);
-
-			JLabel lblFunction = new JLabel("f(x):");
-			lblFunction.setHorizontalAlignment(SwingConstants.RIGHT);
-			lblFunction.setFont(new Font("SansSerif", Font.BOLD, 12));
-			lblFunction.setBounds(275, 6, 30, 16);
-			panel_1.add(lblFunction);
-
+			
+			JToolBar toolBar = new JToolBar();
+			toolBar.setBorderPainted(false);
+			toolBar.setFloatable(false);
+			toolBar.setRollover(true);
+			toolBar.setBounds(281, 0, 36, 24);
+			panel_1.add(toolBar);
+			
+			JButton btnFx = new JButton("");
+			btnFx.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmExpressionBuilder window=new frmExpressionBuilder(myModel,paneFunction,false);
+					window.frmExpressionBuilder.setVisible(true);
+				}
+			});
+			btnFx.setToolTipText("Build Expression");
+			btnFx.setFocusPainted(false);
+			btnFx.setIcon(new ImageIcon(frmPlotFx.class.getResource("/images/formula.png")));
+			toolBar.add(btnFx);
+						
 			table = new JTable();
 			table.setShowVerticalLines(true);
 			table.setRowSelectionAllowed(false);
@@ -239,7 +254,7 @@ public class frmPlotFx {
 			marker.setPaint(Color.black);
 			chart.getXYPlot().addDomainMarker(marker);
 			chart.getXYPlot().addRangeMarker(marker);
-
+		
 		} catch (Exception ex){
 			ex.printStackTrace();
 			myModel.errorLog.recordError(ex);

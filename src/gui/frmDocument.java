@@ -42,6 +42,7 @@ import java.io.File;
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import java.awt.Toolkit;
 
 /**
  *
@@ -68,6 +69,7 @@ public class frmDocument {
 	private void initialize() {
 		try{
 			frmDocument = new JDialog();
+			frmDocument.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDocument.class.getResource("/images/document.png")));
 			frmDocument.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDocument.setTitle("Amua - Document Model");
 			frmDocument.setResizable(false);

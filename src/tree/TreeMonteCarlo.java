@@ -77,11 +77,15 @@ public class TreeMonteCarlo{
 	public void simulate(final boolean display) throws NumericException, Exception{
 		numStrat=root.numChildren;
 		strategyNames=new String[numStrat];
-		microStats=new MicroStats[numStrat];
+		if(myModel.displayIndResults){
+			microStats=new MicroStats[numStrat];
+		}
 		numSubgroups=0;
 		if(myModel.reportSubgroups){
 			numSubgroups=myModel.subgroupNames.size();
-			microStatsGroup=new MicroStats[numSubgroups][numStrat];
+			if(myModel.displayIndResults){
+				microStatsGroup=new MicroStats[numSubgroups][numStrat];
+			}
 		}
 				
 		cancelled=false;
@@ -219,11 +223,13 @@ public class TreeMonteCarlo{
 			
 			strategyNames[s]=root.children[s].name;
 			
-			//Initialize summaries
-			microStats[s]=new MicroStats(myModel, numPeople);
-			if(myModel.reportSubgroups){
-				for(int g=0; g<numSubgroups; g++){
-					microStatsGroup[g][s]=new MicroStats(myModel,subgroupSize[g]);
+			//Initialize individual summaries
+			if(myModel.displayIndResults){
+				microStats[s]=new MicroStats(myModel, numPeople);
+				if(myModel.reportSubgroups){
+					for(int g=0; g<numSubgroups; g++){
+						microStatsGroup[g][s]=new MicroStats(myModel,subgroupSize[g]);
+					}
 				}
 			}
 
@@ -252,17 +258,19 @@ public class TreeMonteCarlo{
 								//traverse tree
 								traverseNode(strategy,curPerson,finalN);
 
-								//record overall results
-								for(int d=0; d<numDim; d++){microStats[finalS].outcomes[d][p]=curPerson.costs[d]+curPerson.payoffs[d];}
-								for(int v=0; v<numVars; v++){microStats[finalS].variables[v][p]=curPerson.variableVals[v].getValue();}
+								//record overall individual results
+								if(myModel.displayIndResults){
+									for(int d=0; d<numDim; d++){microStats[finalS].outcomes[d][p]=curPerson.costs[d]+curPerson.payoffs[d];}
+									for(int v=0; v<numVars; v++){microStats[finalS].variables[v][p]=curPerson.variableVals[v].getValue();}
 
-								//record subgroup results
-								if(myModel.reportSubgroups){
-									for(int g=0; g<numSubgroups; g++){
-										if(curPerson.inSubgroup[g]){
-											int z=curPerson.subgroupIndex[g]; //cur index in subgroup
-											for(int d=0; d<numDim; d++){microStatsGroup[g][finalS].outcomes[d][z]=microStats[finalS].outcomes[d][p];}
-											for(int v=0; v<numVars; v++){microStatsGroup[g][finalS].variables[v][z]=microStats[finalS].variables[v][p];}
+									//record subgroup results
+									if(myModel.reportSubgroups){
+										for(int g=0; g<numSubgroups; g++){
+											if(curPerson.inSubgroup[g]){
+												int z=curPerson.subgroupIndex[g]; //cur index in subgroup
+												for(int d=0; d<numDim; d++){microStatsGroup[g][finalS].outcomes[d][z]=microStats[finalS].outcomes[d][p];}
+												for(int v=0; v<numVars; v++){microStatsGroup[g][finalS].variables[v][z]=microStats[finalS].variables[v][p];}
+											}
 										}
 									}
 								}

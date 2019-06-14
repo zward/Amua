@@ -94,6 +94,7 @@ import main.ErrorLog;
 import main.Parameter;
 import main.ParameterSet;
 import main.RecentFiles;
+import main.StyledTextPane;
 import main.Variable;
 import markov.PanelMarkov;
 import tree.PanelTree;
@@ -120,7 +121,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.2.0";
+	public String version="0.2.1";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -153,6 +154,11 @@ public class frmMain {
 	public JMenuItem mntmCalibrateModel;
 	JButton btnAddVariable;
 	JSlider sliderZoom;
+	
+	public JButton btnFx; //build expression button
+	public boolean updateCurFx=false; //if Update Operators are allowed
+	StyledTextPane curFxPane;
+	
 	public DefaultTableModel modelParameters, modelVariables, modelTables, modelConstraints, modelParamSets;
 	private JTable tableParameters, tableVariables, tableTables, tableConstraints, tableParamSets;
 
@@ -1235,15 +1241,35 @@ public class frmMain {
 		gbl_panelLeft.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 		panelLeft.setLayout(gbl_panelLeft);
 
-		JLabel lblFx = new JLabel("");
+		/*JLabel lblFx = new JLabel("");
 		lblFx.setHorizontalTextPosition(SwingConstants.LEADING);
 		lblFx.setHorizontalAlignment(SwingConstants.LEADING);
-		lblFx.setIcon(new ImageIcon(frmMain.class.getResource("/images/formula.png")));
+		lblFx.setIcon(new ImageIcon(frmMain.class.getResource("/images/formula.png")));*/
+		JToolBar toolbarFx=new JToolBar();
+		toolbarFx.setFloatable(false);
+		toolbarFx.setRollover(true);
+		toolbarFx.setBorderPainted(false);
+		
+		btnFx=new JButton("");
+		btnFx.setEnabled(false);
+		btnFx.setFocusable(false);
+		btnFx.setFocusPainted(false);
+		btnFx.setIcon(new ImageIcon(frmMain.class.getResource("/images/formula.png")));
+		btnFx.setToolTipText("Build Expression");
+		btnFx.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				curFxPane.requestFocus();
+				frmExpressionBuilder window=new frmExpressionBuilder(curModel,curFxPane,updateCurFx);
+				window.frmExpressionBuilder.setVisible(true);
+			}
+		});
+		toolbarFx.add(btnFx);
+		
 		GridBagConstraints gbc_lblFx = new GridBagConstraints();
 		gbc_lblFx.anchor = GridBagConstraints.EAST;
 		gbc_lblFx.gridx = 0;
 		gbc_lblFx.gridy = 0;
-		panelLeft.add(lblFx, gbc_lblFx);
+		panelLeft.add(toolbarFx, gbc_lblFx);
 
 		scrollPaneFx = new JScrollPane();
 		GridBagConstraints gbc_scrollPaneFx = new GridBagConstraints();
@@ -1251,7 +1277,6 @@ public class frmMain {
 		gbc_scrollPaneFx.gridx = 1;
 		gbc_scrollPaneFx.gridy = 0;
 		panelLeft.add(scrollPaneFx, gbc_scrollPaneFx);
-
 
 		tabbedPaneCanvas = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPaneCanvas.addChangeListener(new ChangeListener() {
@@ -1834,6 +1859,7 @@ public class frmMain {
 	private void showTree(int index){
 		PanelTree curPanelTree=curModel.panelTree;
 		scrollPaneFx.setViewportView(curPanelTree.paneFormula);
+		curFxPane=curPanelTree.paneFormula;
 		scrollPaneNotes.setViewportView(curPanelTree.textAreaNotes);
 		scrollPaneProperties.setViewportView(null);
 
@@ -1859,6 +1885,7 @@ public class frmMain {
 	private void showMarkov(int index){
 		PanelMarkov curPanelMarkov=curModel.panelMarkov;
 		scrollPaneFx.setViewportView(curPanelMarkov.paneFormula);
+		curFxPane=curPanelMarkov.paneFormula;
 		scrollPaneNotes.setViewportView(curPanelMarkov.textAreaNotes);
 		scrollPaneProperties.setViewportView(curPanelMarkov.tableProperties);
 
@@ -2047,6 +2074,7 @@ public class frmMain {
 				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		}catch(Exception e){
+			frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			console.print("Error: "+e.getMessage()); console.newLine();
 			errorLog.recordError(e);
 		}

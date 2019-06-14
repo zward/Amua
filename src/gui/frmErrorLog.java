@@ -30,6 +30,7 @@ import main.ErrorLog;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.Toolkit;
 
 /**
  *
@@ -55,6 +56,7 @@ public class frmErrorLog {
 	private void initialize() {
 		try{
 			frmErrorLog = new JDialog();
+			frmErrorLog.setIconImage(Toolkit.getDefaultToolkit().getImage(frmErrorLog.class.getResource("/images/errorLog.png")));
 			frmErrorLog.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmErrorLog.setTitle("Amua - Error Log");
 			frmErrorLog.setResizable(false);

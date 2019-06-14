@@ -1067,6 +1067,7 @@ public class PanelMarkov extends ModelPanel{
 			//clearAll();
 			paneFormula.setText("");
 			paneFormula.setEditable(false);
+			mainForm.btnFx.setEnabled(false);
 			textAreaNotes.setText("");
 			textAreaNotes.setEditable(false);
 

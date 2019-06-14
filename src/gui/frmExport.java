@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import java.awt.Toolkit;
 
 /**
  *
@@ -92,6 +93,7 @@ public class frmExport {
 	private void initialize() {
 		try{
 			frmExport = new JDialog();
+			frmExport.setIconImage(Toolkit.getDefaultToolkit().getImage(frmExport.class.getResource("/images/export.png")));
 			frmExport.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmExport.setTitle("Amua - Export Model");
 			frmExport.setResizable(false);

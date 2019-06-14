@@ -107,7 +107,7 @@ public class frmTornadoDiagram {
 		try{
 			frmTornadoDiagram = new JFrame();
 			frmTornadoDiagram.setTitle("Amua - Tornado Diagram");
-			frmTornadoDiagram.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmTornadoDiagram.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTornadoDiagram.class.getResource("/images/tornado.png")));
 			frmTornadoDiagram.setBounds(100, 100, 1000, 500);
 			frmTornadoDiagram.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();

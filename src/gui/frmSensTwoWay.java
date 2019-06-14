@@ -114,7 +114,7 @@ public class frmSensTwoWay {
 		try{
 			frmSensTwoWay = new JFrame();
 			frmSensTwoWay.setTitle("Amua - Two-way Sensitivity Analysis");
-			frmSensTwoWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmSensTwoWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensTwoWay.class.getResource("/images/twoWay.png")));
 			frmSensTwoWay.setBounds(100, 100, 1000, 500);
 			frmSensTwoWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();

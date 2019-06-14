@@ -289,15 +289,18 @@ public class DecisionTree{
 			TreeMonteCarlo microModel=new TreeMonteCarlo(nodes.get(0)); //send root
 			microModel.simulate(display);
 			
-			int numMicro=microModel.microStats.length;
-			for(int s=0; s<numMicro; s++){
-				runReport.microStats.add(microModel.microStats[s]);
-				runReport.names.add(microModel.strategyNames[s]);
+			int numMicroStats=0;
+			if(myModel.displayIndResults){
+				numMicroStats=microModel.microStats.length;
+				for(int s=0; s<numMicroStats; s++){
+					runReport.microStats.add(microModel.microStats[s]);
+					runReport.names.add(microModel.strategyNames[s]);
+				}
 			}
 
 			for(int g=0; g<runReport.numSubgroups; g++){
 				runReport.subgroupSizes[g]=microModel.subgroupSize[g];
-				for(int s=0; s<numMicro; s++){
+				for(int s=0; s<numMicroStats; s++){
 					runReport.microStatsGroup[g].add(microModel.microStatsGroup[g][s]);
 				}
 			}
