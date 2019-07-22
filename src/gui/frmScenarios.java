@@ -52,8 +52,6 @@ import base.AmuaModel;
 import base.MicroStatsSummary;
 import base.RunReport;
 import base.RunReportSummary;
-import filters.CSVFilter;
-import main.CEAHelper;
 import main.Constraint;
 import main.DimInfo;
 import main.MersenneTwisterFast;
@@ -650,6 +648,11 @@ public class frmScenarios {
 									for(int i=0; i<numVars; i++){
 										origVars[i]=myModel.variables.get(i).expression;
 									}
+									boolean origShowTrace=true;
+									if(myModel.type==1){
+										origShowTrace=myModel.markov.showTrace;
+										myModel.markov.showTrace=false;
+									}
 									
 									//Get total number of iterations
 									int totalIterations=0, maxIterations=0;
@@ -820,6 +823,7 @@ public class frmScenarios {
 													for(int v=0; v<numParams; v++){ //sample all parameters
 														Parameter curParam=myModel.parameters.get(v);
 														curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+														curParam.locked=true;
 													}
 													//check constraints
 													validParams=true;
@@ -1038,7 +1042,11 @@ public class frmScenarios {
 										}
 										
 									} //end scenarios loop
-
+									
+									if(myModel.type==1){
+										myModel.markov.showTrace=origShowTrace;
+									}
+									
 									resetModel();
 									myModel.validateModelObjects();
 									progress.close();

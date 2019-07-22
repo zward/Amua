@@ -688,7 +688,7 @@ public class MarkovMonteCarloPOOL{
 							//state transition
 							traverseNode(states[curState],curPerson,finalN);
 							
-							//update variables
+							//record variable values
 							for(int v=0; v<numVars; v++){
 								double val=variables[v].value[finalN].getDouble();
 								cycleVariables[v][finalN]+=val; cycleVariablesDenom[v][finalN]++;

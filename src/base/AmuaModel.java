@@ -883,6 +883,9 @@ public class AmuaModel{
 				progress.setMaximum(numSets+1);
 			}
 			
+			boolean origShowTrace=markov.showTrace;
+			markov.showTrace=false;
+			
 			//Run all parameter sets
 			int numStrat=getStrategies();
 			int numDim=dimInfo.dimNames.length;
@@ -911,6 +914,7 @@ public class AmuaModel{
 				}
 			}
 			unlockParams(); //unlock parameters
+			markov.showTrace=origShowTrace;
 			
 			if(cancelled==false){
 

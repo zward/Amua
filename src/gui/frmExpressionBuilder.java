@@ -119,7 +119,9 @@ public class frmExpressionBuilder {
 			modelType.addElement("Parameter");
 			modelType.addElement("Table");
 			modelType.addElement("Variable");
-			modelType.addElement("Markov");
+			if(myModel.type==1){
+				modelType.addElement("Markov");
+			}
 			modelType.addElement("");
 			modelType.addElement("<html><b><i>Functions</i></b></html>");
 			modelType.addElement("Constant");
@@ -375,6 +377,7 @@ public class frmExpressionBuilder {
 			modelValue.addElement("<html><b><i>Error</i></b></html>");
 			modelValue.addElement("erf");
 			modelValue.addElement("invErf");
+			modelValue.addElement("probit");
 			
 			modelValue.addElement("");
 			modelValue.addElement("<html><b><i>Logarithmic</i></b></html>");
@@ -382,6 +385,8 @@ public class frmExpressionBuilder {
 			modelValue.addElement("log");
 			modelValue.addElement("logb");
 			modelValue.addElement("log10");
+			modelValue.addElement("logit");
+			modelValue.addElement("logistic");
 			
 			modelValue.addElement("");
 			modelValue.addElement("<html><b><i>Logical</i></b></html>");

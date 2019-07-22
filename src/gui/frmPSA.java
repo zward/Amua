@@ -641,6 +641,7 @@ public class frmPSA {
 									MarkovTrace traces[][][]=null;
 									ArrayList<MarkovNode> chainRoots=null;
 									int numChains = 0;
+									boolean origShowTrace=true;
 									if(myModel.type==1){
 										//get number of chains
 										chainRoots=new ArrayList<MarkovNode>();
@@ -650,6 +651,8 @@ public class frmPSA {
 										}
 										numChains=chainRoots.size();
 										traces=new MarkovTrace[numChains][numSubgroups+1][numIterations];
+										origShowTrace=myModel.markov.showTrace;
+										myModel.markov.showTrace=false;
 									}
 									
 									long startTime=System.currentTimeMillis();
@@ -682,6 +685,7 @@ public class frmPSA {
 											for(int v=0; v<numParams; v++){ //sample all parameters
 												Parameter curParam=myModel.parameters.get(v);
 												curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+												curParam.locked=true;
 											}
 											//check constraints
 											validParams=true;
@@ -770,8 +774,9 @@ public class frmPSA {
 											else if(analysisType==2){ //BCA
 												for(int g=0; g<numSubgroups+1; g++){
 													Object table[][]=new CEAHelper().calculateNMB(myModel,g-1);
-													//get baseline row
-													int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
+													//use first row as baseline
+													//int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
+													int baseIndex=0;
 													int baseRow=-1,curRow=0;
 													while(baseRow==-1 && curRow<table.length){
 														if((int)table[curRow][0]==baseIndex){
@@ -786,12 +791,13 @@ public class frmPSA {
 														dataResultsIter[g][numDim][origStrat][1][n]=curOutcome; dataResultsVal[g][numDim][origStrat][1][n]=curOutcome;
 														double cost=(double) table[s][2];
 														double benefit=(double) table[s][3];
-														dataScatterAbs[g][origStrat][0][n]=benefit;
-														dataScatterAbs[g][origStrat][1][n]=cost;
-														double baseCost=(double) table[baseRow][2];
+														dataScatterAbs[g][origStrat][0][n]=cost;
+														dataScatterAbs[g][origStrat][1][n]=benefit;
+														double baseCost=(double) table[baseRow][2]; 
 														double baseBenefit=(double) table[baseRow][3];
-														dataScatterRel[g][origStrat][0][n]=benefit-baseBenefit;
-														dataScatterRel[g][origStrat][1][n]=cost-baseCost;
+														dataScatterRel[g][origStrat][0][n]=cost-baseCost;
+														dataScatterRel[g][origStrat][1][n]=benefit-baseBenefit;
+														
 													}
 												}
 											}
@@ -811,6 +817,10 @@ public class frmPSA {
 										curParam.value=origValues[v];
 									}
 									myModel.validateModelObjects();
+									
+									if(myModel.type==1){
+										myModel.markov.showTrace=origShowTrace;
+									}
 									
 									if(cancelled==false){
 										double meanResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];

@@ -51,10 +51,13 @@ public final class Functions{
 		case "logb": return(true);
 		case "logGamma": return(true);
 		case "log10": return(true);
+		case "logit": return(true);
+		case "logistic": return(true);
 		case "max": return(true);
 		case "min": return(true);
 		case "probRescale": return(true);
 		case "probToRate": return(true);
+		case "probit": return(true);
 		case "rateToProb": return(true);
 		case "round": return(true);
 		case "sin": return(true);
@@ -409,7 +412,7 @@ public final class Functions{
 			if(args[0].format!=Format.MATRIX){
 				double x=args[0].getDouble();
 				if(x<=0){throw new NumericException("x should be >0","log10");}
-				return(new Numeric(Math.log10(args[0].getDouble())));
+				return(new Numeric(Math.log10(x)));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -418,6 +421,42 @@ public final class Functions{
 						double x=args[0].matrix[i][j];
 						if(x<=0){throw new NumericException("x should be >0","log10");}
 						matrix[i][j]=Math.log10(x);
+					}
+				}
+				return(new Numeric(matrix));
+			}
+		}
+		case "logit":{ //logit
+			if(args.length!=1){throw new NumericException("Function takes 1 argument","logit");}
+			if(args[0].format!=Format.MATRIX){
+				double x=args[0].getDouble();
+				if(x<0 || x>1){throw new NumericException("p should be in [0,1]","logit");}
+				return(new Numeric(Math.log(x/(1.0-x))));
+			}
+			else{
+				double matrix[][]=new double[args[0].nrow][args[0].ncol];
+				for(int i=0; i<args[0].nrow; i++){
+					for(int j=0; j<args[0].ncol; j++){
+						double x=args[0].matrix[i][j];
+						if(x<0 || x>1){throw new NumericException("p should be in [0,1]","logit");}
+						matrix[i][j]=Math.log(x/(1.0-x));
+					}
+				}
+				return(new Numeric(matrix));
+			}
+		}
+		case "logistic":{ //logistic
+			if(args.length!=1){throw new NumericException("Function takes 1 argument","logistic");}
+			if(args[0].format!=Format.MATRIX){
+				double x=args[0].getDouble();
+				return(new Numeric(1.0/(1+Math.exp(-x))));
+			}
+			else{
+				double matrix[][]=new double[args[0].nrow][args[0].ncol];
+				for(int i=0; i<args[0].nrow; i++){
+					for(int j=0; j<args[0].ncol; j++){
+						double x=args[0].matrix[i][j];
+						matrix[i][j]=1.0/(1+Math.exp(-x));
 					}
 				}
 				return(new Numeric(matrix));
@@ -497,6 +536,25 @@ public final class Functions{
 						double r1=r0/tProb; //rate per t1
 						double r2=r1*tRate; //rate per t2
 						matrix[i][j]=r2;
+					}
+				}
+				return(new Numeric(matrix));
+			}
+		}
+		case "probit":{ //probit
+			if(args.length!=1){throw new NumericException("Function takes 1 argument","probit");}
+			if(args[0].format!=Format.MATRIX){
+				double x=args[0].getDouble();
+				if(x<0 || x>1){throw new NumericException("p should be in [0,1]","probit");}
+				return(new Numeric(Math.sqrt(2)*Erf.erfInv(2*x-1)));
+			}
+			else{
+				double matrix[][]=new double[args[0].nrow][args[0].ncol];
+				for(int i=0; i<args[0].nrow; i++){
+					for(int j=0; j<args[0].ncol; j++){
+						double x=args[0].matrix[i][j];
+						if(x<0 || x>1){throw new NumericException("p should be in [0,1]","probit");}
+						matrix[i][j]=Math.sqrt(2)*Erf.erfInv(2*x-1);
 					}
 				}
 				return(new Numeric(matrix));
@@ -953,6 +1011,20 @@ public final class Functions{
 			des+=MathUtils.consoleFont("x")+": Real number (or matrix) "+MathUtils.consoleFont(">0")+"<br>";
 			des+="</html>";
 			return(des);
+		case "logit": 
+			des="<html><b>Logit Function</b><br>";
+			des+=MathUtils.consoleFont("<b>logit</b>","#800000")+MathUtils.consoleFont("(p)")+": Returns the log odds of probability "+MathUtils.consoleFont("p")+": i.e. "+MathUtils.consoleFont("log(p/(1-p))")+"<br>";
+			des+="<br><i>Arguments</i><br>";
+			des+=MathUtils.consoleFont("p")+": Probability (or matrix) in "+MathUtils.consoleFont("[0,1]")+"<br>";
+			des+="</html>";
+			return(des);
+		case "logistic": 
+			des="<html><b>Logistic Function</b><br>";
+			des+=MathUtils.consoleFont("<b>logistic</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the standard logistic transformation: "+MathUtils.consoleFont("1/(1+exp(-x))")+"<br>";
+			des+="<br><i>Arguments</i><br>";
+			des+=MathUtils.consoleFont("x")+": Real number (or matrix) <br>";
+			des+="</html>";
+			return(des);
 		case "max": 
 			des="<html><b>Maximum</b><br>";
 			des+=MathUtils.consoleFont("<b>max</b>","#800000")+MathUtils.consoleFont("(a,b)")+": Returns the maximum of "+MathUtils.consoleFont("a")+" and "+MathUtils.consoleFont("b")+"<br>";
@@ -984,9 +1056,16 @@ public final class Functions{
 			des+=MathUtils.consoleFont("<b>probToRate</b>","#800000")+MathUtils.consoleFont("(p)")+": Converts a probability "+MathUtils.consoleFont("p")+" to a rate for a fixed time interval<br>";
 			des+=MathUtils.consoleFont("<b>probToRate</b>","#800000")+MathUtils.consoleFont("(p,t1,t2)")+": Converts a probability "+MathUtils.consoleFont("p")+" per time interval "+MathUtils.consoleFont("t1")+" to a rate per time interval "+MathUtils.consoleFont("t2")+"<br>";
 			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("p")+": Probability (or matrix) "+MathUtils.consoleFont("[0,1]")+"<br>";
+			des+=MathUtils.consoleFont("p")+": Probability (or matrix) in "+MathUtils.consoleFont("[0,1]")+"<br>";
 			des+=MathUtils.consoleFont("t1")+": Probability time interval "+MathUtils.consoleFont(">0")+" (optional)<br>";
 			des+=MathUtils.consoleFont("t2")+": Rate time interval "+MathUtils.consoleFont(">0")+" (optional)<br>";
+			des+="</html>";
+			return(des);
+		case "probit": 
+			des="<html><b>Probit Function</b><br>";
+			des+=MathUtils.consoleFont("<b>probit</b>","#800000")+MathUtils.consoleFont("(p)")+": Returns the inverse of the standard normal CDF for probability "+MathUtils.consoleFont("p")+"<br>";
+			des+="<br><i>Arguments</i><br>";
+			des+=MathUtils.consoleFont("p")+": Probability (or matrix) in "+MathUtils.consoleFont("[0,1]")+"<br>";
 			des+="</html>";
 			return(des);
 		case "rateToProb": 
@@ -1128,10 +1207,13 @@ public final class Functions{
 		case "logb": return("log(x,b)");
 		case "logGamma": return("logGamma(x)");
 		case "log10": return("log10(x)");
+		case "logit": return("logit(p)");
+		case "logistic": return("logistic(x)");
 		case "max": return("max(a,b)");
 		case "min": return("min(a,b)");
 		case "probRescale": return("probRescale(p,t1,t2)");
 		case "probToRate": return("probToRate(p)");
+		case "probit": return("probit(p)");
 		case "rateToProb": return("rateToProb(r)");
 		case "round": return("round(x)");
 		case "sin": return("sin(x)");

@@ -35,26 +35,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
-import javax.swing.border.EtchedBorder;
-import javax.swing.table.DefaultTableModel;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -73,17 +64,11 @@ import filters.CSVFilter;
 import main.CEAHelper;
 import main.Console;
 import main.ConsoleTable;
-import main.Constraint;
 import main.DimInfo;
-import main.MersenneTwisterFast;
-import main.Parameter;
-import markov.MarkovNode;
 import markov.MarkovTrace;
 import markov.MarkovTraceSummary;
-import math.Interpreter;
 import math.KernelSmooth;
 import math.MathUtils;
-import math.Numeric;
 
 /**
  *
@@ -435,6 +420,12 @@ public class frmBatch {
 								
 									myModel.evaluateParameters(); //get parameters
 									
+									boolean origShowTrace = true;
+									if(myModel.type==1){
+										origShowTrace=myModel.markov.showTrace;
+										myModel.markov.showTrace=false; //don't show individual trace
+									}
+									
 									long startTime=System.currentTimeMillis();
 
 									for(int n=0; n<numIterations; n++){
@@ -538,6 +529,9 @@ public class frmBatch {
 										}
 									}
 									myModel.unlockParams();
+									if(myModel.type==1){
+										myModel.markov.showTrace=origShowTrace; //reset
+									}
 																		
 									if(cancelled==false){
 										double meanResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];

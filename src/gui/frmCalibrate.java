@@ -182,12 +182,14 @@ public class frmCalibrate {
 			panel.setLayout(gbl_panel);
 			
 			
-			modelParamSets=new DefaultTableModel(
-					new Object[][] {},
-					new String[] {
-						"Set", "Score"
-					}
-				);
+			modelParamSets=new DefaultTableModel(){
+				@Override
+				public Class getColumnClass(int column) {
+					return Double.class;
+				}
+			};
+			modelParamSets.addColumn("Set");
+			modelParamSets.addColumn("Score");
 			for(int i=0; i<numParams; i++){
 				modelParamSets.addColumn(paramNames[i]);
 			}
@@ -206,6 +208,7 @@ public class frmCalibrate {
 			tableParamSets.setModel(modelParamSets);
 			tableParamSets.getTableHeader().setReorderingAllowed(false);
 			tableParamSets.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			tableParamSets.setAutoCreateRowSorter(true);
 			scrollPane_1.setViewportView(tableParamSets);
 					
 			JPanel panel_3 = new JPanel();
@@ -449,6 +452,7 @@ public class frmCalibrate {
 					myModel.parameterNames=paramNames;
 					myModel.parameterSets=params;
 					myModel.buildParamSetsTable(myModel.mainForm.modelParamSets);
+					myModel.mainForm.chckbxUseParamSets.setEnabled(true);
 					myModel.saveModel();
 					JOptionPane.showMessageDialog(frmCalibrate, "Parameter sets saved!");
 				}
@@ -555,6 +559,12 @@ public class frmCalibrate {
 								MarkovNode curChain=chainRoots.get(comboChain.getSelectedIndex());
 								myModel.panelMarkov.curNode=curChain; //select current chain
 								
+								boolean origShowTrace=true;
+								if(myModel.type==1){
+									origShowTrace=myModel.markov.showTrace;
+									myModel.markov.showTrace=false;
+								}
+								
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
 									JOptionPane.showMessageDialog(frmCalibrate, "Errors in base case model!");
@@ -574,6 +584,9 @@ public class frmCalibrate {
 								catch(Exception e){
 									go=false;
 									JOptionPane.showMessageDialog(frmCalibrate,"Error in score expression: "+e.toString());
+									if(myModel.type==1){
+										myModel.markov.showTrace=origShowTrace;
+									}
 								}
 								if(go){
 									
@@ -587,6 +600,7 @@ public class frmCalibrate {
 									myModel.sampleParam=true;
 									myModel.generatorParam=new MersenneTwisterFast();
 									myModel.curGenerator[0]=myModel.generatorParam;
+									
 									
 									//Get orig values for all parameters
 									Numeric origValues[]=new Numeric[numParams];
@@ -658,6 +672,10 @@ public class frmCalibrate {
 										}
 									}
 									
+									if(myModel.type==1){
+										myModel.markov.showTrace=origShowTrace;
+									}
+									
 									//Reset all parameters
 									myModel.sampleParam=false;
 									for(int v=0; v<numParams; v++){ //Reset 'fixed' for all parameters and orig values
@@ -673,11 +691,11 @@ public class frmCalibrate {
 									modelParamSets.setRowCount(0);
 									for(int i=0; i<numSets; i++){
 										modelParamSets.addRow(new Object[]{null});
-										modelParamSets.setValueAt(params[i].id, i, 0);
+										modelParamSets.setValueAt(Double.parseDouble(params[i].id), i, 0);
 										modelParamSets.setValueAt(params[i].score, i, 1);
 										scores[i]=params[i].score;
 										for(int j=0; j<numParams; j++){
-											modelParamSets.setValueAt(params[i].values[j].toString(),i,2+j);
+											//modelParamSets.setValueAt(params[i].values[j].toString(),i,2+j);
 											//update parameter ranges
 											double val=Double.NaN;
 											try{
@@ -685,6 +703,8 @@ public class frmCalibrate {
 											} catch(Exception e){
 												val=Double.NaN;
 											}
+											modelParamSets.setValueAt(val,i,2+j);
+											
 											paramVals[j][i]=val;
 										}
 									}
@@ -762,6 +782,7 @@ public class frmCalibrate {
 			for(int v=0; v<numParams; v++){ //sample all parameters
 				Parameter curParam=myModel.parameters.get(v);
 				curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+				curParam.locked=true;
 			}
 			//check constraints
 			validParams=true;
