@@ -63,6 +63,7 @@ import javax.swing.table.TableCellEditor;
 import base.AmuaModel;
 import filters.CSVFilter;
 import main.ErrorLog;
+import main.ScaledIcon;
 import main.Table;
 import math.Interpreter;
 import math.MathUtils;
@@ -110,7 +111,7 @@ public class frmDefineTable {
 	private void initialize() {
 		try{
 			frmDefineTable = new JDialog();
-			frmDefineTable.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineTable.class.getResource("/images/table.png")));
+			frmDefineTable.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineTable.class.getResource("/images/table_128.png")));
 			frmDefineTable.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineTable.setTitle("Amua - Define Table");
 			frmDefineTable.setBounds(100, 100, 925, 600);
@@ -358,7 +359,7 @@ public class frmDefineTable {
 				}
 			});
 			btnImport.setToolTipText("Import Table");
-			btnImport.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/import.png")));
+			btnImport.setIcon(new ScaledIcon("/images/import",16,16,16,true));
 			toolBar.add(btnImport);
 
 			JButton btnPasteTable = new JButton("");
@@ -389,7 +390,7 @@ public class frmDefineTable {
 					}
 				}
 			});
-			btnPasteTable.setIcon(new ImageIcon(frmMain.class.getResource("/images/paste_16.png")));
+			btnPasteTable.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
 			btnPasteTable.setToolTipText("Paste Table");
 			toolBar.add(btnPasteTable);
 			
@@ -438,7 +439,7 @@ public class frmDefineTable {
 				}
 			});
 			btnExport.setToolTipText("Export Table");
-			btnExport.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/export.png")));
+			btnExport.setIcon(new ScaledIcon("/images/export",16,16,16,true));
 			toolBar.add(btnExport);
 
 			JSeparator separator = new JSeparator();
@@ -459,7 +460,7 @@ public class frmDefineTable {
 				}
 			});
 			btnAddRow.setToolTipText("Add Row");
-			btnAddRow.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/add.png")));
+			btnAddRow.setIcon(new ScaledIcon("/images/add",16,16,16,true));
 			toolBar.add(btnAddRow);
 
 			JButton btnRemoveRow = new JButton("");
@@ -475,7 +476,7 @@ public class frmDefineTable {
 				}
 			});
 			btnRemoveRow.setToolTipText("Remove Row");
-			btnRemoveRow.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/remove.png")));
+			btnRemoveRow.setIcon(new ScaledIcon("/images/remove",16,16,16,true));
 			toolBar.add(btnRemoveRow);
 
 			textNumRows = new JTextField();
@@ -527,7 +528,7 @@ public class frmDefineTable {
 					}
 				}
 			});
-			btnBtnaddcol.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/add.png")));
+			btnBtnaddcol.setIcon(new ScaledIcon("/images/add",16,16,16,true));
 			btnBtnaddcol.setToolTipText("Add Column");
 			toolBar.add(btnBtnaddcol);
 
@@ -557,7 +558,7 @@ public class frmDefineTable {
 					}
 				}
 			});
-			btnRemoveColumn.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/remove.png")));
+			btnRemoveColumn.setIcon(new ScaledIcon("/images/remove",16,16,16,true));
 			btnRemoveColumn.setToolTipText("Remove Column");
 			toolBar.add(btnRemoveColumn);
 			
@@ -581,7 +582,7 @@ public class frmDefineTable {
 				}
 			});
 			btnEditColName.setToolTipText("Edit Column Name");
-			btnEditColName.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/edit_16.png")));
+			btnEditColName.setIcon(new ScaledIcon("/images/edit",16,16,16,true));
 			toolBar.add(btnEditColName);
 
 			textNumCols = new JTextField();

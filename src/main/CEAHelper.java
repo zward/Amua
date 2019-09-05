@@ -33,7 +33,12 @@ public class CEAHelper{
 		
 	}
 	
-	//ErrorLog errorLog;
+	/**
+	 * 
+	 * @param myModel
+	 * @param group -1: Overall, 0-n: Subgroup index
+	 * @return
+	 */
 	public Object[][] calculateICERs(AmuaModel myModel, int group){
 		getResults(myModel,group); //Get EVs
 		

@@ -63,7 +63,7 @@ public class frmFindReplace {
 	private void initialize() {
 		try{
 			frmFindReplace = new JDialog();
-			frmFindReplace.setIconImage(Toolkit.getDefaultToolkit().getImage(frmFindReplace.class.getResource("/images/find.png")));
+			frmFindReplace.setIconImage(Toolkit.getDefaultToolkit().getImage(frmFindReplace.class.getResource("/images/find_128.png")));
 			frmFindReplace.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmFindReplace.setTitle("Amua - Find/Replace");
 			frmFindReplace.setResizable(false);

@@ -113,7 +113,7 @@ public class frmBatch {
 		try{
 			frmBatch = new JFrame();
 			frmBatch.setTitle("Amua - Batch Runs (1st-order uncertainty)");
-			frmBatch.setIconImage(Toolkit.getDefaultToolkit().getImage(frmBatch.class.getResource("/images/runBatch.png")));
+			frmBatch.setIconImage(Toolkit.getDefaultToolkit().getImage(frmBatch.class.getResource("/images/runBatch_128.png")));
 			frmBatch.setBounds(100, 100, 1000, 600);
 			frmBatch.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -169,7 +169,7 @@ public class frmBatch {
 			chartResults.getXYPlot().addDomainMarker(marker);
 			chartResults.getXYPlot().addRangeMarker(marker);
 
-			ChartPanel panelChartResults = new ChartPanel(chartResults);
+			ChartPanel panelChartResults = new ChartPanel(chartResults,false);
 			GridBagConstraints gbc_panelChartResults = new GridBagConstraints();
 			gbc_panelChartResults.gridwidth = 3;
 			gbc_panelChartResults.insets = new Insets(0, 0, 5, 0);

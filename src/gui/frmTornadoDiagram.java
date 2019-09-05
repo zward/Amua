@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2019 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -32,10 +32,15 @@ import java.util.Collections;
 import java.awt.event.ActionEvent;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
+
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
 import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.Toolkit;
 
 import javax.swing.JTable;
@@ -48,6 +53,7 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.renderer.category.BarRenderer;
@@ -66,12 +72,10 @@ import javax.swing.border.LineBorder;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Cursor;
-
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.border.EtchedBorder;
-import javax.swing.ComboBoxModel;
+import javax.swing.JList;
 
 /**
  *
@@ -84,19 +88,47 @@ public class frmTornadoDiagram {
 	private JTable tableParams;
 
 	ChartPanel panelChart;
-	JComboBox<String> comboStrategy;
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboSubgroup;
-	JLabel lblSubgroup;
+	JLabel lblSubgroup, lblOutcome;
 
 	JFreeChart chart;
-	double baseOutcome;
-	ArrayList<ParamResult> results;
+	String paramNames[];
+	
+	/**
+	 * [Subgroup][Strategy][Dimension]
+	 */
+	double baseOutcomes[][][];
+	
+	/**
+	 * [Subgroup][Strategy][Dimension][Parameter][Min/Max]
+	 */
+	double results[][][][][];
+	
+	ArrayList<ParamResult> curResults;
+	
 	Parameter curParam;
+	private JScrollPane scrollPane;
+	JList<String> listStrategies;
+	DefaultListModel<String> listModelStrategies;
+	JLabel lblStrategies;
+	
+	int numStrategies;
+	int numOutcomes;
+	int numSubgroups=0;
+	int numParams;
+	int curOutcome=0, curGroup=0;
+	JButton btnUpdatePlot;
 	
 	public frmTornadoDiagram(AmuaModel model){
 		this.myModel=model;
-		myModel.getStrategies();
+		numStrategies=myModel.getStrategies();
+		numOutcomes=myModel.dimInfo.dimNames.length;
+		if(myModel.dimInfo.analysisType>0) {numOutcomes++;}
+		if(myModel.simType==1 && myModel.reportSubgroups==true) {
+			numSubgroups=myModel.subgroupNames.size();
+		}
+		
 		initialize();
 	}
 	
@@ -107,7 +139,7 @@ public class frmTornadoDiagram {
 		try{
 			frmTornadoDiagram = new JFrame();
 			frmTornadoDiagram.setTitle("Amua - Tornado Diagram");
-			frmTornadoDiagram.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTornadoDiagram.class.getResource("/images/tornado.png")));
+			frmTornadoDiagram.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTornadoDiagram.class.getResource("/images/tornado_128.png")));
 			frmTornadoDiagram.setBounds(100, 100, 1000, 500);
 			frmTornadoDiagram.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -126,7 +158,7 @@ public class frmTornadoDiagram {
 			frmTornadoDiagram.getContentPane().add(panel_1, gbc_panel_1);
 			GridBagLayout gbl_panel_1 = new GridBagLayout();
 			gbl_panel_1.columnWidths = new int[]{455, 0};
-			gbl_panel_1.rowHeights = new int[]{466, 94, 0};
+			gbl_panel_1.rowHeights = new int[]{466, 146, 0};
 			gbl_panel_1.columnWeights = new double[]{0.0, Double.MIN_VALUE};
 			gbl_panel_1.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
 			panel_1.setLayout(gbl_panel_1);
@@ -140,8 +172,11 @@ public class frmTornadoDiagram {
 
 			for(int i=0; i<myModel.parameters.size(); i++){
 				modelParams.addRow(new Object[]{null});
-				modelParams.setValueAt(myModel.parameters.get(i).name, i, 0);
-				modelParams.setValueAt(myModel.parameters.get(i).expression, i, 1);
+				Parameter curParam=myModel.parameters.get(i);
+				modelParams.setValueAt(curParam.name, i, 0);
+				modelParams.setValueAt(curParam.expression, i, 1);
+				modelParams.setValueAt(curParam.sensMin, i, 2);
+				modelParams.setValueAt(curParam.sensMax, i, 3);
 			}
 
 			JScrollPane scrollPaneParams = new JScrollPane();
@@ -167,8 +202,9 @@ public class frmTornadoDiagram {
 			gbc_panel_2.gridy = 1;
 			panel_1.add(panel_2, gbc_panel_2);
 
-			final JLabel lblOutcome = new JLabel("Outcome:");
-			lblOutcome.setBounds(6, 42, 81, 16);
+			lblOutcome = new JLabel("Outcome:");
+			lblOutcome.setEnabled(false);
+			lblOutcome.setBounds(222, 51, 60, 16);
 			panel_2.add(lblOutcome);
 
 			DimInfo info=myModel.dimInfo;
@@ -193,20 +229,18 @@ public class frmTornadoDiagram {
 			}
 			
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
-			comboDimensions.setBounds(88, 37, 227, 26);
+			comboDimensions.setEnabled(false);
+			comboDimensions.setBounds(288, 46, 161, 26);
 			panel_2.add(comboDimensions);
 
 			JButton btnRun = new JButton("Run");
-			btnRun.setBounds(355, 5, 90, 28);
+			btnRun.setBounds(258, 6, 90, 28);
 			panel_2.add(btnRun);
 
-			JLabel lblStrategy = new JLabel("Strategy:");
-			lblStrategy.setBounds(6, 11, 81, 16);
-			panel_2.add(lblStrategy);
-
-			comboStrategy = new JComboBox<String>(new DefaultComboBoxModel<String>(myModel.strategyNames));
-			comboStrategy.setBounds(88, 6, 227, 26);
-			panel_2.add(comboStrategy);
+			lblStrategies = new JLabel("Strategies:");
+			lblStrategies.setEnabled(false);
+			lblStrategies.setBounds(6, 12, 81, 16);
+			panel_2.add(lblStrategies);
 			
 			final JButton btnExport = new JButton("Export");
 			btnExport.addActionListener(new ActionListener() {
@@ -229,13 +263,28 @@ public class frmTornadoDiagram {
 							FileWriter fstream = new FileWriter(path+".csv"); //Create new file
 							BufferedWriter out = new BufferedWriter(fstream);
 							//Headers
-							out.write(chart.getCategoryPlot().getRangeAxis().getLabel()+",,"); out.newLine(); //Outcome
-							out.write("Base case,"+baseOutcome+","); out.newLine();
-							out.write("Parameter,Low,High"); out.newLine();
-							int numParams=results.size();
-							for(int v=0; v<numParams; v++){
-								ParamResult result=results.get(v);
-								out.write(result.name+","+result.minVal+","+result.maxVal);
+							String outcome=chart.getCategoryPlot().getRangeAxis().getLabel();
+							out.write("Parameter");
+							for(int s=0; s<numStrategies; s++) {
+								out.write(","+myModel.strategyNames[s]+" "+outcome+" - Low");
+								out.write(","+myModel.strategyNames[s]+" "+outcome+" - High");
+							}
+							out.newLine();
+							//Baseline
+							out.write("[Baseline]");
+							for(int s=0; s<numStrategies; s++) {
+								out.write(","+baseOutcomes[curGroup][s][curOutcome]);
+								out.write(","+baseOutcomes[curGroup][s][curOutcome]);
+							}
+							out.newLine();
+							for(int p=0; p<numParams; p++) {
+								ParamResult result=curResults.get(p);
+								out.write(result.name);
+								int pIndex=myModel.getParameterIndex(result.name);
+								for(int s=0; s<numStrategies; s++) {
+									out.write(","+results[curGroup][s][curOutcome][pIndex][0]);
+									out.write(","+results[curGroup][s][curOutcome][pIndex][1]);
+								}
 								out.newLine();
 							}
 							out.close();
@@ -252,18 +301,130 @@ public class frmTornadoDiagram {
 				}
 			});
 			btnExport.setEnabled(false);
-			btnExport.setBounds(355, 36, 90, 28);
+			btnExport.setBounds(355, 6, 90, 28);
 			panel_2.add(btnExport);
 			
 			lblSubgroup = new JLabel("Subgroup:");
 			lblSubgroup.setEnabled(false);
-			lblSubgroup.setBounds(6, 71, 81, 16);
+			lblSubgroup.setBounds(222, 84, 60, 16);
 			panel_2.add(lblSubgroup);
 			
 			comboSubgroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{"Overall"}));
 			comboSubgroup.setEnabled(false);
-			comboSubgroup.setBounds(88, 66, 227, 26);
+			comboSubgroup.setBounds(288, 79, 161, 26);
 			panel_2.add(comboSubgroup);
+			
+			scrollPane = new JScrollPane();
+			scrollPane.setBounds(6, 31, 205, 109);
+			panel_2.add(scrollPane);
+			
+			listModelStrategies=new DefaultListModel<String>();
+			for(int s=0; s<numStrategies; s++){listModelStrategies.addElement(myModel.strategyNames[s]);}
+
+			listStrategies = new JList(listModelStrategies);
+			listStrategies.setEnabled(false);
+			scrollPane.setViewportView(listStrategies);
+			
+			btnUpdatePlot = new JButton("Update Plot");
+			btnUpdatePlot.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(listStrategies.isSelectionEmpty()) {
+						JOptionPane.showMessageDialog(frmTornadoDiagram, "Please select at least one strategy!");
+					}
+					else {
+						int strats[]=listStrategies.getSelectedIndices();
+						int numStrat=strats.length;
+						int dim=comboDimensions.getSelectedIndex();
+						curOutcome=dim;
+						curGroup=0; //overall
+						if(comboSubgroup.isEnabled()){
+							curGroup=comboSubgroup.getSelectedIndex();
+						}
+
+						double globalMin=Double.POSITIVE_INFINITY, globalMax=Double.NEGATIVE_INFINITY;
+
+						int numParams=paramNames.length;
+
+						curResults=new ArrayList<ParamResult>();
+						for(int p=0; p<numParams; p++) {
+							ParamResult result=new ParamResult();
+							result.name=paramNames[p];
+							result.minVal=new double[numStrat];
+							result.maxVal=new double[numStrat];
+							for(int s=0; s<numStrat; s++) {
+								result.minVal[s]=Math.min(results[curGroup][strats[s]][dim][p][0],results[curGroup][strats[s]][dim][p][1]);
+								result.maxVal[s]=Math.max(results[curGroup][strats[s]][dim][p][0],results[curGroup][strats[s]][dim][p][1]);
+								globalMin=Math.min(globalMin, result.minVal[s]);
+								globalMax=Math.max(globalMax, result.maxVal[s]);
+							}
+							result.calcMeanRange();
+							curResults.add(result);
+						}
+						Collections.sort(curResults);
+
+						String paramNamesChrt[]=new String[numParams];
+						double[][] starts = new double[numStrat][numParams];   
+						double[][] ends = new double[numStrat][numParams];  
+						for(int p=0; p<numParams; p++){
+							paramNamesChrt[p]=curResults.get(p).name;
+							for(int s=0; s<numStrat; s++) {
+								starts[s][p]=curResults.get(p).minVal[s];
+								ends[s][p]=curResults.get(p).maxVal[s];
+							}
+						}
+						double offset=Math.abs(globalMin*0.05);
+						offset=Math.max(offset, Math.abs(globalMax*0.05));
+						globalMin-=offset;
+						globalMax+=offset;
+
+						DefaultIntervalCategoryDataset dataset=new DefaultIntervalCategoryDataset(starts, ends);
+						dataset.setCategoryKeys(paramNamesChrt);
+						String seriesKeys[]=new String[numStrat];
+						for(int s=0; s<numStrat; s++) {
+							seriesKeys[s]=myModel.strategyNames[strats[s]];
+						}
+						dataset.setSeriesKeys(seriesKeys);
+												
+						CategoryAxis xAxis = new CategoryAxis("Parameters");
+						ValueAxis yAxis = new NumberAxis();
+						DimInfo info=myModel.dimInfo;
+						if(myModel.dimInfo.analysisType==0 || dim<(numOutcomes-1)) {yAxis.setLabel("EV ("+info.dimSymbols[dim]+")");}
+						else {
+							if(myModel.dimInfo.analysisType==1) {yAxis.setLabel("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
+							else if(myModel.dimInfo.analysisType==2){yAxis.setLabel("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
+						}
+						yAxis.setRange(globalMin,globalMax);
+						IntervalBarRenderer renderer = new IntervalBarRenderer();
+						CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
+						((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());
+						((BarRenderer) plot.getRenderer()).setShadowVisible(false);
+						plot.setOrientation(PlotOrientation.HORIZONTAL);
+						
+						DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+						Paint paint2=supplier.getNextPaint(); //flip red and blue
+						Paint paint1=supplier.getNextPaint();
+						
+						for(int s=0; s<numStrat; s++){
+							Paint curPaint;
+							if(s==0) {curPaint=paint1;}
+							else if(s==1) {curPaint=paint2;}
+							else {curPaint=supplier.getNextPaint();}
+							plot.getRenderer().setSeriesPaint(s, curPaint);
+							
+							Stroke fill = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
+							if(numStrat==1) {curPaint=Color.BLACK;} //only 1 strategy, draw black baseline
+							plot.addRangeMarker(new ValueMarker(baseOutcomes[curGroup][strats[s]][dim], curPaint, fill));
+							plot.addRangeMarker(new ValueMarker(baseOutcomes[curGroup][strats[s]][dim], Color.BLACK, new CompositeStroke(fill,new BasicStroke(0.75f))));
+						}
+						
+						chart = new JFreeChart(plot);
+						//chart.removeLegend();
+						panelChart.setChart(chart);
+					}
+				}
+			});
+			btnUpdatePlot.setBounds(288, 108, 109, 28);
+			panel_2.add(btnUpdatePlot);
 			
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				int numSubgroups=myModel.subgroupNames.size();
@@ -282,83 +443,101 @@ public class frmTornadoDiagram {
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
-
-								int strat=comboStrategy.getSelectedIndex();
-								int dim=comboDimensions.getSelectedIndex();
-								int analysisType=0; //EV
-								if(dim==comboDimensions.getItemCount()-1){ //ICER or NMB selected
-									analysisType=myModel.dimInfo.analysisType;
-								} 
-
-								int group=-1; //overall
-								if(comboSubgroup.isEnabled()){
-									group=comboSubgroup.getSelectedIndex()-1;
-								}
-
+								enablePlot(false);
+								btnExport.setEnabled(false);
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
 									JOptionPane.showMessageDialog(frmTornadoDiagram, "Errors in base case model!");
 								}
 								else{
+									boolean proceed=true;
 
 									int numRuns=1; //baseline
-									int numParams=tableParams.getRowCount();
-									for(int p=0; p<numParams; p++){
+									ArrayList<Integer> paramIndices=new ArrayList<Integer>();
+									for(int p=0; p<tableParams.getRowCount(); p++){
+										String paramName=(String)tableParams.getValueAt(p, 0);
 										String strMin=(String)tableParams.getValueAt(p, 2);
 										String strMax=(String)tableParams.getValueAt(p, 3);
 										if(strMin!=null && strMin.length()>0 && strMax!=null && strMax.length()>0){
+											strMin=strMin.replaceAll(",",""); //Replace any commas
+											strMax=strMax.replaceAll(",",""); //Replace any commas
+											paramIndices.add(p);
+											try {
+												double min=Double.parseDouble(strMin);
+												double max=Double.parseDouble(strMax);
+											} catch(Exception err) {
+												proceed=false;
+												JOptionPane.showMessageDialog(frmTornadoDiagram,"Invalid entry: "+paramName);
+												p=tableParams.getRowCount();
+											}
 											numRuns+=2;
 										}
 									}
-									progress.setMaximum(numRuns+1);
-									int curProg=1;
-									progress.setProgress(curProg);
-
-									//Get baseline
-									myModel.runModel(null, false);
-									curProg++; progress.setProgress(curProg);
 									
-									if(analysisType==0){ //EV
-										if(group==-1){baseOutcome=myModel.getStrategyEV(strat, dim);} //overall
-										else{baseOutcome=myModel.getSubgroupEV(group, strat, dim);}
-									} 
-									else if(analysisType==1){ //CEA
-										Object table[][]=new CEAHelper().calculateICERs(myModel,group);
-										for(int s=0; s<table.length; s++){	
-											int origStrat=(int) table[s][0];
-											if(origStrat==strat){
-												baseOutcome=(double) table[s][4];
+									if(proceed==true) {
+
+										boolean origShowTrace=false;
+										if(myModel.type==1) {
+											origShowTrace=myModel.markov.showTrace;
+											myModel.markov.showTrace=false;
+										}
+										progress.setMaximum(numRuns+1);
+										int curProg=1;
+										progress.setProgress(curProg);
+
+										//Get baseline
+										myModel.runModel(null, false);
+										curProg++; progress.setProgress(curProg);
+
+										baseOutcomes=new double[1+numSubgroups][numStrategies][numOutcomes];
+
+										int numDim=myModel.dimInfo.dimNames.length;
+										for(int s=0; s<numStrategies; s++) {
+											for(int d=0; d<numDim; d++) {
+												baseOutcomes[0][s][d]=myModel.getStrategyEV(s, d); //overall
+												//subgroups
+												for(int g=0; g<numSubgroups; g++) {
+													baseOutcomes[g+1][s][d]=myModel.getSubgroupEV(g, s, d);
+												}
 											}
 										}
-									}
-									else if(analysisType==2){ //BCA
-										Object table[][]=new CEAHelper().calculateNMB(myModel,group);
-										for(int s=0; s<table.length; s++){	
-											int origStrat=(int) table[s][0];
-											if(origStrat==strat){
-												baseOutcome=(double) table[s][4];
+										if(myModel.dimInfo.analysisType>0) { // CEA/BCA
+											//overall
+											Object table[][]=null;
+											if(myModel.dimInfo.analysisType==1) {table=new CEAHelper().calculateICERs(myModel,-1);}
+											else if(myModel.dimInfo.analysisType==2) {table=new CEAHelper().calculateNMB(myModel,-1);}
+											for(int s=0; s<table.length; s++){	
+												int origStrat=(int) table[s][0];
+												baseOutcomes[0][origStrat][numDim]=(double) table[s][4];
+											}
+											//subgroups
+											for(int g=0; g<numSubgroups; g++) {
+												table=new CEAHelper().calculateICERs(myModel,g);
+												for(int s=0; s<table.length; s++){	
+													int origStrat=(int) table[s][0];
+													baseOutcomes[g+1][origStrat][numDim]=(double) table[s][4];
+												}
 											}
 										}
-									}
-
-									results=new ArrayList<ParamResult>();
-									double globalMin=Double.POSITIVE_INFINITY, globalMax=Double.NEGATIVE_INFINITY;
-
-									for(int v=0; v<numParams; v++){
-										String paramName=(String)tableParams.getValueAt(v, 0);
-										String strMin=(String)tableParams.getValueAt(v, 2);
-										String strMax=(String)tableParams.getValueAt(v, 3);
-										if(strMin!=null && strMin.length()>0 && strMax!=null && strMax.length()>0){
-											ParamResult result=new ParamResult();
-											result.name=paramName;
+										
+										numParams=paramIndices.size();
+										results=new double[1+numSubgroups][numStrategies][numOutcomes][numParams][2];
+										paramNames=new String[numParams];
+										
+										for(int p=0; p<numParams; p++){
+											int pIndex=paramIndices.get(p);
+											paramNames[p]=(String)tableParams.getValueAt(pIndex, 0);
+											String strMin=(String)tableParams.getValueAt(pIndex, 2);
+											String strMax=(String)tableParams.getValueAt(pIndex, 3);
 											strMin=strMin.replaceAll(",",""); //Replace any commas
 											strMax=strMax.replaceAll(",",""); //Replace any commas
 											double min=Double.parseDouble(strMin);
 											double max=Double.parseDouble(strMax);
-											curParam=myModel.parameters.get(v);
+											curParam=myModel.parameters.get(pIndex);
+											curParam.sensMin=strMin;
+											curParam.sensMax=strMax;
 
 											Numeric origValue=curParam.value.copy();
-											double minOutcome=baseOutcome, maxOutcome=baseOutcome;
 
 											//Min
 											curParam.value.setDouble(min);
@@ -368,7 +547,7 @@ public class frmTornadoDiagram {
 												curParam.value=origValue;
 												curParam.locked=false;
 												myModel.validateModelObjects();
-												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramName+" - Min value");
+												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramNames[p]+" - Min value");
 												break;
 											}
 											else{
@@ -376,30 +555,35 @@ public class frmTornadoDiagram {
 												myModel.runModel(null, false);
 												curProg++; progress.setProgress(curProg);
 
-												if(analysisType==0){ //EV
-													if(group==-1){minOutcome=myModel.getStrategyEV(strat, dim);}
-													else{minOutcome=myModel.getSubgroupEV(group, strat, dim);}
-												}
-												else if(analysisType==1){ //CEA
-													Object table[][]=new CEAHelper().calculateICERs(myModel,group);
-													for(int s=0; s<table.length; s++){	
-														int origStrat=(int) table[s][0];
-														if(origStrat==strat){
-															minOutcome=(double) table[s][4];
+												//get results
+												for(int s=0; s<numStrategies; s++) {
+													for(int d=0; d<numDim; d++) {
+														results[0][s][d][p][0]=myModel.getStrategyEV(s, d); //overall
+														//subgroups
+														for(int g=0; g<numSubgroups; g++) {
+															results[g+1][s][d][p][0]=myModel.getSubgroupEV(g, s, d);
 														}
 													}
 												}
-												else if(analysisType==2){ //BCA
-													Object table[][]=new CEAHelper().calculateNMB(myModel,group);
+												if(myModel.dimInfo.analysisType>0) { // CEA/BCA
+													//overall
+													Object table[][]=null;
+													if(myModel.dimInfo.analysisType==1) {table=new CEAHelper().calculateICERs(myModel,-1);}
+													else if(myModel.dimInfo.analysisType==2) {table=new CEAHelper().calculateNMB(myModel,-1);}
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
-														if(origStrat==strat){
-															minOutcome=(double) table[s][4];
+														results[0][origStrat][numDim][p][0]=(double) table[s][4];
+													}
+													//subgroups
+													for(int g=0; g<numSubgroups; g++) {
+														table=new CEAHelper().calculateICERs(myModel,g);
+														for(int s=0; s<table.length; s++){	
+															int origStrat=(int) table[s][0];
+															results[g+1][origStrat][numDim][p][0]=(double) table[s][4];
 														}
 													}
 												}
 											}
-											result.minVal=minOutcome;
 
 											//Max
 											curParam.value.setDouble(max);
@@ -409,7 +593,7 @@ public class frmTornadoDiagram {
 												curParam.value=origValue;
 												curParam.locked=false;
 												myModel.validateModelObjects();
-												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramName+" - Max value");
+												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramNames[p]+" - Max value");
 												break;
 											}
 											else{
@@ -417,83 +601,52 @@ public class frmTornadoDiagram {
 												myModel.runModel(null, false);
 												curProg++; progress.setProgress(curProg);
 
-												if(analysisType==0){ //EV
-													if(group==-1){maxOutcome=myModel.getStrategyEV(strat, dim);}
-													else{maxOutcome=myModel.getSubgroupEV(group, strat, dim);}
-												} 
-												else if(analysisType==1){ //CEA
-													Object table[][]=new CEAHelper().calculateICERs(myModel,group);
-													for(int s=0; s<table.length; s++){	
-														int origStrat=(int) table[s][0];
-														if(origStrat==strat){
-															maxOutcome=(double) table[s][4];
+												//get results
+												for(int s=0; s<numStrategies; s++) {
+													for(int d=0; d<numDim; d++) {
+														results[0][s][d][p][1]=myModel.getStrategyEV(s, d); //overall
+														//subgroups
+														for(int g=0; g<numSubgroups; g++) {
+															results[g+1][s][d][p][1]=myModel.getSubgroupEV(g, s, d);
 														}
 													}
 												}
-												else if(analysisType==2){ //BCA
-													Object table[][]=new CEAHelper().calculateNMB(myModel,group);
+												if(myModel.dimInfo.analysisType>0) { // CEA/BCA
+													//overall
+													Object table[][]=null;
+													if(myModel.dimInfo.analysisType==1) {table=new CEAHelper().calculateICERs(myModel,-1);}
+													else if(myModel.dimInfo.analysisType==2) {table=new CEAHelper().calculateNMB(myModel,-1);}
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
-														if(origStrat==strat){
-															maxOutcome=(double) table[s][4];
+														results[0][origStrat][numDim][p][1]=(double) table[s][4];
+													}
+													//subgroups
+													for(int g=0; g<numSubgroups; g++) {
+														table=new CEAHelper().calculateICERs(myModel,g);
+														for(int s=0; s<table.length; s++){	
+															int origStrat=(int) table[s][0];
+															results[g+1][origStrat][numDim][p][1]=(double) table[s][4];
 														}
 													}
 												}
+
+												curParam.value=origValue;
+												curParam.locked=false;
 											}
-											result.maxVal=maxOutcome;
-											result.range=(Math.abs(result.maxVal-result.minVal));
 
-											curParam.value=origValue;
-											curParam.locked=false;
-											results.add(result);
+										} //end param loop
+										progress.close();
+
+										myModel.validateModelObjects();
+
+										enablePlot(true);
+										btnExport.setEnabled(true);
+
+										if(myModel.type==1) {
+											myModel.markov.showTrace=origShowTrace;
 										}
-									}
-									progress.close();
-									
-									myModel.validateModelObjects();
-									//Update chart
-									Collections.sort(results);
 
-									numParams=results.size();
-									String paramNamesChrt[]=new String[numParams];
-									double[][] starts = new double[1][numParams];   
-									double[][] ends = new double[1][numParams];  
-									for(int v=0; v<numParams; v++){
-										paramNamesChrt[v]=results.get(v).name;
-										starts[0][v]=results.get(v).minVal;
-										ends[0][v]=results.get(v).maxVal;
-										double curMin=Math.min(starts[0][v], ends[0][v]);
-										double curMax=Math.max(starts[0][v], ends[0][v]);
-										globalMin=Math.min(globalMin, curMin);
-										globalMax=Math.max(globalMax, curMax);
-									}
-									double offset=Math.abs(globalMin*0.05);
-									offset=Math.max(offset, Math.abs(globalMax*0.05));
-									globalMin-=offset;
-									globalMax+=offset;
-
-									DefaultIntervalCategoryDataset dataset = new DefaultIntervalCategoryDataset(starts, ends);
-									dataset.setCategoryKeys(paramNamesChrt);
-
-									CategoryAxis xAxis = new CategoryAxis("Parameters");
-									ValueAxis yAxis = new NumberAxis();
-									DimInfo info=myModel.dimInfo;
-									if(analysisType==0){yAxis.setLabel("EV ("+info.dimSymbols[dim]+")");}
-									else if(analysisType==1){yAxis.setLabel("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
-									else if(analysisType==2){yAxis.setLabel("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
-									yAxis.setRange(globalMin,globalMax);
-									IntervalBarRenderer renderer = new IntervalBarRenderer();
-									CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
-									((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());
-									((BarRenderer) plot.getRenderer()).setShadowVisible(false);
-									plot.setOrientation(PlotOrientation.HORIZONTAL);
-									plot.addRangeMarker(new ValueMarker(baseOutcome, Color.BLACK,new BasicStroke(3f)));
-									plot.getRenderer().setSeriesPaint(0, Color.BLUE);
-
-									chart = new JFreeChart(plot);
-									chart.removeLegend();
-									panelChart.setChart(chart);
-									btnExport.setEnabled(true);
+									} //end proceed check
 								}
 								
 							}catch(Exception e1){
@@ -511,7 +664,7 @@ public class frmTornadoDiagram {
 
 			});
 
-			panelChart = new ChartPanel(null);
+			panelChart = new ChartPanel(null,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
 			gbc_panelChart.fill = GridBagConstraints.BOTH;
 			gbc_panelChart.gridx = 1;
@@ -523,17 +676,53 @@ public class frmTornadoDiagram {
 			ex.printStackTrace();
 			myModel.errorLog.recordError(ex);
 		}
+		
 	}
 
+	private void enablePlot(boolean enabled) {
+		lblStrategies.setEnabled(enabled);
+		listStrategies.setEnabled(enabled);
+		btnUpdatePlot.setEnabled(enabled);
+		lblOutcome.setEnabled(enabled);
+		comboDimensions.setEnabled(enabled);
+		if(myModel.simType==1 && myModel.reportSubgroups) {
+			lblSubgroup.setEnabled(enabled);
+			comboSubgroup.setEnabled(enabled);
+		}
+	}
+	
+	class CompositeStroke implements Stroke {
+		private Stroke stroke1, stroke2;
+
+		public CompositeStroke( Stroke stroke1, Stroke stroke2 ) {
+			this.stroke1 = stroke1;
+			this.stroke2 = stroke2;
+		}
+
+		public Shape createStrokedShape( Shape shape ) {
+			return stroke2.createStrokedShape( stroke1.createStrokedShape( shape ) );
+		}
+	}
+	
 	class ParamResult implements Comparable<ParamResult>{
 		String name;
-		double minVal, maxVal;
-		double range;
+		double minVal[], maxVal[];
+		double meanRange;
+		
+		public void calcMeanRange() {
+			int numStrat=minVal.length;
+			meanRange=0;
+			for(int s=0; s<numStrat; s++) {
+				double curRange=maxVal[s]-minVal[s];
+				meanRange+=curRange;
+			}
+			meanRange/=(numStrat*1.0);
+		}
 
 		@Override
 		public int compareTo(ParamResult result){
-			if (this.range < result.range) return 1;
-			else if (this.range == result.range) return 0;
+			if (this.meanRange < result.meanRange) return 1;
+			else if (this.meanRange == result.meanRange) return 0;
 			else return -1;
 		}
 

@@ -48,6 +48,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import filters.CSVFilter;
 import main.ErrorLog;
+import main.ScaledIcon;
 import markov.MarkovTraceSummary;
 
 import javax.swing.border.LineBorder;
@@ -103,7 +104,7 @@ public class frmTraceSummary {
 		try{
 			frmTraceSummary = new JFrame();
 			frmTraceSummary.setTitle("Amua - Markov Trace Summary: "+traces[0].traceName);
-			frmTraceSummary.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+			frmTraceSummary.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_128.png")));
 			frmTraceSummary.setBounds(100, 100, 1000, 600);
 			frmTraceSummary.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -166,7 +167,7 @@ public class frmTraceSummary {
 			}
 			
 			
-			ChartPanel panelChart = new ChartPanel(chartTrace);
+			ChartPanel panelChart = new ChartPanel(chartTrace,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
 			gbc_panelChart.insets = new Insets(0, 0, 0, 5);
 			gbc_panelChart.fill = GridBagConstraints.BOTH;
@@ -228,7 +229,7 @@ public class frmTraceSummary {
 					}
 				}
 			});
-			btnExport.setIcon(new ImageIcon(frmTraceSummary.class.getResource("/images/export.png")));
+			btnExport.setIcon(new ScaledIcon("/images/export",16,16,16,true));
 			btnExport.setToolTipText("Export");
 			toolBar.add(btnExport);
 			
@@ -254,7 +255,7 @@ public class frmTraceSummary {
 					
 				}
 			});
-			btnCopy.setIcon(new ImageIcon(frmTraceSummary.class.getResource("/images/copy_16.png")));
+			btnCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
 			btnCopy.setToolTipText("Copy");
 			toolBar.add(btnCopy);
 			

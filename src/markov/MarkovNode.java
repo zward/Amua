@@ -388,7 +388,7 @@ public class MarkovNode extends ModelNode{
 				}
 				int width=75;
 				if(comboTransition.getSelectedIndex()!=-1){
-					width=Math.max((int)(comboTransition.getSelectedItem().toString().length()*10),100);
+					width=Math.max((int)(comboTransition.getSelectedItem().toString().length()*12),100);
 				}
 				comboTransition.setBounds(xPos+scale(25),yPos+(height/2)-scale(14),scale(width),scale(28));
 				if(parentType!=0){ //Not initial decision nodes

@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2019 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -27,7 +27,6 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.AbstractListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -36,12 +35,12 @@ import javax.swing.event.ListSelectionListener;
 
 import base.AmuaModel;
 import document.WriteRMD;
+import main.ScaledIcon;
+
 import javax.swing.event.ListSelectionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
 import java.awt.Toolkit;
 
 /**
@@ -69,7 +68,7 @@ public class frmDocument {
 	private void initialize() {
 		try{
 			frmDocument = new JDialog();
-			frmDocument.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDocument.class.getResource("/images/document.png")));
+			frmDocument.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDocument.class.getResource("/images/document_128.png")));
 			frmDocument.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDocument.setTitle("Amua - Document Model");
 			frmDocument.setResizable(false);
@@ -89,7 +88,7 @@ public class frmDocument {
 			descriptions[0]="Creates an R Markdown file (.Rmd) that documents the model.  This can in turn be output to different formats (HTML, PDF, Word, etc).";
 			
 			final String logos[]=new String[1];
-			logos[0]="/images/rMarkdownIcon_48.png";
+			logos[0]="/images/rMarkdownIcon";
 			
 			final JList<String> list = new JList<String>();
 			list.addListSelectionListener(new ListSelectionListener() {
@@ -97,7 +96,7 @@ public class frmDocument {
 					int selected=list.getSelectedIndex();
 					btnDocument.setEnabled(true);
 					textArea.setText(descriptions[selected]);
-					lblTargetLogo.setIcon(new ImageIcon(frmDocument.class.getResource(logos[selected])));
+					lblTargetLogo.setIcon(new ScaledIcon(logos[selected],48,48,48,true));
 				}
 			});
 			list.setModel(new AbstractListModel<String>() {
@@ -168,7 +167,7 @@ public class frmDocument {
 			scrollPane_1.setViewportView(textArea);
 			
 			JLabel lblLogoAmua = new JLabel("New label");
-			lblLogoAmua.setIcon(new ImageIcon(frmDocument.class.getResource("/images/logo_48.png")));
+			lblLogoAmua.setIcon(new ScaledIcon("/images/logo",48,48,48,true));
 			lblLogoAmua.setBounds(13, 199, 48, 48);
 			frmDocument.getContentPane().add(lblLogoAmua);
 			
@@ -177,12 +176,12 @@ public class frmDocument {
 			frmDocument.getContentPane().add(lblTargetLogo);
 			
 			JLabel lblArrow = new JLabel("New label");
-			lblArrow.setIcon(new ImageIcon(frmDocument.class.getResource("/images/arrow_48.png")));
+			lblArrow.setIcon(new ScaledIcon("/images/arrow",48,48,48,true));
 			lblArrow.setBounds(80, 199, 48, 48);
 			frmDocument.getContentPane().add(lblArrow);
 			
 			JLabel lblModelType = new JLabel("lbl");
-			lblModelType.setIcon(new ImageIcon(frmDocument.class.getResource("/images/document.png")));
+			lblModelType.setIcon(new ScaledIcon("/images/document",16,16,16,true));
 			lblModelType.setBounds(96, 195, 16, 16);
 			frmDocument.getContentPane().add(lblModelType);
 			

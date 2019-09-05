@@ -47,7 +47,6 @@ import java.awt.Toolkit;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-
 import base.AmuaModel;
 import base.MicroStatsSummary;
 import base.RunReport;
@@ -56,6 +55,7 @@ import main.Constraint;
 import main.DimInfo;
 import main.MersenneTwisterFast;
 import main.Parameter;
+import main.ScaledIcon;
 import main.Scenario;
 import math.Interpreter;
 import math.MathUtils;
@@ -113,6 +113,20 @@ public class frmScenarios {
 	//original model settings
 	boolean origCRN;
 	int origSeed, origCohortSize;
+	
+	//analysis
+	int origAnalysisType, origObjective, origObjectiveDim, origCostDim, origEffectDim;
+	double origWTP;
+	String origBaseScenario;
+	int origExtendedDim;
+	
+	//markov
+	boolean origHalfCycleCorrection, origDiscountRewards;
+	double origDiscountRates[];
+	int origDiscountStartCycle;
+	boolean origShowTrace;
+	
+	//objects
 	String origParams[], origVars[];
 	
 	JTabbedPane tabbedPane;
@@ -141,7 +155,7 @@ public class frmScenarios {
 		try{
 			frmScenarios = new JFrame();
 			frmScenarios.setTitle("Amua - Scenarios");
-			frmScenarios.setIconImage(Toolkit.getDefaultToolkit().getImage(frmScenarios.class.getResource("/images/scenario_16.png")));
+			frmScenarios.setIconImage(Toolkit.getDefaultToolkit().getImage(frmScenarios.class.getResource("/images/scenario_128.png")));
 			frmScenarios.setBounds(100, 100, 1100, 500);
 			frmScenarios.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -196,8 +210,7 @@ public class frmScenarios {
 				}
 			});
 			btnAdd.setToolTipText("Add");
-			URL imageURL = frmMain.class.getResource("/images/add.png");
-			btnAdd.setIcon(new ImageIcon(imageURL,"Add"));
+			btnAdd.setIcon(new ScaledIcon("/images/add",16,16,16,true));
 			toolBar.add(btnAdd);
 
 			JButton btnEdit = new JButton();
@@ -211,8 +224,7 @@ public class frmScenarios {
 				}
 			});
 			btnEdit.setToolTipText("Edit");
-			imageURL = frmMain.class.getResource("/images/edit_16.png");
-			btnEdit.setIcon(new ImageIcon(imageURL,"Edit"));
+			btnEdit.setIcon(new ScaledIcon("/images/edit",16,16,16,true));
 			toolBar.add(btnEdit);
 
 			JButton btnDelete = new JButton();
@@ -226,8 +238,7 @@ public class frmScenarios {
 				}
 			});
 			btnDelete.setToolTipText("Delete");
-			imageURL = frmMain.class.getResource("/images/delete.png");
-			btnDelete.setIcon(new ImageIcon(imageURL,"Delete"));
+			btnDelete.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
 			toolBar.add(btnDelete);
 
 			JButton btnMoveUp = new JButton();
@@ -246,8 +257,7 @@ public class frmScenarios {
 				}
 			});
 			btnMoveUp.setToolTipText("Move Up");
-			imageURL = frmMain.class.getResource("/images/upArrow_16.png");
-			btnMoveUp.setIcon(new ImageIcon(imageURL,"Move Up"));
+			btnMoveUp.setIcon(new ScaledIcon("/images/upArrow",16,16,16,true));
 			toolBar.add(btnMoveUp);
 
 			JButton btnMoveDown = new JButton();
@@ -266,8 +276,7 @@ public class frmScenarios {
 				}
 			});
 			btnMoveDown.setToolTipText("Move Down");
-			imageURL = frmMain.class.getResource("/images/downArrow_16.png");
-			btnMoveDown.setIcon(new ImageIcon(imageURL,"Move Down"));
+			btnMoveDown.setIcon(new ScaledIcon("/images/downArrow",16,16,16,true));
 			toolBar.add(btnMoveDown);
 
 			JLabel lblSelectScenariosTo = new JLabel("Select Scenarios to Run:");
@@ -335,6 +344,11 @@ public class frmScenarios {
 						new Object[][] {,},
 						new String[] {}) {
 					public boolean isCellEditable(int row, int column) {return false;}
+					@Override
+					public Class getColumnClass(int column) {
+						if(column==0) {return String.class;}
+						else {return Double.class;}
+					}
 				};
 			}
 			
@@ -345,6 +359,7 @@ public class frmScenarios {
 			tableResults.setShowVerticalLines(true);
 			tableResults.getTableHeader().setReorderingAllowed(false);
 			tableResults.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			tableResults.setAutoCreateRowSorter(true);
 			scrollPaneResults.setViewportView(tableResults);
 			
 			JPanel panel = new JPanel();
@@ -371,6 +386,7 @@ public class frmScenarios {
 			tableIndResults.setShowVerticalLines(true);
 			tableIndResults.getTableHeader().setReorderingAllowed(false);
 			tableIndResults.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			tableIndResults.setAutoCreateRowSorter(true);
 			scrollPane_1.setViewportView(tableIndResults);
 			
 			JScrollPane scrollPaneSchedule = new JScrollPane();
@@ -627,10 +643,8 @@ public class frmScenarios {
 									numStrat=myModel.getStrategies();
 
 									DimInfo info=myModel.dimInfo;
-									int analysisType=myModel.dimInfo.analysisType;
 									int numDim=myModel.dimInfo.dimNames.length;
-									int numOutcomes=numDim;
-									if(analysisType>0){numOutcomes++;}
+									int numOutcomes=numDim+2; //Add ICER and NMB
 									
 									progress.setMaximum(numScenarios+1);
 
@@ -638,6 +652,32 @@ public class frmScenarios {
 									origCohortSize=myModel.cohortSize;
 									origCRN=myModel.CRN;
 									origSeed=myModel.crnSeed;
+									
+									//analysis
+									origAnalysisType=myModel.dimInfo.analysisType;
+									origObjective=myModel.dimInfo.objective;
+									origObjectiveDim=myModel.dimInfo.objectiveDim;
+									origCostDim=myModel.dimInfo.costDim;
+									origEffectDim=myModel.dimInfo.effectDim;
+									origWTP=myModel.dimInfo.WTP;
+									origBaseScenario=myModel.dimInfo.baseScenario;
+									origExtendedDim=myModel.dimInfo.extendedDim;
+									
+									//markov
+									if(myModel.type==1) {
+										origHalfCycleCorrection=myModel.markov.halfCycleCorrection;
+										origDiscountRewards=myModel.markov.discountRewards;
+										origDiscountRates=new double[numDim];
+										for(int d=0; d<numDim; d++) {
+											origDiscountRates[d]=myModel.markov.discountRates[d];
+										}
+										origDiscountStartCycle=myModel.markov.discountStartCycle;
+										
+										origShowTrace=myModel.markov.showTrace;
+										myModel.markov.showTrace=false; //don't show trace
+									}
+									
+									//objects
 									numParams=myModel.parameters.size();
 									origParams=new String[numParams];
 									for(int i=0; i<numParams; i++){
@@ -647,11 +687,6 @@ public class frmScenarios {
 									origVars=new String[numVars];
 									for(int i=0; i<numVars; i++){
 										origVars[i]=myModel.variables.get(i).expression;
-									}
-									boolean origShowTrace=true;
-									if(myModel.type==1){
-										origShowTrace=myModel.markov.showTrace;
-										myModel.markov.showTrace=false;
 									}
 									
 									//Get total number of iterations
@@ -673,15 +708,13 @@ public class frmScenarios {
 													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]);
 												}
 											}
-											if(analysisType==1){ //cea
-												for(int s=0; s<numStrat; s++){
-													modelResults[g].addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]);
-												}
+											//ICER
+											for(int s=0; s<numStrat; s++){
+												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]);
 											}
-											else if(analysisType==2){ //bca
-												for(int s=0; s<numStrat; s++){
-													modelResults[g].addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]);
-												}
+											//NMB
+											for(int s=0; s<numStrat; s++){
+												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]);
 											}
 										}
 										else{ //mean and bounds
@@ -692,19 +725,15 @@ public class frmScenarios {
 													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (95% UB)");
 												}
 											}
-											if(analysisType==1){ //cea
-												for(int s=0; s<numStrat; s++){
-													modelResults[g].addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]+ "(Mean)");
-													modelResults[g].addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]+ "(95% LB)");
-													modelResults[g].addColumn("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+") "+myModel.strategyNames[s]+ "(95% UB)");
-												}
+											for(int s=0; s<numStrat; s++){
+												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]+ "(Mean)");
+												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]+ "(95% LB)");
+												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]+ "(95% UB)");
 											}
-											else if(analysisType==2){ //bca
-												for(int s=0; s<numStrat; s++){
-													modelResults[g].addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]+ "(Mean)");
-													modelResults[g].addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]+ "(95% LB)");
-													modelResults[g].addColumn("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+") "+myModel.strategyNames[s]+ "(95% UB)");
-												}
+											for(int s=0; s<numStrat; s++){
+												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]+ "(Mean)");
+												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]+ "(95% LB)");
+												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]+ "(95% UB)");
 											}
 										}
 									}
@@ -739,8 +768,7 @@ public class frmScenarios {
 									}
 																		
 									results=new double[numScenarios][numSubgroups+1][numOutcomes][numStrat][maxIterations];
-									if(analysisType==1){CEAnotes=new String[numScenarios][numSubgroups+1][numStrat][maxIterations];} //CEA
-									else{CEAnotes=null;}
+									CEAnotes=new String[numScenarios][numSubgroups+1][numStrat][maxIterations];
 									
 									meanResults=new double[numScenarios][numSubgroups+1][numOutcomes][numStrat];
 									lbResults=new double[numScenarios][numSubgroups+1][numOutcomes][numStrat];
@@ -776,6 +804,31 @@ public class frmScenarios {
 										myModel.cohortSize=curScenario.cohortSize;
 										myModel.CRN=curScenario.crn1;
 										myModel.crnSeed=curScenario.seed1;
+										
+										//analysis
+										myModel.dimInfo.analysisType=curScenario.analysisType;
+										myModel.dimInfo.objective=curScenario.objective;
+										myModel.dimInfo.objectiveDim=curScenario.objectiveDim;
+										myModel.dimInfo.costDim=curScenario.costDim;
+										myModel.dimInfo.effectDim=curScenario.effectDim;
+										myModel.dimInfo.WTP=curScenario.WTP;
+										myModel.dimInfo.baseScenario=curScenario.baseScenario;
+										myModel.dimInfo.extendedDim=curScenario.extendedDim;
+										
+										//markov
+										if(myModel.type==1) {
+											myModel.markov.halfCycleCorrection=curScenario.halfCycleCorrection;
+											myModel.markov.discountRewards=curScenario.discountRewards;
+											if(curScenario.discountRates==null || curScenario.discountRates.length!=numDim) {
+												JOptionPane.showMessageDialog(frmScenarios, "Error: Incorrect model dimensions in Scenario "+curScenario.name+" !");
+											}
+											else {
+												for(int d=0; d<numDim; d++) {
+													myModel.markov.discountRates[d]=curScenario.discountRates[d];
+												}
+											}
+											myModel.markov.discountStartCycle=curScenario.discountStartCycle;
+										}
 										
 										Numeric origValues[] = null;
 										if(curScenario.sampleParams){
@@ -838,6 +891,12 @@ public class frmScenarios {
 													}
 												}
 											}
+											else if(curScenario.useParamSets && myModel.parameterSets!=null) {
+												int numSets=myModel.parameterSets.length;
+												int curSet=i%numSets; //keep looping over sets
+												myModel.parameterSets[curSet].setParameters(myModel);
+												curScenario.overwriteParams(myModel);
+											}
 											
 											
 											RunReport curReport=myModel.runModel(null, false);
@@ -858,20 +917,23 @@ public class frmScenarios {
 													}
 												}
 											}
-											if(analysisType>0){ //CEA or BCA
-												if(analysisType==1){ //CEA
+											if(curScenario.analysisType>0){ //CEA or BCA
+												if(curScenario.analysisType==1){ //CEA
 													//overall
 													for(int s=0; s<curReport.table.length; s++){	
 														int origStrat=(int) curReport.table[s][0];
 														if(origStrat!=-1){
 															double val=Double.NaN;
 															try{
-																val=Double.parseDouble((String) curReport.table[s][4]);
+																//val=Double.parseDouble((String) curReport.table[s][4]);
+																val=Double.parseDouble(curReport.table[s][4]+"");
 															} catch(Exception err){
+																//err.printStackTrace();
 																//do nothing
 															}
 															results[n][0][numDim][origStrat][i]=val;
 															curResults[0][numDim][origStrat][i]=val;
+															meanResults[n][0][numDim][origStrat]+=val;
 															CEAnotes[n][0][origStrat][i]=(String) curReport.table[s][5];
 														}
 													}
@@ -888,27 +950,28 @@ public class frmScenarios {
 																}
 																results[n][g+1][numDim][origStrat][i]=val;
 																curResults[g+1][numDim][origStrat][i]=val;
+																meanResults[n][g+1][numDim][origStrat]+=val;
 																CEAnotes[n][g+1][origStrat][i]=(String) curReport.tableGroup[g][s][5];
 															}
 														}
 													}
 													
 												}
-												else if(analysisType==2){
+												else if(curScenario.analysisType==2){
 													//overall
 													for(int s=0; s<curReport.table.length; s++){	
 														int origStrat=(int) curReport.table[s][0];
-														results[n][0][numDim][origStrat][i]=(double) curReport.table[s][4];
-														curResults[0][numDim][origStrat][i]=(double) curReport.table[s][4];
-														meanResults[n][0][numDim][origStrat]+=(double) curReport.table[s][4];
+														results[n][0][numDim+1][origStrat][i]=(double) curReport.table[s][4];
+														curResults[0][numDim+1][origStrat][i]=(double) curReport.table[s][4];
+														meanResults[n][0][numDim+1][origStrat]+=(double) curReport.table[s][4];
 													}
 													//subgroups
 													for(int g=0; g<numSubgroups; g++){
 														for(int s=0; s<curReport.tableGroup[g].length; s++){	
 															int origStrat=(int) curReport.tableGroup[g][s][0];
-															results[n][g+1][numDim][origStrat][i]=(double) curReport.tableGroup[g][s][4];
-															curResults[g+1][numDim][origStrat][i]=(double) curReport.tableGroup[g][s][4];
-															meanResults[n][g+1][numDim][origStrat]+=(double) curReport.tableGroup[g][s][4];
+															results[n][g+1][numDim+1][origStrat][i]=(double) curReport.tableGroup[g][s][4];
+															curResults[g+1][numDim+1][origStrat][i]=(double) curReport.tableGroup[g][s][4];
+															meanResults[n][g+1][numDim+1][origStrat]+=(double) curReport.tableGroup[g][s][4];
 														}
 													}
 												}
@@ -947,9 +1010,15 @@ public class frmScenarios {
 															modelResults[g].setValueAt(MathUtils.round(meanResults[n][g][d][s],info.decimals[d]), n, curCol); curCol++;
 														}
 													}
-													if(analysisType==1 || analysisType==2){ //cea or bca
+													if(curScenario.analysisType==1) { //cea
 														for(int s=0; s<numStrat; s++){
 															modelResults[g].setValueAt(MathUtils.round(meanResults[n][g][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
+														}
+													}
+													else if(curScenario.analysisType==2) { //bca
+														curCol+=numStrat; //skip icers
+														for(int s=0; s<numStrat; s++){
+															modelResults[g].setValueAt(MathUtils.round(meanResults[n][g][numDim+1][s],info.decimals[info.costDim]), n, curCol); curCol++;
 														}
 													}
 												}
@@ -961,11 +1030,19 @@ public class frmScenarios {
 															modelResults[g].setValueAt(MathUtils.round(ubResults[n][g][d][s],info.decimals[d]), n, curCol); curCol++;
 														}
 													}
-													if(analysisType==1 || analysisType==2){ //cea or bca
+													if(curScenario.analysisType==1) { //cea
 														for(int s=0; s<numStrat; s++){
 															modelResults[g].setValueAt(MathUtils.round(meanResults[n][g][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
 															modelResults[g].setValueAt(MathUtils.round(lbResults[n][g][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
 															modelResults[g].setValueAt(MathUtils.round(ubResults[n][g][numDim][s],info.decimals[info.costDim]), n, curCol); curCol++;
+														}
+													}
+													else if(curScenario.analysisType==2) { //bca
+														curCol+=(numStrat*3); //skip icers
+														for(int s=0; s<numStrat; s++){
+															modelResults[g].setValueAt(MathUtils.round(meanResults[n][g][numDim+1][s],info.decimals[info.costDim]), n, curCol); curCol++;
+															modelResults[g].setValueAt(MathUtils.round(lbResults[n][g][numDim+1][s],info.decimals[info.costDim]), n, curCol); curCol++;
+															modelResults[g].setValueAt(MathUtils.round(ubResults[n][g][numDim+1][s],info.decimals[info.costDim]), n, curCol); curCol++;
 														}
 													}
 												}
@@ -1042,11 +1119,9 @@ public class frmScenarios {
 										}
 										
 									} //end scenarios loop
-									
-									if(myModel.type==1){
+									if(myModel.type==1) {
 										myModel.markov.showTrace=origShowTrace;
 									}
-									
 									resetModel();
 									myModel.validateModelObjects();
 									progress.close();
@@ -1057,6 +1132,9 @@ public class frmScenarios {
 								}
 							} catch (Exception e) {
 								//Reset orig model expressions
+								if(myModel.type==1) {
+									myModel.markov.showTrace=origShowTrace;
+								}
 								resetModel();
 								myModel.validateModelObjects();
 								e.printStackTrace();
@@ -1081,6 +1159,28 @@ public class frmScenarios {
 		myModel.cohortSize=origCohortSize;
 		myModel.CRN=origCRN;
 		myModel.crnSeed=origSeed;
+		
+		//analysis
+		myModel.dimInfo.analysisType=origAnalysisType;
+		myModel.dimInfo.objective=origObjective;
+		myModel.dimInfo.objectiveDim=origObjectiveDim;
+		myModel.dimInfo.costDim=origCostDim;
+		myModel.dimInfo.effectDim=origEffectDim;
+		myModel.dimInfo.WTP=origWTP;
+		myModel.dimInfo.baseScenario=origBaseScenario;
+		myModel.dimInfo.extendedDim=origExtendedDim;
+		
+		//markov
+		if(myModel.type==1) {
+			myModel.markov.halfCycleCorrection=origHalfCycleCorrection;
+			myModel.markov.discountRewards=origDiscountRewards;
+			for(int d=0; d<myModel.markov.discountRates.length; d++) {
+				myModel.markov.discountRates[d]=origDiscountRates[d];
+			}
+			myModel.markov.discountStartCycle=origDiscountStartCycle;
+		}
+		
+		//objects
 		for(int i=0; i<numParams; i++){
 			myModel.parameters.get(i).expression=origParams[i];
 		}

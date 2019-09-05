@@ -30,7 +30,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -44,16 +43,17 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
-import org.sf.surfaceplot.SurfaceCanvas;
-
 import base.AmuaModel;
 import main.Parameter;
+import main.ScaledIcon;
 import main.StyledTextPane;
-import main.SurfaceModel;
 import main.Table;
 import main.Variable;
 import math.Interpreter;
 import math.Numeric;
+import surface.SurfaceModel;
+import surface.SurfacePanel;
+
 
 /**
  *
@@ -66,7 +66,7 @@ public class frmPlotSurface {
 
 	private JTable table;
 	SurfaceModel surfaceModel;
-	SurfaceCanvas surfaceCanvas;
+	SurfacePanel surfacePanel;
 	private JTextField textNumIntervals;
 
 	/**
@@ -84,7 +84,7 @@ public class frmPlotSurface {
 		try{
 			frmPlotSurface = new JFrame();
 			frmPlotSurface.setTitle("Amua - Plot Surface");
-			frmPlotSurface.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotSurface.class.getResource("/images/plotSurface.png")));
+			frmPlotSurface.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotSurface.class.getResource("/images/plotSurface_128.png")));
 			frmPlotSurface.setBounds(100, 100, 1000, 600);
 			frmPlotSurface.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -94,19 +94,16 @@ public class frmPlotSurface {
 			gridBagLayout.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
 			frmPlotSurface.getContentPane().setLayout(gridBagLayout);
 
-			JPanel panelChart = new JPanel();
+			surfacePanel = new SurfacePanel();
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
 			gbc_panelChart.gridwidth = 2;
 			gbc_panelChart.insets = new Insets(0, 0, 5, 5);
 			gbc_panelChart.fill = GridBagConstraints.BOTH;
 			gbc_panelChart.gridx = 0;
 			gbc_panelChart.gridy = 0;
-			frmPlotSurface.getContentPane().add(panelChart, gbc_panelChart);
-			panelChart.setLayout(new BorderLayout(0, 0));
-			
-			surfaceCanvas = new SurfaceCanvas();
-			panelChart.add(surfaceCanvas);
-
+			frmPlotSurface.getContentPane().add(surfacePanel, gbc_panelChart);
+			surfacePanel.setLayout(new BorderLayout(0, 0));
+						
 			JPanel panel_1 = new JPanel();
 			panel_1.setLayout(null);
 			GridBagConstraints gbc_panel_1 = new GridBagConstraints();
@@ -141,7 +138,7 @@ public class frmPlotSurface {
 			});
 			btnFx.setToolTipText("Build Expression");
 			btnFx.setFocusPainted(false);
-			btnFx.setIcon(new ImageIcon(frmPlotSurface.class.getResource("/images/formula.png")));
+			btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
 			toolBar.add(btnFx);
 			
 			JScrollPane scrollPane_1 = new JScrollPane();
@@ -319,8 +316,8 @@ public class frmPlotSurface {
 
 						//Update chart
 						surfaceModel = new SurfaceModel(dataSurface,0,numIntervals,minX,maxX,minY,maxY,"x","y","f(x,y)");
-						surfaceCanvas.setModel(surfaceModel);
-						surfaceCanvas.repaint();
+						surfacePanel.setModel(surfaceModel);
+						surfacePanel.repaint();
 
 						progress.close();
 					}

@@ -180,6 +180,14 @@ public class MarkovCohort{
 			chainRoot.expectedValues[d]=cumRewards[d];
 			chainRoot.expectedValuesDis[d]=cumRewardsDis[d];
 		}
+		if(chainRoot.hasCost) {
+			for(int d=0; d<numDim; d++){
+				double curCost=Interpreter.evaluateTokens(chainRoot.curCostTokens[d],curThread,false).getDouble();
+				curCost*=myModel.cohortSize;
+				chainRoot.expectedValues[d]+=curCost;
+				chainRoot.expectedValuesDis[d]+=curCost;
+			}
+		}
 
 		//Reset variable 't'
 		curT.value[curThread].setInt(0);

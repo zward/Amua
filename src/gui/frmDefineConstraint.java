@@ -37,6 +37,7 @@ import javax.swing.JTextPane;
 
 import base.AmuaModel;
 import main.Constraint;
+import main.ScaledIcon;
 import main.StyledTextPane;
 import math.Interpreter;
 import math.Numeric;
@@ -75,7 +76,7 @@ public class frmDefineConstraint {
 	private void initialize() {
 		try{
 			frmDefineConstraint = new JDialog();
-			frmDefineConstraint.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineConstraint.class.getResource("/images/constraint.png")));
+			frmDefineConstraint.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineConstraint.class.getResource("/images/constraint_128.png")));
 			frmDefineConstraint.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineConstraint.setTitle("Amua - Define Constraint");
 			frmDefineConstraint.setResizable(false);
@@ -208,7 +209,7 @@ public class frmDefineConstraint {
 			});
 			btnFx.setToolTipText("Build Expression");
 			btnFx.setFocusPainted(false);
-			btnFx.setIcon(new ImageIcon(frmDefineConstraint.class.getResource("/images/formula.png")));
+			btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
 			toolBar.add(btnFx);
 			
 			paneExpression.addKeyListener(new KeyAdapter() {

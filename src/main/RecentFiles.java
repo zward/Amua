@@ -102,8 +102,12 @@ public class RecentFiles{
 			final JMenuItem mntmNewMenuItem = new JMenuItem(name);
 			mntmNewMenuItem.setToolTipText(file);
 			if(data.length>1){
-				if(data[1].matches("0")){mntmNewMenuItem.setIcon(new ImageIcon(frmMain.class.getResource("/images/modelTree_16.png")));}
-				else if(data[1].matches("1")){mntmNewMenuItem.setIcon(new ImageIcon(frmMain.class.getResource("/images/markovChain_16.png")));}
+				if(data[1].matches("0")){
+					mntmNewMenuItem.setIcon(new ScaledIcon("/images/modelTree",16,16,16,true));
+				}
+				else if(data[1].matches("1")){
+					mntmNewMenuItem.setIcon(new ScaledIcon("/images/markovChain",16,16,16,true));
+				}
 			}
 			mntmNewMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {

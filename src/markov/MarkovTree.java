@@ -398,6 +398,7 @@ public class MarkovTree{
 		if(node.hasCost){
 			for(int c=0; c<numDim; c++){
 				node.curCosts[c][0]=Interpreter.evaluateTokens(node.curCostTokens[c], 0, false).getDouble();
+				node.curCosts[c][0]*=myModel.cohortSize; //scale costs by cohort size
 			}
 		}
 		

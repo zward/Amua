@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2019 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -46,13 +46,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -94,6 +92,7 @@ import main.ErrorLog;
 import main.Parameter;
 import main.ParameterSet;
 import main.RecentFiles;
+import main.ScaledIcon;
 import main.StyledTextPane;
 import main.Variable;
 import markov.PanelMarkov;
@@ -121,7 +120,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.2.2";
+	public String version="0.2.3";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -185,7 +184,7 @@ public class frmMain {
 			}
 		});
 		frmMain.setTitle("Amua");
-		frmMain.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_48.png")));
+		frmMain.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_128.png")));
 		
 		frmMain.setBounds(100, 100, 800, 600);
 		frmMain.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -210,7 +209,7 @@ public class frmMain {
 		mnModel.add(mnNew);
 
 		JMenuItem mntmDecisionTree = new JMenuItem("Decision Tree");
-		mntmDecisionTree.setIcon(new ImageIcon(frmMain.class.getResource("/images/modelTree_16.png")));
+		mntmDecisionTree.setIcon(new ScaledIcon("/images/modelTree",16,16,16,true));
 		mntmDecisionTree.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				AmuaModel newModel=new AmuaModel(0,main,errorLog);
@@ -228,7 +227,7 @@ public class frmMain {
 		mnNew.add(mntmDecisionTree);
 
 		JMenuItem mntmMarkovModel = new JMenuItem("Markov Model");
-		mntmMarkovModel.setIcon(new ImageIcon(frmMain.class.getResource("/images/markovChain_16.png")));
+		mntmMarkovModel.setIcon(new ScaledIcon("/images/markovChain",16,16,16,true));
 		mntmMarkovModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				AmuaModel newModel=new AmuaModel(1,main,errorLog);
@@ -288,7 +287,8 @@ public class frmMain {
 		mntmSave = new JMenuItem("Save");
 		KeyStroke ctrlS = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 		mntmSave.setAccelerator(ctrlS);
-		mntmSave.setIcon(new ImageIcon(frmMain.class.getResource("/images/save_16.png")));
+		mntmSave.setIcon(new ScaledIcon("/images/save",16,16,16,true));
+		mntmSave.setDisabledIcon(new ScaledIcon("/images/save",16,16,16,false));
 		mntmSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveModel();
@@ -377,13 +377,15 @@ public class frmMain {
 				}
 			}
 		});
-		mntmDocument.setIcon(new ImageIcon(frmMain.class.getResource("/images/document.png")));
+		mntmDocument.setIcon(new ScaledIcon("/images/document",16,16,16,true));
+		mntmDocument.setDisabledIcon(new ScaledIcon("/images/document",16,16,16,false));
 		mnModel.add(mntmDocument);
 		
 		
 		
 		mntmExport = new JMenuItem("Export...");
-		mntmExport.setIcon(new ImageIcon(frmMain.class.getResource("/images/export.png")));
+		mntmExport.setIcon(new ScaledIcon("/images/export",16,16,16,true));
+		mntmExport.setDisabledIcon(new ScaledIcon("/images/export",16,16,16,false));
 		mntmExport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//check model
@@ -404,7 +406,8 @@ public class frmMain {
 		mnModel.add(separator_5);
 
 		mntmProperties = new JMenuItem("Properties");
-		mntmProperties.setIcon(new ImageIcon(frmMain.class.getResource("/images/propertiesBase.png")));
+		mntmProperties.setIcon(new ScaledIcon("/images/properties",16,16,16,true));
+		mntmProperties.setDisabledIcon(new ScaledIcon("/images/properties",16,16,16,false));
 		mntmProperties.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmProperties window=new frmProperties(curModel);
@@ -417,7 +420,6 @@ public class frmMain {
 		mnModel.add(separator_7);
 
 		JMenuItem mntmExit = new JMenuItem("Exit");
-		//mntmExit.setIcon(new ImageIcon(frmMain.class.getResource("/javax/swing/plaf/metal/icons/ocean/close.gif")));
 		mntmExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				exit();
@@ -429,7 +431,8 @@ public class frmMain {
 		menuBar.add(mnEdit);
 
 		mntmUndo = new JMenuItem("Undo");
-		mntmUndo.setIcon(new ImageIcon(frmMain.class.getResource("/images/undo_16.png")));
+		mntmUndo.setIcon(new ScaledIcon("/images/undo",16,16,16,true));
+		mntmUndo.setDisabledIcon(new ScaledIcon("/images/undo",16,16,16,false));
 		mntmUndo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				curModel.undoAction();
@@ -440,7 +443,8 @@ public class frmMain {
 		mnEdit.add(mntmUndo);
 
 		mntmRedo = new JMenuItem("Redo");
-		mntmRedo.setIcon(new ImageIcon(frmMain.class.getResource("/images/redo_16.png")));
+		mntmRedo.setIcon(new ScaledIcon("/images/redo",16,16,16,true));
+		mntmRedo.setDisabledIcon(new ScaledIcon("/images/redo",16,16,16,false));
 		mntmRedo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				curModel.redoAction();
@@ -454,7 +458,8 @@ public class frmMain {
 		mnEdit.add(separator_3);
 
 		mntmCut = new JMenuItem("Cut");
-		mntmCut.setIcon(new ImageIcon(frmMain.class.getResource("/images/cut_16.png")));
+		mntmCut.setIcon(new ScaledIcon("/images/cut",16,16,16,true));
+		mntmCut.setDisabledIcon(new ScaledIcon("/images/cut",16,16,16,false));
 		mntmCut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				curModel.cutSubtree();
@@ -465,7 +470,8 @@ public class frmMain {
 		mnEdit.add(mntmCut);
 
 		mntmCopy = new JMenuItem("Copy");
-		mntmCopy.setIcon(new ImageIcon(frmMain.class.getResource("/images/copy_16.png")));
+		mntmCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
+		mntmCopy.setDisabledIcon(new ScaledIcon("/images/copy",16,16,16,false));
 		mntmCopy.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				curModel.copySubtree();
@@ -476,7 +482,8 @@ public class frmMain {
 		mnEdit.add(mntmCopy);
 
 		mntmPaste = new JMenuItem("Paste");
-		mntmPaste.setIcon(new ImageIcon(frmMain.class.getResource("/images/paste_16.png")));
+		mntmPaste.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
+		mntmPaste.setDisabledIcon(new ScaledIcon("/images/paste",16,16,16,false));
 		mntmPaste.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				curModel.pasteSubtree();
@@ -487,7 +494,8 @@ public class frmMain {
 		mnEdit.add(mntmPaste);
 
 		JMenuItem mntmFindreplace = new JMenuItem("Find/Replace");
-		mntmFindreplace.setIcon(new ImageIcon(frmMain.class.getResource("/images/find.png")));
+		mntmFindreplace.setIcon(new ScaledIcon("/images/find",16,16,16,true));
+		mntmFindreplace.setDisabledIcon(new ScaledIcon("/images/find",16,16,16,false));
 		mntmFindreplace.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmFindReplace window=new frmFindReplace(curModel);
@@ -505,7 +513,8 @@ public class frmMain {
 		menuBar.add(mnRun);
 
 		mntmRunModel = new JMenuItem("Run Model");
-		mntmRunModel.setIcon(new ImageIcon(frmMain.class.getResource("/images/runTree_16.png")));
+		mntmRunModel.setIcon(new ScaledIcon("/images/runModel",16,16,16,true));
+		mntmRunModel.setDisabledIcon(new ScaledIcon("/images/runModel",16,16,16,false));
 		mntmRunModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread SimThread = new Thread(){ //Non-UI
@@ -522,7 +531,7 @@ public class frmMain {
 		mnRun.add(mnSensitivityAnalysis);
 
 		JMenuItem mntmOneway = new JMenuItem("One-way");
-		mntmOneway.setIcon(new ImageIcon(frmMain.class.getResource("/images/oneWay.png")));
+		mntmOneway.setIcon(new ScaledIcon("/images/oneWay",16,16,16,true));
 		mntmOneway.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmSensOneWay window=new frmSensOneWay(curModel);
@@ -532,7 +541,7 @@ public class frmMain {
 		mnSensitivityAnalysis.add(mntmOneway);
 
 		JMenuItem mntmTornadoDiagram = new JMenuItem("Tornado Diagram");
-		mntmTornadoDiagram.setIcon(new ImageIcon(frmMain.class.getResource("/images/tornado.png")));
+		mntmTornadoDiagram.setIcon(new ScaledIcon("/images/tornado",16,16,16,true));
 		mntmTornadoDiagram.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmTornadoDiagram window=new frmTornadoDiagram(curModel);
@@ -542,7 +551,7 @@ public class frmMain {
 		mnSensitivityAnalysis.add(mntmTornadoDiagram);
 
 		JMenuItem mntmThresholdAnalysis = new JMenuItem("Threshold Analysis");
-		mntmThresholdAnalysis.setIcon(new ImageIcon(frmMain.class.getResource("/images/threshold.png")));
+		mntmThresholdAnalysis.setIcon(new ScaledIcon("/images/threshold",16,16,16,true));
 		mntmThresholdAnalysis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmThreshOneWay window=new frmThreshOneWay(curModel);
@@ -551,17 +560,8 @@ public class frmMain {
 		});
 		mnSensitivityAnalysis.add(mntmThresholdAnalysis);
 
-		JMenuItem mntmProbabilisticpsa = new JMenuItem("Probabilistic (PSA)");
-		mntmProbabilisticpsa.setIcon(new ImageIcon(frmMain.class.getResource("/images/psa.png")));
-		mntmProbabilisticpsa.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				frmPSA window=new frmPSA(curModel);
-				window.frmPSA.setVisible(true);
-			}
-		});
-
 		JMenuItem mntmTwoway = new JMenuItem("Two-way");
-		mntmTwoway.setIcon(new ImageIcon(frmMain.class.getResource("/images/twoWay.png")));
+		mntmTwoway.setIcon(new ScaledIcon("/images/twoWay",16,16,16,true));
 		mntmTwoway.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmSensTwoWay window=new frmSensTwoWay(curModel);
@@ -569,10 +569,19 @@ public class frmMain {
 			}
 		});
 		mnSensitivityAnalysis.add(mntmTwoway);
+		
+		JMenuItem mntmProbabilisticpsa = new JMenuItem("Probabilistic (PSA)");
+		mntmProbabilisticpsa.setIcon(new ScaledIcon("/images/psa",16,16,16,true));
+		mntmProbabilisticpsa.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frmPSA window=new frmPSA(curModel);
+				window.frmPSA.setVisible(true);
+			}
+		});
 		mnSensitivityAnalysis.add(mntmProbabilisticpsa);
 		
 		JMenuItem mntmBatchRuns = new JMenuItem("Batch Runs");
-		mntmBatchRuns.setIcon(new ImageIcon(frmMain.class.getResource("/images/runBatch.png")));
+		mntmBatchRuns.setIcon(new ScaledIcon("/images/runBatch",16,16,16,true));
 		mntmBatchRuns.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				frmBatch window = new frmBatch(curModel);
@@ -582,7 +591,7 @@ public class frmMain {
 		mnRun.add(mntmBatchRuns);
 		
 		JMenuItem mntmScenarios = new JMenuItem("Scenarios");
-		mntmScenarios.setIcon(new ImageIcon(frmMain.class.getResource("/images/scenario_16.png")));
+		mntmScenarios.setIcon(new ScaledIcon("/images/scenario",16,16,16,true));
 		mntmScenarios.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmScenarios window = new frmScenarios(curModel);
@@ -595,7 +604,8 @@ public class frmMain {
 		mnRun.add(separator_10);
 
 		mntmCalibrateModel = new JMenuItem("Calibrate Model");
-		mntmCalibrateModel.setIcon(new ImageIcon(frmMain.class.getResource("/images/calibrate.png")));
+		mntmCalibrateModel.setIcon(new ScaledIcon("/images/calibrate",16,16,16,true));
+		mntmCalibrateModel.setDisabledIcon(new ScaledIcon("/images/calibrate",16,16,16,false));
 		mntmCalibrateModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(curModel.checkModel(console,true)){
@@ -611,7 +621,7 @@ public class frmMain {
 		menuBar.add(mnTools);
 
 		JMenuItem mntmPlotFunction = new JMenuItem("Plot Function");
-		mntmPlotFunction.setIcon(new ImageIcon(frmMain.class.getResource("/images/plotFx.png")));
+		mntmPlotFunction.setIcon(new ScaledIcon("/images/plotFx",16,16,16,true));
 		mntmPlotFunction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmPlotFx window=new frmPlotFx(curModel);
@@ -621,7 +631,7 @@ public class frmMain {
 		mnTools.add(mntmPlotFunction);
 
 		JMenuItem mntmPlotSurface = new JMenuItem("Plot Surface");
-		mntmPlotSurface.setIcon(new ImageIcon(frmMain.class.getResource("/images/plotSurface.png")));
+		mntmPlotSurface.setIcon(new ScaledIcon("/images/plotSurface",16,16,16,true));
 		mntmPlotSurface.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				frmPlotSurface window=new frmPlotSurface(curModel);
@@ -637,22 +647,13 @@ public class frmMain {
 				window.frmTestExpressions.setVisible(true);
 			}
 		});
-		//mnTools.add(mntmTestExpressions);
+		//mnTools.add(mntmTestExpressions); //for debugging interpreter
 		
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
 
-		JMenuItem mntmAboutAmua = new JMenuItem("About Amua");
-		mntmAboutAmua.setIcon(new ImageIcon(frmMain.class.getResource("/images/logo_16.png")));
-		mntmAboutAmua.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				frmAboutAmua window=new frmAboutAmua(version,errorLog);
-				window.frmAboutAmua.setVisible(true);
-			}
-		});
-
 		JMenuItem mntmHelpContents = new JMenuItem("Help Contents");
-		mntmHelpContents.setIcon(new ImageIcon(frmMain.class.getResource("/images/help.png")));
+		mntmHelpContents.setIcon(new ScaledIcon("/images/help",16,16,16,true));
 		mntmHelpContents.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//Go to URL: https://github.com/zward/Amua/wiki
@@ -667,7 +668,7 @@ public class frmMain {
 		mnHelp.add(mntmHelpContents);
 
 		JMenuItem mntmReportBugrequest = new JMenuItem("Report Bug/Request");
-		mntmReportBugrequest.setIcon(new ImageIcon(frmMain.class.getResource("/images/bug.png")));
+		mntmReportBugrequest.setIcon(new ScaledIcon("/images/bug",16,16,16,true));
 		mntmReportBugrequest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//Go to URL: https://github.com/zward/Amua/issues
@@ -682,7 +683,7 @@ public class frmMain {
 		mnHelp.add(mntmReportBugrequest);
 
 		JMenuItem mntmErrorLog = new JMenuItem("Error Log");
-		mntmErrorLog.setIcon(new ImageIcon(frmMain.class.getResource("/images/errorLog.png")));
+		mntmErrorLog.setIcon(new ScaledIcon("/images/errorLog",16,16,16,true));
 
 		mntmErrorLog.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -694,6 +695,15 @@ public class frmMain {
 
 		JSeparator separator_11 = new JSeparator();
 		mnHelp.add(separator_11);
+		
+		JMenuItem mntmAboutAmua = new JMenuItem("About Amua");
+		mntmAboutAmua.setIcon(new ScaledIcon("/images/logo",16,16,16,true));
+		mntmAboutAmua.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frmAboutAmua window=new frmAboutAmua(version,errorLog);
+				window.frmAboutAmua.setVisible(true);
+			}
+		});
 		mnHelp.add(mntmAboutAmua);
 
 
@@ -755,8 +765,8 @@ public class frmMain {
 		btnAddVariable = new JButton();
 		btnAddVariable.setEnabled(false);
 		btnAddVariable.setToolTipText("Add");
-		URL imageURL = frmMain.class.getResource("/images/add.png");
-		btnAddVariable.setIcon(new ImageIcon(imageURL,"Add"));
+		btnAddVariable.setIcon(new ScaledIcon("/images/add",16,16,16,true));
+		btnAddVariable.setDisabledIcon(new ScaledIcon("/images/add",16,16,16,false));
 		btnAddVariable.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(tabbedPaneRight.getSelectedIndex()==0){ //Parameters
@@ -781,8 +791,7 @@ public class frmMain {
 
 		final JButton btnDeleteVariable = new JButton();
 		btnDeleteVariable.setToolTipText("Delete");
-		imageURL = frmMain.class.getResource("/images/delete.png");
-		btnDeleteVariable.setIcon(new ImageIcon(imageURL,"Delete"));
+		btnDeleteVariable.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
 		btnDeleteVariable.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(tabbedPaneRight.getSelectedIndex()==0){ //Parameters
@@ -821,8 +830,7 @@ public class frmMain {
 
 		final JButton btnEdit = new JButton();
 		btnEdit.setToolTipText("Edit");
-		imageURL = frmMain.class.getResource("/images/edit_16.png");
-		btnEdit.setIcon(new ImageIcon(imageURL,"Edit"));
+		btnEdit.setIcon(new ScaledIcon("/images/edit",16,16,16,true));
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(tabbedPaneRight.getSelectedIndex()==0){ //Parameters
@@ -862,10 +870,10 @@ public class frmMain {
 		toolBar_1.add(btnEdit);
 		toolBar_1.add(btnDeleteVariable);
 
-		JButton btnShowuse = new JButton();
-		btnShowuse.setToolTipText("Highlight Use");
-		btnShowuse.setIcon(new ImageIcon(frmMain.class.getResource("/images/highlight_16.png")));
-		btnShowuse.addActionListener(new ActionListener() {
+		JButton btnHighlightUse = new JButton();
+		btnHighlightUse.setToolTipText("Highlight Use");
+		btnHighlightUse.setIcon(new ScaledIcon("/images/highlight",16,16,16,true));
+		btnHighlightUse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(tabbedPaneRight.getSelectedIndex()==0){ //Parameters
 					int selectedRow=tableParameters.getSelectedRow();
@@ -890,7 +898,7 @@ public class frmMain {
 				}
 			}
 		});
-		toolBar_1.add(btnShowuse);
+		toolBar_1.add(btnHighlightUse);
 
 		tabbedPaneRight.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
@@ -921,8 +929,7 @@ public class frmMain {
 		JPanel panelParams = new JPanel();
 		panelParams.setLayout(new BoxLayout(panelParams, BoxLayout.X_AXIS));
 		JLabel lblParam=new JLabel("Parameters");
-		Icon iconParameter=new ImageIcon(frmMain.class.getResource("/images/parameters2.png"));
-		lblParam.setIcon(iconParameter);
+		lblParam.setIcon(new ScaledIcon("/images/parameter",16,16,16,true));
 		lblParam.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneRight.addTab("Parameters", null, panelParams, null);
 		tabbedPaneRight.setTabComponentAt(0, lblParam);
@@ -999,8 +1006,7 @@ public class frmMain {
 		JPanel panelVars = new JPanel();
 		panelVars.setLayout(new BoxLayout(panelVars, BoxLayout.X_AXIS));
 		JLabel lblVar=new JLabel("Variables");
-		Icon iconVariable=new ImageIcon(frmMain.class.getResource("/images/variable.png"));
-		lblVar.setIcon(iconVariable);
+		lblVar.setIcon(new ScaledIcon("/images/variable",16,16,16,true));
 		lblVar.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneRight.addTab("Variables", null, panelVars, null);
 		tabbedPaneRight.setTabComponentAt(1, lblVar);
@@ -1020,7 +1026,6 @@ public class frmMain {
 		};
 
 		tableVariables = new JTable();
-		//tableVariables.setFont(new Font("Consolas", Font.PLAIN, 12));
 		tableVariables.setRowSelectionAllowed(false);
 		tableVariables.addKeyListener(new KeyAdapter() {
 			@Override
@@ -1079,8 +1084,7 @@ public class frmMain {
 		panelTables.setLayout(new BoxLayout(panelTables, BoxLayout.X_AXIS));
 
 		JLabel lblTables=new JLabel("Tables");
-		Icon iconTables=new ImageIcon(frmMain.class.getResource("/images/table.png"));
-		lblTables.setIcon(iconTables);
+		lblTables.setIcon(new ScaledIcon("/images/table",16,16,16,true));
 		lblTables.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneRight.addTab("Tables", null, panelTables, null);
 		tabbedPaneRight.setTabComponentAt(2, lblTables);
@@ -1142,8 +1146,7 @@ public class frmMain {
 		JPanel panelConst = new JPanel();
 		panelConst.setLayout(new BoxLayout(panelConst, BoxLayout.X_AXIS));
 		JLabel lblConst=new JLabel("Constraints");
-		Icon iconConst=new ImageIcon(frmMain.class.getResource("/images/constraint.png"));
-		lblConst.setIcon(iconConst);
+		lblConst.setIcon(new ScaledIcon("/images/constraint",16,16,16,true));
 		lblConst.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneRight.addTab("Constraints", null, panelConst, null);
 		tabbedPaneRight.setTabComponentAt(3, lblConst);
@@ -1241,10 +1244,6 @@ public class frmMain {
 		gbl_panelLeft.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 		panelLeft.setLayout(gbl_panelLeft);
 
-		/*JLabel lblFx = new JLabel("");
-		lblFx.setHorizontalTextPosition(SwingConstants.LEADING);
-		lblFx.setHorizontalAlignment(SwingConstants.LEADING);
-		lblFx.setIcon(new ImageIcon(frmMain.class.getResource("/images/formula.png")));*/
 		JToolBar toolbarFx=new JToolBar();
 		toolbarFx.setFloatable(false);
 		toolbarFx.setRollover(true);
@@ -1254,7 +1253,8 @@ public class frmMain {
 		btnFx.setEnabled(false);
 		btnFx.setFocusable(false);
 		btnFx.setFocusPainted(false);
-		btnFx.setIcon(new ImageIcon(frmMain.class.getResource("/images/formula.png")));
+		btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
+		btnFx.setDisabledIcon(new ScaledIcon("/images/formula",24,24,24,false));
 		btnFx.setToolTipText("Build Expression");
 		btnFx.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0){
@@ -1296,21 +1296,16 @@ public class frmMain {
 
 		JScrollPane scrollPaneConsole = new JScrollPane();
 		JLabel lblConsole=new JLabel("Console");
-		Icon iconConsole=new ImageIcon(frmMain.class.getResource("/images/console.png"));
-		lblConsole.setIcon(iconConsole);
+		lblConsole.setIcon(new ScaledIcon("/images/console",16,16,16,true));
 		lblConsole.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneBottom.addTab("Console", null, scrollPaneConsole, null);
 		tabbedPaneBottom.setTabComponentAt(0, lblConsole);
 
-		//console = new JTextArea();
-		//console.setEditable(false);
-		//scrollPaneConsole.setViewportView(console);
 		scrollPaneConsole.setViewportView(console.textConsole);
 
 		scrollPaneNotes = new JScrollPane();
 		JLabel lblNotes=new JLabel("Notes");
-		Icon iconNotes=new ImageIcon(frmMain.class.getResource("/images/notes.png"));
-		lblNotes.setIcon(iconNotes);
+		lblNotes.setIcon(new ScaledIcon("/images/notes",16,16,16,true));
 		lblNotes.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneBottom.addTab("Notes", (Icon) null, scrollPaneNotes, null);
 		tabbedPaneBottom.setTabComponentAt(1, lblNotes);
@@ -1419,21 +1414,19 @@ public class frmMain {
 		scrollPaneParamSets.setViewportView(tableParamSets);
 
 		JLabel lblParamSets=new JLabel("Parameter Sets");
-		Icon iconParamSets=new ImageIcon(frmMain.class.getResource("/images/parameterSets.png"));
-		lblParamSets.setIcon(iconParamSets);
+		lblParamSets.setIcon(new ScaledIcon("/images/parameterSets",16,16,16,true));
 		lblParamSets.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneBottom.addTab("Parameter Sets", (Icon) null, panelParamSets, null);
 		tabbedPaneBottom.setTabComponentAt(2, lblParamSets);
-		//chckbxUseParamSets.setSelected(curModel.simParamSets);
-
+		
 		scrollPaneProperties = new JScrollPane();
 
 
 		btnDecisionNode=new JButton();
-		btnDecisionNode.setEnabled(false);
 		btnDecisionNode.setToolTipText("Decision Node");
-		imageURL = frmMain.class.getResource("/images/decisionNode.png");
-		btnDecisionNode.setIcon(new ImageIcon(imageURL,"Decision Node"));
+		btnDecisionNode.setIcon(new ScaledIcon("/images/decisionNode",24,24,24,true));
+		btnDecisionNode.setDisabledIcon(new ScaledIcon("/images/decisionNode",24,24,24,false));
+		btnDecisionNode.setEnabled(false);
 		toolBar.add(btnDecisionNode);
 		btnDecisionNode.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1444,8 +1437,8 @@ public class frmMain {
 		btnMarkovChain=new JButton();
 		btnMarkovChain.setEnabled(false);
 		btnMarkovChain.setToolTipText("Markov Chain");
-		imageURL=frmMain.class.getResource("/images/markovChain.png");
-		btnMarkovChain.setIcon(new ImageIcon(imageURL,"Markov Chain"));
+		btnMarkovChain.setIcon(new ScaledIcon("/images/markovChain",24,24,24,true));
+		btnMarkovChain.setDisabledIcon(new ScaledIcon("/images/markovChain",24,24,24,false));
 		btnMarkovChain.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(curModelType==1){
@@ -1457,8 +1450,8 @@ public class frmMain {
 		btnMarkovState=new JButton();
 		btnMarkovState.setEnabled(false);
 		btnMarkovState.setToolTipText("Markov State");
-		imageURL=frmMain.class.getResource("/images/markovState.png");
-		btnMarkovState.setIcon(new ImageIcon(imageURL,"Markov State"));
+		btnMarkovState.setIcon(new ScaledIcon("/images/markovState",24,24,24,true));
+		btnMarkovState.setDisabledIcon(new ScaledIcon("/images/markovState",24,24,24,false));
 		btnMarkovState.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(curModelType==1){
@@ -1470,8 +1463,8 @@ public class frmMain {
 		btnChanceNode=new JButton();
 		btnChanceNode.setEnabled(false);
 		btnChanceNode.setToolTipText("Chance Node");
-		imageURL = frmMain.class.getResource("/images/chanceNode.png");
-		btnChanceNode.setIcon(new ImageIcon(imageURL,"Chance Node"));
+		btnChanceNode.setIcon(new ScaledIcon("/images/chanceNode",24,24,24,true));
+		btnChanceNode.setDisabledIcon(new ScaledIcon("/images/chanceNode",24,24,24,false));
 		toolBar.add(btnChanceNode);
 		btnChanceNode.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1488,8 +1481,8 @@ public class frmMain {
 		btnTerminalNode=new JButton();
 		btnTerminalNode.setEnabled(false);
 		btnTerminalNode.setToolTipText("Terminal Node");
-		imageURL = frmMain.class.getResource("/images/terminalNode.png");
-		btnTerminalNode.setIcon(new ImageIcon(imageURL,"Terminal Node"));
+		btnTerminalNode.setIcon(new ScaledIcon("/images/terminalNode",24,24,24,true));
+		btnTerminalNode.setDisabledIcon(new ScaledIcon("/images/terminalNode",24,24,24,false));
 		toolBar.add(btnTerminalNode);
 		btnTerminalNode.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1500,10 +1493,10 @@ public class frmMain {
 		});
 
 		btnStateTransition=new JButton();
-		btnStateTransition.setEnabled(false);;
+		btnStateTransition.setEnabled(false);
 		btnStateTransition.setToolTipText("State Transition");
-		imageURL = frmMain.class.getResource("/images/stateTransition.png");
-		btnStateTransition.setIcon(new ImageIcon(imageURL,"State Transition"));
+		btnStateTransition.setIcon(new ScaledIcon("/images/stateTransition",24,24,24,true));
+		btnStateTransition.setDisabledIcon(new ScaledIcon("/images/stateTransition",24,24,24,false));
 		btnStateTransition.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0){
 				if(curModelType==1){
@@ -1515,8 +1508,8 @@ public class frmMain {
 		btnChangeNodeType=new JButton();
 		btnChangeNodeType.setEnabled(false);
 		btnChangeNodeType.setToolTipText("Change Node Type");
-		imageURL = frmMain.class.getResource("/images/changeType.png");
-		btnChangeNodeType.setIcon(new ImageIcon(imageURL,"Change Node Type"));
+		btnChangeNodeType.setIcon(new ScaledIcon("/images/changeType",24,24,24,true));
+		btnChangeNodeType.setDisabledIcon(new ScaledIcon("/images/changeType",24,24,24,false));
 		toolBar.add(btnChangeNodeType);
 		btnChangeNodeType.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1527,8 +1520,8 @@ public class frmMain {
 		btnUpdateVariable=new JButton();
 		btnUpdateVariable.setEnabled(false);;
 		btnUpdateVariable.setToolTipText("Add/Remove Variable Updates");
-		imageURL = frmMain.class.getResource("/images/updateVariable.png");
-		btnUpdateVariable.setIcon(new ImageIcon(imageURL,"Add/Remove Variable Updates"));
+		btnUpdateVariable.setIcon(new ScaledIcon("/images/updateVariable",24,24,24,true));
+		btnUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",24,24,24,false));
 		btnUpdateVariable.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0){
 				curModel.addRemoveVarUpdates();
@@ -1539,8 +1532,8 @@ public class frmMain {
 		btnShowCost = new JButton();
 		btnShowCost.setEnabled(false);
 		btnShowCost.setToolTipText("Add/Remove Cost");
-		imageURL = frmMain.class.getResource("/images/cost.png");
-		btnShowCost.setIcon(new ImageIcon(imageURL,"Add/Remove Cost"));
+		btnShowCost.setIcon(new ScaledIcon("/images/cost",24,24,24,true));
+		btnShowCost.setDisabledIcon(new ScaledIcon("/images/cost",24,24,24,false));
 		btnShowCost.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				curModel.addRemoveCost();
@@ -1567,8 +1560,8 @@ public class frmMain {
 		btnEqualY = new JButton();
 		btnEqualY.setEnabled(false);
 		btnEqualY.setToolTipText("Vertical Spacing");
-		imageURL = frmMain.class.getResource("/images/equalY.png");
-		btnEqualY.setIcon(new ImageIcon(imageURL,"Vertical Spacing"));
+		btnEqualY.setIcon(new ScaledIcon("/images/equalY",24,24,24,true));
+		btnEqualY.setDisabledIcon(new ScaledIcon("/images/equalY",24,24,24,false));
 		btnEqualY.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -1581,8 +1574,8 @@ public class frmMain {
 		btnCollapse = new JButton();
 		btnCollapse.setEnabled(false);
 		btnCollapse.setToolTipText("Collapse/Expand Branch");
-		imageURL = frmMain.class.getResource("/images/collapse.png");
-		btnCollapse.setIcon(new ImageIcon(imageURL,"Collapse/Expand Branch"));
+		btnCollapse.setIcon(new ScaledIcon("/images/collapse",24,24,24,true));
+		btnCollapse.setDisabledIcon(new ScaledIcon("/images/collapse",24,24,24,false));
 		btnCollapse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				curModel.collapseBranch();
@@ -1594,36 +1587,40 @@ public class frmMain {
 		btnAlignRight = new JButton();
 
 		btnAlignLeft.setToolTipText("Align Left");
-		imageURL = frmMain.class.getResource("/images/alignLeftSelected.png");
-		btnAlignLeft.setIcon(new ImageIcon(imageURL,"Align Left"));
+		btnAlignLeft.setIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,true));
+		btnAlignLeft.setDisabledIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,false));
 		btnAlignLeft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.alignRight=false;
 				curModel.ocd("Align Left");
 
-				URL imageURL = frmMain.class.getResource("/images/alignLeftSelected.png");
-				btnAlignLeft.setIcon(new ImageIcon(imageURL,"Align Left"));
-				imageURL = frmMain.class.getResource("/images/alignRight.png");
-				btnAlignRight.setIcon(new ImageIcon(imageURL,"Align Right"));
+				btnAlignLeft.setIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,true));
+				btnAlignLeft.setDisabledIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,false));
+								
+				btnAlignRight.setIcon(new ScaledIcon("/images/alignRight",24,24,24,true));
+				btnAlignRight.setDisabledIcon(new ScaledIcon("/images/alignRight",24,24,24,false));
+				
 				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
 		toolBar.add(btnAlignLeft);
 
 		btnAlignRight.setToolTipText("Align Right");
-		imageURL = frmMain.class.getResource("/images/alignRight.png");
-		btnAlignRight.setIcon(new ImageIcon(imageURL,"Align Right"));
+		btnAlignRight.setIcon(new ScaledIcon("/images/alignRight",24,24,24,true));
+		btnAlignRight.setDisabledIcon(new ScaledIcon("/images/alignRight",24,24,24,false));
 		btnAlignRight.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.alignRight=true;
 				curModel.ocd("Align Right");
 
-				URL imageURL = frmMain.class.getResource("/images/alignRightSelected.png");
-				btnAlignRight.setIcon(new ImageIcon(imageURL,"Align Right"));
-				imageURL = frmMain.class.getResource("/images/alignLeft.png");
-				btnAlignLeft.setIcon(new ImageIcon(imageURL,"Align Left"));
+				btnAlignRight.setIcon(new ScaledIcon("/images/alignRightSelected",24,24,24,true));
+				btnAlignRight.setDisabledIcon(new ScaledIcon("/images/alignRightSelected",24,24,24,false));
+				
+				btnAlignLeft.setIcon(new ScaledIcon("/images/alignLeft",24,24,24,true));
+				btnAlignLeft.setDisabledIcon(new ScaledIcon("/images/alignLeft",24,24,24,false));
+				
 				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
@@ -1635,8 +1632,8 @@ public class frmMain {
 
 		btnCheckModel=new JButton();
 		btnCheckModel.setToolTipText("Check Model");
-		imageURL = frmMain.class.getResource("/images/checkTree.png");
-		btnCheckModel.setIcon(new ImageIcon(imageURL,"Check Tree"));
+		btnCheckModel.setIcon(new ScaledIcon("/images/checkModel",24,24,24,true));
+		btnCheckModel.setDisabledIcon(new ScaledIcon("/images/checkModel",24,24,24,false));
 		toolBar.add(btnCheckModel);
 		btnCheckModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1648,8 +1645,8 @@ public class frmMain {
 
 		btnRunModel=new JButton();
 		btnRunModel.setToolTipText("Run Model");
-		imageURL = frmMain.class.getResource("/images/runTree.png");
-		btnRunModel.setIcon(new ImageIcon(imageURL,"Run Tree"));
+		btnRunModel.setIcon(new ScaledIcon("/images/runModel",24,24,24,true));
+		btnRunModel.setDisabledIcon(new ScaledIcon("/images/runModel",24,24,24,false));
 		toolBar.add(btnRunModel);
 		btnRunModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1667,8 +1664,8 @@ public class frmMain {
 
 		btnClearAnnotations=new JButton();
 		btnClearAnnotations.setToolTipText("Clear");
-		imageURL = frmMain.class.getResource("/images/clearEV.png");
-		btnClearAnnotations.setIcon(new ImageIcon(imageURL,"Clear"));
+		btnClearAnnotations.setIcon(new ScaledIcon("/images/clear",24,24,24,true));
+		btnClearAnnotations.setDisabledIcon(new ScaledIcon("/images/clear",24,24,24,false));
 		toolBar.add(btnClearAnnotations);
 		btnClearAnnotations.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1681,8 +1678,7 @@ public class frmMain {
 		JSeparator separator_4 = new JSeparator();
 		separator_4.setOrientation(SwingConstants.VERTICAL);
 		toolBar.add(separator_4);
-		imageURL = frmMain.class.getResource("/images/screenshot.png");
-
+		
 		final JLabel lblZoom = new JLabel("100% ");
 
 		sliderZoom = new JSlider();
@@ -1748,7 +1744,8 @@ public class frmMain {
 
 		btnSnapshot=new JButton();
 		btnSnapshot.setToolTipText("Screenshot");
-		btnSnapshot.setIcon(new ImageIcon(imageURL,"Screenshot"));
+		btnSnapshot.setIcon(new ScaledIcon("/images/screenshot",24,24,24,true));
+		btnSnapshot.setDisabledIcon(new ScaledIcon("/images/screenshot",24,24,24,false));
 		toolBar.add(btnSnapshot);
 
 		btnSnapshot.addActionListener(new ActionListener() {
@@ -1778,20 +1775,20 @@ public class frmMain {
 		final JPanel pnlTab = new JPanel(new GridBagLayout());
 		pnlTab.setOpaque(false);
 		JLabel lbl=new JLabel(name);
-		Icon icon=null;
+		ScaledIcon icon=null;
 		if(modelType==0){ //Decision tree
-			icon=new ImageIcon(frmMain.class.getResource("/images/modelTree_16.png"));
+			icon=new ScaledIcon("/images/modelTree",16,16,16,true);
 		}
 		else if(modelType==1){ //Markov model
-			icon=new ImageIcon(frmMain.class.getResource("/images/markovChain_16.png"));
+			icon=new ScaledIcon("/images/markovChain",16,16,16,true);
 		}
 		lbl.setIcon(icon);
 		lbl.setIconTextGap(5);
 		lbl.setHorizontalTextPosition(SwingConstants.RIGHT);
 
 		JButton btnClose = new JButton();
-		btnClose.setIcon(new ImageIcon(frmMain.class.getResource("/images/close_7.png")));
-		btnClose.setRolloverIcon(new ImageIcon(frmMain.class.getResource("/images/close_press_7.png")));
+		btnClose.setIcon(new ScaledIcon("/images/close",7,21));
+		btnClose.setRolloverIcon(new ScaledIcon("/images/close_press",7,21));
 		btnClose.setOpaque(false);
 		btnClose.setPreferredSize(new Dimension(20,10));
 		btnClose.setContentAreaFilled(false);
@@ -1869,7 +1866,8 @@ public class frmMain {
 			toolBar.remove(btnMarkovState);
 			toolBar.remove(btnStateTransition);
 			toolBar.add(btnTerminalNode,2);
-			btnChangeNodeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/changeType.png"),"Change Node Type"));
+			btnChangeNodeType.setIcon(new ScaledIcon("/images/changeType",24,24,24,true));
+			btnChangeNodeType.setDisabledIcon(new ScaledIcon("/images/changeType",24,24,24,false));
 			toolBar.revalidate();
 
 			tabbedPaneBottom.removeTabAt(3); //properties
@@ -1895,13 +1893,14 @@ public class frmMain {
 			toolBar.add(btnMarkovState,2);
 			toolBar.remove(btnTerminalNode);
 			toolBar.add(btnStateTransition,4);
-			btnChangeNodeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/changeTypeTrans.png"),"Change Node Type"));
+			btnChangeNodeType.setIcon(new ScaledIcon("/images/changeTypeTrans",24,24,24,true));
+			btnChangeNodeType.setDisabledIcon(new ScaledIcon("/images/changeTypeTrans",24,24,24,false));
+			
 			toolBar.revalidate();
 			mntmCalibrateModel.setEnabled(true);
 
 			JLabel lblProperties=new JLabel("Properties");
-			Icon iconProperties=new ImageIcon(frmMain.class.getResource("/images/propertiesMarkov.png"));
-			lblProperties.setIcon(iconProperties);
+			lblProperties.setIcon(new ScaledIcon("/images/propertiesMarkov",16,16,16,true));
 			lblProperties.setHorizontalTextPosition(SwingConstants.RIGHT);
 			tabbedPaneBottom.addTab("Properties", (Icon) null, scrollPaneProperties, null);
 			tabbedPaneBottom.setTabComponentAt(3, lblProperties);

@@ -88,7 +88,7 @@ public class frmExpressionBuilder {
 	private void initialize() {
 		try{
 			frmExpressionBuilder = new JDialog();
-			frmExpressionBuilder.setIconImage(Toolkit.getDefaultToolkit().getImage(frmExpressionBuilder.class.getResource("/images/formula.png")));
+			frmExpressionBuilder.setIconImage(Toolkit.getDefaultToolkit().getImage(frmExpressionBuilder.class.getResource("/images/formula_128.png")));
 			frmExpressionBuilder.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmExpressionBuilder.setTitle("Amua - Build Expression");
 			frmExpressionBuilder.setResizable(false);

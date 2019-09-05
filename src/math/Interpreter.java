@@ -519,9 +519,31 @@ public final class Interpreter{
 						}
 						else{ //is '-', check if should be subtraction operator
 							if(isOpenParen(curExpr.charAt(1)) || isOpenBracket(curExpr.charAt(1))){ //followed by ( or [, operator
-								tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true));
-								endWord=true;
-								curExpr=curExpr.substring(pos+1);
+								if(tokens.isEmpty()){ //beginning of expression, negation operation
+									tokens.add(new Token("-1",Type.NUMERIC,myModel,true));
+									tokens.add(new Token("*",Type.OPERATOR,myModel,true));
+									endWord=true;
+									curExpr=curExpr.substring(pos+1);
+								}
+								else{ //not first token
+									Token prevToken=tokens.get(tokens.size()-1);
+									if(prevToken.type==Type.OPERATOR || prevToken.type==Type.PAREN_LEFT){ //preceded by operator or (, negation operation
+										tokens.add(new Token("-1",Type.NUMERIC,myModel,true));
+										if(prevToken.word.equals("/")){ //retain division, otherwise lost by -1*
+											tokens.add(new Token("/",Type.OPERATOR,myModel,true));
+										}
+										else{
+											tokens.add(new Token("*",Type.OPERATOR,myModel,true)); //-1* to negate
+										}
+										endWord=true;
+										curExpr=curExpr.substring(pos+1);
+									}
+									else{
+										tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true));
+										endWord=true;
+										curExpr=curExpr.substring(pos+1);
+									}
+								}
 							}
 							else{
 								if(!tokens.isEmpty()){ //not first token

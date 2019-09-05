@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2019 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -35,7 +35,6 @@ import java.util.Comparator;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -52,9 +51,9 @@ import base.ModelPanel;
 import gui.frmMain;
 import main.Console;
 import main.ErrorLog;
+import main.ScaledIcon;
 import main.TableCellListener;
 import math.Interpreter;
-import tree.TreeNode;
 
 public class PanelMarkov extends ModelPanel{
 	public MarkovTree tree;
@@ -123,29 +122,7 @@ public class PanelMarkov extends ModelPanel{
 		tableProperties.getColumnModel().getColumn(1).setPreferredWidth(150);
 		tableProperties.getTableHeader().setReorderingAllowed(false);
 		tableProperties.putClientProperty("terminateEditOnFocusLost", true);
-		//tableProperties.getColumn("Value").setCellRenderer(new TableCellDisplay(varHelper));
-		//tableProperties.getColumn("Value").setCellEditor(new TableCellEditor(varHelper));
-		//tableProperties.setRowHeight(18);
-
-
-		//tableProperties.setCellSelectionEnabled(true);
-		/*ListSelectionModel cellSelectionModel = tableProperties.getSelectionModel();
-	    cellSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-	    cellSelectionModel.addListSelectionListener(new ListSelectionListener() {
-	      public void valueChanged(ListSelectionEvent e) {
-	        int row=tableProperties.getSelectedRow();
-	        int col=tableProperties.getSelectedColumn();
-	        System.out.println(row+","+col);
-	        if(curNode.type==1){ //Markov Chain
-	        	if(row==0){curNode.tempName=name;}
-	        }
-	        else if(curNode.type==2){ //Markov State
-	        	if(row==0){curNode.tempName=name;}
-	        }
-	      }
-	    });*/
-
+		
 		Action action = new AbstractAction(){
 			public void actionPerformed(ActionEvent e){
 				TableCellListener tcl = (TableCellListener)e.getSource();
@@ -202,22 +179,6 @@ public class PanelMarkov extends ModelPanel{
 			}
 		};
 		TableCellListener tcl = new TableCellListener(tableProperties, action);
-
-		/*modelProperties.addTableModelListener(new TableModelListener() {
-		      public void tableChanged(TableModelEvent e) {
-		    	  if(modelProperties.getRowCount()>0 && e.getType()==TableModelEvent.UPDATE){
-		    		  int row=e.getFirstRow();
-		    		  String update=(String) modelProperties.getValueAt(row, 1);
-		    		  if(curNode.type==1){ //Markov Chain
-		    			  if(row==0){curNode.name=update; curNode.textName.setText(curNode.name);}
-
-		    		  }
-		    		  else if(curNode.type==2){ //Markov State
-		    			  if(row==0){curNode.name=update; curNode.textName.setText(curNode.name);}
-		    		  }
-		    	  }
-		      }
-		    });*/
 
 		//Get root
 		curNode=tree.nodes.get(0);
@@ -294,27 +255,32 @@ public class PanelMarkov extends ModelPanel{
 
 		mntmDecision = new JMenuItem("Decision Node");
 		mntmDecision.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(0);}});
-		mntmDecision.setIcon(new ImageIcon(frmMain.class.getResource("/images/decisionNode_16.png")));
+		mntmDecision.setIcon(new ScaledIcon("/images/decisionNode",16,16,16,true));
+		mntmDecision.setDisabledIcon(new ScaledIcon("/images/decisionNode",16,16,16,false));
 		mnAdd.add(mntmDecision);
 
 		mntmMarkovChain = new JMenuItem("Markov Chain");
 		mntmMarkovChain.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(1);}});
-		mntmMarkovChain.setIcon(new ImageIcon(frmMain.class.getResource("/images/markovChain_16.png")));
+		mntmMarkovChain.setIcon(new ScaledIcon("/images/markovChain",16,16,16,true));
+		mntmMarkovChain.setDisabledIcon(new ScaledIcon("/images/markovChain",16,16,16,false));
 		mnAdd.add(mntmMarkovChain);
 
 		mntmMarkovState = new JMenuItem("Markov State");
 		mntmMarkovState.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(2);}});
-		mntmMarkovState.setIcon(new ImageIcon(frmMain.class.getResource("/images/markovState_16.png")));
+		mntmMarkovState.setIcon(new ScaledIcon("/images/markovState",16,16,16,true));
+		mntmMarkovState.setDisabledIcon(new ScaledIcon("/images/markovState",16,16,16,false));
 		mnAdd.add(mntmMarkovState);
 
 		mntmChance = new JMenuItem("Chance Node");
 		mntmChance.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(3);}});
-		mntmChance.setIcon(new ImageIcon(frmMain.class.getResource("/images/chanceNode_16.png")));
+		mntmChance.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
+		mntmChance.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 		mnAdd.add(mntmChance);
 
 		mntmTransition = new JMenuItem("State Transition");
 		mntmTransition.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(4);}});
-		mntmTransition.setIcon(new ImageIcon(frmMain.class.getResource("/images/stateTransition_16.png")));
+		mntmTransition.setIcon(new ScaledIcon("/images/stateTransition",16,16,16,true));
+		mntmTransition.setDisabledIcon(new ScaledIcon("/images/stateTransition",16,16,16,false));
 		mnAdd.add(mntmTransition);
 
 		mntmChangeType= new JMenuItem("Change Node Type");
@@ -323,36 +289,42 @@ public class PanelMarkov extends ModelPanel{
 
 		mntmUpdateVariable = new JMenuItem("Add/Remove Variable Updates");
 		mntmUpdateVariable.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveVarUpdates();}});
-		mntmUpdateVariable.setIcon(new ImageIcon(frmMain.class.getResource("/images/updateVariable_16.png")));
+		mntmUpdateVariable.setIcon(new ScaledIcon("/images/updateVariable",16,16,16,true));
+		mntmUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",16,16,16,false));
 		popup.add(mntmUpdateVariable);
 		
 		mntmShowCost= new JMenuItem("Add/Remove Cost");
 		mntmShowCost.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveCost();}});
-		mntmShowCost.setIcon(new ImageIcon(frmMain.class.getResource("/images/cost_16.png")));
+		mntmShowCost.setIcon(new ScaledIcon("/images/cost",16,16,16,true));
+		mntmShowCost.setDisabledIcon(new ScaledIcon("/images/cost",16,16,16,false));
 		popup.add(mntmShowCost);
 
 		popup.addSeparator();
 
 		final JMenuItem mntmCut = new JMenuItem("Cut");
 		mntmCut.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {cutSubtree();}});
-		mntmCut.setIcon(new ImageIcon(frmMain.class.getResource("/images/cut_16.png")));
+		mntmCut.setIcon(new ScaledIcon("/images/cut",16,16,16,true));
+		mntmCut.setDisabledIcon(new ScaledIcon("/images/cut",16,16,16,false));
 		popup.add(mntmCut);
 
 		final JMenuItem mntmCopy = new JMenuItem("Copy");
 		mntmCopy.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {copySubtree();}});
-		mntmCopy.setIcon(new ImageIcon(frmMain.class.getResource("/images/copy_16.png")));
+		mntmCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
+		mntmCopy.setDisabledIcon(new ScaledIcon("/images/copy",16,16,16,false));
 		popup.add(mntmCopy);
 
 		mntmPaste = new JMenuItem("Paste");
 		mntmPaste.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {pasteSubtree();}});
-		mntmPaste.setIcon(new ImageIcon(frmMain.class.getResource("/images/paste_16.png")));
+		mntmPaste.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
+		mntmPaste.setDisabledIcon(new ScaledIcon("/images/paste",16,16,16,false));
 		mntmPaste.setEnabled(false);
 		popup.add(mntmPaste);
 
 		popup.addSeparator();
 		mntmDelete= new JMenuItem("Delete");
 		mntmDelete.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {deleteNode(true);}});
-		mntmDelete.setIcon(new ImageIcon(frmMain.class.getResource("/images/delete.png")));
+		mntmDelete.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
+		mntmDelete.setDisabledIcon(new ScaledIcon("/images/delete",16,16,16,false));
 		popup.add(mntmDelete);
 
 		mntmCollapse=new JMenuItem("Collapse Branch");
@@ -1164,7 +1136,8 @@ public class PanelMarkov extends ModelPanel{
 					if(curNode.childIndices.size()==0){ //no children
 						mntmChangeType.setEnabled(true);
 						mntmChangeType.setText("Change to State Transition");
-						mntmChangeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/stateTransition_16.png")));
+						mntmChangeType.setIcon(new ScaledIcon("/images/stateTransition",16,16,16,true));
+						mntmChangeType.setDisabledIcon(new ScaledIcon("/images/stateTransition",16,16,16,false));
 					}
 				}
 				else{ //not in chain
@@ -1176,7 +1149,8 @@ public class PanelMarkov extends ModelPanel{
 				mnAdd.setEnabled(false);
 				mntmChangeType.setEnabled(true);
 				mntmChangeType.setText("Change to Chance Node");
-				mntmChangeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/chanceNode_16.png")));
+				mntmChangeType.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
+				mntmChangeType.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 				mntmPaste.setEnabled(false);
 			}
 		}

@@ -56,7 +56,7 @@ public class frmErrorLog {
 	private void initialize() {
 		try{
 			frmErrorLog = new JDialog();
-			frmErrorLog.setIconImage(Toolkit.getDefaultToolkit().getImage(frmErrorLog.class.getResource("/images/errorLog.png")));
+			frmErrorLog.setIconImage(Toolkit.getDefaultToolkit().getImage(frmErrorLog.class.getResource("/images/errorLog_128.png")));
 			frmErrorLog.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmErrorLog.setTitle("Amua - Error Log");
 			frmErrorLog.setResizable(false);
@@ -96,6 +96,9 @@ public class frmErrorLog {
 			for(int i=0; i<log.systemInfo.length; i++){
 				txtLog.append(log.systemInfo[i][0]+": "+log.systemInfo[i][1]+"\n");
 			}
+			txtLog.append("Screen Resolution: "+Toolkit.getDefaultToolkit().getScreenResolution()+"\n");
+			txtLog.append("Screen Size: "+Toolkit.getDefaultToolkit().getScreenSize().toString()+"\n");
+			
 			txtLog.setCaretPosition(0);
 			
 			

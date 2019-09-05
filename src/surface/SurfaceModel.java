@@ -1,3 +1,6 @@
+package surface;
+
+
 /**
  * Amua - An open source modeling framework.
  * Copyright (C) 2017 Zachary J. Ward
@@ -15,9 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Amua.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package main;
-import org.sf.surfaceplot.ISurfacePlotModel;
 
 
 public class SurfaceModel implements ISurfacePlotModel

@@ -47,6 +47,7 @@ import main.MersenneTwisterFast;
 import main.Metadata;
 import main.Parameter;
 import main.ParameterSet;
+import main.ScaledIcon;
 import main.Scenario;
 import main.Table;
 import main.Variable;
@@ -284,16 +285,18 @@ public class AmuaModel{
 	public void refreshAlignment(){
 		//node alignment buttons
 		if(alignRight==false){
-			URL imageURL = frmMain.class.getResource("/images/alignLeftSelected.png");
-			mainForm.btnAlignLeft.setIcon(new ImageIcon(imageURL,"Align Left"));
-			imageURL = frmMain.class.getResource("/images/alignRight.png");
-			mainForm.btnAlignRight.setIcon(new ImageIcon(imageURL,"Align Right"));
+			mainForm.btnAlignLeft.setIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,true));
+			mainForm.btnAlignLeft.setDisabledIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,false));
+			
+			mainForm.btnAlignRight.setIcon(new ScaledIcon("/images/alignRight",24,24,24,true));
+			mainForm.btnAlignRight.setDisabledIcon(new ScaledIcon("/images/alignRight",24,24,24,false));
 		}
 		else{
-			URL imageURL = frmMain.class.getResource("/images/alignRightSelected.png");
-			mainForm.btnAlignRight.setIcon(new ImageIcon(imageURL,"Align Right"));
-			imageURL = frmMain.class.getResource("/images/alignLeft.png");
-			mainForm.btnAlignLeft.setIcon(new ImageIcon(imageURL,"Align Left"));
+			mainForm.btnAlignRight.setIcon(new ScaledIcon("/images/alignRightSelected",24,24,24,true));
+			mainForm.btnAlignRight.setDisabledIcon(new ScaledIcon("/images/alignRightSelected",24,24,24,false));
+		
+			mainForm.btnAlignLeft.setIcon(new ScaledIcon("/images/alignLeft",24,24,24,true));
+			mainForm.btnAlignLeft.setDisabledIcon(new ScaledIcon("/images/alignLeft",24,24,24,false));
 		}
 	}
 	
@@ -1146,7 +1149,7 @@ public class AmuaModel{
 		int numParams=parameters.size();
 		int i=0;
 		while(paramIndex==-1 && i<numParams){
-			if(parameters.get(i).name.matches(name)){paramIndex=i;}
+			if(parameters.get(i).name.equals(name)){paramIndex=i;}
 			i++;
 		}
 		return(paramIndex);
@@ -1157,7 +1160,7 @@ public class AmuaModel{
 		int numVars=variables.size();
 		int i=0;
 		while(varIndex==-1 && i<numVars){
-			if(variables.get(i).name.matches(name)){varIndex=i;}
+			if(variables.get(i).name.equals(name)){varIndex=i;}
 			i++;
 		}
 		return(varIndex);
@@ -1168,7 +1171,7 @@ public class AmuaModel{
 		int numVars=innateVariables.size();
 		int i=0;
 		while(varIndex==-1 && i<numVars){
-			if(innateVariables.get(i).name.matches(name)){varIndex=i;}
+			if(innateVariables.get(i).name.equals(name)){varIndex=i;}
 			i++;
 		}
 		return(varIndex);
@@ -1179,7 +1182,7 @@ public class AmuaModel{
 		int numTables=tables.size();
 		int i=0;
 		while(tableIndex==-1 && i<numTables){
-			if(tables.get(i).name.matches(name)){tableIndex=i;}
+			if(tables.get(i).name.equals(name)){tableIndex=i;}
 			i++;
 		}
 		return(tableIndex);
@@ -1227,7 +1230,7 @@ public class AmuaModel{
 		int numTables=tables.size();
 		int i=0;
 		while(type==null && i<numTables){
-			if(tables.get(i).name.matches(name)){type=tables.get(i).type;}
+			if(tables.get(i).name.equals(name)){type=tables.get(i).type;}
 			i++;
 		}
 		return(type);
@@ -1240,7 +1243,6 @@ public class AmuaModel{
 		des="<html><b>"+curParam.name+"</b><br>";
 		des+="Expression: <br>"+MathUtils.consoleFont(curParam.expression)+"<br><br>";
 		String strEV=curParam.value.toString().replaceAll("\\n", "<br>");
-		//strEV=strEV.replaceAll("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
 		des+="Expected Value: <br>"+MathUtils.consoleFont(strEV)+"<br><br>";
 		if(curParam.notes!=null && !curParam.notes.isEmpty()){
 			String strNotes=curParam.notes.replaceAll("\\n", "<br>");
@@ -1257,7 +1259,6 @@ public class AmuaModel{
 		des="<html><b>"+curVar.name+"</b><br>";
 		des+="Expression: <br>"+MathUtils.consoleFont(curVar.expression)+"<br><br>";
 		String strEV=curVar.value[0].toString().replaceAll("\\n", "<br>");
-		//strEV=strEV.replaceAll("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
 		des+="Expected Value: <br>"+MathUtils.consoleFont(strEV)+"<br><br>";
 		if(curVar.notes!=null && !curVar.notes.isEmpty()){
 			String strNotes=curVar.notes.replaceAll("\\n", "<br>");

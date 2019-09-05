@@ -28,6 +28,7 @@ import javax.swing.JDialog;
 import javax.swing.JTextArea;
 
 import main.ErrorLog;
+import main.ScaledIcon;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -64,7 +65,7 @@ public class frmAboutAmua {
 	private void initialize() {
 		try{
 			frmAboutAmua = new JDialog();
-			frmAboutAmua.setIconImage(Toolkit.getDefaultToolkit().getImage(frmAboutAmua.class.getResource("/images/logo_48.png")));
+			frmAboutAmua.setIconImage(Toolkit.getDefaultToolkit().getImage(frmAboutAmua.class.getResource("/images/logo_128.png")));
 			frmAboutAmua.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmAboutAmua.setTitle("About Amua");
 			frmAboutAmua.setResizable(false);
@@ -93,7 +94,7 @@ public class frmAboutAmua {
 			scrollPane_1.setViewportView(txtrAmuaIsFree);
 			
 			JLabel lblLogo = new JLabel("New label");
-			lblLogo.setIcon(new ImageIcon(frmAboutAmua.class.getResource("/images/logo_48.png")));
+			lblLogo.setIcon(new ScaledIcon("/images/logo",48,48,48,true));
 			lblLogo.setBounds(84, 13, 48, 48);
 			frmAboutAmua.getContentPane().add(lblLogo);
 			

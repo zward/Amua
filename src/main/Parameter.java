@@ -29,6 +29,7 @@ public class Parameter{
 	@XmlElement public String name;
 	@XmlElement public String expression;
 	@XmlElement public String notes;
+	@XmlElement public String sensMin, sensMax; //sensitivity analysis bounds
 	
 	@XmlTransient public boolean locked=false;
 	@XmlTransient public boolean valid=true;
@@ -47,6 +48,8 @@ public class Parameter{
 		copyParam.notes=notes;
 		copyParam.value=value;
 		copyParam.parsedTokens=parsedTokens;
+		copyParam.sensMin=sensMin;
+		copyParam.sensMax=sensMax;
 		return(copyParam);
 	}
 	

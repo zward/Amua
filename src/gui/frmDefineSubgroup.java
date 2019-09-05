@@ -37,6 +37,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import base.AmuaModel;
+import main.ScaledIcon;
 import main.StyledTextPane;
 import math.Interpreter;
 import math.Numeric;
@@ -165,7 +166,7 @@ public class frmDefineSubgroup {
 			toolBar.setBorderPainted(false);
 			toolBar.setFloatable(false);
 			toolBar.setRollover(true);
-			toolBar.setBounds(1, 40, 48, 24);
+			toolBar.setBounds(1, 38, 48, 24);
 			frmDefineSubgroup.getContentPane().add(toolBar);
 			
 			JButton btnFx = new JButton("");
@@ -177,7 +178,7 @@ public class frmDefineSubgroup {
 			});
 			btnFx.setToolTipText("Build Expression");
 			btnFx.setFocusPainted(false);
-			btnFx.setIcon(new ImageIcon(frmDefineSubgroup.class.getResource("/images/formula.png")));
+			btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
 			toolBar.add(btnFx);
 
 		} catch (Exception ex){

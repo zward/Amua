@@ -54,6 +54,7 @@ import javax.swing.table.TableCellEditor;
 import base.AmuaModel;
 import main.DimInfo;
 import main.Metadata;
+import main.ScaledIcon;
 
 import javax.swing.JTabbedPane;
 import javax.swing.JComboBox;
@@ -149,7 +150,7 @@ public class frmProperties {
 	private void initialize() {
 		try{
 			frmProperties = new JDialog();
-			frmProperties.setIconImage(Toolkit.getDefaultToolkit().getImage(frmProperties.class.getResource("/images/propertiesBase.png")));
+			frmProperties.setIconImage(Toolkit.getDefaultToolkit().getImage(frmProperties.class.getResource("/images/properties_128.png")));
 			frmProperties.getContentPane().setBackground(SystemColor.control);
 			frmProperties.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmProperties.setTitle("Amua - Properties");
@@ -298,7 +299,7 @@ public class frmProperties {
 				}
 			});
 			btnAddDimension.setToolTipText("Add Dimension");
-			btnAddDimension.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/add.png")));
+			btnAddDimension.setIcon(new ScaledIcon("/images/add",16,16,16,true));
 			btnAddDimension.setBounds(282, 11, 35, 28);
 			panelAnalysis.add(btnAddDimension);
 
@@ -318,7 +319,8 @@ public class frmProperties {
 			});
 			btnRemoveDimension.setBounds(282, 46, 35, 28);
 			btnRemoveDimension.setToolTipText("Remove Dimension");
-			btnRemoveDimension.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/remove.png")));
+			btnRemoveDimension.setIcon(new ScaledIcon("/images/remove",16,16,16,true));
+			btnRemoveDimension.setDisabledIcon(new ScaledIcon("/images/remove",16,16,16,false));
 			panelAnalysis.add(btnRemoveDimension);
 			
 			JLabel lblAnalysisType = new JLabel("Analysis type:");
@@ -403,7 +405,7 @@ public class frmProperties {
 					}
 				}
 			});
-			btnRefreshDim.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/refresh_16.png")));
+			btnRefreshDim.setIcon(new ScaledIcon("/images/refresh",16,16,16,true));
 			btnRefreshDim.setBounds(329, 30, 109, 28);
 			panelAnalysis.add(btnRefreshDim);
 			
@@ -695,7 +697,7 @@ public class frmProperties {
 					defineSubgroup(-1);
 				}
 			});
-			btnAddSubgroup.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/add.png")));
+			btnAddSubgroup.setIcon(new ScaledIcon("/images/add",16,16,16,true));
 			btnAddSubgroup.setToolTipText("Add Subgroup");
 			btnAddSubgroup.setBounds(335, 6, 35, 28);
 			panelSubgroups.add(btnAddSubgroup);
@@ -709,7 +711,8 @@ public class frmProperties {
 					}
 				}
 			});
-			btnRemoveSubgroup.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/remove.png")));
+			btnRemoveSubgroup.setIcon(new ScaledIcon("/images/remove",16,16,16,true));
+			btnRemoveSubgroup.setDisabledIcon(new ScaledIcon("/images/remove",16,16,16,false));
 			btnRemoveSubgroup.setToolTipText("Remove Subgroup");
 			btnRemoveSubgroup.setBounds(407, 6, 35, 28);
 			panelSubgroups.add(btnRemoveSubgroup);
@@ -723,7 +726,7 @@ public class frmProperties {
 					}
 				}
 			});
-			btnEditSubgroup.setIcon(new ImageIcon(frmDefineTable.class.getResource("/images/edit.png")));
+			btnEditSubgroup.setIcon(new ScaledIcon("/images/edit",16,16,16,true));
 			btnEditSubgroup.setToolTipText("Edit Subgroup");
 			btnEditSubgroup.setBounds(371, 6, 35, 28);
 			panelSubgroups.add(btnEditSubgroup);
@@ -745,10 +748,10 @@ public class frmProperties {
 	
 	private void displayMetadata(Metadata meta){
 		String modelTypes[]={"Decision Tree","Markov Model"};
-		String icons[]={"/images/modelTree_16.png","/images/markovChain_16.png"};
+		String icons[]={"/images/modelTree","/images/markovChain"};
 		lblName.setText(myModel.name);
 		lblModel.setText(modelTypes[myModel.type]);
-		lblIcon.setIcon(new ImageIcon(frmProperties.class.getResource(icons[myModel.type])));
+		lblIcon.setIcon(new ScaledIcon(icons[myModel.type],16,16,16,true));
 		lblDispAuthor.setText(meta.author);
 		lblDispCreated.setText(meta.dateCreated);
 		lblDispVCreated.setText(meta.versionCreated); 
@@ -773,23 +776,6 @@ public class frmProperties {
 		comboAnalysis.setSelectedIndex(tempDimInfo.analysisType);
 		
 		setAnalysisType(tempDimInfo.analysisType);
-		if(tempDimInfo.analysisType==0){ //EV
-			if(tempDimInfo.objective==0){tableAnalysis.setValueAt("Maximize", 0, 1);}
-			else if(tempDimInfo.objective==1){tableAnalysis.setValueAt("Minimize", 0, 1);}
-			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.objectiveDim], 1, 1);
-		}
-		else{ //CEA, BCA, or ECEA
-			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.costDim], 0, 1);
-			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.effectDim], 1, 1);
-			if(tempDimInfo.analysisType==1){ //CEA
-				tableAnalysis.setValueAt(tempDimInfo.baseScenario, 2, 1);
-			}
-			tableAnalysis.setValueAt(tempDimInfo.WTP+"",3,1);
-			if(tempDimInfo.analysisType==3){ //ECEA
-				tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.extendedDim], 4, 1);
-			}
-		}
-		
 	}
 	
 	private void displaySimSettings(){
@@ -995,13 +981,13 @@ public class frmProperties {
 				baseStrategy=(String)tableAnalysis.getValueAt(2, 1);
 				if(baseStrategy==null || baseStrategy.isEmpty()){
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Please choose a baseline scenario!");
+					JOptionPane.showMessageDialog(frmProperties, "Please choose a baseline strategy!");
 				}
 				else{
 					int baseIndex=myModel.getStrategyIndex(baseStrategy);
 					if(baseIndex==-1){
 						valid=false;
-						JOptionPane.showMessageDialog(frmProperties, "Baseline scenario not recognized!");
+						JOptionPane.showMessageDialog(frmProperties, "Baseline strategy not recognized!");
 					}
 				}
 			}
@@ -1140,7 +1126,9 @@ public class frmProperties {
 					}
 				}
 			}
-			
+		} //end Markov
+		
+		if(myModel.simType==1) {
 			//subgroups
 			if(chckbxSubgroups.isSelected() && subgroupNames.size()==0){
 				valid=false;
@@ -1166,10 +1154,16 @@ public class frmProperties {
 			
 			//analysis type
 			myModel.dimInfo.analysisType=comboAnalysis.getSelectedIndex();
-			myModel.dimInfo.objective=objective; myModel.dimInfo.objectiveDim=objectiveDim;
-			myModel.dimInfo.costDim=costDim; myModel.dimInfo.effectDim=effectDim;
-			myModel.dimInfo.baseScenario=baseStrategy;
-			myModel.dimInfo.WTP=WTP;
+			if(myModel.dimInfo.analysisType==0) {
+				myModel.dimInfo.objective=objective; myModel.dimInfo.objectiveDim=objectiveDim;
+			}
+			else {
+				myModel.dimInfo.costDim=costDim; myModel.dimInfo.effectDim=effectDim;
+				myModel.dimInfo.WTP=WTP;
+				if(myModel.dimInfo.analysisType==1 || myModel.dimInfo.analysisType==3) {
+					myModel.dimInfo.baseScenario=baseStrategy;
+				}
+			}
 			
 			tempDimInfo=myModel.dimInfo.copy(); //get new copy
 			tableAnalysis.tempDimInfo=tempDimInfo;
@@ -1223,22 +1217,32 @@ public class frmProperties {
 		if(analysisType==0){ //EV
 			modelAnalysis.setRowCount(0);
 			modelAnalysis.addRow(new Object[]{"Objective",null}); tableAnalysis.enabled[0]=true;
+			if(tempDimInfo.objective==0) {tableAnalysis.setValueAt("Maximize", 0, 1);}
+			else {tableAnalysis.setValueAt("Minimize", 0, 1);}
 			modelAnalysis.addRow(new Object[]{"Outcome",null}); tableAnalysis.enabled[1]=true;
+			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.objectiveDim], 1, 1);
 		}
 		else{ //CEA, BCA, or ECEA
 			modelAnalysis.setRowCount(0);
 			modelAnalysis.addRow(new Object[]{"Cost",null}); tableAnalysis.enabled[0]=true;
+			if(tempDimInfo.costDim!=-1) {tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.costDim], 0, 1);}
 			modelAnalysis.addRow(new Object[]{"Effect",null}); tableAnalysis.enabled[1]=true;
+			if(tempDimInfo.effectDim!=-1) {tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.effectDim], 1, 1);}
 			modelAnalysis.addRow(new Object[]{"Baseline Strategy",null}); tableAnalysis.enabled[2]=true;
 			modelAnalysis.addRow(new Object[]{"Willingness-to-pay (WTP)",null}); tableAnalysis.enabled[3]=true;
+			tableAnalysis.setValueAt(tempDimInfo.WTP+"", 3, 1);
 			if(analysisType==1){ //CEA
 				tableAnalysis.setValueAt("Effect", 1, 0);
+				tableAnalysis.setValueAt(tempDimInfo.baseScenario,2,1);
+				
 			}
 			else if(analysisType==2){ //BCA
 				tableAnalysis.setValueAt("Benefit", 1, 0);
 				tableAnalysis.enabled[2]=false; //baseline strategy
 			}
 			else if(analysisType==3){ //ECEA
+				tableAnalysis.setValueAt("Effect", 1, 0);
+				tableAnalysis.setValueAt(tempDimInfo.baseScenario,2,1);
 				modelAnalysis.addRow(new Object[]{"Additional Dimension",null}); tableAnalysis.enabled[4]=true;
 			}
 		}
@@ -1253,21 +1257,6 @@ public class frmProperties {
 		while(found==false && i<tempDimInfo.dimNames.length){
 			i++;
 			if(tempDimInfo.dimNames[i].matches(dimName)){
-				found=true;
-				index=i;
-			}
-		}
-		return(index);
-	}
-
-	private int getScenarioIndex(String scenName){
-		int index=-1;
-		int i=-1;
-		boolean found=false;
-		while(found==false && i<myModel.strategyNames.length){
-			i++;
-			//if(myModel.strategyNames[i].matches(scenName)){
-			if(myModel.strategyNames[i].equals(scenName)){
 				found=true;
 				index=i;
 			}

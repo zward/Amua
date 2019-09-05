@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jfreechart-1.0.19/lib/jfreechart-1.0.19.jar" sourcepath="C:/Users/zward/Dropbox/Java Packages/jfreechart-1.0.19/source"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jfreechart-1.0.19/lib/jcommon-1.0.23.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/commons-math3-3.6.1-bin/commons-math3-3.6.1/commons-math3-3.6.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/SurfacePlot.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/codemodel.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/dtd-parser.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/FastInfoset.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/istack-commons-runtime.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/istack-commons-tools.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/javax.activation-api.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/jaxb-api.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/jaxb-jxc.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/jaxb-runtime.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/jaxb-xjc.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/relaxng-datatype.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/rngom.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/stax-ex.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/txw2.jar"/>
-	<classpathentry kind="lib" path="C:/Users/zward/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/xsom.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jfreechart-1.0.19/lib/jfreechart-1.0.19.jar" sourcepath="C:/Users/zjw461/Dropbox/Java Packages/jfreechart-1.0.19/source"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jfreechart-1.0.19/lib/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/commons-math3-3.6.1-bin/commons-math3-3.6.1/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/codemodel.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/dtd-parser.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/FastInfoset.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/istack-commons-runtime.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/istack-commons-tools.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/javax.activation-api.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/jaxb-api.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/jaxb-jxc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/jaxb-runtime.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/jaxb-xjc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/relaxng-datatype.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/rngom.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/stax-ex.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/txw2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zjw461/Dropbox/Java Packages/jaxb-ri-2.4.0-b180830.0438/jaxb-ri/mod/xsom.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

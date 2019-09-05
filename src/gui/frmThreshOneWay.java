@@ -100,7 +100,7 @@ public class frmThreshOneWay {
 		try{
 			frmThreshOneWay = new JFrame();
 			frmThreshOneWay.setTitle("Amua - Threshold Analysis");
-			frmThreshOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmThreshOneWay.class.getResource("/images/threshold.png")));
+			frmThreshOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmThreshOneWay.class.getResource("/images/threshold_128.png")));
 			frmThreshOneWay.setBounds(100, 100, 1000, 500);
 			frmThreshOneWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -133,8 +133,11 @@ public class frmThreshOneWay {
 
 			for(int i=0; i<myModel.parameters.size(); i++){
 				modelParams.addRow(new Object[]{null});
-				modelParams.setValueAt(myModel.parameters.get(i).name, i, 0);
-				modelParams.setValueAt(myModel.parameters.get(i).expression, i, 1);
+				Parameter curParam=myModel.parameters.get(i);
+				modelParams.setValueAt(curParam.name, i, 0);
+				modelParams.setValueAt(curParam.expression, i, 1);
+				modelParams.setValueAt(curParam.sensMin, i, 2);
+				modelParams.setValueAt(curParam.sensMax, i, 3);
 			}
 
 			JScrollPane scrollPaneParams = new JScrollPane();
@@ -298,6 +301,47 @@ public class frmThreshOneWay {
 									proceed=false;
 								}
 								
+								if(tableParams.getSelectedRow()==-1) {
+									JOptionPane.showMessageDialog(frmThreshOneWay, "Please select a parameter!");
+									proceed=false;
+								}
+								else { //validate entry
+									int row=tableParams.getSelectedRow();
+									String strMin=(String)tableParams.getValueAt(row, 2);
+									String strMax=(String)tableParams.getValueAt(row, 3);
+									double min=0, max=0;
+									if(strMin==null) {
+										proceed=false;
+										JOptionPane.showMessageDialog(frmThreshOneWay, "Please enter a min value!");
+									}
+									else if(strMax==null) {
+										proceed=false;
+										JOptionPane.showMessageDialog(frmThreshOneWay, "Please enter a max value!");
+									}
+									if(proceed) {
+										strMin=strMin.replaceAll(",", ""); //Replace any commas
+										strMax=strMax.replaceAll(",", ""); 
+										try {
+											min=Double.parseDouble(strMin);
+										} catch(Exception err) {
+											proceed=false;
+											JOptionPane.showMessageDialog(frmThreshOneWay, "Please enter a valid min!");
+										}
+										try {
+											max=Double.parseDouble(strMax);
+										} catch(Exception err) {
+											if(proceed) {
+												proceed=false;
+												JOptionPane.showMessageDialog(frmThreshOneWay, "Please enter a valid max!");
+											}
+										}
+									}
+									if(proceed && min>=max) {
+										proceed=false;
+										JOptionPane.showMessageDialog(frmThreshOneWay, "Please ensure max is greater min!");
+									}
+								}
+								
 								
 								if(proceed==true){
 									//Get parameter
@@ -311,6 +355,8 @@ public class frmThreshOneWay {
 									double max=Double.parseDouble(strMax);
 									double step=(max-min)/(intervals*1.0);
 									curParam=myModel.parameters.get(row);
+									curParam.sensMin=strMin; //record min/max
+									curParam.sensMax=strMax;
 									Numeric origValue=curParam.value.copy();
 									
 									int dim=comboDimensions.getSelectedIndex();
@@ -360,6 +406,13 @@ public class frmThreshOneWay {
 										if(analysisType==1){CEAnotes=new String[numStrat][intervals+1];} //CEA
 										else{CEAnotes=null;}
 										
+										boolean origShowTrace=false;
+										if(myModel.type==1) {
+											origShowTrace=myModel.markov.showTrace;
+											myModel.markov.showTrace=false;
+										}
+										
+										double diffs[]=new double[intervals+1];
 										for(int i=0; i<=intervals; i++){
 											double curVal=min+(step*i);
 											curParam.value.setDouble(curVal);
@@ -394,7 +447,9 @@ public class frmThreshOneWay {
 												}
 											}
 											
-											double curDist=Math.abs(dataEV[strat1][1][i]-dataEV[strat2][1][i]);
+											
+											diffs[i]=dataEV[strat1][1][i]-dataEV[strat2][1][i];
+											double curDist=Math.abs(diffs[i]);
 											if(curDist<minDist){
 												minDist=curDist;
 												minIndex=i;
@@ -409,25 +464,38 @@ public class frmThreshOneWay {
 										if(cancelled==false){
 											//Find intersection
 											double intersection=Double.NaN;
-											if(minDist==0){ //Intersection found
+											if(minDist==0){ //Intersection coincides with interval
 												intersection=dataEV[0][0][minIndex];
 											}
-											else{ //No intersection found
-												if(minIndex<=0 || minIndex==intervals){
+											else{ //No exact intersection found
+												//Check if lines cross
+												boolean cross=false;
+												for(int i=1; i<=intervals; i++) {
+													if(Math.signum(diffs[i-1])!=Math.signum(diffs[i])) {
+														cross=true;
+													}
+												}
+												if(cross==false) {
 													JOptionPane.showMessageDialog(frmThreshOneWay, "No intersection found in current range!");
 												}
 												else{ //Search neighbourhood for intersection
 													frmThreshOneWay.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 													
 													double minVal=dataEV[0][0][minIndex];
+													//if min dist is at either extreme move to the midpoint of the interval
+													//if(minIndex==0) {minVal+=(step/2.0);}
+													//else if(minIndex==intervals) {minVal-=(step/2.0);}
 													
 													int dec=myModel.dimInfo.decimals[decimalDim]+1;
 													int i=0;
+													progress.setMaximum(100);
 													while(minDist>tol && i<100){ //Binary search of neighbourhood until convergence
+														progress.setProgress(i);
 														progress.setNote("Distance: "+MathUtils.round(minDist, dec));
 														
 														//Left
 														double valL=minVal-(step/2.0);
+														valL=Math.max(valL, min); //floor of min
 														curParam.value.setDouble(valL);
 														curParam.locked=true;
 														myModel.parseModel();
@@ -464,6 +532,7 @@ public class frmThreshOneWay {
 														
 														//Right
 														double valR=minVal+(step/2.0);
+														valR=Math.min(valR, max); //ceiling of max
 														curParam.value.setDouble(valR);
 														curParam.locked=true;
 														myModel.parseModel();
@@ -509,6 +578,7 @@ public class frmThreshOneWay {
 														}
 														step/=2.0;
 														
+														i++;
 														if(progress.isCanceled()){ //End loop
 															cancelled=true;
 															i=1000; //end
@@ -555,6 +625,10 @@ public class frmThreshOneWay {
 										curParam.locked=false;
 										myModel.validateModelObjects();
 										
+										if(myModel.type==1) {
+											myModel.markov.showTrace=origShowTrace;
+										}
+										
 										progress.close();
 									}
 								}
@@ -582,7 +656,7 @@ public class frmThreshOneWay {
 			chart.getXYPlot().addDomainMarker(marker);
 			chart.getXYPlot().addRangeMarker(marker);
 
-			ChartPanel panelChart = new ChartPanel(chart);
+			ChartPanel panelChart = new ChartPanel(chart,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
 			gbc_panelChart.fill = GridBagConstraints.BOTH;
 			gbc_panelChart.gridx = 1;

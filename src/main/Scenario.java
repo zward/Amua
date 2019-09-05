@@ -31,9 +31,22 @@ public class Scenario{
 	@XmlElement public String name;
 	//uncertainty
 	@XmlElement public int numIterations;
-	@XmlElement public boolean crn1, crn2, sampleParams;
+	@XmlElement public boolean crn1, crn2, sampleParams, useParamSets;
 	@XmlElement public int cohortSize,seed1, seed2;
+	//analysis
+	@XmlElement public int analysisType=0;
+	@XmlElement public int objective=0, objectiveDim=0;
+	@XmlElement public int costDim, effectDim;
+	@XmlElement public double WTP;
+	@XmlElement public String baseScenario;
+	@XmlElement public int extendedDim;
+	//markov
+	@XmlElement public boolean halfCycleCorrection;
+	@XmlElement public boolean discountRewards;
+	@XmlElement public double discountRates[];
+	@XmlElement public int discountStartCycle=0;
 	
+	//object updates
 	@XmlElement public String objectUpdates;
 	@XmlElement public String notes;
 	
@@ -44,10 +57,29 @@ public class Scenario{
 	
 	//Constructor
 	public Scenario(AmuaModel myModel){ //get current settings
+		//uncertainty
 		numIterations=1;
 		cohortSize=myModel.cohortSize;
 		crn1=myModel.CRN;
 		seed1=myModel.crnSeed;
+		//analysis
+		analysisType=myModel.dimInfo.analysisType;
+		objective=myModel.dimInfo.objective; objectiveDim=myModel.dimInfo.objectiveDim;
+		costDim=myModel.dimInfo.costDim; effectDim=myModel.dimInfo.effectDim;
+		WTP=myModel.dimInfo.WTP;
+		baseScenario=myModel.dimInfo.baseScenario;
+		extendedDim=myModel.dimInfo.extendedDim;
+		//markov
+		if(myModel.type==1) {
+			halfCycleCorrection=myModel.markov.halfCycleCorrection;
+			discountRewards=myModel.markov.discountRewards;
+			int numDim=myModel.markov.discountRates.length;
+			discountRates=new double[numDim];
+			for(int d=0; d<numDim; d++) {
+				discountRates[d]=myModel.markov.discountRates[d];
+			}
+			discountStartCycle=myModel.markov.discountStartCycle;
+		}
 	}
 
 	public Scenario(){
@@ -57,6 +89,7 @@ public class Scenario{
 	public Scenario copy(){
 		Scenario copyScenario=new Scenario();
 		copyScenario.name=name;
+		//uncertainty
 		copyScenario.numIterations=numIterations;
 		copyScenario.cohortSize=cohortSize;
 		copyScenario.crn1=crn1;
@@ -64,6 +97,26 @@ public class Scenario{
 		copyScenario.sampleParams=sampleParams;
 		copyScenario.crn2=crn1;
 		copyScenario.seed2=seed2;
+		copyScenario.useParamSets=useParamSets;
+		//analysis
+		copyScenario.analysisType=analysisType;
+		copyScenario.objective=objective; copyScenario.objectiveDim=objectiveDim;
+		copyScenario.costDim=costDim; copyScenario.effectDim=effectDim;
+		copyScenario.WTP=WTP;
+		copyScenario.baseScenario=baseScenario;
+		copyScenario.extendedDim=extendedDim;
+		//markov
+		copyScenario.halfCycleCorrection=halfCycleCorrection;
+		copyScenario.discountRewards=discountRewards;
+		copyScenario.discountStartCycle=discountStartCycle;
+		if(discountRates!=null) {
+			int numDim=discountRates.length;
+			copyScenario.discountRates=new double[numDim];
+			for(int d=0; d<numDim; d++) {
+				copyScenario.discountRates[d]=discountRates[d];
+			}
+		}
+		//object updates
 		copyScenario.objectUpdates=objectUpdates;
 		copyScenario.notes=notes;
 		return(copyScenario);
@@ -92,7 +145,7 @@ public class Scenario{
 		//find assignment operator
 		int pos=curExpr.indexOf('=');
 		if(pos==-1){
-			throw new NumericException("No assignment operator (=) found in expression: '"+expression+"'","ScheduleRun");
+			throw new NumericException("No assignment operator (=) found in expression: '"+expression+"'","Scenario");
 		}
 		String strObj=curExpr.substring(0, pos);
 		int paramIndex=myModel.getParameterIndex(strObj);
@@ -100,7 +153,7 @@ public class Scenario{
 		int varIndex=myModel.getVariableIndex(strObj);
 		if(varIndex!=-1){objectTypes[updateIndex]=1;}
 		if(paramIndex==-1 && varIndex==-1){
-			throw new NumericException("Object not found: "+strObj,"ScheduleRun");
+			throw new NumericException("Object not found: "+strObj,"Scenario");
 		}
 		objectNames[updateIndex]=strObj;
 		
@@ -122,7 +175,7 @@ public class Scenario{
 				if(objectTypes[i]==0){ //parameter
 					int index=myModel.getParameterIndex(objectNames[i]);
 					if(index==-1){
-						throw new NumericException("Parameter not found: "+objectNames[i],"ScheduleRun");
+						throw new NumericException("Parameter not found: "+objectNames[i],"Scenario");
 					}
 					Parameter curParam=myModel.parameters.get(index);
 					curParam.expression=strUpdates[i];
@@ -130,7 +183,7 @@ public class Scenario{
 				else if(objectTypes[i]==1){ //variable
 					int index=myModel.getVariableIndex(objectNames[i]);
 					if(index==-1){
-						throw new NumericException("Variable not found: "+objectNames[i],"ScheduleRun");
+						throw new NumericException("Variable not found: "+objectNames[i],"Scenario");
 					}
 					Variable curVar=myModel.variables.get(index);
 					curVar.expression=strUpdates[i];
@@ -139,4 +192,20 @@ public class Scenario{
 		}
 	}
 	
+	public void overwriteParams(AmuaModel myModel) throws Exception{
+		if(baseCase==false){
+			int numUpdates=objectTypes.length;
+			for(int i=0; i<numUpdates; i++){
+				if(objectTypes[i]==0){ //parameter
+					int index=myModel.getParameterIndex(objectNames[i]);
+					if(index==-1){
+						throw new NumericException("Parameter not found: "+objectNames[i],"Scenario");
+					}
+					Parameter curParam=myModel.parameters.get(index);
+					curParam.value=Interpreter.evaluate(strUpdates[i], myModel, true);
+					curParam.locked=true;
+				}
+			}
+		}
+	}
 }

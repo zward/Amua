@@ -449,19 +449,27 @@ public class MarkovMonteCarloPOOL{
 			
 			//Get chain EVs
 			if(cancelled==false){
+				final double chainCosts[]=new double[numDim]; //up-front costs
+				if(curChain.hasCost) {
+					for(int d=0; d<numDim; d++){
+						double curCost=Interpreter.evaluateTokens(curChain.curCostTokens[d],0,false).getDouble();
+						chainCosts[d]=curCost;
+					}
+				}
+				
 				curChain.expectedValues=new double[numDim];
 				curChain.expectedValuesDis=new double[numDim];
 				for(int d=0; d<numDim; d++){
-					curChain.expectedValues[d]=cumRewards[d];
-					curChain.expectedValuesDis[d]=cumRewardsDis[d];
+					curChain.expectedValues[d]=cumRewards[d]+(chainCosts[d]*numPeople);
+					curChain.expectedValuesDis[d]=cumRewardsDis[d]+(chainCosts[d]*numPeople);
 				}
 				//subgroups
 				curChain.expectedValuesGroup=new double[numSubgroups][numDim];
 				curChain.expectedValuesDisGroup=new double[numSubgroups][numDim];
 				for(int g=0; g<numSubgroups; g++){
 					for(int d=0; d<numDim; d++){
-						curChain.expectedValuesGroup[g][d]=cumRewardsGroup[g][d];
-						curChain.expectedValuesDisGroup[g][d]=cumRewardsDisGroup[g][d];
+						curChain.expectedValuesGroup[g][d]=cumRewardsGroup[g][d]+(chainCosts[d]*subgroupSize[g]);
+						curChain.expectedValuesDisGroup[g][d]=cumRewardsDisGroup[g][d]+(chainCosts[d]*subgroupSize[g]);
 					}
 				}
 			
@@ -480,8 +488,8 @@ public class MarkovMonteCarloPOOL{
 										MarkovPerson curPerson=people[p];
 										//overall
 										for(int d=0; d<numDim; d++){
-											if(markovTree.discountRewards){microStats.outcomes[d][p]=curPerson.rewardsDis[d];}
-											else{microStats.outcomes[d][p]=curPerson.rewards[d];}
+											if(markovTree.discountRewards){microStats.outcomes[d][p]=curPerson.rewardsDis[d]+chainCosts[d];}
+											else{microStats.outcomes[d][p]=curPerson.rewards[d]+chainCosts[d];}
 										}
 										for(int v=0; v<numVars; v++){
 											microStats.variables[v][p]=curPerson.variableVals[v].getValue();
@@ -491,8 +499,8 @@ public class MarkovMonteCarloPOOL{
 											if(curPerson.inSubgroup[g]){
 												int z=curPerson.subgroupIndex[g];
 												for(int d=0; d<numDim; d++){
-													if(markovTree.discountRewards){microStatsGroup[g].outcomes[d][z]=curPerson.rewardsDis[d];}
-													else{microStatsGroup[g].outcomes[d][z]=curPerson.rewards[d];}
+													if(markovTree.discountRewards){microStatsGroup[g].outcomes[d][z]=curPerson.rewardsDis[d]+chainCosts[d];}
+													else{microStatsGroup[g].outcomes[d][z]=curPerson.rewards[d]+chainCosts[d];}
 												}
 												for(int v=0; v<numVars; v++){
 													microStatsGroup[g].variables[v][z]=curPerson.variableVals[v].getValue();

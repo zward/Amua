@@ -32,7 +32,7 @@ public class DimInfo{
 	@XmlElement public int objective=0, objectiveDim=0;
 	@XmlElement public int costDim, effectDim;
 	@XmlElement public double WTP;
-	@XmlElement public String baseScenario;
+	@XmlElement public String baseScenario; //baseline strategy
 	@XmlElement public int extendedDim;
 	
 	//Constructor
@@ -54,6 +54,8 @@ public class DimInfo{
 			copy.decimals[d]=decimals[d];
 		}
 		copy.analysisType=analysisType;
+		copy.objective=objective;
+		copy.objectiveDim=objectiveDim;
 		copy.costDim=costDim;
 		copy.effectDim=effectDim;
 		copy.WTP=WTP;

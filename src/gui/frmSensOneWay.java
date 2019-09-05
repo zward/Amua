@@ -104,7 +104,7 @@ public class frmSensOneWay {
 		try{
 			frmSensOneWay = new JFrame();
 			frmSensOneWay.setTitle("Amua - One-way Sensitivity Analysis");
-			frmSensOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensOneWay.class.getResource("/images/oneWay.png")));
+			frmSensOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensOneWay.class.getResource("/images/oneWay_128.png")));
 			frmSensOneWay.setBounds(100, 100, 1000, 499);
 			frmSensOneWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -174,8 +174,11 @@ public class frmSensOneWay {
 
 			for(int i=0; i<myModel.parameters.size(); i++){
 				modelParams.addRow(new Object[]{null});
-				modelParams.setValueAt(myModel.parameters.get(i).name, i, 0);
-				modelParams.setValueAt(myModel.parameters.get(i).expression, i, 1);
+				Parameter curParam=myModel.parameters.get(i);
+				modelParams.setValueAt(curParam.name, i, 0);
+				modelParams.setValueAt(curParam.expression, i, 1);
+				modelParams.setValueAt(curParam.sensMin, i, 2);
+				modelParams.setValueAt(curParam.sensMax, i, 3);
 			}
 
 			JScrollPane scrollPaneParams = new JScrollPane();
@@ -390,8 +393,17 @@ public class frmSensOneWay {
 										else{
 											CEAnotes=null; CEAnotesGroup=null;
 										}
+										//record min/max
+										curParam.sensMin=strMin;
+										curParam.sensMax=strMax;
 										
 										long startTime=System.currentTimeMillis();
+										
+										boolean origShowTrace=false;
+										if(myModel.type==1) {
+											origShowTrace=myModel.markov.showTrace;
+											myModel.markov.showTrace=false;
+										}
 										
 										for(int i=0; i<=intervals; i++){
 											double curVal=min+(step*i);
@@ -479,6 +491,10 @@ public class frmSensOneWay {
 										curParam.locked=false;
 										myModel.validateModelObjects();
 										
+										if(myModel.type==1) {
+											myModel.markov.showTrace=origShowTrace;
+										}
+										
 										if(cancelled==false){
 											updateChart();
 											if(numOutcomes>1){
@@ -540,7 +556,7 @@ public class frmSensOneWay {
 			gbc_comboGroup.gridy = 0;
 			frmSensOneWay.getContentPane().add(comboGroup, gbc_comboGroup);
 
-			ChartPanel panelChart = new ChartPanel(chart);
+			ChartPanel panelChart = new ChartPanel(chart,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
 			gbc_panelChart.gridwidth = 3;
 			gbc_panelChart.fill = GridBagConstraints.BOTH;

@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -49,6 +48,7 @@ import base.ModelPanel;
 import gui.frmMain;
 import main.Console;
 import main.ErrorLog;
+import main.ScaledIcon;
 import math.Interpreter;
 
 public class PanelTree extends ModelPanel{
@@ -162,17 +162,20 @@ public class PanelTree extends ModelPanel{
 
 		JMenuItem mntmDecision = new JMenuItem("Decision Node");
 		mntmDecision.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(0);}});
-		mntmDecision.setIcon(new ImageIcon(frmMain.class.getResource("/images/decisionNode_16.png")));
+		mntmDecision.setIcon(new ScaledIcon("/images/decisionNode",16,16,16,true));
+		mntmDecision.setDisabledIcon(new ScaledIcon("/images/decisionNode",16,16,16,false));
 		mnAdd.add(mntmDecision);
 
 		JMenuItem mntmChance = new JMenuItem("Chance Node");
 		mntmChance.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(1);}});
-		mntmChance.setIcon(new ImageIcon(frmMain.class.getResource("/images/chanceNode_16.png")));
+		mntmChance.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
+		mntmChance.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 		mnAdd.add(mntmChance);
 
 		JMenuItem mntmTerminal = new JMenuItem("Terminal Node");
 		mntmTerminal.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(2);}});
-		mntmTerminal.setIcon(new ImageIcon(frmMain.class.getResource("/images/terminalNode_16.png")));
+		mntmTerminal.setIcon(new ScaledIcon("/images/terminalNode",16,16,16,true));
+		mntmTerminal.setDisabledIcon(new ScaledIcon("/images/terminalNode",16,16,16,false));
 		mnAdd.add(mntmTerminal);
 
 		mntmChangeType= new JMenuItem("Change Node Type");
@@ -181,36 +184,42 @@ public class PanelTree extends ModelPanel{
 
 		mntmUpdateVariable = new JMenuItem("Add/Remove Variable Updates");
 		mntmUpdateVariable.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveVarUpdates();}});
-		mntmUpdateVariable.setIcon(new ImageIcon(frmMain.class.getResource("/images/updateVariable_16.png")));
+		mntmUpdateVariable.setIcon(new ScaledIcon("/images/updateVariable",16,16,16,true));
+		mntmUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",16,16,16,false));
 		popup.add(mntmUpdateVariable);
 		
 		mntmShowCost= new JMenuItem("Add/Remove Cost");
 		mntmShowCost.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveCost();}});
-		mntmShowCost.setIcon(new ImageIcon(frmMain.class.getResource("/images/cost_16.png")));
+		mntmShowCost.setIcon(new ScaledIcon("/images/cost",16,16,16,true));
+		mntmShowCost.setDisabledIcon(new ScaledIcon("/images/cost",16,16,16,false));
 		popup.add(mntmShowCost);
 
 		popup.addSeparator();
 
 		final JMenuItem mntmCut = new JMenuItem("Cut");
 		mntmCut.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {cutSubtree();}});
-		mntmCut.setIcon(new ImageIcon(frmMain.class.getResource("/images/cut_16.png")));
+		mntmCut.setIcon(new ScaledIcon("/images/cut",16,16,16,true));
+		mntmCut.setDisabledIcon(new ScaledIcon("/images/cut",16,16,16,false));
 		popup.add(mntmCut);
 
 		final JMenuItem mntmCopy = new JMenuItem("Copy");
 		mntmCopy.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {copySubtree();}});
-		mntmCopy.setIcon(new ImageIcon(frmMain.class.getResource("/images/copy_16.png")));
+		mntmCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
+		mntmCopy.setDisabledIcon(new ScaledIcon("/images/copy",16,16,16,false));
 		popup.add(mntmCopy);
 
 		mntmPaste = new JMenuItem("Paste");
 		mntmPaste.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {pasteSubtree();}});
-		mntmPaste.setIcon(new ImageIcon(frmMain.class.getResource("/images/paste_16.png")));
+		mntmPaste.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
+		mntmPaste.setDisabledIcon(new ScaledIcon("/images/paste",16,16,16,false));
 		mntmPaste.setEnabled(false);
 		popup.add(mntmPaste);
 
 		popup.addSeparator();
 		mntmDelete= new JMenuItem("Delete");
 		mntmDelete.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {deleteNode(true);}});
-		mntmDelete.setIcon(new ImageIcon(frmMain.class.getResource("/images/delete.png")));
+		mntmDelete.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
+		mntmDelete.setDisabledIcon(new ScaledIcon("/images/delete",16,16,16,false));
 		popup.add(mntmDelete);
 
 		mntmCollapse=new JMenuItem("Collapse Branch");
@@ -841,7 +850,8 @@ public class PanelTree extends ModelPanel{
 		else if(curNode.type==1){
 			mntmChangeType.setEnabled(true);
 			mntmChangeType.setText("Change to Terminal Node");
-			mntmChangeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/terminalNode_16.png")));
+			mntmChangeType.setIcon(new ScaledIcon("/images/terminalNode",16,16,16,true));
+			mntmChangeType.setDisabledIcon(new ScaledIcon("/images/terminalNode",16,16,16,false));
 			if(mainForm.clipboard.copyTree!=null){mntmPaste.setEnabled(true);}
 			else{mntmPaste.setEnabled(false);}
 		}
@@ -849,7 +859,8 @@ public class PanelTree extends ModelPanel{
 			mnAdd.setEnabled(false);
 			mntmChangeType.setEnabled(true);
 			mntmChangeType.setText("Change to Chance Node");
-			mntmChangeType.setIcon(new ImageIcon(frmMain.class.getResource("/images/chanceNode_16.png")));
+			mntmChangeType.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
+			mntmChangeType.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 			mntmShowCost.setEnabled(false);
 			mntmPaste.setEnabled(false);
 		}

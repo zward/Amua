@@ -39,6 +39,7 @@ import javax.swing.JToolBar;
 
 import base.AmuaModel;
 import main.Parameter;
+import main.ScaledIcon;
 import main.StyledTextPane;
 import main.Variable;
 import math.Interpreter;
@@ -76,7 +77,7 @@ public class frmDefineParameter {
 	private void initialize() {
 		try{
 			frmDefineParameter = new JDialog();
-			frmDefineParameter.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineParameter.class.getResource("/images/parameters2.png")));
+			frmDefineParameter.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineParameter.class.getResource("/images/parameter_128.png")));
 			frmDefineParameter.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineParameter.setTitle("Amua - Define Parameter");
 			frmDefineParameter.setResizable(false);
@@ -275,7 +276,7 @@ public class frmDefineParameter {
 			});
 			btnFx.setToolTipText("Build Expression");
 			btnFx.setFocusPainted(false);
-			btnFx.setIcon(new ImageIcon(frmDefineParameter.class.getResource("/images/formula.png")));
+			btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
 			toolBar.add(btnFx);
 
 		} catch (Exception ex){

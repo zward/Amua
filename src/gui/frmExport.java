@@ -51,6 +51,7 @@ import export_R.RMarkovCohort;
 import export_R.RMarkovMonteCarlo;
 import export_R.RTreeCohort;
 import export_R.RTreeMonteCarlo;
+import main.ScaledIcon;
 import markov.MarkovNode;
 import tree.TreeNode;
 
@@ -93,7 +94,7 @@ public class frmExport {
 	private void initialize() {
 		try{
 			frmExport = new JDialog();
-			frmExport.setIconImage(Toolkit.getDefaultToolkit().getImage(frmExport.class.getResource("/images/export.png")));
+			frmExport.setIconImage(Toolkit.getDefaultToolkit().getImage(frmExport.class.getResource("/images/export_128.png")));
 			frmExport.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmExport.setTitle("Amua - Export Model");
 			frmExport.setResizable(false);
@@ -101,7 +102,7 @@ public class frmExport {
 			frmExport.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmExport.getContentPane().setLayout(null);
 			
-			JLabel lblSelectAnExport = new JLabel("Select an export format:");
+			JLabel lblSelectAnExport = new JLabel("Select a language:");
 			lblSelectAnExport.setBounds(12, 23, 146, 16);
 			frmExport.getContentPane().add(lblSelectAnExport);
 			
@@ -111,24 +112,22 @@ public class frmExport {
 			
 			final String descriptions[]=new String[5];
 			descriptions[0]="C++ source files";
-			//descriptions[1]="Creates an XML Spreadsheet that is compatible with Excel.  The model is converted to matrix form.";
 			descriptions[1]="Java source files";
 			descriptions[2]="Python 3 source files\n(requires NumPy library)";
 			descriptions[3]="R source files";
 			
 			final String logos[]=new String[5];
-			logos[0]="/images/cppIcon_48.png";
-			//logos[1]="/images/excelIcon_48.png";
-			logos[1]="/images/javaIcon_48.png";
-			logos[2]="/images/pythonIcon_48.png";
-			logos[3]="/images/rIcon_48.png";
+			logos[0]="/images/cppIcon";
+			logos[1]="/images/javaIcon";
+			logos[2]="/images/pythonIcon";
+			logos[3]="/images/rIcon";
 			
 			final JList<String> list = new JList<String>();
 			list.addListSelectionListener(new ListSelectionListener() {
 				public void valueChanged(ListSelectionEvent e) {
 					int selected=list.getSelectedIndex();
 					textArea.setText(descriptions[selected]);
-					lblTargetLogo.setIcon(new ImageIcon(frmExport.class.getResource(logos[selected])));
+					lblTargetLogo.setIcon(new ScaledIcon(logos[selected],48,48,48,true));
 				}
 			});
 			list.setModel(new AbstractListModel<String>() {
@@ -232,7 +231,7 @@ public class frmExport {
 			scrollPane_1.setViewportView(textArea);
 			
 			JLabel lblLogoAmua = new JLabel("New label");
-			lblLogoAmua.setIcon(new ImageIcon(frmExport.class.getResource("/images/logo_48.png")));
+			lblLogoAmua.setIcon(new ScaledIcon("/images/logo",48,48,48,true));
 			lblLogoAmua.setBounds(13, 199, 48, 48);
 			frmExport.getContentPane().add(lblLogoAmua);
 			
@@ -241,13 +240,13 @@ public class frmExport {
 			frmExport.getContentPane().add(lblTargetLogo);
 			
 			JLabel lblArrow = new JLabel("New label");
-			lblArrow.setIcon(new ImageIcon(frmExport.class.getResource("/images/arrow_48.png")));
+			lblArrow.setIcon(new ScaledIcon("/images/arrow",48,48,48,true));
 			lblArrow.setBounds(80, 199, 48, 48);
 			frmExport.getContentPane().add(lblArrow);
 			
 			JLabel lblModelType = new JLabel("lbl");
-			if(myModel.type==0){lblModelType.setIcon(new ImageIcon(frmExport.class.getResource("/images/modelTree_16.png")));}
-			else if(myModel.type==1){lblModelType.setIcon(new ImageIcon(frmExport.class.getResource("/images/markovChain_16.png")));}
+			if(myModel.type==0){lblModelType.setIcon(new ScaledIcon("/images/modelTree",16,16,16,true));}
+			else if(myModel.type==1){lblModelType.setIcon(new ScaledIcon("/images/markovChain",16,16,16,true));}
 			lblModelType.setBounds(96, 195, 16, 16);
 			frmExport.getContentPane().add(lblModelType);
 			

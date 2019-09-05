@@ -65,6 +65,7 @@ import main.DimInfo;
 import main.MersenneTwisterFast;
 import main.Parameter;
 import main.ParameterSet;
+import main.ScaledIcon;
 import main.StyledTextPane;
 import markov.MarkovNode;
 import math.Interpreter;
@@ -113,7 +114,7 @@ public class frmCalibrate {
 		try{
 			frmCalibrate = new JFrame();
 			frmCalibrate.setTitle("Amua - Model Calibration");
-			frmCalibrate.setIconImage(Toolkit.getDefaultToolkit().getImage(frmCalibrate.class.getResource("/images/calibrate.png")));
+			frmCalibrate.setIconImage(Toolkit.getDefaultToolkit().getImage(frmCalibrate.class.getResource("/images/calibrate_128.png")));
 			frmCalibrate.setBounds(100, 100, 1000, 545);
 			frmCalibrate.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -153,7 +154,7 @@ public class frmCalibrate {
 			});
 			btnFx.setToolTipText("Build Expression");
 			btnFx.setFocusPainted(false);
-			btnFx.setIcon(new ImageIcon(frmCalibrate.class.getResource("/images/formula.png")));
+			btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
 			toolBar.add(btnFx);
 			
 			JLabel lblLikelihooddistanceScore = new JLabel("Calibration Score Expression:");
@@ -370,14 +371,14 @@ public class frmCalibrate {
 			chartScores.getXYPlot().addDomainMarker(markerScore);
 			chartScores.getXYPlot().addRangeMarker(markerScore);
 			
-			ChartPanel panelChart = new ChartPanel(chart);
+			ChartPanel panelChart = new ChartPanel(chart,false);
 			GridBagConstraints gbc_panel_chart = new GridBagConstraints();
 			gbc_panel_chart.fill = GridBagConstraints.BOTH;
 			gbc_panel_chart.gridx = 1;
 			gbc_panel_chart.gridy = 0;
 			panel_3.add(panelChart, gbc_panel_chart);
 
-			ChartPanel panelChartScores = new ChartPanel(chartScores);
+			ChartPanel panelChartScores = new ChartPanel(chartScores,false);
 			GridBagConstraints gbc_panel_scores = new GridBagConstraints();
 			gbc_panel_scores.fill = GridBagConstraints.BOTH;
 			gbc_panel_scores.gridx = 0;

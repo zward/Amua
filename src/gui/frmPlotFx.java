@@ -36,14 +36,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.ProgressMonitor;
-import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
@@ -60,6 +58,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import base.AmuaModel;
 import main.Parameter;
+import main.ScaledIcon;
 import main.StyledTextPane;
 import main.Table;
 import main.Variable;
@@ -102,7 +101,7 @@ public class frmPlotFx {
 		try{
 			frmPlotFx = new JFrame();
 			frmPlotFx.setTitle("Amua - Plot Function");
-			frmPlotFx.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotFx.class.getResource("/images/plotFx.png")));
+			frmPlotFx.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotFx.class.getResource("/images/plotFx_128.png")));
 			frmPlotFx.setBounds(100, 100, 1000, 600);
 			frmPlotFx.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -127,7 +126,7 @@ public class frmPlotFx {
 			plot.setRenderer(0,rendererCont);
 			plot.setRenderer(1,rendererDis);
 		
-			ChartPanel panelChart = new ChartPanel(chart);
+			ChartPanel panelChart = new ChartPanel(chart,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
 			gbc_panelChart.gridwidth = 2;
 			gbc_panelChart.insets = new Insets(0, 0, 5, 0);
@@ -171,7 +170,7 @@ public class frmPlotFx {
 			});
 			btnFx.setToolTipText("Build Expression");
 			btnFx.setFocusPainted(false);
-			btnFx.setIcon(new ImageIcon(frmPlotFx.class.getResource("/images/formula.png")));
+			btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
 			toolBar.add(btnFx);
 						
 			table = new JTable();

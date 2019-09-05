@@ -18,6 +18,7 @@
 
 package gui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
@@ -25,6 +26,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -97,8 +99,9 @@ public class frmPSA {
 	DefaultTableModel modelParams;
 	private JTable tableParams;
 
-	DefaultXYDataset chartDataResults, chartDataParams, chartDataScatter;
-	JFreeChart chartResults, chartParams, chartScatter;
+	JTabbedPane tabbedPane;
+	DefaultXYDataset chartDataResults, chartDataParams, chartDataScatter, chartDataCEAC;
+	JFreeChart chartResults, chartParams, chartScatter, chartCEAC;
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboResults;
 	JComboBox<String> comboGroup;
@@ -112,12 +115,22 @@ public class frmPSA {
 	String paramNames[];
 	int numStrat;
 	/**
+	 * Excluding overall
+	 */
+	int numSubgroups=0;
+	
+	/**
 	 * [Group][Outcome][Strategy][x,y][Iteration]
 	 */
 	double dataResultsIter[][][][][], dataResultsVal[][][][][], dataResultsDens[][][], dataResultsCumDens[][][][][];
 	double dataParamsIter[][][], dataParamsVal[][][], dataParamsDens[][][], dataParamsCumDens[][][];
 	double dataScatterAbs[][][][], dataScatterRel[][][][];
 	String CEAnotes[][][];
+	/**
+	 * [Strategy][x,y][WTP]
+	 */
+	double dataCEAC[][][];
+	
 	JList<String> listParams;
 	DefaultListModel<String> listModelParams;
 	private JTextField textIterations;
@@ -126,7 +139,15 @@ public class frmPSA {
 	private JTextField textSeed;
 	String outcome;
 	
+	
+	//CEAC
+	private JTextField textCEACMin;
+	private JTextField textCEACMax;
+	private JTextField textCEACIntervals;
+	JComboBox comboCEACGroup;
+	
 	RunReport reports[];
+	
 
 	public frmPSA(AmuaModel myModel){
 		this.myModel=myModel;
@@ -141,7 +162,7 @@ public class frmPSA {
 		try{
 			frmPSA = new JFrame();
 			frmPSA.setTitle("Amua - Probabilistic Sensitivity Analysis");
-			frmPSA.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPSA.class.getResource("/images/psa.png")));
+			frmPSA.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPSA.class.getResource("/images/psa_128.png")));
 			frmPSA.setBounds(100, 100, 1000, 600);
 			frmPSA.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -250,7 +271,12 @@ public class frmPSA {
 						fc.setAcceptAllFileFilterUsed(false);
 						fc.setFileFilter(new CSVFilter());
 
-						fc.setDialogTitle("Export PSA Results");
+						if(tabbedPane.getSelectedIndex()!=3) { //Not CEAC
+							fc.setDialogTitle("Export PSA Results");
+						}
+						else {
+							fc.setDialogTitle("Export CEAC Results");
+						}
 						fc.setApproveButtonText("Export");
 
 						int returnVal = fc.showSaveDialog(frmPSA);
@@ -262,57 +288,79 @@ public class frmPSA {
 							FileWriter fstream = new FileWriter(path+".csv"); //Create new file
 							BufferedWriter out = new BufferedWriter(fstream);
 							
-							//Headers
-							DimInfo info=myModel.dimInfo;
-							int numDim=info.dimNames.length;
-							int analysisType=info.analysisType;
-							int numStrat=myModel.strategyNames.length;
-							out.write("Iteration");
-							out.write(",Parameters");
-							for(int p=0; p<numParams; p++){out.write(","+paramNames[p]);}
-							for(int d=0; d<numDim; d++){ //EVs
-								out.write(","+info.dimNames[d]);
-								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
-							}
-							if(analysisType>0){ //CEA or BCA
-								if(analysisType==1){out.write(",ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
-								else if(analysisType==2){out.write(",NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
-								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
-							}
-							out.newLine();
-							
-							int group=0;
-							if(comboGroup.isVisible()){group=comboGroup.getSelectedIndex();}
-							
-							//Results
-							int numPoints=dataResultsIter[group][0][0][0].length;
-							for(int i=0; i<numPoints; i++){
-								out.write((i+1)+""); //Iteration
-								//Parameters
-								out.write(",");
-								for(int p=0; p<numParams; p++){out.write(","+dataParamsIter[p][1][i]);}
-								//Outcomes
+							if(tabbedPane.getSelectedIndex()!=3) { //Not CEAC
+								//Headers
+								DimInfo info=myModel.dimInfo;
+								int numDim=info.dimNames.length;
+								int analysisType=info.analysisType;
+								int numStrat=myModel.strategyNames.length;
+								out.write("Iteration");
+								out.write(",Parameters");
+								for(int p=0; p<numParams; p++){out.write(","+paramNames[p]);}
 								for(int d=0; d<numDim; d++){ //EVs
-									out.write(",");
-									for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][d][s][1][i]);}
+									out.write(","+info.dimNames[d]);
+									for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
 								}
-								if(analysisType>0){
+								if(analysisType>0){ //CEA or BCA
+									if(analysisType==1){out.write(",ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
+									else if(analysisType==2){out.write(",NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
+									for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
+								}
+								out.newLine();
+
+								int group=0;
+								if(comboGroup.isVisible()){group=comboGroup.getSelectedIndex();}
+
+								//Results
+								int numPoints=dataResultsIter[group][0][0][0].length;
+								for(int i=0; i<numPoints; i++){
+									out.write((i+1)+""); //Iteration
+									//Parameters
 									out.write(",");
-									if(analysisType==1){ //CEA
-										for(int s=0; s<numStrat; s++){
-											double icer=dataResultsIter[group][numDim][s][1][i];
-											if(!Double.isNaN(icer)){out.write(","+icer);} //valid ICER
-											else{out.write(","+CEAnotes[group][s][i]);} //invalid ICER
+									for(int p=0; p<numParams; p++){out.write(","+dataParamsIter[p][1][i]);}
+									//Outcomes
+									for(int d=0; d<numDim; d++){ //EVs
+										out.write(",");
+										for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][d][s][1][i]);}
+									}
+									if(analysisType>0){
+										out.write(",");
+										if(analysisType==1){ //CEA
+											for(int s=0; s<numStrat; s++){
+												double icer=dataResultsIter[group][numDim][s][1][i];
+												if(!Double.isNaN(icer)){out.write(","+icer);} //valid ICER
+												else{out.write(","+CEAnotes[group][s][i]);} //invalid ICER
+											}
+										}
+										else if(analysisType==2){ //BCA
+											for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][numDim][s][1][i]);}
 										}
 									}
-									else if(analysisType==2){ //BCA
-										for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][numDim][s][1][i]);}
-									}
+
+									out.newLine();
 								}
-								
-								out.newLine();
+								out.close();
 							}
-							out.close();
+							else { //CEAC
+								//Headers
+								int numStrat=myModel.strategyNames.length;
+								out.write("WTP");
+								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
+								out.newLine();
+								
+								
+								//Results
+								int numPoints=dataCEAC[0][0].length;
+								for(int i=0; i<numPoints; i++){
+									out.write(dataCEAC[0][0][i]+""); //WTP
+									//Strategies
+									for(int s=0; s<numStrat; s++) {
+										out.write(","+dataCEAC[s][1][i]);
+									}
+									out.newLine();
+								}
+								out.close();
+							}
 
 							JOptionPane.showMessageDialog(frmPSA, "Exported!");
 						}
@@ -355,7 +403,7 @@ public class frmPSA {
 			panel_2.add(textSeed);
 			textSeed.setColumns(10);
 
-			final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 			GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 			gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 			gbc_tabbedPane.gridx = 1;
@@ -380,7 +428,7 @@ public class frmPSA {
 			chartResults.getXYPlot().addDomainMarker(marker);
 			chartResults.getXYPlot().addRangeMarker(marker);
 
-			ChartPanel panelChartResults = new ChartPanel(chartResults);
+			ChartPanel panelChartResults = new ChartPanel(chartResults,false);
 			GridBagConstraints gbc_panelChartResults = new GridBagConstraints();
 			gbc_panelChartResults.gridwidth = 4;
 			gbc_panelChartResults.insets = new Insets(0, 0, 5, 0);
@@ -431,17 +479,6 @@ public class frmPSA {
 					updateScatter();
 				}
 			});
-			
-			if(myModel.simType==1 && myModel.reportSubgroups){
-				int numGroups=myModel.subgroupNames.size();
-				subgroupNames=new String[numGroups+1];
-				subgroupNames[0]="Overall";
-				for(int i=0; i<numGroups; i++){subgroupNames[i+1]=myModel.subgroupNames.get(i);}
-				comboGroup.setModel(new DefaultComboBoxModel(subgroupNames));
-				comboGroup.setVisible(true);
-				comboGroupScatter.setModel(new DefaultComboBoxModel(subgroupNames));
-				comboGroupScatter.setVisible(true);
-			}
 			
 			GridBagConstraints gbc_comboGroup = new GridBagConstraints();
 			gbc_comboGroup.insets = new Insets(0, 0, 0, 5);
@@ -518,7 +555,7 @@ public class frmPSA {
 			chartParams.getXYPlot().addDomainMarker(marker);
 			chartParams.getXYPlot().addRangeMarker(marker);
 
-			ChartPanel panelChartParams = new ChartPanel(chartParams);
+			ChartPanel panelChartParams = new ChartPanel(chartParams,false);
 			GridBagConstraints gbc_panelChartParams = new GridBagConstraints();
 			gbc_panelChartParams.fill = GridBagConstraints.BOTH;
 			gbc_panelChartParams.gridx = 1;
@@ -564,7 +601,7 @@ public class frmPSA {
 			gbc_comboGroupScatter.gridy = 0;
 			panelScatter.add(comboGroupScatter, gbc_comboGroupScatter);
 
-			ChartPanel panelChartScatter = new ChartPanel(chartScatter);
+			ChartPanel panelChartScatter = new ChartPanel(chartScatter,false);
 			GridBagConstraints gbc_panelChartScatter = new GridBagConstraints();
 			gbc_panelChartScatter.gridwidth = 3;
 			gbc_panelChartScatter.fill = GridBagConstraints.BOTH;
@@ -572,6 +609,111 @@ public class frmPSA {
 			gbc_panelChartScatter.gridy = 1;
 			panelScatter.add(panelChartScatter, gbc_panelChartScatter);
 			panelChartScatter.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+			
+			JPanel panelCEAC = new JPanel();
+			tabbedPane.addTab("CEAC", null, panelCEAC, "Cost-Effectiveness Acceptability Curve");
+			tabbedPane.setEnabledAt(3, false);
+			
+			chartDataCEAC = new DefaultXYDataset();
+			String costDim="Cost", effectDim="Effect";
+			if(myModel.dimInfo.analysisType>0) {
+				costDim=myModel.dimInfo.dimNames[myModel.dimInfo.costDim];
+				effectDim=myModel.dimInfo.dimNames[myModel.dimInfo.effectDim];
+			}
+			chartCEAC = ChartFactory.createScatterPlot(null, "Willingness-to-pay ("+costDim+" per "+effectDim+")", 
+					"p(Optimal)", chartDataCEAC, PlotOrientation.VERTICAL, true, false, false);
+			chartCEAC.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
+			//Draw axes
+			chartCEAC.getXYPlot().addDomainMarker(marker);
+			chartCEAC.getXYPlot().addRangeMarker(marker);
+			//Add baseline WTP
+			if(myModel.dimInfo.analysisType>0) {
+				Stroke dashed = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
+				chartCEAC.getXYPlot().addDomainMarker(new ValueMarker(myModel.dimInfo.WTP, Color.BLACK,dashed));
+			}
+			
+			
+			GridBagLayout gbl_panelCEAC = new GridBagLayout();
+			gbl_panelCEAC.columnWidths = new int[]{0, 0};
+			gbl_panelCEAC.rowHeights = new int[]{35, 41, 0};
+			gbl_panelCEAC.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+			gbl_panelCEAC.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+			panelCEAC.setLayout(gbl_panelCEAC);
+			
+			JPanel panelCEACHeader = new JPanel();
+			panelCEACHeader.setLayout(null);
+			GridBagConstraints gbc_panelCEACHeader = new GridBagConstraints();
+			gbc_panelCEACHeader.insets = new Insets(0, 0, 5, 0);
+			gbc_panelCEACHeader.fill = GridBagConstraints.BOTH;
+			gbc_panelCEACHeader.gridx = 0;
+			gbc_panelCEACHeader.gridy = 0;
+			panelCEAC.add(panelCEACHeader, gbc_panelCEACHeader);
+			
+			JLabel lblCEACMin = new JLabel("Min:");
+			lblCEACMin.setBounds(0, 6, 23, 16);
+			panelCEACHeader.add(lblCEACMin);
+			
+			textCEACMin = new JTextField();
+			textCEACMin.setText("0");
+			textCEACMin.setBounds(25, 0, 70, 28);
+			panelCEACHeader.add(textCEACMin);
+			textCEACMin.setColumns(10);
+			
+			JLabel lblCEACMax = new JLabel("Max:");
+			lblCEACMax.setBounds(97, 6, 36, 16);
+			panelCEACHeader.add(lblCEACMax);
+			
+			textCEACMax = new JTextField();
+			textCEACMax.setBounds(127, 0, 70, 28);
+			panelCEACHeader.add(textCEACMax);
+			textCEACMax.setColumns(10);
+			textCEACMax.setText((myModel.dimInfo.WTP*3)+"");
+			
+			JLabel lblIntervals = new JLabel("Intervals:");
+			lblIntervals.setBounds(202, 6, 54, 16);
+			panelCEACHeader.add(lblIntervals);
+			
+			textCEACIntervals = new JTextField();
+			textCEACIntervals.setText("100");
+			textCEACIntervals.setBounds(258, 0, 50, 28);
+			panelCEACHeader.add(textCEACIntervals);
+			textCEACIntervals.setColumns(10);
+			
+			JButton btnUpdateCEAC = new JButton("Update");
+			btnUpdateCEAC.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int group=0;
+					if(comboCEACGroup.isVisible()){group=comboCEACGroup.getSelectedIndex();}
+					updateCEAC(group);
+				}
+			});
+			btnUpdateCEAC.setBounds(315, 0, 70, 28);
+			panelCEACHeader.add(btnUpdateCEAC);
+			
+			comboCEACGroup = new JComboBox();
+			comboCEACGroup.setVisible(false);
+			comboCEACGroup.setBounds(389, 1, 139, 26);
+			panelCEACHeader.add(comboCEACGroup);
+			
+			if(myModel.simType==1 && myModel.reportSubgroups){
+				int numGroups=myModel.subgroupNames.size();
+				subgroupNames=new String[numGroups+1];
+				subgroupNames[0]="Overall";
+				for(int i=0; i<numGroups; i++){subgroupNames[i+1]=myModel.subgroupNames.get(i);}
+				comboGroup.setModel(new DefaultComboBoxModel(subgroupNames));
+				comboGroup.setVisible(true);
+				comboGroupScatter.setModel(new DefaultComboBoxModel(subgroupNames));
+				comboGroupScatter.setVisible(true);
+				comboCEACGroup.setModel(new DefaultComboBoxModel(subgroupNames));
+				comboCEACGroup.setVisible(true);
+			}
+			
+			ChartPanel panelChartCEAC = new ChartPanel(chartCEAC,false);
+			GridBagConstraints gbc_panelChartCEAC = new GridBagConstraints();
+			gbc_panelChartCEAC.fill = GridBagConstraints.BOTH;
+			gbc_panelChartCEAC.gridx = 0;
+			gbc_panelChartCEAC.gridy = 1;
+			panelCEAC.add(panelChartCEAC, gbc_panelChartCEAC);
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -582,6 +724,7 @@ public class frmPSA {
 							try{
 								frmPSA.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 								tabbedPane.setEnabledAt(2, false);
+								tabbedPane.setEnabledAt(3, false);
 
 								//Check model first
 								ArrayList<String> errorsBase=myModel.parseModel();
@@ -609,7 +752,7 @@ public class frmPSA {
 									numStrat=myModel.getStrategies();
 									int numOutcomes=comboDimensions.getItemCount();
 									int numDim=myModel.dimInfo.dimNames.length;
-									int numSubgroups=0;
+									
 									if(myModel.simType==1 && myModel.reportSubgroups){numSubgroups=myModel.subgroupNames.size();}
 									
 									int analysisType=myModel.dimInfo.analysisType;
@@ -626,6 +769,8 @@ public class frmPSA {
 
 									dataScatterAbs=new double[1+numSubgroups][numStrat][2][numIterations];
 									dataScatterRel=new double[1+numSubgroups][numStrat][2][numIterations];
+									
+									dataCEAC=new double[numStrat][][];
 									
 									//Get orig values for all parameters
 									Numeric origValues[]=new Numeric[numParams];
@@ -868,7 +1013,7 @@ public class frmPSA {
 										plotParams.setRenderer(rendererParams);
 										updateParamChart();
 
-										//Update scatter chart
+										//Update scatter chart and CEAC
 										if(analysisType>0){
 											tabbedPane.setEnabledAt(2, true);
 											XYPlot plotScatter = chartScatter.getXYPlot();
@@ -882,6 +1027,9 @@ public class frmPSA {
 											plotScatter.setRenderer(rendererScatter);
 											updateScatter();
 											
+											tabbedPane.setEnabledAt(3, true);
+											if(comboCEACGroup.isVisible()){comboCEACGroup.setSelectedIndex(0);}
+											updateCEAC(0);
 											
 										}
 										btnExport.setEnabled(true);
@@ -1127,5 +1275,74 @@ public class frmPSA {
 				chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterRel[group][s]);
 			}
 		}
+	}
+	
+	private void updateCEAC(int g) {
+		double minWTP=0, maxWTP=myModel.dimInfo.WTP*3;
+		try {
+			minWTP=Double.parseDouble(textCEACMin.getText().replaceAll(",",""));
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(frmPSA, "CEAC: Please enter a valid min!");
+		}
+		try {
+			maxWTP=Double.parseDouble(textCEACMax.getText().replaceAll(",",""));
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(frmPSA, "CEAC: Please enter a valid max!");
+		}
+		int numIntervals=100;
+		try {
+			numIntervals=Integer.parseInt(textCEACIntervals.getText().replaceAll(",",""));
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(frmPSA, "CEAC: Please enter a valid number of intervals!");
+		}
+		double step=(maxWTP-minWTP)/(numIntervals*1.0);
+		
+		int costDim=myModel.dimInfo.costDim;
+		int effectDim=myModel.dimInfo.effectDim;
+				
+		//calculate 
+		for(int s=0; s<numStrat; s++) {
+			dataCEAC[s]=new double[2][numIntervals+1];
+		}
+		for(int w=0; w<=numIntervals; w++) {
+			double curWTP=minWTP+(step*w);
+			int numBest[]=new int[numStrat]; //# of times strategy is best
+			for(int i=0; i<numIterations; i++) {
+				double maxNMB=Double.NEGATIVE_INFINITY;
+				int maxIndex=-1;
+				for(int s=0; s<numStrat; s++) {
+					double cost=dataResultsIter[g][costDim][s][1][i];
+					double effect=dataResultsIter[g][effectDim][s][1][i];
+					double curNMB=(effect*curWTP)-cost;
+					if(curNMB>maxNMB) {
+						maxNMB=curNMB;
+						maxIndex=s;
+					}
+				}
+				numBest[maxIndex]++;
+			}
+			for(int s=0; s<numStrat; s++) {
+				dataCEAC[s][0][w]=curWTP;
+				dataCEAC[s][1][w]=numBest[s]/(numIterations*1.0);
+			}
+		}
+		
+		//plot
+		if(chartDataCEAC.getSeriesCount()>0){
+			for(int s=0; s<numStrat; s++){chartDataCEAC.removeSeries(myModel.strategyNames[s]);}
+		}	
+		XYPlot plotResults = chartCEAC.getXYPlot();
+		XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,false);
+		DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
+		for(int s=0; s<numStrat; s++){
+			rendererResults.setSeriesPaint(s, supplierResults.getNextPaint());
+		}
+		plotResults.setRenderer(rendererResults);
+		
+		for(int s=0; s<numStrat; s++){
+			chartDataCEAC.addSeries(myModel.strategyNames[s],dataCEAC[s]);
+		}
+		
+		
 	}
 }

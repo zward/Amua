@@ -18,28 +18,38 @@
 
 package gui;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JButton;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.awt.event.ActionEvent;
 
 import javax.swing.DefaultComboBoxModel;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.Toolkit;
-
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingConstants;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
 import org.jfree.chart.ChartFactory;
@@ -51,29 +61,15 @@ import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
-import org.sf.surfaceplot.SurfaceCanvas;
 
 import base.AmuaModel;
 import filters.CSVFilter;
 import main.CEAHelper;
 import main.DimInfo;
 import main.Parameter;
-import main.SurfaceModel;
 import math.Numeric;
-
-import javax.swing.border.LineBorder;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.border.EtchedBorder;
-import javax.swing.ListSelectionModel;
-import javax.swing.ProgressMonitor;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.ComboBoxModel;
+import surface.SurfaceModel;
+import surface.SurfacePanel;
 
 /**
  *
@@ -87,7 +83,7 @@ public class frmSensTwoWay {
 
 	DefaultXYDataset chartData;
 	JFreeChart chart;
-	SurfaceCanvas surfaceCanvas;
+	SurfacePanel surfacePanel;
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboStrategy;
 	JComboBox<String> comboGroup;
@@ -114,7 +110,7 @@ public class frmSensTwoWay {
 		try{
 			frmSensTwoWay = new JFrame();
 			frmSensTwoWay.setTitle("Amua - Two-way Sensitivity Analysis");
-			frmSensTwoWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensTwoWay.class.getResource("/images/twoWay.png")));
+			frmSensTwoWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensTwoWay.class.getResource("/images/twoWay_128.png")));
 			frmSensTwoWay.setBounds(100, 100, 1000, 500);
 			frmSensTwoWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
@@ -149,9 +145,12 @@ public class frmSensTwoWay {
 
 			for(int i=0; i<myModel.parameters.size(); i++){
 				modelParams.addRow(new Object[]{null});
-				modelParams.setValueAt(myModel.parameters.get(i).name, i, 0);
-				modelParams.setValueAt(myModel.parameters.get(i).expression, i, 1);
-				paramNames[i]=myModel.parameters.get(i).name;
+				Parameter curParam=myModel.parameters.get(i);
+				modelParams.setValueAt(curParam.name, i, 0);
+				modelParams.setValueAt(curParam.expression, i, 1);
+				modelParams.setValueAt(curParam.sensMin, i, 2);
+				modelParams.setValueAt(curParam.sensMax, i, 3);
+				paramNames[i]=curParam.name;
 			}
 
 			JScrollPane scrollPaneParams = new JScrollPane();
@@ -382,6 +381,11 @@ public class frmSensTwoWay {
 									double step2=(max2-min2)/(intervals*1.0);
 									curParam1=myModel.parameters.get(row1);
 									curParam2=myModel.parameters.get(row2);
+									//record min/max
+									curParam1.sensMin=strMin1;
+									curParam1.sensMax=strMax1;
+									curParam2.sensMin=strMin2;
+									curParam2.sensMax=strMax2;
 									
 									Numeric origValue1=curParam1.value.copy();
 									Numeric origValue2=curParam2.value.copy();
@@ -439,6 +443,12 @@ public class frmSensTwoWay {
 									if(error==false){
 										boolean cancelled=false;
 										//Run model...
+										
+										boolean origShowTrace=false;
+										if(myModel.type==1) {
+											origShowTrace=myModel.markov.showTrace;
+											myModel.markov.showTrace=false;
+										}
 										
 										int group=-1;
 										if(comboGroup.isEnabled()){group=comboGroup.getSelectedIndex()-1;}
@@ -543,6 +553,10 @@ public class frmSensTwoWay {
 										curParam1.locked=false; curParam2.locked=false;
 										myModel.validateModelObjects();
 										
+										if(myModel.type==1) {
+											myModel.markov.showTrace=origShowTrace;
+										}
+										
 										if(cancelled==false){
 											//Update chart
 											chart.getXYPlot().getDomainAxis().setLabel(curParam1.name);
@@ -569,8 +583,8 @@ public class frmSensTwoWay {
 											//Update surface chart
 											int strat=comboStrategy.getSelectedIndex();
 											surfaceModel = new SurfaceModel(dataSurface,strat,intervals,min1,max1,min2,max2,curParam1.name,curParam2.name,lblOutcome);
-											surfaceCanvas.setModel(surfaceModel);
-											surfaceCanvas.repaint();
+											surfacePanel.setModel(surfaceModel);
+											surfacePanel.repaint();
 											
 											btnExport.setEnabled(true);
 											tabbedPane.setEnabledAt(1, true);
@@ -608,7 +622,7 @@ public class frmSensTwoWay {
 			gbc_tabbedPane.gridy = 0;
 			frmSensTwoWay.getContentPane().add(tabbedPane, gbc_tabbedPane);
 
-			ChartPanel panelChart = new ChartPanel(chart);
+			ChartPanel panelChart = new ChartPanel(chart,false);
 			tabbedPane.addTab("Area Chart", null, panelChart, null);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
 			
@@ -623,18 +637,16 @@ public class frmSensTwoWay {
 			gbl_panelSurface.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
 			panelSurface.setLayout(gbl_panelSurface);
 			
-			JPanel panel_3 = new JPanel();
+			surfacePanel = new SurfacePanel();
 			GridBagConstraints gbc_panel_3 = new GridBagConstraints();
 			gbc_panel_3.gridwidth = 3;
 			gbc_panel_3.insets = new Insets(0, 0, 5, 5);
 			gbc_panel_3.fill = GridBagConstraints.BOTH;
 			gbc_panel_3.gridx = 0;
 			gbc_panel_3.gridy = 0;
-			panelSurface.add(panel_3, gbc_panel_3);
-			panel_3.setLayout(new BorderLayout(0, 0));
-	
-			surfaceCanvas = new SurfaceCanvas();
-			panel_3.add(surfaceCanvas);
+			panelSurface.add(surfacePanel, gbc_panel_3);
+			surfacePanel.setLayout(new BorderLayout(0, 0));
+			
 			
 			JLabel lblStrategy = new JLabel("Strategy");
 			GridBagConstraints gbc_lblStrategy = new GridBagConstraints();
@@ -652,8 +664,8 @@ public class frmSensTwoWay {
 					surfaceModel = new SurfaceModel(dataSurface,strat,surfaceModel.intervals,surfaceModel.xMin,
 							surfaceModel.xMax,surfaceModel.yMin,surfaceModel.yMax,surfaceModel.xLabel,
 							surfaceModel.yLabel,surfaceModel.zLabel);
-					surfaceCanvas.setModel(surfaceModel);
-					surfaceCanvas.repaint();
+					surfacePanel.setModel(surfaceModel);
+					surfacePanel.repaint();
 				}
 			});
 			comboStrategy.setLightWeightPopupEnabled(false); //Ensure drop-down appears over canvas
