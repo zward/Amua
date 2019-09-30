@@ -428,7 +428,7 @@ public class frmThreshOneWay {
 												}
 											}
 											else if(analysisType==1){ //CEA
-												Object table[][]=new CEAHelper().calculateICERs(myModel,group);
+												Object table[][]=new CEAHelper().calculateICERs(myModel,group,true);
 												for(int s=0; s<table.length; s++){	
 													int origStrat=(int) table[s][0];
 													if(origStrat!=-1){
@@ -439,7 +439,7 @@ public class frmThreshOneWay {
 												}
 											}
 											else if(analysisType==2){ //BCA
-												Object table[][]=new CEAHelper().calculateNMB(myModel,group);
+												Object table[][]=new CEAHelper().calculateNMB(myModel,group,true);
 												for(int s=0; s<table.length; s++){	
 													int origStrat=(int) table[s][0];
 													dataEV[origStrat][0][i]=curVal;
@@ -513,7 +513,7 @@ public class frmThreshOneWay {
 															}
 														}
 														else if(analysisType==1){ //CEA
-															Object table[][]=new CEAHelper().calculateICERs(myModel,group);
+															Object table[][]=new CEAHelper().calculateICERs(myModel,group,true);
 															for(int s=0; s<table.length; s++){	
 																int origStrat=(int) table[s][0];
 																if(origStrat==strat1){result1L=(double) table[s][4];}
@@ -521,7 +521,7 @@ public class frmThreshOneWay {
 															}
 														}
 														else if(analysisType==2){ //BCA
-															Object table[][]=new CEAHelper().calculateNMB(myModel,group);
+															Object table[][]=new CEAHelper().calculateNMB(myModel,group,true);
 															for(int s=0; s<table.length; s++){	
 																int origStrat=(int) table[s][0];
 																if(origStrat==strat1){result1L=(double) table[s][4];}
@@ -550,7 +550,7 @@ public class frmThreshOneWay {
 															}
 														}
 														else if(analysisType==1){ //CEA
-															Object table[][]=new CEAHelper().calculateICERs(myModel,group);
+															Object table[][]=new CEAHelper().calculateICERs(myModel,group,true);
 															for(int s=0; s<table.length; s++){	
 																int origStrat=(int) table[s][0];
 																if(origStrat==strat1){result1R=(double) table[s][4];}
@@ -558,7 +558,7 @@ public class frmThreshOneWay {
 															}
 														}
 														else if(analysisType==2){ //BCA
-															Object table[][]=new CEAHelper().calculateNMB(myModel,group);
+															Object table[][]=new CEAHelper().calculateNMB(myModel,group,true);
 															for(int s=0; s<table.length; s++){	
 																int origStrat=(int) table[s][0];
 																if(origStrat==strat1){result1R=(double) table[s][4];}

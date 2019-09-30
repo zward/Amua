@@ -341,6 +341,9 @@ public class frmSensOneWay {
 								if(errorsBase.size()>0){
 									JOptionPane.showMessageDialog(frmSensOneWay, "Errors in base case model!");
 								}
+								else if(tableParams.getSelectedRow()==-1) {
+									JOptionPane.showMessageDialog(frmSensOneWay, "Please select a parameter!");
+								}
 								else{
 									//Get parameter
 									int intervals=Integer.parseInt(textIntervals.getText());
@@ -427,7 +430,7 @@ public class frmSensOneWay {
 											if(analysisType>0){ //CEA or BCA
 												if(analysisType==1){ //CEA
 													//overall
-													Object table[][]=new CEAHelper().calculateICERs(myModel,-1);
+													Object table[][]=new CEAHelper().calculateICERs(myModel,-1,true);
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														if(origStrat!=-1){
@@ -438,7 +441,7 @@ public class frmSensOneWay {
 													}
 													//subgroups
 													for(int g=0; g<numSubgroups; g++){
-														table=new CEAHelper().calculateICERs(myModel, g);
+														table=new CEAHelper().calculateICERs(myModel, g, true);
 														for(int s=0; s<table.length; s++){
 															int origStrat=(int) table[s][0];
 															if(origStrat!=-1){
@@ -450,7 +453,7 @@ public class frmSensOneWay {
 													}
 												}
 												else if(analysisType==2){
-													Object table[][]=new CEAHelper().calculateNMB(myModel,-1);
+													Object table[][]=new CEAHelper().calculateNMB(myModel,-1,true);
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														results[numDim][origStrat][0][i]=curVal;
@@ -458,7 +461,7 @@ public class frmSensOneWay {
 													}
 													//subgroups
 													for(int g=0; g<numSubgroups; g++){
-														table=new CEAHelper().calculateNMB(myModel, g);
+														table=new CEAHelper().calculateNMB(myModel, g, true);
 														for(int s=0; s<table.length; s++){
 															int origStrat=(int) table[s][0];
 															resultsGroup[g][numDim][origStrat][0][i]=curVal;
@@ -507,11 +510,12 @@ public class frmSensOneWay {
 									}
 								}
 							} catch (Exception e) {
-								curParam.locked=false;
-								myModel.validateModelObjects();
+								myModel.errorLog.recordError(e);
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(frmSensOneWay, e.getMessage());
-								myModel.errorLog.recordError(e);
+								
+								curParam.locked=false;
+								myModel.validateModelObjects();
 							}
 						}
 					};

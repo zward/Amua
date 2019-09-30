@@ -886,7 +886,7 @@ public class frmPSA {
 										if(analysisType>0){ //CEA or BCA
 											if(analysisType==1){ //CEA
 												for(int g=0; g<numSubgroups+1; g++){
-													Object table[][]=new CEAHelper().calculateICERs(myModel,g-1);
+													Object table[][]=new CEAHelper().calculateICERs(myModel,g-1,true);
 													//get baseline row
 													int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
 													int baseRow=-1,curRow=0;
@@ -918,7 +918,7 @@ public class frmPSA {
 											}
 											else if(analysisType==2){ //BCA
 												for(int g=0; g<numSubgroups+1; g++){
-													Object table[][]=new CEAHelper().calculateNMB(myModel,g-1);
+													Object table[][]=new CEAHelper().calculateNMB(myModel,g-1,true);
 													//use first row as baseline
 													//int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
 													int baseIndex=0;
@@ -934,14 +934,14 @@ public class frmPSA {
 														dataResultsIter[g][numDim][origStrat][0][n]=n;	dataResultsVal[g][numDim][origStrat][0][n]=n;
 														double curOutcome=(double) table[s][4];
 														dataResultsIter[g][numDim][origStrat][1][n]=curOutcome; dataResultsVal[g][numDim][origStrat][1][n]=curOutcome;
-														double cost=(double) table[s][2];
-														double benefit=(double) table[s][3];
-														dataScatterAbs[g][origStrat][0][n]=cost;
-														dataScatterAbs[g][origStrat][1][n]=benefit;
-														double baseCost=(double) table[baseRow][2]; 
-														double baseBenefit=(double) table[baseRow][3];
-														dataScatterRel[g][origStrat][0][n]=cost-baseCost;
-														dataScatterRel[g][origStrat][1][n]=benefit-baseBenefit;
+														double benefit=(double) table[s][2];
+														double cost=(double) table[s][3];
+														dataScatterAbs[g][origStrat][0][n]=benefit;
+														dataScatterAbs[g][origStrat][1][n]=cost;
+														double baseBenefit=(double) table[baseRow][2]; 
+														double baseCost=(double) table[baseRow][3];
+														dataScatterRel[g][origStrat][0][n]=benefit-baseBenefit;
+														dataScatterRel[g][origStrat][1][n]=cost-baseCost;
 														
 													}
 												}
@@ -1055,7 +1055,7 @@ public class frmPSA {
 										ConsoleTable curTable=new ConsoleTable(console,colTypes);
 										String headers[]=new String[]{"Strategy","Outcome","Mean","95% LB","95% UB"};
 										curTable.addRow(headers);
-										//strategy results
+										//strategy results - overall
 										for(int s=0; s<numStrat; s++){
 											String stratName=myModel.strategyNames[s];
 											for(int d=0; d<numDim; d++){
@@ -1069,6 +1069,13 @@ public class frmPSA {
 											}
 										}
 										curTable.print();
+										
+										if(myModel.dimInfo.analysisType==1) { //CEA - get mean ICERS
+											printCEAResults(console, 0);
+										}
+										else if(myModel.dimInfo.analysisType==2) { //BCA - get mean NMB
+											printBCAResults(console, 0);
+										}
 										
 										//subgroups
 										for(int g=0; g<numSubgroups; g++){
@@ -1088,6 +1095,15 @@ public class frmPSA {
 												}
 											}
 											curTable.print();
+											
+											if(myModel.dimInfo.analysisType==1) { //CEA - get mean ICERS
+												printCEAResults(console, g+1);
+											}
+											else if(myModel.dimInfo.analysisType==2) { //BCA - get mean NMB
+												printBCAResults(console, g+1);
+											}
+											
+											
 										}
 										
 										if(myModel.simType==1 && myModel.displayIndResults==true){
@@ -1344,5 +1360,74 @@ public class frmPSA {
 		}
 		
 		
+	}
+	
+	private void printCEAResults(Console console, int group) {
+		CEAHelper cea=new CEAHelper();
+		//get mean results
+		cea.numStrat=numStrat;
+		cea.costs=new double[numStrat]; cea.effects=new double[numStrat];
+		for(int s=0; s<numStrat; s++) {
+			for(int n=0; n<numIterations; n++) {
+				cea.costs[s]+=dataScatterAbs[group][s][1][n];
+				cea.effects[s]+=dataScatterAbs[group][s][0][n];
+			}
+			cea.costs[s]/=(numIterations*1.0);
+			cea.effects[s]/=(numIterations*1.0);
+		}
+		Object table[][]=cea.calculateICERs(myModel, -1, false);
+		
+		//Print results
+		DimInfo dimInfo=myModel.dimInfo;
+		console.print("\nCEA Results (Ratio of Means):\n");
+		boolean colTypes[]=new boolean[]{false,true,true,true,false}; //is column number (true), or text (false)
+		ConsoleTable curTable=new ConsoleTable(console,colTypes);
+		String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.costDim],dimInfo.dimNames[dimInfo.effectDim],"ICER","Notes"};
+		curTable.addRow(headers);
+		for(int s=0; s<numStrat; s++){
+			String cost=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.costDim])+"";
+			String effect=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.effectDim])+"";
+			String icer="";
+			double nIcer=(double)table[s][4];
+			if(Double.isNaN(nIcer)) {icer="---";}
+			else {
+				icer=MathUtils.round(nIcer,dimInfo.decimals[dimInfo.costDim])+"";
+			}
+			String row[]=new String[]{table[s][1]+"",cost,effect,icer,table[s][5]+""};
+			curTable.addRow(row);
+		}
+		curTable.print();
+	}
+	
+	private void printBCAResults(Console console, int group) {
+		CEAHelper cea=new CEAHelper();
+		//get mean results
+		cea.numStrat=numStrat;
+		cea.costs=new double[numStrat]; cea.effects=new double[numStrat];
+		for(int s=0; s<numStrat; s++) {
+			for(int n=0; n<numIterations; n++) {
+				cea.costs[s]+=dataScatterAbs[group][s][1][n];
+				cea.effects[s]+=dataScatterAbs[group][s][0][n];
+			}
+			cea.costs[s]/=(numIterations*1.0);
+			cea.effects[s]/=(numIterations*1.0);
+		}
+		Object table[][]=cea.calculateNMB(myModel, -1, false);
+		
+		//Print results
+		DimInfo dimInfo=myModel.dimInfo;
+		console.print("\nBCA Results (Mean):\n");
+		boolean colTypes[]=new boolean[]{false,true,true,true}; //is column number (true), or text (false)
+		ConsoleTable curTable=new ConsoleTable(console,colTypes);
+		String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB"};
+		curTable.addRow(headers);
+		for(int s=0; s<numStrat; s++){
+			String effect=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.effectDim])+"";
+			String cost=MathUtils.round((double)table[s][3],dimInfo.decimals[dimInfo.costDim])+"";
+			String nmb=MathUtils.round((double)table[s][4],dimInfo.decimals[dimInfo.costDim])+"";
+			String row[]=new String[]{table[s][1]+"",effect,cost,nmb};
+			curTable.addRow(row);
+		}
+		curTable.print();
 	}
 }

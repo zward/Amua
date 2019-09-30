@@ -120,7 +120,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.2.3";
+	public String version="0.2.4";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -568,6 +568,16 @@ public class frmMain {
 				window.frmSensTwoWay.setVisible(true);
 			}
 		});
+		
+		JMenuItem mntmOnewayBest = new JMenuItem("Stacked One-way");
+		mntmOnewayBest.setIcon(new ScaledIcon("/images/oneWayStacked",16,16,16,true));
+		mntmOnewayBest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frmSensOneWayStacked window=new frmSensOneWayStacked(curModel);
+				window.frmSensOneWayStacked.setVisible(true);
+			}
+		});
+		mnSensitivityAnalysis.add(mntmOnewayBest);
 		mnSensitivityAnalysis.add(mntmTwoway);
 		
 		JMenuItem mntmProbabilisticpsa = new JMenuItem("Probabilistic (PSA)");

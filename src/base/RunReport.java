@@ -140,7 +140,7 @@ public class RunReport{
 
 		if(allStrategies==true){
 			if(dimInfo.analysisType==1){ //CEA
-				table=new CEAHelper().calculateICERs(myModel,-1);
+				table=new CEAHelper().calculateICERs(myModel,-1,true);
 
 				//Round results
 				numStrat=table.length;
@@ -159,7 +159,7 @@ public class RunReport{
 				if(numSubgroups>0){
 					tableGroup=new Object[numSubgroups][][];
 					for(int g=0; g<numSubgroups; g++){
-						tableGroup[g]=new CEAHelper().calculateICERs(myModel, g);
+						tableGroup[g]=new CEAHelper().calculateICERs(myModel, g, true);
 						//Round results
 						for(int s=0; s<numStrat; s++){
 							tableGroup[g][s][2]=MathUtils.round((double)tableGroup[g][s][2],dimInfo.decimals[dimInfo.costDim]); //Cost
@@ -173,7 +173,7 @@ public class RunReport{
 				
 			}
 			else if(dimInfo.analysisType==2){ //BCA
-				table=new CEAHelper().calculateNMB(myModel,-1);
+				table=new CEAHelper().calculateNMB(myModel,-1,true);
 
 				//Round results
 				numStrat=table.length;
@@ -186,7 +186,7 @@ public class RunReport{
 				if(numSubgroups>0){
 					tableGroup=new Object[numSubgroups][][];
 					for(int g=0; g<numSubgroups; g++){
-						tableGroup[g]=new CEAHelper().calculateNMB(myModel,g);
+						tableGroup[g]=new CEAHelper().calculateNMB(myModel,g,true);
 						//Round results
 						for(int s=0; s<numStrat; s++){
 							tableGroup[g][s][2]=MathUtils.round((double)tableGroup[g][s][2],dimInfo.decimals[dimInfo.effectDim]); //Benefit
@@ -197,7 +197,7 @@ public class RunReport{
 				}
 			}
 			else if(dimInfo.analysisType==3){ //ECEA
-				table=new CEAHelper().calculateECEA(myModel,-1);
+				table=new CEAHelper().calculateECEA(myModel,-1,true);
 
 				//Round results
 				numStrat=table.length;
@@ -211,7 +211,7 @@ public class RunReport{
 				if(numSubgroups>0){
 					tableGroup=new Object[numSubgroups][][];
 					for(int g=0; g<numSubgroups; g++){
-						tableGroup[g]=new CEAHelper().calculateNMB(myModel,g);
+						tableGroup[g]=new CEAHelper().calculateNMB(myModel,g,true);
 						//Round results
 						for(int s=0; s<numStrat; s++){
 							tableGroup[g][s][2]=MathUtils.round((double)tableGroup[g][s][2],dimInfo.decimals[dimInfo.effectDim]); //Benefit

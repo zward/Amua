@@ -490,7 +490,7 @@ public class frmSensTwoWay {
 													else{dataEV[minStrat][1][count]=curVal2;}
 												}
 												else if(analysisType==1){ //CEA
-													Object table[][]=new CEAHelper().calculateICERs(myModel,group);
+													Object table[][]=new CEAHelper().calculateICERs(myModel,group,true);
 													double bestICER=Double.NEGATIVE_INFINITY;
 													int bestStrat=-1;
 													for(int s=0; s<table.length; s++){	
@@ -511,7 +511,7 @@ public class frmSensTwoWay {
 													}
 												}
 												else if(analysisType==2){ //BCA
-													Object table[][]=new CEAHelper().calculateNMB(myModel,group);
+													Object table[][]=new CEAHelper().calculateNMB(myModel,group,true);
 													double maxNMB=Double.NEGATIVE_INFINITY;
 													int maxStrat=-1;
 													for(int s=0; s<table.length; s++){	

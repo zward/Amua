@@ -463,7 +463,7 @@ public class frmBatch {
 										if(analysisType>0){ //CEA or BCA
 											if(analysisType==1){ //CEA
 												for(int g=0; g<numSubgroups+1; g++){
-													Object table[][]=new CEAHelper().calculateICERs(myModel,g-1);
+													Object table[][]=new CEAHelper().calculateICERs(myModel,g-1,true);
 													//get baseline row
 													int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
 													int baseRow=-1,curRow=0;
@@ -495,7 +495,7 @@ public class frmBatch {
 											}
 											else if(analysisType==2){ //BCA
 												for(int g=0; g<numSubgroups+1; g++){
-													Object table[][]=new CEAHelper().calculateNMB(myModel,g-1);
+													Object table[][]=new CEAHelper().calculateNMB(myModel,g-1,true);
 													//get baseline row
 													int baseIndex=myModel.getStrategyIndex(myModel.dimInfo.baseScenario);
 													int baseRow=-1,curRow=0;

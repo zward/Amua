@@ -504,15 +504,15 @@ public class frmTornadoDiagram {
 										if(myModel.dimInfo.analysisType>0) { // CEA/BCA
 											//overall
 											Object table[][]=null;
-											if(myModel.dimInfo.analysisType==1) {table=new CEAHelper().calculateICERs(myModel,-1);}
-											else if(myModel.dimInfo.analysisType==2) {table=new CEAHelper().calculateNMB(myModel,-1);}
+											if(myModel.dimInfo.analysisType==1) {table=new CEAHelper().calculateICERs(myModel,-1,true);}
+											else if(myModel.dimInfo.analysisType==2) {table=new CEAHelper().calculateNMB(myModel,-1,true);}
 											for(int s=0; s<table.length; s++){	
 												int origStrat=(int) table[s][0];
 												baseOutcomes[0][origStrat][numDim]=(double) table[s][4];
 											}
 											//subgroups
 											for(int g=0; g<numSubgroups; g++) {
-												table=new CEAHelper().calculateICERs(myModel,g);
+												table=new CEAHelper().calculateICERs(myModel,g,true);
 												for(int s=0; s<table.length; s++){	
 													int origStrat=(int) table[s][0];
 													baseOutcomes[g+1][origStrat][numDim]=(double) table[s][4];
@@ -568,15 +568,15 @@ public class frmTornadoDiagram {
 												if(myModel.dimInfo.analysisType>0) { // CEA/BCA
 													//overall
 													Object table[][]=null;
-													if(myModel.dimInfo.analysisType==1) {table=new CEAHelper().calculateICERs(myModel,-1);}
-													else if(myModel.dimInfo.analysisType==2) {table=new CEAHelper().calculateNMB(myModel,-1);}
+													if(myModel.dimInfo.analysisType==1) {table=new CEAHelper().calculateICERs(myModel,-1,true);}
+													else if(myModel.dimInfo.analysisType==2) {table=new CEAHelper().calculateNMB(myModel,-1,true);}
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														results[0][origStrat][numDim][p][0]=(double) table[s][4];
 													}
 													//subgroups
 													for(int g=0; g<numSubgroups; g++) {
-														table=new CEAHelper().calculateICERs(myModel,g);
+														table=new CEAHelper().calculateICERs(myModel,g,true);
 														for(int s=0; s<table.length; s++){	
 															int origStrat=(int) table[s][0];
 															results[g+1][origStrat][numDim][p][0]=(double) table[s][4];
@@ -614,15 +614,15 @@ public class frmTornadoDiagram {
 												if(myModel.dimInfo.analysisType>0) { // CEA/BCA
 													//overall
 													Object table[][]=null;
-													if(myModel.dimInfo.analysisType==1) {table=new CEAHelper().calculateICERs(myModel,-1);}
-													else if(myModel.dimInfo.analysisType==2) {table=new CEAHelper().calculateNMB(myModel,-1);}
+													if(myModel.dimInfo.analysisType==1) {table=new CEAHelper().calculateICERs(myModel,-1,true);}
+													else if(myModel.dimInfo.analysisType==2) {table=new CEAHelper().calculateNMB(myModel,-1,true);}
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														results[0][origStrat][numDim][p][1]=(double) table[s][4];
 													}
 													//subgroups
 													for(int g=0; g<numSubgroups; g++) {
-														table=new CEAHelper().calculateICERs(myModel,g);
+														table=new CEAHelper().calculateICERs(myModel,g,true);
 														for(int s=0; s<table.length; s++){	
 															int origStrat=(int) table[s][0];
 															results[g+1][origStrat][numDim][p][1]=(double) table[s][4];

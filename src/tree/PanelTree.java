@@ -274,19 +274,20 @@ public class PanelTree extends ModelPanel{
 		while(curNode==null && i>0){ //If click was within bounds of an node, select it as the current node
 			i--;
 			boolean select=false;
-			int minX=tree.nodes.get(i).xPos;
-			int maxX=minX+tree.nodes.get(i).width;
+			TreeNode testNode=tree.nodes.get(i);
+			int minX=testNode.xPos;
+			int maxX=minX+testNode.width;
 			if(x>=minX && x<=maxX){ //Within X bounds
-				int minY=tree.nodes.get(i).yPos;
-				int maxY=minY+tree.nodes.get(i).height;
+				int minY=testNode.yPos;
+				int maxY=minY+testNode.height;
 				if(y>=minY && y<=maxY){ //Within Y bounds
-					curNode=tree.nodes.get(i);
+					curNode=testNode;
 					select=true;
 					xOffset=x-curNode.xPos;
 					yOffset=y-curNode.yPos;
 				}
 			}
-			tree.nodes.get(i).selected=select;
+			testNode.selected=select;
 		}
 		//de-select any other nodes
 		while(i>0){

@@ -25,9 +25,9 @@ import java.util.Comparator;
 import base.AmuaModel;
 
 public class CEAHelper{
-	int numStrat;
-	double costs[], effects[];
-	double extendedDim[];
+	public int numStrat;
+	public double costs[], effects[];
+	public double extendedDim[];
 
 	public CEAHelper(){ //Constructor
 		
@@ -37,10 +37,13 @@ public class CEAHelper{
 	 * 
 	 * @param myModel
 	 * @param group -1: Overall, 0-n: Subgroup index
+	 * @parma getResults: If true gets EVs from model, if false uses global variables in this class
 	 * @return
 	 */
-	public Object[][] calculateICERs(AmuaModel myModel, int group){
-		getResults(myModel,group); //Get EVs
+	public Object[][] calculateICERs(AmuaModel myModel, int group, boolean getResults){
+		if(getResults) {
+			getResults(myModel,group); //Get EVs
+		}
 		
 		int baseline=-1;
 		int strat=0;
@@ -132,6 +135,7 @@ public class CEAHelper{
 				}
 				else{ //Increasing effect: Calculate ICER
 					if(incCost==0){ //Greater effect, same cost
+						repeat=true;
 						table[index0][4]=Double.NaN;
 						table[index0][5]="Strongly Dominated";
 						table[index1][4]=0.0; //set dominating ICER to 0 for now
@@ -199,8 +203,11 @@ public class CEAHelper{
 	}
 
 
-	public Object[][] calculateNMB(AmuaModel myModel, int group){
-		getResults(myModel,group); //Get EVs
+	public Object[][] calculateNMB(AmuaModel myModel, int group, boolean getResults){
+		if(getResults) {
+			getResults(myModel,group); //Get EVs
+		}
+		
 		Object table[][]=new Object[numStrat][6];
 		
 		//Get EVs
@@ -228,8 +235,11 @@ public class CEAHelper{
 		return(table);
 	}
 
-	public Object[][] calculateECEA(AmuaModel myModel, int group){
-		getResults(myModel,group); //Get EVs
+	public Object[][] calculateECEA(AmuaModel myModel, int group, boolean getResults){
+		if(getResults) {
+			getResults(myModel,group); //Get EVs
+		}
+		
 		Object table[][]=new Object[numStrat][7];
 		
 		//Get EVs

@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import gui.frmCEPlane;
 import gui.frmMain;
 import gui.frmTraceSummary;
 import main.Console;
@@ -308,6 +309,7 @@ public class AmuaModel{
 			JAXBContext context = JAXBContext.newInstance(AmuaModel.class);
 			Marshaller m = context.createMarshaller();
 			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8"); //should be default, but make UTF explicit
 
 			// Write to File
 			FileWriter fstreamO=new FileWriter(filepath);
@@ -826,6 +828,10 @@ public class AmuaModel{
 				runReport.printResults(console,true);
 				if(dimInfo.analysisType>0){ //display ICERS/NMB on tree
 					panelTree.tree.displayCEAResults(runReport);
+					if(dimInfo.analysisType==1) { //CEA
+						frmCEPlane plane=new frmCEPlane(this,runReport);
+						plane.frmCEPlane.setVisible(true);
+					}
 				}
 			}
 		}catch(Exception e){
@@ -847,6 +853,10 @@ public class AmuaModel{
 					runReport.printResults(console,true);
 					if(dimInfo.analysisType>0){ //display ICERs/NMB on tree
 						markov.displayCEAResults(runReport);
+						if(dimInfo.analysisType==1) { //CEA
+							frmCEPlane plane=new frmCEPlane(this,runReport);
+							plane.frmCEPlane.setVisible(true);
+						}
 					}
 				}
 			}

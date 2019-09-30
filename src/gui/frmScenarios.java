@@ -31,14 +31,11 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.awt.event.ActionEvent;
 
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
@@ -819,15 +816,17 @@ public class frmScenarios {
 										if(myModel.type==1) {
 											myModel.markov.halfCycleCorrection=curScenario.halfCycleCorrection;
 											myModel.markov.discountRewards=curScenario.discountRewards;
-											if(curScenario.discountRates==null || curScenario.discountRates.length!=numDim) {
-												JOptionPane.showMessageDialog(frmScenarios, "Error: Incorrect model dimensions in Scenario "+curScenario.name+" !");
-											}
-											else {
-												for(int d=0; d<numDim; d++) {
-													myModel.markov.discountRates[d]=curScenario.discountRates[d];
+											if(curScenario.discountRewards) {
+												if(curScenario.discountRates==null || curScenario.discountRates.length!=numDim) {
+													JOptionPane.showMessageDialog(frmScenarios, "Error: Incorrect model dimensions in Scenario "+curScenario.name+" !");
 												}
+												else {
+													for(int d=0; d<numDim; d++) {
+														myModel.markov.discountRates[d]=curScenario.discountRates[d];
+													}
+												}
+												myModel.markov.discountStartCycle=curScenario.discountStartCycle;
 											}
-											myModel.markov.discountStartCycle=curScenario.discountStartCycle;
 										}
 										
 										Numeric origValues[] = null;
@@ -1174,7 +1173,8 @@ public class frmScenarios {
 		if(myModel.type==1) {
 			myModel.markov.halfCycleCorrection=origHalfCycleCorrection;
 			myModel.markov.discountRewards=origDiscountRewards;
-			for(int d=0; d<myModel.markov.discountRates.length; d++) {
+			int numDim=myModel.dimInfo.dimNames.length;
+			for(int d=0; d<numDim; d++) {
 				myModel.markov.discountRates[d]=origDiscountRates[d];
 			}
 			myModel.markov.discountStartCycle=origDiscountStartCycle;

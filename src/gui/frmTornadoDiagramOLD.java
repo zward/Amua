@@ -329,7 +329,7 @@ public class frmTornadoDiagramOLD {
 										else{baseOutcome=myModel.getSubgroupEV(group, strat, dim);}
 									} 
 									else if(analysisType==1){ //CEA
-										Object table[][]=new CEAHelper().calculateICERs(myModel,group);
+										Object table[][]=new CEAHelper().calculateICERs(myModel,group,true);
 										for(int s=0; s<table.length; s++){	
 											int origStrat=(int) table[s][0];
 											if(origStrat==strat){
@@ -338,7 +338,7 @@ public class frmTornadoDiagramOLD {
 										}
 									}
 									else if(analysisType==2){ //BCA
-										Object table[][]=new CEAHelper().calculateNMB(myModel,group);
+										Object table[][]=new CEAHelper().calculateNMB(myModel,group,true);
 										for(int s=0; s<table.length; s++){	
 											int origStrat=(int) table[s][0];
 											if(origStrat==strat){
@@ -389,7 +389,7 @@ public class frmTornadoDiagramOLD {
 													else{minOutcome=myModel.getSubgroupEV(group, strat, dim);}
 												}
 												else if(analysisType==1){ //CEA
-													Object table[][]=new CEAHelper().calculateICERs(myModel,group);
+													Object table[][]=new CEAHelper().calculateICERs(myModel,group,true);
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														if(origStrat==strat){
@@ -398,7 +398,7 @@ public class frmTornadoDiagramOLD {
 													}
 												}
 												else if(analysisType==2){ //BCA
-													Object table[][]=new CEAHelper().calculateNMB(myModel,group);
+													Object table[][]=new CEAHelper().calculateNMB(myModel,group,true);
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														if(origStrat==strat){
@@ -430,7 +430,7 @@ public class frmTornadoDiagramOLD {
 													else{maxOutcome=myModel.getSubgroupEV(group, strat, dim);}
 												} 
 												else if(analysisType==1){ //CEA
-													Object table[][]=new CEAHelper().calculateICERs(myModel,group);
+													Object table[][]=new CEAHelper().calculateICERs(myModel,group,true);
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														if(origStrat==strat){
@@ -439,7 +439,7 @@ public class frmTornadoDiagramOLD {
 													}
 												}
 												else if(analysisType==2){ //BCA
-													Object table[][]=new CEAHelper().calculateNMB(myModel,group);
+													Object table[][]=new CEAHelper().calculateNMB(myModel,group,true);
 													for(int s=0; s<table.length; s++){	
 														int origStrat=(int) table[s][0];
 														if(origStrat==strat){
