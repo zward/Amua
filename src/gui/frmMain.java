@@ -120,7 +120,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.2.4";
+	public String version="0.2.5";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -519,6 +519,7 @@ public class frmMain {
 			public void actionPerformed(ActionEvent e) {
 				Thread SimThread = new Thread(){ //Non-UI
 					public void run(){
+						curModel.clearAnnotations();
 						runModel();
 					}
 				};
@@ -1663,6 +1664,7 @@ public class frmMain {
 				Thread SimThread = new Thread(){ //Non-UI
 					public void run(){
 						//long startTime=System.currentTimeMillis(); //time testing
+						curModel.clearAnnotations();
 						runModel();
 						//long endTime=System.currentTimeMillis();
 						//System.out.println(endTime-startTime);

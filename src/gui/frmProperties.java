@@ -44,7 +44,6 @@ import java.awt.SystemColor;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -92,7 +91,9 @@ public class frmProperties {
 	int numDimensions;
 	ArrayList<String> dimNames, dimSymbols;
 	ArrayList<Integer> decimals;
-	ArrayList<Double> dimDiscount;
+	//ArrayList<Double> dimDiscount;
+	ArrayList<String> prevDimNames;
+	double tempDiscountRates[];
 	
 	//Analysis
 	DefaultTableModel modelDimensions;
@@ -139,6 +140,21 @@ public class frmProperties {
 	public frmProperties(AmuaModel myModel) {
 		this.myModel=myModel;
 		this.tempDimInfo=myModel.dimInfo.copy();
+		int numDim=tempDimInfo.dimNames.length;
+		numDimensions=numDim;
+		prevDimNames=new ArrayList<String>();
+		for(int d=0; d<numDim; d++) {
+			prevDimNames.add(tempDimInfo.dimNames[d]);
+		}
+		if(myModel.type==1) { //markov
+			tempDiscountRates=new double[numDim];
+			if(myModel.markov.discountRates!=null) {
+				for(int d=0; d<numDim; d++) {
+					tempDiscountRates[d]=myModel.markov.discountRates[d];
+				}
+			}
+		}
+		
 		myModel.getStrategies();
 		initialize();
 		refreshDisplay();
@@ -392,13 +408,13 @@ public class frmProperties {
 												
 						//update discount names
 						if(myModel.type==1){
-							myModel.markov.discountRates=new double[numDimensions];
+							tempDiscountRates=new double[numDimensions];
 							for(int i=0; i<numDimensions; i++){
 								modelDiscountRates.setValueAt(dimNames.get(i), i, 0);
 								try{
-									myModel.markov.discountRates[i]=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
+									tempDiscountRates[i]=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
 								}catch (Exception e1){
-									myModel.markov.discountRates[i]=0;
+									tempDiscountRates[i]=0;
 								}
 							}
 						}
@@ -865,7 +881,7 @@ public class frmProperties {
 		dimNames=new ArrayList<String>();
 		dimSymbols=new ArrayList<String>();
 		decimals=new ArrayList<Integer>();
-		dimDiscount=new ArrayList<Double>();
+		//dimDiscount=new ArrayList<Double>();
 		for(int i=0; i<numDimensions; i++){
 			String curName=(String) tableDimensions.getValueAt(i,0);
 			String curSymbol=(String) tableDimensions.getValueAt(i,1);
@@ -953,6 +969,12 @@ public class frmProperties {
 			}
 		}
 		else{ //CEA, BCA, or ECEA
+			if(numDimensions==1) {
+				valid=false;
+				JOptionPane.showMessageDialog(frmProperties, "Only 1 outcome - please change analysis to Expected Value!");
+			}
+			
+			
 			String strCostDim=(String) tableAnalysis.getValueAt(0, 1);
 			if(strCostDim==null){
 				valid=false;
@@ -1119,7 +1141,7 @@ public class frmProperties {
 				for(int i=0; i<numDimensions; i++){
 					try{
 						double test=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
-						dimDiscount.add(test);
+						tempDiscountRates[i]=test;
 					} catch(Exception er){
 						valid=false;
 						JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount rate ("+tableDiscountRates.getValueAt(i, 0)+")");
@@ -1145,12 +1167,14 @@ public class frmProperties {
 			//dimensions
 			myModel.dimInfo.dimNames=new String[numDimensions]; myModel.dimInfo.dimSymbols=new String[numDimensions];
 			myModel.dimInfo.decimals=new int[numDimensions];
+			int dimIndices[]=new int[numDimensions]; //previous dimension indicies
 			for(int i=0; i<numDimensions; i++){
 				myModel.dimInfo.dimNames[i]=dimNames.get(i);
 				myModel.dimInfo.dimSymbols[i]=dimSymbols.get(i);
 				myModel.dimInfo.decimals[i]=decimals.get(i);
+				dimIndices[i]=prevDimNames.indexOf(dimNames.get(i));
 			}
-			myModel.updateDimensions();
+			myModel.updateDimensions(dimIndices);
 			
 			//analysis type
 			myModel.dimInfo.analysisType=comboAnalysis.getSelectedIndex();
@@ -1188,7 +1212,7 @@ public class frmProperties {
 					myModel.markov.discountStartCycle=Integer.parseInt(textDiscountStartCycle.getText());
 					myModel.markov.discountRates=new double[numDimensions];
 					for(int i=0; i<numDimensions; i++){
-						myModel.markov.discountRates[i]=dimDiscount.get(i);
+						myModel.markov.discountRates[i]=tempDiscountRates[i];
 					}
 				}
 			}
@@ -1208,7 +1232,6 @@ public class frmProperties {
 		return(valid);
 	}
 	
-	
 	private void setAnalysisType(int analysisType){
 		if(tempDimInfo.dimNames.length==1 || modelDimensions.getRowCount()<2){comboAnalysis.setEnabled(false);}
 		else{comboAnalysis.setEnabled(true);}
@@ -1220,14 +1243,27 @@ public class frmProperties {
 			if(tempDimInfo.objective==0) {tableAnalysis.setValueAt("Maximize", 0, 1);}
 			else {tableAnalysis.setValueAt("Minimize", 0, 1);}
 			modelAnalysis.addRow(new Object[]{"Outcome",null}); tableAnalysis.enabled[1]=true;
-			tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.objectiveDim], 1, 1);
+			int dim=tempDimInfo.objectiveDim;
+			if(dim>=0 && dim<numDimensions) { //within bounds
+				tableAnalysis.setValueAt(tempDimInfo.dimNames[dim], 1, 1);
+			}
 		}
 		else{ //CEA, BCA, or ECEA
 			modelAnalysis.setRowCount(0);
 			modelAnalysis.addRow(new Object[]{"Cost",null}); tableAnalysis.enabled[0]=true;
-			if(tempDimInfo.costDim!=-1) {tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.costDim], 0, 1);}
+			if(tempDimInfo.costDim!=-1) {
+				int dim=tempDimInfo.costDim;
+				if(dim>=0 && dim<numDimensions) { //within bounds
+					tableAnalysis.setValueAt(tempDimInfo.dimNames[dim], 0, 1);
+				}
+			}
 			modelAnalysis.addRow(new Object[]{"Effect",null}); tableAnalysis.enabled[1]=true;
-			if(tempDimInfo.effectDim!=-1) {tableAnalysis.setValueAt(tempDimInfo.dimNames[tempDimInfo.effectDim], 1, 1);}
+			if(tempDimInfo.effectDim!=-1) {
+				int dim=tempDimInfo.effectDim;
+				if(dim>=0 && dim<numDimensions) { //within bounds
+					tableAnalysis.setValueAt(tempDimInfo.dimNames[dim], 1, 1);
+				}
+			}
 			modelAnalysis.addRow(new Object[]{"Baseline Strategy",null}); tableAnalysis.enabled[2]=true;
 			modelAnalysis.addRow(new Object[]{"Willingness-to-pay (WTP)",null}); tableAnalysis.enabled[3]=true;
 			tableAnalysis.setValueAt(tempDimInfo.WTP+"", 3, 1);
@@ -1252,14 +1288,14 @@ public class frmProperties {
 	
 	private int getDimIndex(String dimName){
 		int index=-1;
-		int i=-1;
+		int i=0;
 		boolean found=false;
 		while(found==false && i<tempDimInfo.dimNames.length){
-			i++;
-			if(tempDimInfo.dimNames[i].matches(dimName)){
+			if(tempDimInfo.dimNames[i].equals(dimName)){
 				found=true;
 				index=i;
 			}
+			i++;
 		}
 		return(index);
 	}

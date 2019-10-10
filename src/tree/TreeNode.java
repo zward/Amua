@@ -185,7 +185,9 @@ public class TreeNode extends ModelNode{
 							textVarUpdates.setBounds(xPos-scale(138),(int)(yPos+(height/2)),scale(140),scale(28));
 						}
 					}
-					textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
+					//textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
+					int width=Math.max((int)(textEV.getText().length()*6),140);
+					textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(width),scale(28));
 				}
 			}
 			else if(type==1){ //Chance
@@ -228,7 +230,9 @@ public class TreeNode extends ModelNode{
 						textVarUpdates.setBounds(xPos-scale(138),(int)(yPos+(height/2)),scale(140),scale(28));
 					}
 				}
-				textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
+				//textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
+				int width=Math.max((int)(textEV.getText().length()*6),140);
+				textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(width),scale(28));
 			}
 			else if(type==2){ //Terminal
 				Polygon triangle = new Polygon();

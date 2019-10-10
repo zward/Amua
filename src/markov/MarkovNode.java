@@ -242,7 +242,9 @@ public class MarkovNode extends ModelNode{
 							textVarUpdates.setBounds(xPos-scale(138),(int)(yPos+(height/2)),scale(140),scale(28));
 						}
 					}
-					textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
+					//textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
+					int width=Math.max((int)(textEV.getText().length()*6),140);
+					textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(width),scale(28));
 				}
 			}
 			else if(type==1){ //Chain
@@ -292,7 +294,9 @@ public class MarkovNode extends ModelNode{
 					lblVarUpdates.setBounds(xPos+width-scale(112),(int)(yPos+3.5*(height/2)),scale(15),scale(28));
 					textVarUpdates.setBounds(xPos+width-scale(100),(int)(yPos+3.5*(height/2)),scale(100),scale(28));
 				}
-				textEV.setBounds(xPos-scale(150),yPos+(height/2)-scale(48),scale(150),scale(28));
+				//textEV.setBounds(xPos-scale(150),yPos+(height/2)-scale(48),scale(150),scale(28));
+				int width=Math.max((int)(textEV.getText().length()*6),150);
+				textEV.setBounds(xPos-scale(150),yPos+(height/2)-scale(48),scale(width),scale(28));
 			}
 			else if(type==2){ //State
 				g.setColor(Color.ORANGE);
@@ -356,7 +360,9 @@ public class MarkovNode extends ModelNode{
 					}
 				}
 				if(chain==null){ //outside of chain
-					textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
+					//textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(140),scale(28));
+					int width=Math.max((int)(textEV.getText().length()*6),140);
+					textEV.setBounds(xPos+scale(25),yPos-scale(5),scale(width),scale(28));
 				}
 			}
 			else if(type==4){ //Transition
@@ -484,7 +490,7 @@ public class MarkovNode extends ModelNode{
 		if(type==2){ //State
 			displayRewards();
 		}
-		if((type==0 || type==3) && chain==null){ //Chance node outside of chain
+		if((type==0 || type==3) && chain==null){ //Decision or chance node outside of chain
 			displayEV();
 		}
 		if(type==4){ //Transition
@@ -899,7 +905,8 @@ public class MarkovNode extends ModelNode{
 		textEV.setVisible(tree.showEV);
 		scaleFont(textEV);
 		textEV.setFont(new Font(textEV.getFont().getFontName(), Font.BOLD, textEV.getFont().getSize()));
-		if(tree.showEV && myModel.dimInfo.analysisType==0 && expectedValues!=null){
+		//if(tree.showEV && myModel.dimInfo.analysisType==0 && expectedValues!=null){
+		if(tree.showEV && (myModel.dimInfo.analysisType==0 || level>1) && expectedValues!=null){
 			if(tree.discountRewards==false){
 				String buildString="";
 				for(int i=0; i<numDimensions-1; i++){

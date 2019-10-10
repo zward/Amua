@@ -301,6 +301,7 @@ public class PanelTree extends ModelPanel{
 			mainForm.mntmCut.setEnabled(true);
 			mainForm.mntmCopy.setEnabled(true);
 			mainForm.btnUpdateVariable.setEnabled(true);
+			
 			if(curNode.type!=2 && curNode.collapsed==false){
 				mainForm.btnDecisionNode.setEnabled(true);
 				mainForm.btnChanceNode.setEnabled(true);
@@ -311,18 +312,22 @@ public class PanelTree extends ModelPanel{
 				mainForm.btnChanceNode.setEnabled(false);
 				mainForm.btnTerminalNode.setEnabled(false);
 			}
+			
 			int numChildren=curNode.childIndices.size();
 			mainForm.btnChangeNodeType.setEnabled(true);
 			mainForm.btnEqualY.setEnabled(false);
 			if(curNode.type==0 || numChildren>0){mainForm.btnChangeNodeType.setEnabled(false);}
+			
 			if(numChildren==0){mainForm.btnCollapse.setEnabled(false);}
 			else{
 				mainForm.btnCollapse.setEnabled(true);
 				if(numChildren>2){mainForm.btnEqualY.setEnabled(true);}
 			}
+			
 			if(curNode.level==0 || curNode.type==2){mainForm.btnShowCost.setEnabled(false);}
-			if(curNode.level==0){mainForm.btnUpdateVariable.setEnabled(false);}
 			else{mainForm.btnShowCost.setEnabled(true);}
+			
+			if(curNode.level==0){mainForm.btnUpdateVariable.setEnabled(false);}
 		}
 		else{ //Node not selected
 			textAreaNotes.setText("");
@@ -455,6 +460,7 @@ public class PanelTree extends ModelPanel{
 				curNode.type=2;
 				this.remove(curNode.lblCost); this.remove(curNode.textCost);
 				this.remove(curNode.textEV);
+				curNode.hasCost=false;
 				curNode.lblCost=null; curNode.textCost=null;
 				curNode.textEV=null;
 				Arrays.fill(curNode.cost,"0");

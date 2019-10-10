@@ -35,6 +35,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
 import java.awt.Insets;
+import java.awt.Stroke;
 import java.awt.Toolkit;
 
 import javax.swing.JTable;
@@ -58,6 +59,8 @@ import main.Parameter;
 import math.Numeric;
 
 import javax.swing.border.LineBorder;
+
+import java.awt.BasicStroke;
 import java.awt.Color;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -91,6 +94,7 @@ public class frmSensOneWay {
 	private JTextField textIntervals;
 	String CEAnotes[][], CEAnotesGroup[][][];
 	Parameter curParam;
+	double baselineParamValue;
 	
 	public frmSensOneWay(AmuaModel myModel){
 		this.myModel=myModel;
@@ -337,14 +341,31 @@ public class frmSensOneWay {
 						public void run(){
 							try{
 								//Check model first
+								boolean proceed=true;
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
+									proceed=false;
 									JOptionPane.showMessageDialog(frmSensOneWay, "Errors in base case model!");
 								}
 								else if(tableParams.getSelectedRow()==-1) {
+									proceed=false;
 									JOptionPane.showMessageDialog(frmSensOneWay, "Please select a parameter!");
 								}
-								else{
+								else {
+									int row=tableParams.getSelectedRow();
+									String strMin=(String)tableParams.getValueAt(row, 2);
+									String strMax=(String)tableParams.getValueAt(row, 3);
+									if(strMin==null || strMin.isEmpty()) {
+										proceed=false;
+										JOptionPane.showMessageDialog(frmSensOneWay, "Error: Min value missing!");
+									}
+									else if(strMax==null || strMax.isEmpty()) {
+										proceed=false;
+										JOptionPane.showMessageDialog(frmSensOneWay, "Error: Max value missing!");
+									}
+								}
+								
+								if(proceed==true) {
 									//Get parameter
 									int intervals=Integer.parseInt(textIntervals.getText());
 									int row=tableParams.getSelectedRow();
@@ -358,9 +379,10 @@ public class frmSensOneWay {
 									curParam=myModel.parameters.get(row);
 									curParam.locked=true;
 									Numeric origValue=curParam.value.copy();
+									baselineParamValue=origValue.getValue();
 									
-									boolean error=false;
 									//Test parameter at min and max...
+									boolean error=false;
 									curParam.value.setDouble(min);
 									ArrayList<String> errorsMin=myModel.parseModel();
 									curParam.value.setDouble(max);
@@ -621,5 +643,11 @@ public class frmSensOneWay {
 			renderer1.setSeriesPaint(s, supplier.getNextPaint());
 		}
 		plot.setRenderer(renderer1);
+		
+		//add baseline marker
+		plot.clearDomainMarkers();
+		Stroke fill = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
+		plot.addDomainMarker(new ValueMarker(baselineParamValue, Color.BLACK, fill));
+	
 	}
 }

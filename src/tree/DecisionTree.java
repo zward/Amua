@@ -178,6 +178,7 @@ public class DecisionTree{
 				}
 			}
 			else if(curNode.type==2){ //Terminal, validate payoff
+				curNode.hasCost=false; //set to false
 				curNode.highlightTextField(2,null); //Payoff
 				for(int c=0; c<numDim; c++){
 					try{
@@ -390,11 +391,36 @@ public class DecisionTree{
 		}
 	}
 
-	public void updateDimensions(int numDimensions){
+	public void updateDimensions(int dimIndices[]){
+		int numDim=dimIndices.length;
+		
 		int numNodes=nodes.size();
 		for(int i=0; i<numNodes; i++){
 			TreeNode curNode=nodes.get(i);
-			curNode.numDimensions=numDimensions;
+			curNode.numDimensions=numDim;
+			//get prev values
+			String prevCost[]=curNode.cost;
+			String prevPayoff[]=curNode.payoff;
+			double prevEV[]=curNode.expectedValues;
+			if(prevEV==null) {prevEV=new double[prevCost.length];}
+			//update order
+			curNode.cost=new String[numDim];
+			curNode.payoff=new String[numDim];
+			curNode.expectedValues=new double[numDim];
+			for(int d=0; d<numDim; d++) {
+				if(dimIndices[d]==-1) { //new dimension
+					curNode.cost[d]="0";
+					curNode.payoff[d]="0";
+				}
+				else {
+					curNode.cost[d]=prevCost[dimIndices[d]];
+					curNode.payoff[d]=prevPayoff[dimIndices[d]];
+					curNode.expectedValues[d]=prevEV[dimIndices[d]];
+				}
+				
+			}
+			
+			/*
 			curNode.cost=Arrays.copyOf(curNode.cost, numDimensions);
 			curNode.payoff=Arrays.copyOf(curNode.payoff, numDimensions);
 			if(curNode.expectedValues==null){curNode.expectedValues=new double[numDimensions];}
@@ -402,7 +428,7 @@ public class DecisionTree{
 			for(int d=0; d<numDimensions; d++){
 				if(curNode.cost[d]==null){curNode.cost[d]="0";}
 				if(curNode.payoff[d]==null){curNode.payoff[d]="0";}
-			}
+			}*/
 		}
 		
 	}

@@ -41,6 +41,8 @@ import org.jfree.ui.TextAnchor;
 import base.AmuaModel;
 import base.RunReport;
 import main.ErrorLog;
+import main.ScaledIcon;
+
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 import java.awt.Font;
@@ -156,6 +158,7 @@ public class frmCEPlane {
 			frmCEPlane.getContentPane().add(toolBar, gbc_toolBar);
 			
 			JButton btnFlipAxes = new JButton("Flip Axes");
+			btnFlipAxes.setIcon(new ScaledIcon("/images/flipAxes",16,16,16,true));
 			btnFlipAxes.setFocusable(false);
 			btnFlipAxes.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -392,12 +395,12 @@ public class frmCEPlane {
 		plot.getDomainAxis().setRange(minEffect,maxEffect);
 		
 		if(relative==0) {
-			plot.getRangeAxis().setLabel("∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]);
-			plot.getDomainAxis().setLabel("∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]);
+			plot.getRangeAxis().setLabel("∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]);
+			plot.getDomainAxis().setLabel("∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]);
 		}
 		else if(relative==1) {
-			plot.getRangeAxis().setLabel(myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]);
-			plot.getDomainAxis().setLabel(myModel.dimInfo.dimNames[myModel.dimInfo.costDim]);
+			plot.getRangeAxis().setLabel(myModel.dimInfo.dimNames[myModel.dimInfo.costDim]);
+			plot.getDomainAxis().setLabel(myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]);
 		}
 		
 		panelChart.zoomOutBoth(0, 0);

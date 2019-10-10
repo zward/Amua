@@ -32,6 +32,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
 import java.awt.Insets;
+import java.awt.Stroke;
 import java.awt.Toolkit;
 
 import javax.swing.JTable;
@@ -56,6 +57,7 @@ import math.Numeric;
 
 import javax.swing.border.LineBorder;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 
@@ -86,6 +88,7 @@ public class frmThreshOneWay {
 	String CEAnotes[][];
 	Parameter curParam;
 	private JTextField textTolerance;
+	double baselineParamValue;
 		
 	public frmThreshOneWay(AmuaModel model){
 		this.myModel=model;
@@ -358,6 +361,7 @@ public class frmThreshOneWay {
 									curParam.sensMin=strMin; //record min/max
 									curParam.sensMax=strMax;
 									Numeric origValue=curParam.value.copy();
+									baselineParamValue=origValue.getValue();
 									
 									int dim=comboDimensions.getSelectedIndex();
 									int decimalDim=dim;
@@ -618,6 +622,11 @@ public class frmThreshOneWay {
 												renderer1.setSeriesPaint(s, supplier.getNextPaint());
 											}
 											plot.setRenderer(renderer1);
+											
+											//add baseline marker
+											plot.clearDomainMarkers();
+											Stroke fill = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
+											plot.addDomainMarker(new ValueMarker(baselineParamValue, Color.BLACK, fill));
 										}
 
 										//Reset param value

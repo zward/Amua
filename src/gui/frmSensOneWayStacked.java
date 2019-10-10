@@ -43,6 +43,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYLineAnnotation;
 import org.jfree.chart.annotations.XYTextAnnotation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.SymbolAxis;
@@ -135,6 +136,7 @@ public class frmSensOneWayStacked {
 	 * [Parameter][Min/Max]
 	 */
 	double paramVals[][];
+	double paramValsBase[];
 
 	Parameter curParam;
 	private JLabel lblParameterLabels;
@@ -495,6 +497,7 @@ public class frmSensOneWayStacked {
 										
 										paramNames=new String[numParams];
 										paramVals=new double[numParams][2];
+										paramValsBase=new double[numParams];
 
 										for(int p=0; p<numParams; p++) {
 											int pIndex=paramIndices.get(p);
@@ -511,6 +514,7 @@ public class frmSensOneWayStacked {
 											paramNames[p]=curParam.name;
 											curParam.locked=true;
 											Numeric origValue=curParam.value.copy();
+											paramValsBase[p]=origValue.getValue();
 
 											boolean error=false;
 											//Test parameter at min and max...
@@ -990,7 +994,17 @@ public class frmSensOneWayStacked {
 	    //parameter labels
 	    int labels=comboParamVals.getSelectedIndex();
 	    
-	    if(chartType==0) {
+	    if(chartType==0) { //parameters
+	    	//baseline values
+	    	for(int p=0; p<numParams; p++) {
+	    		double baseVal=(paramValsBase[p]-paramVals[p][0])/(paramVals[p][1]-paramVals[p][0]);
+	    		baseVal*=intervals;
+	    		Stroke dash = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{4.0f, 4.0f}, 0);
+	    		XYLineAnnotation curVal=new XYLineAnnotation(p-0.2,baseVal,p+0.2,baseVal, dash, Color.black);
+	    		plot.addAnnotation(curVal);
+	    	}
+	    	
+	    	
 	    	if(labels==1) { //range
 	    		for(int p=0; p<numParams; p++) {
 	    			XYTextAnnotation lblMin=new XYTextAnnotation(paramVals[p][0]+"",p+0.2,0); 
@@ -1015,7 +1029,7 @@ public class frmSensOneWayStacked {
 	    		}
 	    	}
 	    }
-	    else if(chartType==1) {
+	    else if(chartType==1) { //outcome
 	    	//baseline
 			Stroke fill = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
 			if(group==0) {plot.addRangeMarker(new ValueMarker(bestResultBase, Color.BLACK, fill));}

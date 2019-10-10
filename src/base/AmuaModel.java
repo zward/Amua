@@ -19,13 +19,11 @@
 package base;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Stack;
 
-import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.ProgressMonitor;
@@ -697,6 +695,31 @@ public class AmuaModel{
 			}
 		}
 		
+		if(dimInfo.analysisType==0) { //EV
+			if(dimInfo.objectiveDim<0 || dimInfo.objectiveDim>dimInfo.dimNames.length-1) {
+				console.print("Analysis Type Error: EV Outcome is out of bounds! Index "+dimInfo.objectiveDim+"\n" );
+				console.print("Go to Model -> Properties to select a valid outcome\n");
+				console.newLine();
+				return(false);
+			}
+		}
+		else { //CEA or BCA
+			String type="CEA";
+			if(dimInfo.analysisType==2) {type="BCA";}
+			if(dimInfo.costDim<0 || dimInfo.costDim>dimInfo.dimNames.length-1) {
+				console.print(type+" Error: Cost outcome is out of bounds! Index "+dimInfo.costDim+"\n" );
+				console.print("Go to Model -> Properties to select a valid cost outcome\n");
+				console.newLine();
+				return(false);
+			}
+			if(dimInfo.effectDim<0 || dimInfo.effectDim>dimInfo.dimNames.length-1) {
+				console.print(type+" Error: Effect outcome is out of bounds! Index "+dimInfo.effectDim+"\n" );
+				console.print("Go to Model -> Properties to select a valid effect outcome\n");
+				console.newLine();
+				return(false);
+			}
+		}
+		
 		if(dimInfo.analysisType==1){ //CEA
 			if(dimInfo.baseScenario==null || dimInfo.baseScenario.isEmpty()){
 				console.print("\nCEA Error: Baseline scenario is not specified!\n");
@@ -1119,9 +1142,9 @@ public class AmuaModel{
 		return(index);
 	}
 
-	public void updateDimensions(){
-		if(type==0){tree.updateDimensions(dimInfo.dimSymbols.length);}
-		else if(type==1){markov.updateDimensions(dimInfo.dimSymbols.length);}
+	public void updateDimensions(int dimIndices[]){
+		if(type==0){tree.updateDimensions(dimIndices);}
+		else if(type==1){markov.updateDimensions(dimIndices);}
 		//Refresh panel with same scale
 		rescale(scale);
 	}

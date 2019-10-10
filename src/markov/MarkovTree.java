@@ -394,7 +394,7 @@ public class MarkovTree{
 		int numDim=myModel.dimInfo.dimNames.length;
 		
 		//Update costs
-		if(node.curCosts==null){node.curCosts=new double[numDim][1];}
+		if(node.curCosts==null || node.curCosts.length!=numDim){node.curCosts=new double[numDim][1];}
 		if(node.hasCost){
 			for(int c=0; c<numDim; c++){
 				node.curCosts[c][0]=Interpreter.evaluateTokens(node.curCostTokens[c], 0, false).getDouble();
@@ -808,12 +808,51 @@ public class MarkovTree{
 		}
 	}
 		
-	public void updateDimensions(int numDimensions){
+	public void updateDimensions(int dimIndices[]){
+		int numDim=dimIndices.length;
+		
 		int numNodes=nodes.size();
 		for(int i=0; i<numNodes; i++){
 			MarkovNode curNode=nodes.get(i);
-			curNode.numDimensions=numDimensions;
-			curNode.cost=Arrays.copyOf(curNode.cost, numDimensions);
+			curNode.numDimensions=numDim;
+			
+			//COSTS
+			String prevCost[]=curNode.cost; //get prev values
+			curNode.cost=new String[numDim];
+			for(int d=0; d<numDim; d++) { //update order
+				if(dimIndices[d]==-1) {curNode.cost[d]="0";} //new dimension
+				else {curNode.cost[d]=prevCost[dimIndices[d]];}
+			}
+			
+			//REWARDS
+			if(curNode.type==2) { //state
+				String prevRewards[]=curNode.rewards; //get prev values
+				curNode.rewards=new String[numDim];
+				for(int d=0; d<numDim; d++) { //update order
+					if(dimIndices[d]==-1) {curNode.rewards[d]="0";} //new dimension
+					else {curNode.rewards[d]=prevRewards[dimIndices[d]];}
+				}
+			}
+			
+			//EV
+			if(curNode.type==1 || (curNode.chain==null && (curNode.type==0 || curNode.type==3))) { //chain root, or decision/chance node outside chain
+				//get prev values
+				double prevEV[]=curNode.expectedValues;
+				if(prevEV==null) {prevEV=new double[prevCost.length];}
+				double prevEVDis[]=curNode.expectedValuesDis;
+				if(prevEVDis==null) {prevEVDis=new double[prevCost.length];}
+				//update order
+				curNode.expectedValues=new double[numDim]; curNode.expectedValuesDis=new double[numDim];
+				for(int d=0; d<numDim; d++) {
+					if(dimIndices[d]!=-1) {
+						curNode.expectedValues[d]=prevEV[dimIndices[d]];
+						curNode.expectedValuesDis[d]=prevEVDis[dimIndices[d]];
+					}
+				}
+			}
+			
+			
+			/*curNode.cost=Arrays.copyOf(curNode.cost, numDimensions);
 			if(curNode.type==2){ //state
 				curNode.rewards=Arrays.copyOf(curNode.rewards, numDimensions);
 			}
@@ -823,12 +862,19 @@ public class MarkovTree{
 				if(curNode.expectedValuesDis==null){curNode.expectedValuesDis=new double[numDimensions];}
 				else{curNode.expectedValuesDis=Arrays.copyOf(curNode.expectedValuesDis, numDimensions);}
 			}
+			else if((curNode.type==0 || curNode.type==3) && curNode.chain==null){ //Decision or chance node outside of chain
+				if(curNode.expectedValues==null){curNode.expectedValues=new double[numDimensions];}
+				else{curNode.expectedValues=Arrays.copyOf(curNode.expectedValues, numDimensions);}
+				if(curNode.expectedValuesDis==null){curNode.expectedValuesDis=new double[numDimensions];}
+				else{curNode.expectedValuesDis=Arrays.copyOf(curNode.expectedValuesDis, numDimensions);}
+			}
+			
 			for(int d=0; d<numDimensions; d++){
 				if(curNode.cost[d]==null){curNode.cost[d]="0";}
 				if(curNode.type==2){
 					if(curNode.rewards[d]==null){curNode.rewards[d]="0";}
 				}
-			}
+			}*/
 		}
 	}
 
