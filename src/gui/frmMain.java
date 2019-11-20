@@ -120,7 +120,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.2.5";
+	public String version="0.2.6";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -324,7 +324,7 @@ public class frmMain {
 							path=path.replaceAll(".amua", "");
 							curModel.filepath=path+".amua";
 							curModel.saveModel();
-							frmMain.setTitle("Amua - "+curModel.name);
+							frmMain.setTitle("Amua - "+curModel.name+" ("+curModel.filepath+")");
 						}
 						else{ //Image
 							BufferedImage bi=new BufferedImage(curModel.getPanel().getWidth(), curModel.getPanel().getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -599,6 +599,20 @@ public class frmMain {
 				window.frmBatch.setVisible(true);
 			}
 		});
+		
+		JMenu mnValueOfInformation = new JMenu("Value of Information");
+		mnRun.add(mnValueOfInformation);
+		
+		JMenuItem mntmEVPI = new JMenuItem("Perfect Information (EVPI/EVPPI)");
+		mntmEVPI.setIcon(new ScaledIcon("/images/evpi",16,16,16,true));
+		mntmEVPI.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frmEVPI window = new frmEVPI(curModel);
+				window.frmEVPI.setVisible(true);
+			}
+		});
+		mnValueOfInformation.add(mntmEVPI);
+		
 		mnRun.add(mntmBatchRuns);
 		
 		JMenuItem mntmScenarios = new JMenuItem("Scenarios");
@@ -1797,7 +1811,7 @@ public class frmMain {
 		lbl.setIcon(icon);
 		lbl.setIconTextGap(5);
 		lbl.setHorizontalTextPosition(SwingConstants.RIGHT);
-
+		
 		JButton btnClose = new JButton();
 		btnClose.setIcon(new ScaledIcon("/images/close",7,21));
 		btnClose.setRolloverIcon(new ScaledIcon("/images/close_press",7,21));
@@ -1872,7 +1886,7 @@ public class frmMain {
 		scrollPaneNotes.setViewportView(curPanelTree.textAreaNotes);
 		scrollPaneProperties.setViewportView(null);
 
-		frmMain.setTitle("Amua - "+curModel.name);
+		frmMain.setTitle("Amua - "+curModel.name+" ("+curModel.filepath+")");
 		if(prevModelType==1){ //switch model type
 			toolBar.remove(btnMarkovChain);
 			toolBar.remove(btnMarkovState);
@@ -1899,7 +1913,7 @@ public class frmMain {
 		scrollPaneNotes.setViewportView(curPanelMarkov.textAreaNotes);
 		scrollPaneProperties.setViewportView(curPanelMarkov.tableProperties);
 
-		frmMain.setTitle("Amua - "+curModel.name);
+		frmMain.setTitle("Amua - "+curModel.name+" ("+curModel.filepath+")");
 		if(prevModelType==0){ //switch model type
 			toolBar.add(btnMarkovChain,1);
 			toolBar.add(btnMarkovState,2);
@@ -2023,7 +2037,7 @@ public class frmMain {
 					path=path.replaceAll(".amua", "");
 					curModel.filepath=path+".amua";
 					curModel.saveModel();
-					frmMain.setTitle("Amua - "+curModel.name);
+					frmMain.setTitle("Amua - "+curModel.name+" ("+curModel.filepath+")");
 				}
 			}
 			else{

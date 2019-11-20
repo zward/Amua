@@ -810,6 +810,18 @@ public class AmuaModel{
 		else if(simType==1){console.print("Monte Carlo simulations:\t"+cohortSize+"\n");}
 	}
 	
+	public String getSimInfoHTML() {
+		String info="";
+		info+=(new Date()+"<br>");
+		if(type==0){info+=("Decision Tree:\t"+name+"<br>");}
+		else if(type==1){info+=("Markov Model:\t"+name+"<br>");}
+		
+		if(simType==0 && cohortSize>1){info+=("Cohort size:\t"+cohortSize+"<br>");}
+		else if(simType==1){info+=("Monte Carlo simulations:\t"+cohortSize+"<br>");}
+		
+		return(info);
+	}
+	
 	public RunReport runModel(Console console,boolean display){
 		long startTime=System.currentTimeMillis();
 		RunReport report=new RunReport(this);

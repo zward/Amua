@@ -332,6 +332,10 @@ public class frmDefineTable {
 							String strLine;
 							model.setRowCount(0);
 							strLine=br.readLine(); //Headers
+							//check for BOM
+							String BOM = "\uFEFF";
+							strLine=strLine.replace(BOM,"");
+							
 							String data[]=strLine.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
 							int colNum=data.length;
 							model.setColumnCount(0);
@@ -689,6 +693,7 @@ public class frmDefineTable {
 			JButton btnSave = new JButton("Save");
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
+					try {
 					boolean proceed=true;
 					//Ensure name is valid and unique
 					String testName=textName.getText();
@@ -792,7 +797,7 @@ public class frmDefineTable {
 							}
 							else{
 								boolean changed=false;
-								if(!table.name.matches(testName)){changed=true;}
+								if(!table.name.equals(testName)){changed=true;}
 								if(!table.type.matches(testType)){changed=true;}
 								if(!table.lookupMethod.matches(testLookupMethod)){changed=true;}
 								if(table.interpolate!=null){
@@ -816,6 +821,11 @@ public class frmDefineTable {
 
 							frmDefineTable.dispose();
 						}
+					}
+					}catch(Exception e1) {
+						e1.printStackTrace();
+						myModel.errorLog.recordError(e1);
+						JOptionPane.showMessageDialog(frmDefineTable, e1.toString());
 					}
 				}
 			});
@@ -875,7 +885,7 @@ public class frmDefineTable {
 		if(table.numRows!=numRows || table.numCols!=numCols){match=false;} //Different dimensions
 		else{
 			for(int c=0; c<numCols; c++){
-				if(!tempHeaders[c].matches(table.headers[c])){
+				if(!tempHeaders[c].equals(table.headers[c])){
 					match=false;
 					c=numCols; //Quit loop
 				}
