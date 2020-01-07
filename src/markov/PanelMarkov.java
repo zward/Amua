@@ -199,12 +199,12 @@ public class PanelMarkov extends ModelPanel{
 								//Add first child and shift
 								if(curParent.type==1){addNode(2);} //add state
 								else{addNode(3);} //add chance
-								moveNode(curNode,curNode.xPos+curNode.scale(5),curNode.yPos-curNode.scale(30));
+								moveNode(curNode,curNode.xPos,curParent.yPos-curNode.scale(30));
 								curNode=curParent;
 								//Add second child and shift
 								if(curParent.type==1){addNode(2);} //add state
 								else{addNode(3);} //add chance
-								moveNode(curNode,curNode.xPos+curNode.scale(5),curNode.yPos+curNode.scale(30));
+								moveNode(curNode,curNode.xPos,curParent.yPos+curNode.scale(30));
 							}
 							else{ //Add 1 child
 								if(curParent.type==1){addNode(2);} //add state
@@ -557,6 +557,7 @@ public class PanelMarkov extends ModelPanel{
 				this.add(curNode.textTermination);
 				this.add(curNode.textEV);
 				this.add(curNode.lblVarUpdates); this.add(curNode.textVarUpdates);
+				this.add(curNode.lblVarUpdatesT0); this.add(curNode.textVarUpdatesT0);
 			}
 			else{ //not chain
 				this.add(curNode.lblVarUpdates); this.add(curNode.textVarUpdates);
@@ -600,6 +601,7 @@ public class PanelMarkov extends ModelPanel{
 					this.remove(curNode.textTermination);
 					this.remove(curNode.textEV);
 					this.remove(curNode.lblVarUpdates); this.remove(curNode.textVarUpdates);
+					this.remove(curNode.lblVarUpdatesT0); this.remove(curNode.textVarUpdatesT0);
 				}
 				else{ //not chain
 					this.remove(curNode.lblVarUpdates); this.remove(curNode.textVarUpdates);
@@ -839,6 +841,7 @@ public class PanelMarkov extends ModelPanel{
 			this.add(node.textEV);
 			node.textEV.setVisible(tree.showEV);
 			this.add(node.lblVarUpdates); this.add(node.textVarUpdates);
+			this.add(node.lblVarUpdatesT0); this.add(node.textVarUpdatesT0);
 		}
 		else{ //not chain
 			this.add(node.lblVarUpdates); this.add(node.textVarUpdates);
@@ -1183,6 +1186,7 @@ public class PanelMarkov extends ModelPanel{
 			curNode.highlightTextField(3, null); //Rewards
 			curNode.highlightTextField(4, null); //Variable updates
 			curNode.highlightTextField(5, null); //Name
+			curNode.highlightTextField(6, null); //Variable updates T0
 			if(curNode.type==1){ //chain
 				curNode.textEV.setVisible(false);
 			}
@@ -1224,6 +1228,8 @@ public class PanelMarkov extends ModelPanel{
 				this.remove(curNode.textEV);
 				if(curNode.lblVarUpdates!=null){this.remove(curNode.lblVarUpdates);} 
 				if(curNode.textVarUpdates!=null){this.remove(curNode.textVarUpdates);}
+				if(curNode.lblVarUpdatesT0!=null){this.remove(curNode.lblVarUpdatesT0);} 
+				if(curNode.textVarUpdatesT0!=null){this.remove(curNode.textVarUpdatesT0);}
 			}
 			else{ //not chain
 				if(curNode.lblVarUpdates!=null){this.remove(curNode.lblVarUpdates);} 
@@ -1317,8 +1323,11 @@ public class PanelMarkov extends ModelPanel{
 			//Reset highlighting
 			curNode.highlightTextField(0, null); //Prob
 			curNode.highlightTextField(1, null); //Cost
-			curNode.highlightTextField(2, null); //Payoff
-
+			curNode.highlightTextField(2, null); //Termination
+			curNode.highlightTextField(3, null); //Rewards
+			curNode.highlightTextField(4, null); //Var updates
+			curNode.highlightTextField(6, null); //Var T0 updates
+			
 			if(curNode.prob!=null && Interpreter.containsWord(paramName, curNode.prob)){
 				curNode.highlightTextField(0, Color.GREEN); //Prob
 			}
@@ -1328,6 +1337,19 @@ public class PanelMarkov extends ModelPanel{
 						curNode.highlightTextField(1, Color.GREEN); //Cost
 					}
 				}
+			}
+			if(curNode.rewards!=null) {
+				for(int d=0; d<curNode.numDimensions; d++) {
+					if(Interpreter.containsWord(paramName, curNode.rewards[d])) {
+						curNode.highlightTextField(3,  Color.GREEN); //REwards
+					}
+				}
+			}
+			if(curNode.varUpdates!=null && Interpreter.containsWord(paramName, curNode.varUpdates)) {
+				curNode.highlightTextField(4, Color.GREEN);
+			}
+			if(curNode.varUpdatesT0!=null && Interpreter.containsWord(paramName, curNode.varUpdatesT0)) {
+				curNode.highlightTextField(6, Color.GREEN);
 			}
 		}
 	}
@@ -1340,7 +1362,11 @@ public class PanelMarkov extends ModelPanel{
 			//Reset highlighting
 			curNode.highlightTextField(0, null); //Prob
 			curNode.highlightTextField(1, null); //Cost
-			curNode.highlightTextField(2, null); //Payoff
+			curNode.highlightTextField(2, null); //Termination
+			curNode.highlightTextField(3, null); //Rewards
+			curNode.highlightTextField(4, null); //Var updates
+			curNode.highlightTextField(6, null); //Var updates T0
+			
 
 			if(curNode.prob!=null && Interpreter.containsWord(varName, curNode.prob)){
 				curNode.highlightTextField(0, Color.GREEN); //Prob
@@ -1351,6 +1377,19 @@ public class PanelMarkov extends ModelPanel{
 						curNode.highlightTextField(1, Color.GREEN); //Cost
 					}
 				}
+			}
+			if(curNode.rewards!=null) {
+				for(int d=0; d<curNode.numDimensions; d++) {
+					if(Interpreter.containsWord(varName, curNode.rewards[d])) {
+						curNode.highlightTextField(3,  Color.GREEN); //REwards
+					}
+				}
+			}
+			if(curNode.varUpdates!=null && Interpreter.containsWord(varName, curNode.varUpdates)) {
+				curNode.highlightTextField(4, Color.GREEN);
+			}
+			if(curNode.varUpdatesT0!=null && Interpreter.containsWord(varName, curNode.varUpdatesT0)) {
+				curNode.highlightTextField(6, Color.GREEN);
 			}
 		}
 	}
@@ -1363,7 +1402,10 @@ public class PanelMarkov extends ModelPanel{
 			//Reset highlighting
 			curNode.highlightTextField(0, null); //Prob
 			curNode.highlightTextField(1, null); //Cost
-			curNode.highlightTextField(2, null); //Payoff
+			curNode.highlightTextField(2, null); //Termination
+			curNode.highlightTextField(3, null); //Rewards
+			curNode.highlightTextField(4, null); //Var updates
+			curNode.highlightTextField(6, null); //Var updates T0
 
 			if(curNode.prob!=null && Interpreter.containsWord(tableName, curNode.prob)){
 				curNode.highlightTextField(0, Color.GREEN); //Prob
@@ -1374,6 +1416,19 @@ public class PanelMarkov extends ModelPanel{
 						curNode.highlightTextField(1, Color.GREEN); //Cost
 					}
 				}
+			}
+			if(curNode.rewards!=null) {
+				for(int d=0; d<curNode.numDimensions; d++) {
+					if(Interpreter.containsWord(tableName, curNode.rewards[d])) {
+						curNode.highlightTextField(3,  Color.GREEN); //REwards
+					}
+				}
+			}
+			if(curNode.varUpdates!=null && Interpreter.containsWord(tableName, curNode.varUpdates)) {
+				curNode.highlightTextField(4, Color.GREEN);
+			}
+			if(curNode.varUpdatesT0!=null && Interpreter.containsWord(tableName, curNode.varUpdatesT0)) {
+				curNode.highlightTextField(6, Color.GREEN);
 			}
 		}
 	}

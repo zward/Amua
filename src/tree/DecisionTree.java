@@ -129,8 +129,10 @@ public class DecisionTree{
 		int size=nodes.size();
 		for(int i=1; i<size; i++){ //Exclude root node
 			TreeNode curNode=nodes.get(i);
+			curNode.curProb=null; //reset parsed values
 			curNode.curCosts=new double[numDim]; curNode.curCostTokens=new Token[numDim][];
 			curNode.curPayoffs=new double[numDim]; curNode.curPayoffTokens=new Token[numDim][];
+			curNode.curVariableUpdates=null;
 
 			if(curNode.type==0 && myModel.simType==1){
 				errors.add("Node "+curNode.name+": Sequential decision nodes are not allowed in Monte Carlo simulations");

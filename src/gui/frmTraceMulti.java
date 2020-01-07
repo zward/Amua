@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.Paint;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -35,21 +34,18 @@ import javax.swing.JTable;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.LegendItem;
-import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYDifferenceRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
-import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import base.RunReport;
 import filters.CSVFilter;
 import main.ErrorLog;
 import main.ScaledIcon;
-import markov.MarkovTraceSummary;
+import markov.MarkovTrace;
 
 import javax.swing.border.LineBorder;
 import java.awt.Color;
@@ -71,14 +67,16 @@ import javax.swing.DefaultComboBoxModel;
 /**
  *
  */
-public class frmTraceSummary {
+public class frmTraceMulti {
 
-	public JFrame frmTraceSummary;
-	MarkovTraceSummary traces[];
-	MarkovTraceSummary curTrace;
-	String groupNames[];
-	JComboBox comboPlot, comboGroup;
-	XYSeriesCollection mean, bounds[];
+	public JFrame frmTraceMulti;
+	RunReport runReport;
+	MarkovTrace curTrace;
+	int numSubgroups=0;
+	String subgroupNames[];
+	JComboBox comboChain, comboPlot, comboGroup;
+	DefaultXYDataset dataTrace;
+	XYSeriesCollection colSeries;
 	JFreeChart chartTrace;
 	XYLineAndShapeRenderer renderer;
 	DefaultDrawingSupplier supplier;
@@ -89,11 +87,14 @@ public class frmTraceSummary {
 	/**
 	 *  Default Constructor
 	 */
-	public frmTraceSummary(MarkovTraceSummary traces[], ErrorLog errorLog1, String groupNames[]) {
-		this.traces=traces;
+	public frmTraceMulti(RunReport runReport, ErrorLog errorLog1) {
+		this.runReport=runReport;
 		this.errorLog=errorLog1;
-		curTrace=traces[0]; //overall
-		this.groupNames=groupNames;
+		curTrace=runReport.markovTraces.get(0);
+		if(runReport.markovTracesGroup!=null){
+			numSubgroups=runReport.subgroupNames.length;
+			this.subgroupNames=runReport.subgroupNames;
+		}
 		initialize();
 	}
 
@@ -102,21 +103,22 @@ public class frmTraceSummary {
 	 */
 	private void initialize() {
 		try{
-			frmTraceSummary = new JFrame();
-			frmTraceSummary.setTitle("Amua - Markov Trace Summary: "+traces[0].traceName);
-			frmTraceSummary.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_128.png")));
-			frmTraceSummary.setBounds(100, 100, 1000, 600);
-			frmTraceSummary.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			frmTraceMulti = new JFrame();
+			frmTraceMulti.setTitle("Amua - Markov Traces");
+			frmTraceMulti.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTraceMulti.class.getResource("/images/logo_128.png")));
+			frmTraceMulti.setBounds(100, 100, 1200, 600);
+			frmTraceMulti.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.columnWidths = new int[]{561, 557, 0};
 			gridBagLayout.rowHeights = new int[]{32, 514, 0};
 			gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
 			gridBagLayout.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-			frmTraceSummary.getContentPane().setLayout(gridBagLayout);
+			frmTraceMulti.getContentPane().setLayout(gridBagLayout);
 
-			mean=new XYSeriesCollection();
+			dataTrace = new DefaultXYDataset();
+			colSeries=new XYSeriesCollection();
 			
-			chartTrace = ChartFactory.createScatterPlot(null, "t", "Prev(t)", mean, PlotOrientation.VERTICAL, true, false, false);
+			chartTrace = ChartFactory.createScatterPlot(null, "t", "Prev(t)", dataTrace, PlotOrientation.VERTICAL, true, false, false);
 			chartTrace.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 			
 			JPanel panel = new JPanel();
@@ -126,10 +128,30 @@ public class frmTraceSummary {
 			gbc_panel.fill = GridBagConstraints.BOTH;
 			gbc_panel.gridx = 0;
 			gbc_panel.gridy = 0;
-			frmTraceSummary.getContentPane().add(panel, gbc_panel);
+			frmTraceMulti.getContentPane().add(panel, gbc_panel);
+			
+			JLabel lblChain = new JLabel("Chain:");
+			lblChain.setBounds(2, 5, 42, 16);
+			panel.add(lblChain);
+			
+			comboChain = new JComboBox();
+			comboChain.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					//get chain
+					int chainIndex=comboChain.getSelectedIndex();
+					int selected=comboGroup.getSelectedIndex();
+					if(selected<=0){curTrace=runReport.markovTraces.get(chainIndex);}
+					else{curTrace=runReport.markovTracesGroup[selected-1].get(chainIndex);}
+					table.setModel(curTrace.modelTraceRounded);
+					updateChart(comboPlot.getSelectedIndex());
+				}
+			});
+			comboChain.setModel(new DefaultComboBoxModel(runReport.names.toArray()));
+			comboChain.setBounds(41, 0, 150, 26);
+			panel.add(comboChain);
 			
 			JLabel lblNewLabel = new JLabel("Plot:");
-			lblNewLabel.setBounds(6, 6, 55, 16);
+			lblNewLabel.setBounds(207, 5, 34, 16);
 			panel.add(lblNewLabel);
 			
 			comboPlot = new JComboBox();
@@ -142,33 +164,40 @@ public class frmTraceSummary {
 			if(curTrace.numVariables>0){
 				comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)","Variables (Cycle)"}));
 			}
-			comboPlot.setBounds(41, 1, 157, 26);
+			comboPlot.setBounds(235, 0, 150, 26);
 			panel.add(comboPlot);
 			
 			JLabel lblGroup = new JLabel("Group:");
 			lblGroup.setVisible(false);
-			lblGroup.setBounds(210, 6, 37, 16);
+			lblGroup.setBounds(397, 5, 55, 16);
 			panel.add(lblGroup);
 			
 			comboGroup = new JComboBox();
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
+					int chainIndex=comboChain.getSelectedIndex();
 					int selected=comboGroup.getSelectedIndex();
-					curTrace=traces[selected];
+					if(selected==0){curTrace=runReport.markovTraces.get(chainIndex);}
+					else{
+						curTrace=runReport.markovTracesGroup[selected-1].get(chainIndex);
+					}
 					table.setModel(curTrace.modelTraceRounded);
+					
 					updateChart(comboPlot.getSelectedIndex());
 				}
 			});
 			comboGroup.setVisible(false);
-			comboGroup.setBounds(255, 1, 157, 26);
+			comboGroup.setBounds(441, 0, 150, 26);
 			panel.add(comboGroup);
 			
-			if(traces.length>1){
-				comboGroup.setModel(new DefaultComboBoxModel(groupNames));
-				lblGroup.setVisible(true);
+			if(numSubgroups>0){
+				String names[]=new String[numSubgroups+1];
+				names[0]="Overall";
+				for(int g=0; g<numSubgroups; g++){names[g+1]=subgroupNames[g];}
+				comboGroup.setModel(new DefaultComboBoxModel(names));
 				comboGroup.setVisible(true);
+				lblGroup.setVisible(true);
 			}
-			
 			
 			ChartPanel panelChart = new ChartPanel(chartTrace,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
@@ -176,7 +205,7 @@ public class frmTraceSummary {
 			gbc_panelChart.fill = GridBagConstraints.BOTH;
 			gbc_panelChart.gridx = 0;
 			gbc_panelChart.gridy = 1;
-			frmTraceSummary.getContentPane().add(panelChart, gbc_panelChart);
+			frmTraceMulti.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
 			
 			JToolBar toolBar = new JToolBar();
@@ -187,7 +216,7 @@ public class frmTraceSummary {
 			gbc_toolBar.insets = new Insets(0, 0, 5, 0);
 			gbc_toolBar.gridx = 1;
 			gbc_toolBar.gridy = 0;
-			frmTraceSummary.getContentPane().add(toolBar, gbc_toolBar);
+			frmTraceMulti.getContentPane().add(toolBar, gbc_toolBar);
 			
 			JButton btnExport = new JButton("Export");
 			btnExport.addActionListener(new ActionListener() {
@@ -198,7 +227,7 @@ public class frmTraceSummary {
 						fc.setApproveButtonText("Export");
 						fc.setFileFilter(new CSVFilter());
 
-						int returnVal = fc.showOpenDialog(frmTraceSummary);
+						int returnVal = fc.showOpenDialog(frmTraceMulti);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
 							String filepath=file.getAbsolutePath().replaceAll(".csv","");
@@ -223,11 +252,11 @@ public class frmTraceSummary {
 							
 							out.close();
 							
-							JOptionPane.showMessageDialog(frmTraceSummary, "Exported!");
+							JOptionPane.showMessageDialog(frmTraceMulti, "Exported!");
 						}
 
 					}catch(Exception er){
-						JOptionPane.showMessageDialog(frmTraceSummary,er.getMessage());
+						JOptionPane.showMessageDialog(frmTraceMulti,er.getMessage());
 						errorLog.recordError(er);
 					}
 				}
@@ -267,7 +296,7 @@ public class frmTraceSummary {
 			gbc_scrollPane.fill = GridBagConstraints.BOTH;
 			gbc_scrollPane.gridx = 1;
 			gbc_scrollPane.gridy = 1;
-			frmTraceSummary.getContentPane().add(scrollPane, gbc_scrollPane);
+			frmTraceMulti.getContentPane().add(scrollPane, gbc_scrollPane);
 			
 			updateChart(0); //show prevalence
 			
@@ -309,187 +338,72 @@ public class frmTraceSummary {
 	}
 	
 	public void updateChart(int type){
-		int alpha=50;
 		XYPlot plot = chartTrace.getXYPlot();
-		plot.setFixedLegendItems(null); //dynamic legend
 		renderer = new XYLineAndShapeRenderer(true,false);
 		supplier = new DefaultDrawingSupplier();
-				
+		int numStates=curTrace.stateNames.length;
 		//Clear series
-		mean.removeAllSeries();
-		if(bounds!=null){
-			for(int b=0; b<bounds.length; b++){
-				bounds[b].removeAllSeries();
-			}
+		while(dataTrace.getSeriesCount()>0){
+			dataTrace.removeSeries(dataTrace.getSeriesKey(0));
 		}
-				
+		
 		if(type==0){ //Prevalence
-			int numStates=curTrace.stateNames.length;
-			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numStates];
-			bounds=new XYSeriesCollection[numStates];
 			for(int s=0; s<numStates; s++){
-				mean.addSeries(getSeries(curTrace.stateNames[s],curTrace.prev[s],0));
-				bounds[s]=new XYSeriesCollection();
-				bounds[s].addSeries(getSeries(curTrace.stateNames[s],curTrace.prev[s],1)); //lb
-				bounds[s].addSeries(getSeries(curTrace.stateNames[s],curTrace.prev[s],2)); //ub
-				
-				Paint curPaint=supplier.getNextPaint();
-				renderer.setSeriesPaint(s, curPaint);
-				Color curColor=(Color) curPaint;
-				Color fill=new Color(curColor.getRed(),curColor.getGreen(),curColor.getBlue(),alpha);
-				rendererDiff[s]=new XYDifferenceRenderer(fill,fill,false);
-	        	rendererDiff[s].setSeriesPaint(0, new Color(0,0,0,0));
-	            rendererDiff[s].setSeriesPaint(1, new Color(0,0,0,0));
+				renderer.setSeriesPaint(s, supplier.getNextPaint());
+				dataTrace.addSeries(curTrace.stateNames[s],getSeriesData(curTrace.cycles,curTrace.prev[s]));
 			}
-			plot.setDataset(0,mean);
-			plot.setRenderer(0,renderer);
-			for(int s=0; s<numStates; s++){
-				plot.setDataset(s+1,bounds[s]);
-				plot.setRenderer(s+1,rendererDiff[s]);
-			}
+			plot.setRenderer(renderer);
+			plot.setDataset(dataTrace);
 			plot.getRangeAxis().setLabel("Prev(t)");
-			//update legend
-			LegendItemCollection legendItemsOld=plot.getLegendItems();
-	        final LegendItemCollection legendItemsNew=new LegendItemCollection();
-	        for(int i=0; i<numStates; i++){
-	        	legendItemsNew.add(legendItemsOld.get(i));
-	        } 
-	        plot.setFixedLegendItems(legendItemsNew);
 		}
 		else if(type==1){ //Rewards - Cycle
-			int numLines=curTrace.numDim;
-			if(curTrace.discounted){numLines*=2;}
-			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numLines];
-			bounds=new XYSeriesCollection[numLines];
 			for(int d=0; d<curTrace.numDim; d++){
-				mean.addSeries(getSeries(curTrace.dimNames[d],curTrace.cycleRewards[d],0));
-				bounds[d]=new XYSeriesCollection();
-				bounds[d].addSeries(getSeries(curTrace.dimNames[d],curTrace.cycleRewards[d],1)); //lb
-				bounds[d].addSeries(getSeries(curTrace.dimNames[d],curTrace.cycleRewards[d],2)); //ub
+				renderer.setSeriesPaint(d, supplier.getNextPaint());
+				dataTrace.addSeries(curTrace.dimNames[d],getSeriesData(curTrace.cycles,curTrace.cycleRewards[d]));
 			}
-			if(curTrace.discounted){
+			if(curTrace.discounted==true){
 				for(int d=0; d<curTrace.numDim; d++){
-					mean.addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cycleRewardsDis[d],0));
-					bounds[curTrace.numDim+d]=new XYSeriesCollection();
-					bounds[curTrace.numDim+d].addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cycleRewardsDis[d],1)); //lb
-					bounds[curTrace.numDim+d].addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cycleRewardsDis[d],2)); //ub
+					renderer.setSeriesPaint(curTrace.numDim+d, supplier.getNextPaint());
+					dataTrace.addSeries(curTrace.dimNames[d]+" (Discounted)",getSeriesData(curTrace.cycles,curTrace.cycleRewardsDis[d]));
 				}
 			}
-			for(int d=0; d<numLines; d++){
-				Paint curPaint=supplier.getNextPaint();
-				renderer.setSeriesPaint(d, curPaint);
-				Color curColor=(Color) curPaint;
-				Color fill=new Color(curColor.getRed(),curColor.getGreen(),curColor.getBlue(),alpha);
-				rendererDiff[d]=new XYDifferenceRenderer(fill,fill,false);
-	        	rendererDiff[d].setSeriesPaint(0, new Color(0,0,0,0));
-	            rendererDiff[d].setSeriesPaint(1, new Color(0,0,0,0));
-			}
-			
-			plot.setDataset(0,mean);
-			plot.setRenderer(0,renderer);
-			for(int d=0; d<numLines; d++){
-				plot.setDataset(d+1,bounds[d]);
-				plot.setRenderer(d+1,rendererDiff[d]);
-			}
+			plot.setRenderer(renderer);
+			plot.setDataset(dataTrace);
 			plot.getRangeAxis().setLabel("Rewards(t)");
-			//legend
-			LegendItemCollection legendItemsOld=plot.getLegendItems();
-	        final LegendItemCollection legendItemsNew=new LegendItemCollection();
-	        for(int i=0; i<numLines; i++){
-	        	legendItemsNew.add(legendItemsOld.get(i));
-	        } 
-	        plot.setFixedLegendItems(legendItemsNew);
 		}
 		else if(type==2){ //Rewards - Cumulative
-			int numLines=curTrace.numDim;
-			if(curTrace.discounted){numLines*=2;}
-			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numLines];
-			bounds=new XYSeriesCollection[numLines];
 			for(int d=0; d<curTrace.numDim; d++){
-				mean.addSeries(getSeries(curTrace.dimNames[d],curTrace.cumRewards[d],0));
-				bounds[d]=new XYSeriesCollection();
-				bounds[d].addSeries(getSeries(curTrace.dimNames[d],curTrace.cumRewards[d],1)); //lb
-				bounds[d].addSeries(getSeries(curTrace.dimNames[d],curTrace.cumRewards[d],2)); //ub
+				renderer.setSeriesPaint(d, supplier.getNextPaint());
+				dataTrace.addSeries(curTrace.dimNames[d],getSeriesData(curTrace.cycles,curTrace.cumRewards[d]));
 			}
-			if(curTrace.discounted){
+			if(curTrace.discounted==true){
 				for(int d=0; d<curTrace.numDim; d++){
-					mean.addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cumRewardsDis[d],0));
-					bounds[curTrace.numDim+d]=new XYSeriesCollection();
-					bounds[curTrace.numDim+d].addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cumRewardsDis[d],1)); //lb
-					bounds[curTrace.numDim+d].addSeries(getSeries(curTrace.dimNames[d]+" (Discounted)",curTrace.cumRewardsDis[d],2)); //ub
+					renderer.setSeriesPaint(curTrace.numDim+d, supplier.getNextPaint());
+					dataTrace.addSeries(curTrace.dimNames[d]+" (Discounted)",getSeriesData(curTrace.cycles,curTrace.cumRewardsDis[d]));
 				}
 			}
-			for(int d=0; d<numLines; d++){
-				Paint curPaint=supplier.getNextPaint();
-				renderer.setSeriesPaint(d, curPaint);
-				Color curColor=(Color) curPaint;
-				Color fill=new Color(curColor.getRed(),curColor.getGreen(),curColor.getBlue(),alpha);
-				rendererDiff[d]=new XYDifferenceRenderer(fill,fill,false);
-	        	rendererDiff[d].setSeriesPaint(0, new Color(0,0,0,0));
-	            rendererDiff[d].setSeriesPaint(1, new Color(0,0,0,0));
-			}
-			plot.setDataset(0,mean);
-			plot.setRenderer(0,renderer);
-			for(int d=0; d<numLines; d++){
-				plot.setDataset(d+1,bounds[d]);
-				plot.setRenderer(d+1,rendererDiff[d]);
-			}
+			plot.setRenderer(renderer);
+			plot.setDataset(dataTrace);
 			plot.getRangeAxis().setLabel("Cum. Rewards(t)");
-			//legend
-			LegendItemCollection legendItemsOld=plot.getLegendItems();
-	        final LegendItemCollection legendItemsNew=new LegendItemCollection();
-	        for(int i=0; i<numLines; i++){
-	        	legendItemsNew.add(legendItemsOld.get(i));
-	        } 
-	        plot.setFixedLegendItems(legendItemsNew);
 		}
-		else if(type==3) { //Variables
-			int numLines=curTrace.numVariables;
-			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numLines];
-			bounds=new XYSeriesCollection[numLines];
-			for(int v=0; v<curTrace.numVariables; v++){
-				mean.addSeries(getSeries(curTrace.varNames[v],curTrace.cycleVars[v],0));
-				bounds[v]=new XYSeriesCollection();
-				bounds[v].addSeries(getSeries(curTrace.varNames[v],curTrace.cycleVars[v],1)); //lb
-				bounds[v].addSeries(getSeries(curTrace.varNames[v],curTrace.cycleVars[v],2)); //ub
+		else if(type==3){ //Variables - Cycle
+			for(int c=0; c<curTrace.numVariables; c++){
+				renderer.setSeriesPaint(c, supplier.getNextPaint());
+				dataTrace.addSeries(curTrace.varNames[c],getSeriesData(curTrace.cycles,curTrace.cycleVariables[c]));
 			}
-			for(int d=0; d<numLines; d++){
-				Paint curPaint=supplier.getNextPaint();
-				renderer.setSeriesPaint(d, curPaint);
-				Color curColor=(Color) curPaint;
-				Color fill=new Color(curColor.getRed(),curColor.getGreen(),curColor.getBlue(),alpha);
-				rendererDiff[d]=new XYDifferenceRenderer(fill,fill,false);
-	        	rendererDiff[d].setSeriesPaint(0, new Color(0,0,0,0));
-	            rendererDiff[d].setSeriesPaint(1, new Color(0,0,0,0));
-			}
-			plot.setDataset(0,mean);
-			plot.setRenderer(0,renderer);
-			for(int d=0; d<numLines; d++){
-				plot.setDataset(d+1,bounds[d]);
-				plot.setRenderer(d+1,rendererDiff[d]);
-			}
+			plot.setRenderer(renderer);
+			plot.setDataset(dataTrace);
 			plot.getRangeAxis().setLabel("Variables(t)");
-			//legend
-			LegendItemCollection legendItemsOld=plot.getLegendItems();
-	        final LegendItemCollection legendItemsNew=new LegendItemCollection();
-	        for(int i=0; i<numLines; i++){
-	        	legendItemsNew.add(legendItemsOld.get(i));
-	        } 
-	        plot.setFixedLegendItems(legendItemsNew);
 		}
 	}
 	
-	
-	private XYSeries getSeries(String name,double traceData[][], int sumIndex){
-		String seriesName=name;
-		if(sumIndex>0){seriesName+=sumIndex;}
-		XYSeries curSeries=new XYSeries(seriesName);
-		int numCycles=traceData[0].length;
+	private double [][] getSeriesData(ArrayList<Integer> cycle, ArrayList<Double> traceData){
+		int numCycles=cycle.size();
+		double data[][]=new double[2][numCycles];
 		for(int i=0; i<numCycles; i++){
-			double x=(i+1);
-			double y=traceData[sumIndex][i];
-			curSeries.add(x,y);
+			data[0][i]=cycle.get(i);
+			data[1][i]=traceData.get(i);
 		}
-		return(curSeries);
+		return(data);
 	}
 }

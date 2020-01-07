@@ -174,6 +174,9 @@ public class ModelSnapshot{
 			model.markov=markov;
 			model.panelMarkov.tree=model.markov;
 			model.markov.myModel=model;
+			for(int i=0; i<model.markov.nodes.size(); i++) {
+				model.markov.nodes.get(i).setPanel(model.panelMarkov);
+			}
 			model.markov.updateMarkovChain(model.markov.nodes.get(0));
 		}
 	}

@@ -124,6 +124,7 @@ public class frmProperties {
 	JLabel lblDiscountStartCycle;
 	private JTextField textDiscountStartCycle;
 	JCheckBox chckbxShowMarkovTrace;
+	JCheckBox chckbxCompileTraces;
 	private JTextField textMarkovStateDecimals;
 	
 	//Subgroups
@@ -132,7 +133,7 @@ public class frmProperties {
 	JButton btnRemoveSubgroup;
 	DefaultTableModel modelSubgroups;
 	private JTable tableSubgroups;
-	
+		
 		
 	/**
 	 *  Default Constructor
@@ -642,6 +643,10 @@ public class frmProperties {
 			chckbxShowMarkovTrace.setBounds(228, 17, 104, 18);
 			panelMarkov.add(chckbxShowMarkovTrace);
 			
+			chckbxCompileTraces = new JCheckBox("Compile traces");
+			chckbxCompileTraces.setBounds(322, 17, 109, 18);
+			panelMarkov.add(chckbxCompileTraces);
+			
 			
 			//Subgroups ###########################################################################
 			
@@ -816,6 +821,7 @@ public class frmProperties {
 		tabbedPane.setEnabledAt(3, true);
 		textMarkovMaxCycles.setText(myModel.markov.maxCycles+"");
 		chckbxShowMarkovTrace.setSelected(myModel.markov.showTrace);
+		chckbxCompileTraces.setSelected(myModel.markov.compileTraces);
 		textMarkovStateDecimals.setText(myModel.markov.stateDecimals+"");
 		chckbxHalfcycleCorrection.setSelected(myModel.markov.halfCycleCorrection);
 		chckbxDiscount.setSelected(myModel.markov.discountRewards);
@@ -1098,6 +1104,7 @@ public class frmProperties {
 		int maxCycles=10000, statePrevDecimals=4;
 		boolean halfCycleCorrection=false;
 		boolean showTrace=true;
+		boolean compileTraces=false;
 		if(myModel.type==1){
 			//max cycles
 			try{
@@ -1113,6 +1120,7 @@ public class frmProperties {
 			}
 			
 			showTrace=chckbxShowMarkovTrace.isSelected();
+			compileTraces=chckbxCompileTraces.isSelected();
 			
 			//state prev decimals
 			try{
@@ -1204,6 +1212,7 @@ public class frmProperties {
 			if(myModel.type==1){
 				myModel.markov.maxCycles=maxCycles;
 				myModel.markov.showTrace=showTrace;
+				myModel.markov.compileTraces=compileTraces;
 				myModel.markov.stateDecimals=statePrevDecimals;
 				myModel.markov.halfCycleCorrection=halfCycleCorrection;
 				

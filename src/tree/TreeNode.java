@@ -39,6 +39,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import base.ModelNode;
 import main.VariableUpdate;
+import markov.MarkovNode;
 import math.MathUtils;
 import math.Token;
 
@@ -91,7 +92,19 @@ public class TreeNode extends ModelNode{
 		parentX=parent.xPos+parent.width; //Right
 		parentY=parent.yPos+(parent.height/2); //Middle
 		curScale=parent.curScale;
-		xPos=parentX+scale(150); yPos=parent.yPos;
+		xPos=parentX+scale(150); 
+		xPos+=5; //move right a bit
+		yPos=parent.yPos;
+		int numSiblings=parent.childIndices.size();
+		if(numSiblings>0) {//place below other children
+			int maxChildY=parent.yPos;
+			for(int c=0; c<numSiblings; c++) {
+				TreeNode child=tree.nodes.get(parent.childIndices.get(c));
+				maxChildY=Math.max(maxChildY, child.yPos);
+			}
+			yPos=maxChildY+scale(60);
+		}
+				
 		selected=true;
 		parentType=parent.type;
 		childIndices=new ArrayList<Integer>();

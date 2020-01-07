@@ -108,11 +108,11 @@ public class PanelTree extends ModelPanel{
 							if(numChildren==0){ //Add 2 children
 								//Add first child and shift
 								addNode(1);
-								moveNode(curNode,curNode.xPos+curNode.scale(5),curNode.yPos-curNode.scale(30));
+								moveNode(curNode,curNode.xPos,curParent.yPos-curNode.scale(30));
 								curNode=curParent;
 								//Add second child and shift
 								addNode(1);
-								moveNode(curNode,curNode.xPos+curNode.scale(5),curNode.yPos+curNode.scale(30));
+								moveNode(curNode,curNode.xPos,curParent.yPos+curNode.scale(30));
 							}
 							else{ //Add 1 child
 								addNode(1);
@@ -995,6 +995,7 @@ public class PanelTree extends ModelPanel{
 			curNode.highlightTextField(0, null); //Prob
 			curNode.highlightTextField(1, null); //Cost
 			curNode.highlightTextField(2, null); //Payoff
+			curNode.highlightTextField(3, null); //Var update
 
 			if(curNode.prob!=null && Interpreter.containsWord(paramName, curNode.prob)){
 				curNode.highlightTextField(0, Color.GREEN); //Prob
@@ -1013,6 +1014,9 @@ public class PanelTree extends ModelPanel{
 					}
 				}
 			}
+			if(curNode.varUpdates!=null && Interpreter.containsWord(paramName, curNode.varUpdates)){
+				curNode.highlightTextField(3, Color.GREEN); //Var update
+			}
 		}
 	}
 	
@@ -1025,6 +1029,7 @@ public class PanelTree extends ModelPanel{
 			curNode.highlightTextField(0, null); //Prob
 			curNode.highlightTextField(1, null); //Cost
 			curNode.highlightTextField(2, null); //Payoff
+			curNode.highlightTextField(3, null); //Var update
 
 			if(curNode.prob!=null && Interpreter.containsWord(varName, curNode.prob)){
 				curNode.highlightTextField(0, Color.GREEN); //Prob
@@ -1043,6 +1048,9 @@ public class PanelTree extends ModelPanel{
 					}
 				}
 			}
+			if(curNode.varUpdates!=null && Interpreter.containsWord(varName, curNode.varUpdates)){
+				curNode.highlightTextField(3, Color.GREEN); //Var update
+			}
 		}
 	}
 	
@@ -1055,6 +1063,7 @@ public class PanelTree extends ModelPanel{
 			curNode.highlightTextField(0, null); //Prob
 			curNode.highlightTextField(1, null); //Cost
 			curNode.highlightTextField(2, null); //Payoff
+			curNode.highlightTextField(3, null); //Var update
 
 			if(curNode.prob!=null && Interpreter.containsWord(tableName, curNode.prob)){
 				curNode.highlightTextField(0, Color.GREEN); //Prob
@@ -1072,6 +1081,9 @@ public class PanelTree extends ModelPanel{
 						curNode.highlightTextField(2, Color.GREEN); //Payoff
 					}
 				}
+			}
+			if(curNode.varUpdates!=null && Interpreter.containsWord(tableName, curNode.varUpdates)){
+				curNode.highlightTextField(3, Color.GREEN); //Var update
 			}
 		}
 	}

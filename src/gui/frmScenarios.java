@@ -874,8 +874,10 @@ public class frmScenarios {
 													}
 													for(int v=0; v<numParams; v++){ //sample all parameters
 														Parameter curParam=myModel.parameters.get(v);
-														curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
-														curParam.locked=true;
+														if(curParam.locked==false) {
+															curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+															curParam.locked=true;
+														}
 													}
 													//check constraints
 													validParams=true;

@@ -55,8 +55,17 @@ public class RunReportSummary{
 	public MicroStatsSummary microStatsSummaryGroup[][];
 	
 	TreeReportSummary treeReportSummary;
+	
+	public String markovChainNames[];
+	/**
+	 * [Chain]
+	 */
 	public MarkovTraceSummary markovTraceSummary[];
-
+	/**
+	 * [Group][Chain]
+	 */
+	public MarkovTraceSummary markovTraceSummaryGroup[][];
+	
 	//Constructor
 	public RunReportSummary(RunReport reports[]){
 		int numReports=reports.length;
@@ -69,18 +78,27 @@ public class RunReportSummary{
 		//Get summary
 		TreeReport treeReports[]=null;
 		MarkovTrace traces[][]=null;
+		MarkovTrace tracesGroups[][][]=null;
 		int numChains=0;
 		if(type==0){treeReports=new TreeReport[numReports];}
 		else if(type==1){
 			numChains=reports[0].markovTraces.size();
 			traces=new MarkovTrace[numChains][numReports];
+			tracesGroups=new MarkovTrace[numSubgroups][numChains][numReports];
 		}
 		
 		for(int i=0; i<numReports; i++){
 			if(type==0){treeReports[i]=reports[i].treeReport;}
 			else if(type==1){
+				//overall
 				for(int j=0; j<numChains; j++){
 					traces[j][i]=reports[i].markovTraces.get(j);
+				}
+				//subgroups
+				for(int g=0; g<numSubgroups; g++) {
+					for(int c=0; c<numChains; c++) {
+						tracesGroups[g][c][i]=reports[i].markovTracesGroup[g].get(c);
+					}
 				}
 			}
 		}
@@ -88,9 +106,21 @@ public class RunReportSummary{
 		//Get report summaries
 		if(type==0){treeReportSummary=new TreeReportSummary(treeReports);}
 		else if(type==1){
+			//overall
+			markovChainNames=new String[numChains];
 			markovTraceSummary=new MarkovTraceSummary[numChains];
 			for(int i=0; i<numChains; i++){
 				markovTraceSummary[i]=new MarkovTraceSummary(traces[i]);
+				markovChainNames[i]=markovTraceSummary[i].traceName;
+			}
+			//subgroups
+			if(numSubgroups>0) {
+				markovTraceSummaryGroup=new MarkovTraceSummary[numSubgroups][numChains];
+				for(int g=0; g<numSubgroups; g++) {
+					for(int i=0; i<numChains; i++) {
+						markovTraceSummaryGroup[g][i]=new MarkovTraceSummary(tracesGroups[g][i]);
+					}
+				}
 			}
 		}
 		
@@ -118,6 +148,11 @@ public class RunReportSummary{
 		else if(type==1){
 			for(int i=0; i<markovTraceSummary.length; i++){
 				markovTraceSummary[i].write(filepath);
+			}
+			for(int g=0; g<numSubgroups; g++) {
+				for(int i=0; i<markovTraceSummary.length; i++) {
+					markovTraceSummaryGroup[g][i].write(filepath+"_"+subgroupNames[g]);
+				}
 			}
 		}
 		

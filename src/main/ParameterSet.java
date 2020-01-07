@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import base.AmuaModel;
+import math.Interpreter;
 import math.Numeric;
 
 @XmlRootElement(name="ParameterSet")
@@ -36,14 +37,6 @@ public class ParameterSet{
 		
 	}
 	
-	public void parseValues(){
-		int numParams=strValues.length;
-		values=new Numeric[numParams];
-		for(int p=0; p<numParams; p++){
-			values[p]=new Numeric(strValues[p]); //convert from string back to Numeric object
-		}
-	}
-	
 	//Get current parameters
 	public ParameterSet(AmuaModel myModel){
 		int numParams=myModel.parameters.size();
@@ -51,9 +44,32 @@ public class ParameterSet{
 		strValues=new String[numParams];
 		for(int i=0; i<numParams; i++){
 			values[i]=myModel.parameters.get(i).value.copy();
-			strValues[i]=values[i].saveAsString(); //for writing to xml
+			strValues[i]=values[i].saveAsXMLString(); //for writing to xml
 		}
 	}
+
+	public void parseXMLValues(){
+		int numParams=strValues.length;
+		values=new Numeric[numParams];
+		for(int p=0; p<numParams; p++){
+			values[p]=new Numeric(strValues[p]); //convert from string back to Numeric object
+		}
+	}
+	
+	public void parseCSVLine(String strLine, AmuaModel myModel) throws Exception {
+		String data[]=strLine.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+		id=data[0];
+		score=Double.parseDouble(data[1]);
+		int numParams=data.length-2;
+		values=new Numeric[numParams];
+		strValues=new String[numParams];
+		for(int p=0; p<numParams; p++) {
+			String datum=data[p+2].replaceAll("\"", ""); //strip quotes
+			values[p]=Interpreter.evaluate(datum, myModel, false);
+			strValues[p]=values[p].saveAsXMLString(); //for writing to xml
+		}
+	}
+	
 	
 	public void setParameters(AmuaModel myModel){
 		int numParams=values.length;

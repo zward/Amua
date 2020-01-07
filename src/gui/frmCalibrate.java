@@ -600,6 +600,7 @@ public class frmCalibrate {
 									
 									myModel.sampleParam=true;
 									myModel.generatorParam=new MersenneTwisterFast();
+									if(myModel.curGenerator==null){myModel.curGenerator=new MersenneTwisterFast[1];}
 									myModel.curGenerator[0]=myModel.generatorParam;
 									
 									
@@ -782,8 +783,10 @@ public class frmCalibrate {
 			
 			for(int v=0; v<numParams; v++){ //sample all parameters
 				Parameter curParam=myModel.parameters.get(v);
-				curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
-				curParam.locked=true;
+				if(curParam.locked==false) {
+					curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+					curParam.locked=true;
+				}
 			}
 			//check constraints
 			validParams=true;

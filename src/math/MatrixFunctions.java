@@ -32,6 +32,7 @@ public final class MatrixFunctions{
 		case "det": return(true);
 		case "diag": return(true);
 		case "iden": return(true);
+		case "interpolate": return(true);
 		case "inv": return(true);
 		case "ncol": return(true);
 		case "norm": return(true);
@@ -83,6 +84,42 @@ public final class MatrixFunctions{
 				I.matrix[i][i]=1;
 			}
 			return(I);
+		}
+		case "interpolate":{ //interpolate
+			if(args.length!=3) {throw new NumericException("Function takes 3 arguments","interpolate");}
+			double x=args[0].getDouble();
+			Numeric numXX=args[1];
+			if(numXX.format!=Format.MATRIX || numXX.nrow!=1){throw new NumericException("X should be a row vector","interpolate");} 
+			Numeric numYY=args[2];
+			if(numYY.format!=Format.MATRIX || numYY.nrow!=1){throw new NumericException("Y should be a row vector","interpolate");}
+			if(numXX.ncol==0) {throw new NumericException("X should have at least one element","interpolate");}
+			if(numYY.ncol==0) {throw new NumericException("Y should have at least one element","interpolate");}
+			if(numXX.ncol!=numYY.ncol) {throw new NumericException("X and Y should have the same length","interpolate");} 
+			
+			double xx[]=numXX.matrix[0];
+			double yy[]=numYY.matrix[0];
+			int length=xx.length;
+			for(int i=0; i<length-1; i++) {
+				if(xx[i+1]<xx[i]) {throw new NumericException("X is not in ascending order","interpolate");}
+			}
+			
+			double val=0;
+			if(x<=xx[0]){ //Below or at first index
+				double slope=(yy[1]-yy[0])/(xx[1]-xx[0]);
+				val=yy[0]-(xx[0]-x)*slope;
+			}
+			else if(x>xx[length-1]){ //Above last index
+				double slope=(yy[length-1]-yy[length-2])/(xx[length-1]-xx[length-2]);
+				val=yy[length-1]+(x-xx[length-1])*slope;
+			}
+			else{ //Between
+				int row=0;
+				while(xx[row]<x){row++;}
+				double slope=(yy[row]-yy[row-1])/(xx[row]-xx[row-1]);
+				val=yy[row-1]+(x-xx[row-1])*slope;
+			}
+			return(new Numeric(val));
+			
 		}
 		case "inv":{ //invert
 			if(args.length!=1){throw new NumericException("Function takes 1 argument","inv");}
@@ -434,6 +471,15 @@ public final class MatrixFunctions{
 			des+=MathUtils.consoleFont("n")+": Size of identity matrix (Integer "+MathUtils.consoleFont(">0")+")<br>";
 			des+="</html>";
 			return(des);
+		case "interpolate": 
+			des="<html><b>Linear Interpolation</b><br>";
+			des+=MathUtils.consoleFont("<b>interpolate</b>","#800000")+MathUtils.consoleFont("(x,<b>X</b>,<b>Y</b>)")+": Returns a linear interpolation of "+MathUtils.consoleFont("<b>Y</b>")+" at "+MathUtils.consoleFont("x")+"<br>";
+			des+="<br><i>Arguments</i><br>";
+			des+=MathUtils.consoleFont("x")+": x-value at which to calculate interpolated value of y<br>";
+			des+=MathUtils.consoleFont("<b>X</b>")+": Row vector of x values (in increasing order)<br>";
+			des+=MathUtils.consoleFont("<b>Y</b>")+": Row vector of corresponding y values<br>";
+			des+="</html>";
+			return(des);
 		case "inv": 
 			des="<html><b>Inverse Matrix</b><br>";
 			des+=MathUtils.consoleFont("<b>inv</b>","#800000")+MathUtils.consoleFont("(<b>X</b>)")+": Returns the inverse of "+MathUtils.consoleFont("<b>X</b>")+" using LU decomposition<br>";
@@ -533,6 +579,7 @@ public final class MatrixFunctions{
 		case "det": return("det(X)");
 		case "diag": return("diag(X)");
 		case "iden": return("iden(n)");
+		case "interpolate": return("interpolate(x,X,Y)");
 		case "inv": return("inv(X)");
 		case "ncol": return("ncol(X)");
 		case "norm": return("norm(X)");

@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import gui.frmCEPlane;
 import gui.frmMain;
 import gui.frmTraceSummary;
+import gui.frmTraceSummaryMulti;
 import main.Console;
 import main.ConsoleTable;
 import main.Constraint;
@@ -171,6 +172,9 @@ public class AmuaModel{
 			this.errorLog=errorLog;
 			
 			innateVariables=new ArrayList<Variable>();
+			if(type==1) { //Markov
+				addT();
+			}
 			
 			//Update tables
 			if(parameters==null){parameters=new ArrayList<Parameter>();}
@@ -200,7 +204,7 @@ public class AmuaModel{
 			if(parameterNames!=null){
 				int numSets=parameterSets.length;
 				for(int i=0; i<numSets; i++){
-					parameterSets[i].parseValues();
+					parameterSets[i].parseXMLValues();
 				}
 			}
 			refreshParamSetsTable();
@@ -220,7 +224,6 @@ public class AmuaModel{
 				panelTree.openTree(tree);
 			}
 			else if(type==1){ //Markov
-				addT();
 				panelMarkov=new PanelMarkov(mainFrm,this,errorLog);
 				panelMarkov.openTree(markov);
 			}
@@ -542,8 +545,14 @@ public class AmuaModel{
 			}catch(Exception e){
 				curVar.valid=false;
 				curVar.parsedTokens=null;
-				curVar.value=null;
+				curVar.value[0]=null;
 			}
+		}
+		//get variable dependents
+		if(type==1) { //Markov
+			int indexT=getInnateVariableIndex("t");
+			Variable curT=innateVariables.get(indexT);
+			curT.dependents=new ArrayList<Variable>();
 		}
 		for(int i=0; i<numVars; i++){
 			Variable curVar=variables.get(i);
@@ -1050,11 +1059,19 @@ public class AmuaModel{
 							curNode.textEV.setText(buildString);
 							if(curNode.visible){curNode.textEV.setVisible(true);}
 						}
-
-						frmTraceSummary showSummary=new frmTraceSummary(traceSummary,errorLog,null);
-						showSummary.frmTraceSummary.setVisible(true);
+						
+						if(markov.showTrace==true && markov.compileTraces==false) {
+							frmTraceSummary showSummary=new frmTraceSummary(traceSummary,errorLog,null);
+							showSummary.frmTraceSummary.setVisible(true);
+						}
 					}
 				}
+				if(markov.showTrace==true && markov.compileTraces==true) {
+					RunReportSummary reportSummary=new RunReportSummary(runReports);
+					frmTraceSummaryMulti window=new frmTraceSummaryMulti(reportSummary,errorLog);
+					window.frmTraceSummaryMulti.setVisible(true);
+				}
+				
 				progress.close();
 
 				if(display){
@@ -1078,7 +1095,7 @@ public class AmuaModel{
 		}
 	}
 	
-	public void unlockVars(int curThread){
+	public void unlockVarsAll(int curThread){
 		for(int v=0; v<variables.size(); v++){
 			variables.get(v).locked[curThread]=false;
 		}
@@ -1165,6 +1182,7 @@ public class AmuaModel{
 		Variable curT=new Variable();
 		curT.name="t";
 		curT.value[0]=new Numeric(0);
+		curT.locked[0]=true;
 		innateVariables.add(curT);
 	}
 	
@@ -1387,7 +1405,7 @@ public class AmuaModel{
 			modelParams.setValueAt(curSet.id, i, 0);
 			modelParams.setValueAt(curSet.score, i, 1);
 			for(int p=0; p<numParams; p++){
-				modelParams.setValueAt(curSet.values[p].toString(), i, 2+p);
+				modelParams.setValueAt(curSet.values[p].saveAsCSVString().replaceAll("\"", ""), i, 2+p);
 			}
 		}
 		

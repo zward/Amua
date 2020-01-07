@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2020 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -129,7 +129,7 @@ public class frmAboutAmua {
 			lblGnuGeneralPublic.setBounds(6, 126, 182, 16);
 			frmAboutAmua.getContentPane().add(lblGnuGeneralPublic);
 			
-			JLabel lblNewLabel = new JLabel("\u00A9 2017-2019 Zachary J. Ward");
+			JLabel lblNewLabel = new JLabel("\u00A9 2017-2020 Zachary J. Ward");
 			lblNewLabel.setBounds(162, 98, 182, 16);
 			frmAboutAmua.getContentPane().add(lblNewLabel);
 			

@@ -26,7 +26,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.event.ListSelectionListener;
@@ -92,7 +91,7 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmExpressionBuilder.setTitle("Amua - Build Expression");
 			frmExpressionBuilder.setResizable(false);
-			frmExpressionBuilder.setBounds(100, 100, 1000, 581);
+			frmExpressionBuilder.setBounds(100, 100, 1000, 600);
 			frmExpressionBuilder.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmExpressionBuilder.getContentPane().setLayout(null);
 			
@@ -144,13 +143,14 @@ public class frmExpressionBuilder {
 			lblDescription.setBounds(421, 10, 86, 16);
 			frmExpressionBuilder.getContentPane().add(lblDescription);
 			
-			JButton btnInsert = new JButton("Insert Expression");
+			JButton btnInsert = new JButton("Update Expression");
 			btnInsert.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try{
-						int curPos=targetPane.getCaretPosition();
 						String text=textPaneExpression.getText();
-						targetPane.getDocument().insertString(curPos, text, null);
+						//int curPos=targetPane.getCaretPosition();
+						//targetPane.getDocument().insertString(curPos, text, null);
+						targetPane.setText(text);
 						frmExpressionBuilder.dispose();
 					}catch(Exception e1){
 						JOptionPane.showMessageDialog(frmExpressionBuilder, e1.toString());
@@ -158,7 +158,7 @@ public class frmExpressionBuilder {
 					}
 				}
 			});
-			btnInsert.setBounds(644, 499, 135, 28);
+			btnInsert.setBounds(634, 510, 145, 28);
 			frmExpressionBuilder.getContentPane().add(btnInsert);
 			
 			JButton btnCancel = new JButton("Cancel");
@@ -167,7 +167,7 @@ public class frmExpressionBuilder {
 					frmExpressionBuilder.dispose();
 				}
 			});
-			btnCancel.setBounds(796, 499, 90, 28);
+			btnCancel.setBounds(796, 510, 90, 28);
 			frmExpressionBuilder.getContentPane().add(btnCancel);
 			
 			JScrollPane scrollPane_1 = new JScrollPane();
@@ -184,7 +184,7 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.getContentPane().add(lblExpression);
 			
 			JScrollPane scrollPane_2 = new JScrollPane();
-			scrollPane_2.setBounds(12, 391, 874, 60);
+			scrollPane_2.setBounds(12, 391, 874, 80);
 			frmExpressionBuilder.getContentPane().add(scrollPane_2);
 			
 			textPaneExpression = new StyledTextPane(myModel);
@@ -198,6 +198,7 @@ public class frmExpressionBuilder {
 				}
 			});
 			scrollPane_2.setViewportView(textPaneExpression);
+			textPaneExpression.setText(targetPane.getText());
 			
 			JLabel lblType = new JLabel("Elements");
 			lblType.setBounds(12, 10, 55, 16);
@@ -268,11 +269,11 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.getContentPane().add(btnEvaluate);
 			
 			JLabel lblExpectedValue = new JLabel("Expected Value:");
-			lblExpectedValue.setBounds(12, 463, 104, 16);
+			lblExpectedValue.setBounds(12, 474, 104, 16);
 			frmExpressionBuilder.getContentPane().add(lblExpectedValue);
 			
 			JScrollPane scrollPane_4 = new JScrollPane();
-			scrollPane_4.setBounds(12, 481, 610, 60);
+			scrollPane_4.setBounds(12, 492, 610, 60);
 			frmExpressionBuilder.getContentPane().add(scrollPane_4);
 			
 			textPaneValue = new JTextPane();
@@ -432,6 +433,7 @@ public class frmExpressionBuilder {
 			modelValue.addElement("det");
 			modelValue.addElement("diag");
 			modelValue.addElement("iden");
+			modelValue.addElement("interpolate");
 			modelValue.addElement("inv");
 			modelValue.addElement("ncol");
 			modelValue.addElement("norm");

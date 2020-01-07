@@ -505,11 +505,24 @@ public final class Interpreter{
 				}
 				else if(isOperator1(curChar)){
 					if(pos>0){ //get preceding word
-						String word=curExpr.substring(0, pos);
-						tokens.add(new Token(word,Type.NUMERIC,myModel,true));
-						tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true));
-						endWord=true;
-						curExpr=curExpr.substring(pos+1);
+						boolean sciNotation=false;
+						if(pos>=2 && (curChar=='+' || curChar=='-')) { //check for scientific notation
+							char prevChar=curExpr.charAt(pos-1);
+							if(prevChar=='E' || prevChar=='e') { 
+								char prevChar2=curExpr.charAt(pos-2);
+								if(Character.isDigit(prevChar2)) {
+									sciNotation=true;
+								}
+							}
+						}
+						
+						if(sciNotation==false) {
+							String word=curExpr.substring(0, pos);
+							tokens.add(new Token(word,Type.NUMERIC,myModel,true));
+							tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true));
+							endWord=true;
+							curExpr=curExpr.substring(pos+1);
+						}
 					}
 					else{ //first char in string
 						if(curExpr.charAt(0)!='-'){ //not '-'
@@ -683,7 +696,7 @@ public final class Interpreter{
 		return(ch==' ' || ch==',' || ch==';' || ch=='(' || ch==')' || ch=='[' || ch==']' || 
 				isOperator1(ch) || isOperator2_1(ch));
 	}
-
+	
 	public static int getNextBreakIndex(String text){
 		boolean found=false;
 		int i=0, len=text.length(), index=len;

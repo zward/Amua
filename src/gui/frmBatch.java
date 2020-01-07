@@ -580,24 +580,31 @@ public class frmBatch {
 										btnExport.setEnabled(true);
 
 										//Get trace summary
-										if(myModel.type==1){
-											//get mean and bounds of results
-											int numChains=reports[0].markovTraces.size();
-											for(int c=0; c<numChains; c++){
-												MarkovTrace curTraces[][]=new MarkovTrace[numSubgroups+1][numIterations];
-												for(int i=0; i<numIterations; i++){
-													curTraces[0][i]=reports[i].markovTraces.get(c);
-													for(int g=0; g<numSubgroups; g++){
-														curTraces[g+1][i]=reports[i].markovTracesGroup[g].get(c);
+										if(myModel.type==1 && myModel.markov.showTrace){
+											if(myModel.markov.compileTraces==false) {
+												//get mean and bounds of results
+												int numChains=reports[0].markovTraces.size();
+												for(int c=0; c<numChains; c++){
+													MarkovTrace curTraces[][]=new MarkovTrace[numSubgroups+1][numIterations];
+													for(int i=0; i<numIterations; i++){
+														curTraces[0][i]=reports[i].markovTraces.get(c);
+														for(int g=0; g<numSubgroups; g++){
+															curTraces[g+1][i]=reports[i].markovTracesGroup[g].get(c);
+														}
 													}
+													MarkovTraceSummary traceSummaries[]=new MarkovTraceSummary[numSubgroups+1];
+													traceSummaries[0]=new MarkovTraceSummary(curTraces[0]);
+													for(int g=0; g<numSubgroups; g++){
+														traceSummaries[g+1]=new MarkovTraceSummary(curTraces[g+1]);
+													}
+													frmTraceSummary showSummary=new frmTraceSummary(traceSummaries,myModel.errorLog,subgroupNames);
+													showSummary.frmTraceSummary.setVisible(true);
 												}
-												MarkovTraceSummary traceSummaries[]=new MarkovTraceSummary[numSubgroups+1];
-												traceSummaries[0]=new MarkovTraceSummary(curTraces[0]);
-												for(int g=0; g<numSubgroups; g++){
-													traceSummaries[g+1]=new MarkovTraceSummary(curTraces[g+1]);
-												}
-												frmTraceSummary showSummary=new frmTraceSummary(traceSummaries,myModel.errorLog,subgroupNames);
-												showSummary.frmTraceSummary.setVisible(true);
+											}
+											else {
+												RunReportSummary reportSummary=new RunReportSummary(reports);
+												frmTraceSummaryMulti window=new frmTraceSummaryMulti(reportSummary,myModel.errorLog);
+												window.frmTraceSummaryMulti.setVisible(true);
 											}
 										}
 

@@ -169,7 +169,12 @@ public class Token{
 			}
 			else if(objectType==ObjectType.VARIABLE){ //Variable
 				if(curVar.value[curThread]==null){ //not initialized
+					curVar.parsedTokens=Interpreter.parse(curVar.expression, myModel);
 					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample);
+				}
+				else if(curVar.locked[curThread]==false && curVar.independent==false) {
+					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample);
+					curVar.locked[curThread]=true;
 				}
 				numeric[curThread]=curVar.value[curThread].copy();
 			}
@@ -241,7 +246,12 @@ public class Token{
 			}
 			else if(objectType==ObjectType.VAR_MATRIX){
 				if(curVar.value==null){ //not initialized
+					curVar.parsedTokens=Interpreter.parse(curVar.expression, myModel);
 					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample);
+				}
+				else if(curVar.locked[curThread]==false && curVar.independent==false) {
+					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample);
+					curVar.locked[curThread]=true;
 				}
 				numeric[curThread]=curVar.value[curThread].getMatrixValue(strArgs,myModel);
 			}

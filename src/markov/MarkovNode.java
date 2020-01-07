@@ -51,7 +51,7 @@ import math.Token;
 @XmlRootElement(name="node")
 public class MarkovNode extends ModelNode{
 	//Model-specific data
-	@XmlElement public String prob, cost[], transition, rewards[];
+	@XmlElement public String prob, cost[], transition, rewards[], varUpdatesT0;
 	@XmlElement public String terminationCondition;
 	//chain elements
 	@XmlElement public ArrayList<String> stateNames;
@@ -70,7 +70,7 @@ public class MarkovNode extends ModelNode{
 	@XmlTransient int transFrom, transTo; //Index of cur state and next state
 	@XmlTransient public double expectedValues[], expectedValuesDis[]; //For each chain
 	@XmlTransient public double expectedValuesGroup[][], expectedValuesDisGroup[][];
-	@XmlTransient public VariableUpdate curVariableUpdates[];
+	@XmlTransient public VariableUpdate curVariableUpdates[], curVariableUpdatesT0[];
 	@XmlTransient boolean probHasVariables, childHasProbVariables;
 	@XmlTransient boolean costHasVariables[];
 	@XmlTransient boolean rewardHasVariables[];
@@ -85,6 +85,7 @@ public class MarkovNode extends ModelNode{
 	@XmlTransient JLabel lblProb; MarkovTextField textProb;
 	@XmlTransient JLabel lblCost; MarkovTextField textCost;
 	@XmlTransient JLabel lblVarUpdates; MarkovTextField textVarUpdates;
+	@XmlTransient JLabel lblVarUpdatesT0; MarkovTextField textVarUpdatesT0;
 	@XmlTransient JLabel lblRewards; MarkovTextField textRewards;
 	@XmlTransient JComboBox<String> comboTransition;
 	@XmlTransient MarkovTextField textTermination;
@@ -93,7 +94,7 @@ public class MarkovNode extends ModelNode{
 	@XmlTransient String icer;
 	
 	//Store original text on focus to see if it has change on lost focus
-	@XmlTransient String tempName, tempProb, tempCost[], tempTransition, tempNotes, tempTermination, tempRewards[], tempVarUpdates;
+	@XmlTransient String tempName, tempProb, tempCost[], tempTransition, tempNotes, tempTermination, tempRewards[], tempVarUpdates, tempVarUpdatesT0;
 
 	//Constructor
 	public MarkovNode(int type1, MarkovNode parent){
@@ -134,10 +135,20 @@ public class MarkovNode extends ModelNode{
 		parentX=parent.xPos+parent.width; //Right
 		parentY=parent.yPos+(parent.height/2); //Middle
 		curScale=parent.curScale;
-		xPos=parentX+scale(150); yPos=parent.yPos;
-		if(type==2){
-			xPos=parentX+scale(40);
+		xPos=parentX+scale(150); 
+		if(type==2){xPos=parentX+scale(40);}
+		xPos+=5; //move right a bit
+		yPos=parent.yPos;
+		int numSiblings=parent.childIndices.size();
+		if(numSiblings>0) {//place below other children
+			int maxChildY=parent.yPos;
+			for(int c=0; c<numSiblings; c++) {
+				MarkovNode child=tree.nodes.get(parent.childIndices.get(c));
+				maxChildY=Math.max(maxChildY, child.yPos);
+			}
+			yPos=maxChildY+scale(60);
 		}
+		
 		selected=true;
 		parentType=parent.type;
 		childIndices=new ArrayList<Integer>();
@@ -148,7 +159,7 @@ public class MarkovNode extends ModelNode{
 		}
 		prob="0";
 		level=parent.level+1;
-		textHighlights=new Color[]{null,null,null,null,null,null};
+		textHighlights=new Color[]{null,null,null,null,null,null,null};
 
 		displayName();
 		if(parentType!=0){ //Not decision
@@ -191,12 +202,12 @@ public class MarkovNode extends ModelNode{
 		cost=new String[numDimensions]; Arrays.fill(cost,"0");
 		level=0;
 		name="Root";
-		textHighlights=new Color[]{null,null,null,null,null,null};
+		textHighlights=new Color[]{null,null,null,null,null,null,null};
 	}
 
 	public MarkovNode(){ //No argument constructor - initialize display fields with XML marshalling
 		if(childIndices==null){childIndices=new ArrayList<Integer>();}
-		textHighlights=new Color[]{null,null,null,null,null,null};
+		textHighlights=new Color[]{null,null,null,null,null,null,null};
 	}
 	
 	public void paintComponent(Graphics g){
@@ -285,14 +296,18 @@ public class MarkovNode extends ModelNode{
 					textProb.setBounds(xPos-scale(140), yPos+(height/2),scale(140),scale(28));
 					lblCost.setBounds(xPos-scale(150),(int)(yPos+2.5*(height/2)),scale(12),scale(28));
 					textCost.setBounds(xPos-scale(140),(int)(yPos+2.5*(height/2)),scale(140),scale(28));
-					lblVarUpdates.setBounds(xPos+width-scale(112), (int)(yPos+3.5*(height/2)),scale(15),scale(28));
-					textVarUpdates.setBounds(xPos+width-scale(100),(int)(yPos+3.5*(height/2)),scale(100),scale(28));
+					lblVarUpdatesT0.setBounds(xPos+width-scale(130), (int)(yPos+3.5*(height/2)),scale(35),scale(28));
+					textVarUpdatesT0.setBounds(xPos+width-scale(100),(int)(yPos+3.5*(height/2)),scale(100),scale(28));
+					lblVarUpdates.setBounds(xPos+width-scale(130), (int)(yPos+5*(height/2)),scale(35),scale(28));
+					textVarUpdates.setBounds(xPos+width-scale(100),(int)(yPos+5*(height/2)),scale(100),scale(28));
 				}
 				else{
 					lblCost.setBounds(xPos-scale(150),yPos+(height/2),scale(12),scale(28));
 					textCost.setBounds(xPos-scale(140),yPos+(height/2),scale(140),scale(28));
-					lblVarUpdates.setBounds(xPos+width-scale(112),(int)(yPos+3.5*(height/2)),scale(15),scale(28));
-					textVarUpdates.setBounds(xPos+width-scale(100),(int)(yPos+3.5*(height/2)),scale(100),scale(28));
+					lblVarUpdatesT0.setBounds(xPos+width-scale(130),(int)(yPos+3.5*(height/2)),scale(35),scale(28));
+					textVarUpdatesT0.setBounds(xPos+width-scale(100),(int)(yPos+3.5*(height/2)),scale(100),scale(28));
+					lblVarUpdates.setBounds(xPos+width-scale(130),(int)(yPos+5*(height/2)),scale(35),scale(28));
+					textVarUpdates.setBounds(xPos+width-scale(100),(int)(yPos+5*(height/2)),scale(100),scale(28));
 				}
 				//textEV.setBounds(xPos-scale(150),yPos+(height/2)-scale(48),scale(150),scale(28));
 				int width=Math.max((int)(textEV.getText().length()*6),150);
@@ -747,16 +762,23 @@ public class MarkovNode extends ModelNode{
 	}
 	
 	public void displayVarUpdates(){
+		//label
 		lblVarUpdates=new JLabel("V:");
 		lblVarUpdates.setVisible(hasVarUpdates);
 		lblVarUpdates.setForeground(Color.GRAY);
 		scaleFont(lblVarUpdates);
+		if(type==1) { //chain
+			lblVarUpdates.setText("<html>V(t<sub>+</sub>):</html>");
+			lblVarUpdatesT0=new JLabel("<html>V(t<sub>0</sub>):</html>");
+			lblVarUpdatesT0.setVisible(hasVarUpdates);
+			lblVarUpdatesT0.setForeground(Color.GRAY);
+			scaleFont(lblVarUpdatesT0);
+		}
+		
+		//textfield
 		textVarUpdates=new MarkovTextField(panel, this, 4);
 		if(textHighlights[4]!=null){textVarUpdates.setBackground(textHighlights[4]);}
 		else{textVarUpdates.setBackground(new Color(0,0,0,0));}
-		if(type==1){ //chain
-			textVarUpdates.setHorizontalAlignment(SwingConstants.RIGHT);
-		}
 		textVarUpdates.setText(varUpdates);
 		textVarUpdates.validateEntry();
 		textVarUpdates.setVisible(hasVarUpdates);
@@ -788,6 +810,47 @@ public class MarkovNode extends ModelNode{
 			}
 			@Override public void changedUpdate(DocumentEvent e) {}
 		});
+		
+		if(type==1){ //chain
+			textVarUpdates.setHorizontalAlignment(SwingConstants.RIGHT);
+			
+			textVarUpdatesT0=new MarkovTextField(panel, this, 6);
+			textVarUpdatesT0.setHorizontalAlignment(SwingConstants.RIGHT);
+			if(textHighlights[6]!=null){textVarUpdatesT0.setBackground(textHighlights[6]);}
+			else{textVarUpdatesT0.setBackground(new Color(0,0,0,0));}
+			textVarUpdatesT0.setText(varUpdatesT0);
+			textVarUpdatesT0.validateEntry();
+			textVarUpdatesT0.setVisible(hasVarUpdates);
+			textVarUpdatesT0.setBorder(null);
+			scaleFont(textVarUpdatesT0);
+			textVarUpdatesT0.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusGained(FocusEvent e) {
+					tempVarUpdatesT0=varUpdatesT0; //Get existing value on field entry
+					panel.paneFormula.setEditable(true);
+					panel.paneFormula.setText(textVarUpdatesT0.getText());
+					panel.mainForm.btnFx.setEnabled(true); panel.mainForm.updateCurFx=true;
+					panel.curFocus=textVarUpdatesT0;
+					textVarUpdatesT0.setBorder(defaultBorder);
+				}
+				public void focusLost(FocusEvent e){
+					if (!e.isTemporary() && e.getOppositeComponent()!=panel.paneFormula) { //Validate
+						textVarUpdatesT0.validateEntry();
+						textVarUpdatesT0.updateHistory();
+					}
+				}
+			});
+			textVarUpdatesT0.getDocument().addDocumentListener(new DocumentListener(){
+				@Override public void insertUpdate(DocumentEvent e) {
+					if(panel.formulaBarFocus==false){panel.paneFormula.setText(textVarUpdatesT0.getText());}
+				}
+				@Override public void removeUpdate(DocumentEvent e) {
+					if(panel.formulaBarFocus==false){panel.paneFormula.setText(textVarUpdatesT0.getText());}
+				}
+				@Override public void changedUpdate(DocumentEvent e) {}
+			});
+			
+		}
 	}
 
 	public void displayRewards(){
@@ -958,6 +1021,7 @@ public class MarkovNode extends ModelNode{
 		node.prob=prob;
 		node.numDimensions=numDimensions;
 		node.varUpdates=varUpdates;
+		node.varUpdatesT0=varUpdatesT0;
 		node.cost=new String[numDimensions];
 		node.transition=transition;
 		node.terminationCondition=terminationCondition;
@@ -1013,6 +1077,7 @@ public class MarkovNode extends ModelNode{
 		else if(fieldIndex==3){curField=textRewards;}
 		else if(fieldIndex==4){curField=textVarUpdates;}
 		else if(fieldIndex==5){curField=textName;}
+		else if(fieldIndex==6) {curField=textVarUpdatesT0;}
 		if(curField!=null){
 			if(color==null){curField.setBackground(new Color(0,0,0,0));}
 			else{curField.setBackground(color);}
@@ -1026,11 +1091,19 @@ public class MarkovNode extends ModelNode{
 		showComponent(show,lblProb); showComponent(show,textProb);
 		if(visible){
 			if(hasCost){showComponent(show,lblCost); showComponent(show,textCost);}
-			if(hasVarUpdates){showComponent(show,lblVarUpdates); showComponent(show,textVarUpdates);}
+			if(hasVarUpdates){
+				showComponent(show,lblVarUpdates); showComponent(show,textVarUpdates);
+				if(type==1) { //chain
+					showComponent(show,lblVarUpdatesT0); showComponent(show,textVarUpdatesT0);
+				}
+			}
 		}
 		else{//Hide cost and variable updates
 			showComponent(false,lblCost); showComponent(false,textCost);
 			showComponent(false,lblVarUpdates); showComponent(false,textVarUpdates);
+			if(type==1) { //chain
+				showComponent(false,lblVarUpdatesT0); showComponent(false,textVarUpdatesT0);
+			}
 		}
 		showComponent(show,textTermination);
 		showComponent(show,lblRewards); showComponent(show,textRewards);
@@ -1067,11 +1140,12 @@ public class MarkovNode extends ModelNode{
 	public void addRemoveVarUpdates(){
 		hasVarUpdates=!hasVarUpdates;
 		showComponent(hasVarUpdates,lblVarUpdates); showComponent(hasVarUpdates,textVarUpdates);
-		if(hasVarUpdates==false){ //Remove updates
-			varUpdates=null;
-		}
-		else{ //Update
-			textVarUpdates.setText(varUpdates);
+		if(hasVarUpdates==false){varUpdates=null;} //Remove updates
+		else{textVarUpdates.setText(varUpdates);} //Update
+		if(type==1) { //chain
+			showComponent(hasVarUpdates,lblVarUpdatesT0); showComponent(hasVarUpdates,textVarUpdatesT0);
+			if(hasVarUpdates==false){varUpdatesT0=null;} //Remove updates
+			else{textVarUpdates.setText(varUpdatesT0);} //Update
 		}
 	}
 }

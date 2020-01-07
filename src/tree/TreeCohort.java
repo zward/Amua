@@ -47,7 +47,9 @@ public class TreeCohort{
 
 	public void simulate(boolean display) throws NumericException, Exception{
 		//Initialize variables
+		myModel.unlockVarsAll(0);
 		for(int c=0; c<numVars; c++){
+			variables[c].locked[0]=true;
 			variables[c].value[0]=Interpreter.evaluateTokens(variables[c].parsedTokens, 0, false);
 		}
 
@@ -69,7 +71,7 @@ public class TreeCohort{
 
 		//Update variables
 		if(node.hasVarUpdates){
-			myModel.unlockVars(0);
+			//myModel.unlockVars(0);
 			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
 				node.curVariableUpdates[u].update(false,0);

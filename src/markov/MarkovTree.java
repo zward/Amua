@@ -27,9 +27,12 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import base.AmuaModel;
 import base.RunReport;
+import gui.frmTrace;
+import gui.frmTraceMulti;
 import main.Console;
 import main.ConsoleTable;
 import main.DimInfo;
+import main.Variable;
 import main.VariableUpdate;
 import math.Interpreter;
 import math.MathUtils;
@@ -53,6 +56,7 @@ public class MarkovTree{
 	@XmlElement public double discountRates[];
 	@XmlElement public int discountStartCycle=0;
 	@XmlElement public boolean showTrace=true;
+	@XmlElement public boolean compileTraces;
 		
 	@XmlTransient public boolean showEV=false;
 	@XmlTransient boolean validProbs;
@@ -184,6 +188,13 @@ public class MarkovTree{
 	}
 
 	private void parseNode(MarkovNode curNode){
+		//reset all parsed values
+		curNode.curProb=null;
+		curNode.curCostTokens=null;
+		curNode.curRewardTokens=null;
+		curNode.curVariableUpdates=null;
+		curNode.curVariableUpdatesT0=null;
+		
 		if(curNode.parentType!=0){ //Validate probability
 			curNode.highlightTextField(0,null); //Prob
 			curNode.curProb=new double[1];
@@ -271,7 +282,7 @@ public class MarkovTree{
 		
 		//Variable updates
 		curNode.highlightTextField(4,null); 
-		if(curNode.hasVarUpdates){
+		if(curNode.hasVarUpdates && curNode.type!=1){ //var updates, not chain
 			String updates[]=null;
 			int curU=-1;
 			try{
@@ -294,6 +305,61 @@ public class MarkovTree{
 				else{errors.add("Node "+curNode.name+": Variable Update Error ("+updates[curU]+")");}
 			}
 		}
+		if(curNode.hasVarUpdates && curNode.type==1) { //var updates, chain
+			//ensure both var updates are not empty
+			if((curNode.varUpdatesT0==null ||curNode.varUpdatesT0.isBlank()) && 
+					(curNode.varUpdates==null || curNode.varUpdates.isBlank())) {
+				curNode.highlightTextField(4, Color.YELLOW); //Variable updates
+				curNode.highlightTextField(6, Color.YELLOW); //Variable updates
+				errors.add("Node "+curNode.name+": Variable Update Error - No entry for either update field");
+			}
+			else { //at least one is entered
+				if(curNode.varUpdatesT0!=null && curNode.varUpdatesT0.isBlank()==false) {
+					String updates[]=null;
+					int curU=-1;
+					try{
+						updates=curNode.varUpdatesT0.split(";");
+						int numUpdates=updates.length;
+						curNode.curVariableUpdatesT0=new VariableUpdate[numUpdates];
+						for(int u=0; u<updates.length; u++){
+							curU=u; //update for error catching
+							curNode.curVariableUpdatesT0[u]=new VariableUpdate(updates[u],myModel);
+							double testVal=curNode.curVariableUpdatesT0[u].testVal.getDouble();
+							if(Double.isNaN(testVal)){
+								curNode.highlightTextField(6, Color.YELLOW); //Variable updates
+								errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
+							}
+						}
+					}catch(Exception e){
+						curNode.highlightTextField(6, Color.YELLOW); //Variable updates
+						errors.add("Node "+curNode.name+": Variable Update Error ("+updates[curU]+")");
+					}
+				}
+				if(curNode.varUpdates!=null && curNode.varUpdates.isBlank()==false) {
+					String updates[]=null;
+					int curU=-1;
+					try{
+						updates=curNode.varUpdates.split(";");
+						int numUpdates=updates.length;
+						curNode.curVariableUpdates=new VariableUpdate[numUpdates];
+						for(int u=0; u<updates.length; u++){
+							curU=u; //update for error catching
+							curNode.curVariableUpdates[u]=new VariableUpdate(updates[u],myModel);
+							double testVal=curNode.curVariableUpdates[u].testVal.getDouble();
+							if(Double.isNaN(testVal)){
+								curNode.highlightTextField(4, Color.YELLOW); //Variable updates
+								errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
+							}
+						}
+					}catch(Exception e){
+						curNode.highlightTextField(4, Color.YELLOW); //Variable updates
+						errors.add("Node "+curNode.name+": Variable Update Error ("+updates[curU]+")");
+					}
+				}
+			}
+			
+		}
+		
 		
 		curNode.numChildren=curNode.childIndices.size();
 		curNode.children=new MarkovNode[curNode.numChildren];
@@ -545,8 +611,28 @@ public class MarkovTree{
 			//MarkovMonteCarlo microModel=new MarkovMonteCarlo(this, runReport); //orig
 			//MarkovMonteCarloTEST microModel=new MarkovMonteCarloTEST(this, runReport); //flip loops
 			MarkovMonteCarloPOOL microModel=new MarkovMonteCarloPOOL(this, runReport); //thread pool
+			microModel.simulate(display);
 			
-			microModel.simulate(showTrace, display);
+			if(display && showTrace) {
+				if(compileTraces==false) {
+					for(int c=0; c<runReport.markovTraces.size(); c++) {
+						MarkovTrace traceGroups[]=null;
+						if(myModel.reportSubgroups) {
+							traceGroups=new MarkovTrace[runReport.numSubgroups];
+							for(int g=0; g<runReport.numSubgroups; g++) {
+								traceGroups[g]=runReport.markovTracesGroup[g].get(c);
+							}
+						}
+						frmTrace window=new frmTrace(runReport.markovTraces.get(c),myModel.errorLog,traceGroups,runReport.subgroupNames);
+						window.frmTrace.setVisible(true);
+					}
+				}
+				else {
+					frmTraceMulti window=new frmTraceMulti(runReport,myModel.errorLog);
+					window.frmTraceMulti.setVisible(true);
+				}
+			}
+			
 		}
 		
 		if(allChains==true){//Get EVs
@@ -573,7 +659,9 @@ public class MarkovTree{
 			myModel.variables.get(v).value=new Numeric[numThreads];
 		}
 		int indexT=myModel.getInnateVariableIndex("t");
-		myModel.innateVariables.get(indexT).value=new Numeric[numThreads];
+		Variable curT=myModel.innateVariables.get(indexT);
+		curT.value=new Numeric[numThreads];
+		curT.locked=new boolean[numThreads];
 		
 		final int blockSize= numChains/numThreads;
 		Thread[] threads = new Thread[numThreads];
@@ -587,7 +675,7 @@ public class MarkovTree{
 						for(int c=beginIndex; c<endIndex; c++){
 							MarkovNode curChain=chains.get(c);
 							MarkovCohort cohortModel=new MarkovCohort(curChain,finalN);
-							cohortModel.simulate(display && showTrace);
+							cohortModel.simulate();
 							runReport.names.add(curChain.name);
 							runReport.markovTraces.add(cohortModel.trace);
 						}
@@ -610,6 +698,21 @@ public class MarkovTree{
 		if(threadError!=null){
 			throw threadError;
 		}
+		
+		//Display traces
+		if(display && showTrace) {
+			if(compileTraces==false) {
+				for(int c=0; c<numChains; c++) {
+					frmTrace window=new frmTrace(runReport.markovTraces.get(c),myModel.errorLog,null,null);
+					window.frmTrace.setVisible(true);
+				}
+			}
+			else {
+				frmTraceMulti window=new frmTraceMulti(runReport,myModel.errorLog);
+				window.frmTraceMulti.setVisible(true);
+			}
+		}
+	
 	}
 	
 	private void displayChainResults(MarkovNode curChain){

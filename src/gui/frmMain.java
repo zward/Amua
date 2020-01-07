@@ -42,9 +42,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
 
@@ -120,11 +124,11 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.2.6";
+	public String version="0.2.7";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
-	JMenuItem mntmSave, mntmSaveAs, mntmDocument, mntmExport, mntmProperties;
+	JMenuItem mntmSave, mntmSaveAs, mntmDocument, mntmExport, mntmImport, mntmProperties;
 	JMenu mnEdit, mnRun;
 	JButton btnOCD, btnClearAnnotations, btnZoomOut, btnZoomIn, btnSnapshot;
 	
@@ -400,6 +404,50 @@ public class frmMain {
 			}
 		});
 		mnModel.add(mntmExport);
+		
+		mntmImport = new JMenuItem("Import...");
+		mntmImport.setIcon(new ScaledIcon("/images/import",16,16,16,true));
+		mntmImport.setDisabledIcon(new ScaledIcon("/images/import",16,16,16,false));
+		mntmImport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					JFileChooser fc=null;
+					fc=new JFileChooser(curModel.filepath);
+					fc.setFileFilter(new AmuaModelFilter());
+					fc.setAcceptAllFileFilterUsed(false);
+					
+					fc.setDialogTitle("Import Model Objects");
+					
+					int returnVal = fc.showDialog(frmMain, "Import");
+					if (returnVal == JFileChooser.APPROVE_OPTION) {
+						File file = fc.getSelectedFile();
+						String path=file.getAbsolutePath();
+						if(path.equals(curModel.filepath)) {
+							JOptionPane.showMessageDialog(frmMain, "Please select a different model!");
+						}
+						else { //open donor model
+							frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+
+							JAXBContext context = JAXBContext.newInstance(AmuaModel.class);
+							Unmarshaller un = context.createUnmarshaller();
+							AmuaModel donorModel = (AmuaModel) un.unmarshal(new File(path));
+
+							frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+							
+							frmImport window=new frmImport(curModel,donorModel);
+							window.frmImport.setVisible(true);
+						}
+					}
+
+				}catch(Exception e1){
+					frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+					console.print("Error: "+e1.getMessage()); console.newLine();
+					errorLog.recordError(e1);
+				}
+			
+			}
+		});
+		mnModel.add(mntmImport);
 		
 
 		JSeparator separator_5 = new JSeparator();
@@ -1339,9 +1387,9 @@ public class frmMain {
 		panelParamSets = new JPanel();
 		panelParamSets.setBounds(12, 13, 459, 217);
 		GridBagLayout gbl_panel_paramSets = new GridBagLayout();
-		gbl_panel_paramSets.columnWidths = new int[]{0, 0, 0, 0, 0};
+		gbl_panel_paramSets.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
 		gbl_panel_paramSets.rowHeights = new int[]{0, 0, 0};
-		gbl_panel_paramSets.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gbl_panel_paramSets.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		gbl_panel_paramSets.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 		panelParamSets.setLayout(gbl_panel_paramSets);
 
@@ -1358,6 +1406,83 @@ public class frmMain {
 		gbc_chckbxUseParamSets.gridy = 0;
 		panelParamSets.add(chckbxUseParamSets, gbc_chckbxUseParamSets);
 
+		JButton btnImport = new JButton("Import...");
+		btnImport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//Import parameter sets
+				try {
+					JFileChooser fc=null;
+					fc=new JFileChooser(curModel.filepath);
+					fc.setFileFilter(new CSVFilter());
+					fc.setDialogTitle("Import Parameter Sets");
+					int returnVal = fc.showDialog(frmMain, "Import");
+					if (returnVal == JFileChooser.APPROVE_OPTION) {
+						File file = fc.getSelectedFile();
+						FileInputStream fstream = new FileInputStream(file);
+						DataInputStream in = new DataInputStream(fstream);
+						BufferedReader br = new BufferedReader(new InputStreamReader(in));
+						String strLine=br.readLine().replaceAll("\"", ""); //Headers
+						String headers[]=strLine.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+						String paramNames[] = null;
+						//get parameter indices
+						boolean ok=true;
+						int numParams=headers.length-2;
+						if(numParams != curModel.parameters.size()) {
+							JOptionPane.showMessageDialog(frmMain,"Error: Expected "+curModel.parameters.size()+" parameters, but got "+numParams);
+							ok=false;
+						}
+						else {
+							paramNames=new String[numParams];
+							for(int p=0; p<numParams; p++) {
+								String curStr=headers[p+2];
+								int index=curModel.getParameterIndex(curStr);
+								if(index==-1) {
+									JOptionPane.showMessageDialog(frmMain,"Error: Parameter not found: "+curStr);
+									ok=false;
+								}
+								else {
+									paramNames[p]=curStr;
+								}
+							}
+						}
+						
+						if(ok==true) {
+							ArrayList<ParameterSet> sets=new ArrayList<ParameterSet>();
+							strLine=br.readLine(); //first set
+							while(strLine!=null) {
+								ParameterSet curSet=new ParameterSet();
+								curSet.parseCSVLine(strLine, curModel);
+								sets.add(curSet);
+								strLine=br.readLine();
+							}
+							
+							//add to model
+							curModel.saveSnapshot("Import Parameter Sets");
+							curModel.parameterNames=paramNames;
+							int numSets=sets.size();
+							curModel.parameterSets=new ParameterSet[numSets];
+							for(int s=0; s<numSets; s++) {
+								curModel.parameterSets[s]=sets.get(s);
+							}
+							curModel.refreshParamSetsTable();
+						}
+						br.close();
+						
+					}
+
+				}catch(Exception e1){
+					JOptionPane.showMessageDialog(frmMain, "Error: "+e1.toString());
+					e1.printStackTrace();
+					errorLog.recordError(e1);
+				}
+			}
+		});
+		GridBagConstraints gbc_btnImport = new GridBagConstraints();
+		gbc_btnImport.insets = new Insets(0, 0, 5, 5);
+		gbc_btnImport.gridx = 1;
+		gbc_btnImport.gridy = 0;
+		panelParamSets.add(btnImport, gbc_btnImport);
+		
 		JButton btnExportParamSets = new JButton("Export...");
 		btnExportParamSets.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -1388,7 +1513,7 @@ public class frmMain {
 							for(int i=0; i<numSets; i++){
 								ParameterSet curSet=curModel.parameterSets[i];
 								out.write(curSet.id+","+curSet.score);
-								for(int j=0; j<numParams; j++){out.write(","+curSet.values[j].toString());}
+								for(int j=0; j<numParams; j++){out.write(","+curSet.values[j].saveAsCSVString());}
 								out.newLine();
 							}
 							out.close();
@@ -1405,7 +1530,7 @@ public class frmMain {
 		});
 		GridBagConstraints gbc_btnExportParamSets = new GridBagConstraints();
 		gbc_btnExportParamSets.insets = new Insets(0, 0, 5, 5);
-		gbc_btnExportParamSets.gridx = 1;
+		gbc_btnExportParamSets.gridx = 2;
 		gbc_btnExportParamSets.gridy = 0;
 		panelParamSets.add(btnExportParamSets, gbc_btnExportParamSets);
 
@@ -1424,14 +1549,15 @@ public class frmMain {
 		});
 		GridBagConstraints gbc_btnClearParamSets = new GridBagConstraints();
 		gbc_btnClearParamSets.insets = new Insets(0, 0, 5, 5);
-		gbc_btnClearParamSets.gridx = 2;
+		gbc_btnClearParamSets.gridx = 3;
 		gbc_btnClearParamSets.gridy = 0;
 		panelParamSets.add(btnClearParamSets, gbc_btnClearParamSets);
+		
+		
 
 		JScrollPane scrollPaneParamSets = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-		gbc_scrollPane.gridwidth = 4;
-		gbc_scrollPane.insets = new Insets(0, 0, 0, 5);
+		gbc_scrollPane.gridwidth = 5;
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
 		gbc_scrollPane.gridx = 0;
 		gbc_scrollPane.gridy = 1;
@@ -1970,6 +2096,7 @@ public class frmMain {
 			mntmSaveAs.setEnabled(false);
 			mntmDocument.setEnabled(false);
 			mntmExport.setEnabled(false);
+			mntmImport.setEnabled(false);
 			mntmProperties.setEnabled(false);
 			mnEdit.setEnabled(false);
 			mnRun.setEnabled(false);
@@ -1994,6 +2121,7 @@ public class frmMain {
 			mntmSaveAs.setEnabled(true);
 			mntmDocument.setEnabled(true);
 			mntmExport.setEnabled(true);
+			mntmImport.setEnabled(true);
 			mntmProperties.setEnabled(true);
 			mnEdit.setEnabled(true);
 			mnRun.setEnabled(true);

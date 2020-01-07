@@ -37,7 +37,7 @@ public class Variable{
 	@XmlTransient public boolean valid=true;
 	@XmlTransient public ArrayList<Variable> dependents; //variables that depend on me
 	@XmlTransient public boolean independent;
-	
+		
 	@XmlTransient public Numeric value[]; //thread-specific
 	@XmlTransient public boolean locked[]; //thread-specific
 	@XmlTransient public Token parsedTokens[];
@@ -74,6 +74,12 @@ public class Variable{
 					dep.dependents.add(this); //add myself as dependent
 				}
 			}
+			else if(word.equals("t")) { //time dependent
+				Variable t=myModel.innateVariables.get(myModel.getInnateVariableIndex("t"));
+				if(!t.dependents.contains(this)) {
+					t.dependents.add(this); //add myself as dependent
+				}
+			}
 			
 			if(index==len){len=0;} //End of word
 			else{
@@ -90,6 +96,16 @@ public class Variable{
 				curDep.locked[curThread]=true;
 				curDep.value[curThread]=Interpreter.evaluateTokens(curDep.parsedTokens, curThread, false);
 				curDep.updateDependents(myModel, curThread);
+			}
+		}
+	}
+	
+	public void unlockDependents(int curThread) {
+		for(int d=0; d<dependents.size(); d++) {
+			Variable curDep=dependents.get(d);
+			if(curDep.locked[curThread]==true) {
+				curDep.locked[curThread]=false;
+				curDep.unlockDependents(curThread);
 			}
 		}
 	}

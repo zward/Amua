@@ -541,7 +541,7 @@ public class MarkovMonteCarloOLD{
 								for(int v=0; v<numVars; v++){
 									variables[v].value[finalN]=people[p].variableVals[v];
 								}
-								myModel.unlockVars(finalN);
+								//myModel.unlockVars(finalN);
 								//Perform variable updates
 								for(int u=0; u<curChain.curVariableUpdates.length; u++){
 									curChain.curVariableUpdates[u].update(true,finalN);
@@ -615,7 +615,7 @@ public class MarkovMonteCarloOLD{
 
 							//chain root variable updates
 							if(t>0 && curChain.hasVarUpdates){
-								myModel.unlockVars(finalN);
+								//myModel.unlockVars(finalN);
 								//Perform variable updates
 								for(int u=0; u<curChain.curVariableUpdates.length; u++){
 									curChain.curVariableUpdates[u].update(true,finalN);
@@ -724,7 +724,7 @@ public class MarkovMonteCarloOLD{
 	private void traverseNode(MarkovNode node, MarkovPerson curPerson, int curThread) throws Exception{
 		//Update variables
 		if(node.hasVarUpdates){
-			myModel.unlockVars(curThread);
+			//myModel.unlockVars(curThread);
 			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
 				node.curVariableUpdates[u].update(true,curThread);

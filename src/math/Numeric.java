@@ -263,7 +263,7 @@ public class Numeric{
 		doubleNum=newDouble;
 	}
 	
-	public String saveAsString(){
+	public String saveAsXMLString(){
 		String str="";
 		str+=format+";";
 		if(format==Format.INTEGER){str+=intNum+"";}
@@ -275,6 +275,36 @@ public class Numeric{
 				for(int j=0; j<ncol-1; j++){str+=matrix[i][j]+",";}
 				str+=matrix[i][ncol-1]+";";
 			}
+		}
+		return(str);
+	}
+	
+	public String saveAsCSVString(){
+		String str=null;
+		if(format==Format.INTEGER){str=intNum+"";}
+		else if(format==Format.DOUBLE){str=doubleNum+"";}
+		else if(format==Format.BOOL){str=bool+"";}
+		else{ //matrix, enclose in quotes
+			str="\"";
+			if(nrow>1) {str+="[";};
+			//first row
+			str+="[";
+			str+=matrix[0][0];
+			for(int j=1; j<ncol; j++) {
+				str+=", "+matrix[0][j];
+			}
+			str+="]";
+			//other rows
+			for(int i=1; i<nrow; i++) {
+				str+=", [";
+				str+=matrix[i][0];
+				for(int j=1; j<ncol; j++) {
+					str+=", "+matrix[i][j];
+				}
+				str+="]";
+			}
+			if(nrow>1) {str+="]";};
+			str+="\"";
 		}
 		return(str);
 	}

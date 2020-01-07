@@ -569,7 +569,10 @@ public class frmDefineTable {
 			btnEditColName.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int selected=viewTable.getSelectedColumn();
-					if(selected!=-1){
+					if(selected==-1) {
+						JOptionPane.showMessageDialog(frmDefineTable, "Please select a cell in the table!");
+					}
+					else{
 						String curName=model.getColumnName(selected);
 						String name = JOptionPane.showInputDialog(frmDefineTable, "Column name:",curName);
 						if(name!=null && !name.isEmpty()){

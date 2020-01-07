@@ -35,7 +35,7 @@ public class ModelTextField extends JTextField{
 	protected AmuaModel myModel;
 	/**
 	 * Decision tree: 0=Prob; 1=Cost, 2=Payoff
-	 * Markov model: 0=Prob; 1=Cost/Reward; 2=Termination; 3=Rewards; 4=Var Updates
+	 * Markov model: 0=Prob; 1=Cost/Reward; 2=Termination; 3=Rewards; 4=Var Updates; 5=Name; 6=Var Updates T0
 	 */
 	protected int fieldType;
 	protected String checkProb, checkCosts[], checkVarUpdates;

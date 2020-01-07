@@ -25,7 +25,6 @@ import java.awt.Dialog.ModalityType;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import java.awt.event.ActionListener;
@@ -154,6 +153,9 @@ public class frmDefineVariable {
 						}
 
 						if(proceed==true){
+							if(variable.value==null) {
+								variable.value=new Numeric[1];
+							}
 							if(varNum==-1){
 								myModel.saveSnapshot("Add Variable"); //Add to undo stack
 								variable.name=testName;

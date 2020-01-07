@@ -101,6 +101,7 @@ public class VariableUpdate{
 	
 	public void update(boolean sample, int curThread) throws Exception{
 		variable.locked[curThread]=true;
+		variable.unlockDependents(curThread);
 		Numeric value=variable.value[curThread];
 		if(operation==1){ //++
 			if(value.isInteger()){value.setInt(value.getInt()+1);}

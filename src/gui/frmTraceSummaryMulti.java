@@ -20,7 +20,6 @@ package gui;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
-import java.util.ArrayList;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -35,17 +34,16 @@ import javax.swing.JTable;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.LegendItem;
 import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYDifferenceRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import base.RunReportSummary;
 import filters.CSVFilter;
 import main.ErrorLog;
 import main.ScaledIcon;
@@ -57,7 +55,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JToolBar;
-import javax.swing.ImageIcon;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -71,13 +68,14 @@ import javax.swing.DefaultComboBoxModel;
 /**
  *
  */
-public class frmTraceSummary {
+public class frmTraceSummaryMulti {
 
-	public JFrame frmTraceSummary;
-	MarkovTraceSummary traces[];
+	public JFrame frmTraceSummaryMulti;
+	RunReportSummary runReport;
 	MarkovTraceSummary curTrace;
+	int numSubgroups=0;
 	String groupNames[];
-	JComboBox comboPlot, comboGroup;
+	JComboBox comboChain, comboPlot, comboGroup;
 	XYSeriesCollection mean, bounds[];
 	JFreeChart chartTrace;
 	XYLineAndShapeRenderer renderer;
@@ -89,11 +87,18 @@ public class frmTraceSummary {
 	/**
 	 *  Default Constructor
 	 */
-	public frmTraceSummary(MarkovTraceSummary traces[], ErrorLog errorLog1, String groupNames[]) {
-		this.traces=traces;
+	public frmTraceSummaryMulti (RunReportSummary runReport, ErrorLog errorLog1) {
+		this.runReport=runReport;
 		this.errorLog=errorLog1;
-		curTrace=traces[0]; //overall
-		this.groupNames=groupNames;
+		curTrace=runReport.markovTraceSummary[0];
+		if(runReport.markovTraceSummaryGroup!=null){
+			numSubgroups=runReport.subgroupNames.length;
+			groupNames=new String[numSubgroups+1];
+			groupNames[0]="Overall";
+			for(int g=0; g<numSubgroups; g++) {
+				groupNames[g+1]=runReport.subgroupNames[g];
+			}
+		}
 		initialize();
 	}
 
@@ -102,17 +107,17 @@ public class frmTraceSummary {
 	 */
 	private void initialize() {
 		try{
-			frmTraceSummary = new JFrame();
-			frmTraceSummary.setTitle("Amua - Markov Trace Summary: "+traces[0].traceName);
-			frmTraceSummary.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_128.png")));
-			frmTraceSummary.setBounds(100, 100, 1000, 600);
-			frmTraceSummary.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			frmTraceSummaryMulti = new JFrame();
+			frmTraceSummaryMulti.setTitle("Amua - Markov Trace Summary");
+			frmTraceSummaryMulti.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_128.png")));
+			frmTraceSummaryMulti.setBounds(100, 100, 1200, 600);
+			frmTraceSummaryMulti.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.columnWidths = new int[]{561, 557, 0};
 			gridBagLayout.rowHeights = new int[]{32, 514, 0};
 			gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
 			gridBagLayout.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-			frmTraceSummary.getContentPane().setLayout(gridBagLayout);
+			frmTraceSummaryMulti.getContentPane().setLayout(gridBagLayout);
 
 			mean=new XYSeriesCollection();
 			
@@ -126,10 +131,30 @@ public class frmTraceSummary {
 			gbc_panel.fill = GridBagConstraints.BOTH;
 			gbc_panel.gridx = 0;
 			gbc_panel.gridy = 0;
-			frmTraceSummary.getContentPane().add(panel, gbc_panel);
+			frmTraceSummaryMulti.getContentPane().add(panel, gbc_panel);
+			
+			JLabel lblChain = new JLabel("Chain:");
+			lblChain.setBounds(2, 5, 42, 16);
+			panel.add(lblChain);
+			
+			comboChain = new JComboBox();
+			comboChain.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					//get chain
+					int chainIndex=comboChain.getSelectedIndex();
+					int selected=comboGroup.getSelectedIndex();
+					if(selected<=0){curTrace=runReport.markovTraceSummary[chainIndex];}
+					else{curTrace=runReport.markovTraceSummaryGroup[selected-1][chainIndex];}
+					table.setModel(curTrace.modelTraceRounded);
+					updateChart(comboPlot.getSelectedIndex());
+				}
+			});
+			comboChain.setModel(new DefaultComboBoxModel(runReport.markovChainNames));
+			comboChain.setBounds(41, 0, 150, 26);
+			panel.add(comboChain);
 			
 			JLabel lblNewLabel = new JLabel("Plot:");
-			lblNewLabel.setBounds(6, 6, 55, 16);
+			lblNewLabel.setBounds(207, 5, 34, 16);
 			panel.add(lblNewLabel);
 			
 			comboPlot = new JComboBox();
@@ -142,28 +167,30 @@ public class frmTraceSummary {
 			if(curTrace.numVariables>0){
 				comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)","Variables (Cycle)"}));
 			}
-			comboPlot.setBounds(41, 1, 157, 26);
+			comboPlot.setBounds(235, 0, 150, 26);
 			panel.add(comboPlot);
 			
 			JLabel lblGroup = new JLabel("Group:");
 			lblGroup.setVisible(false);
-			lblGroup.setBounds(210, 6, 37, 16);
+			lblGroup.setBounds(397, 5, 55, 16);
 			panel.add(lblGroup);
 			
 			comboGroup = new JComboBox();
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
+					int chainIndex=comboChain.getSelectedIndex();
 					int selected=comboGroup.getSelectedIndex();
-					curTrace=traces[selected];
+					if(selected<=0){curTrace=runReport.markovTraceSummary[chainIndex];}
+					else{curTrace=runReport.markovTraceSummaryGroup[selected-1][chainIndex];}
 					table.setModel(curTrace.modelTraceRounded);
 					updateChart(comboPlot.getSelectedIndex());
 				}
 			});
 			comboGroup.setVisible(false);
-			comboGroup.setBounds(255, 1, 157, 26);
+			comboGroup.setBounds(441, 0, 150, 26);
 			panel.add(comboGroup);
 			
-			if(traces.length>1){
+			if(numSubgroups>0){
 				comboGroup.setModel(new DefaultComboBoxModel(groupNames));
 				lblGroup.setVisible(true);
 				comboGroup.setVisible(true);
@@ -176,7 +203,7 @@ public class frmTraceSummary {
 			gbc_panelChart.fill = GridBagConstraints.BOTH;
 			gbc_panelChart.gridx = 0;
 			gbc_panelChart.gridy = 1;
-			frmTraceSummary.getContentPane().add(panelChart, gbc_panelChart);
+			frmTraceSummaryMulti.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
 			
 			JToolBar toolBar = new JToolBar();
@@ -187,7 +214,7 @@ public class frmTraceSummary {
 			gbc_toolBar.insets = new Insets(0, 0, 5, 0);
 			gbc_toolBar.gridx = 1;
 			gbc_toolBar.gridy = 0;
-			frmTraceSummary.getContentPane().add(toolBar, gbc_toolBar);
+			frmTraceSummaryMulti.getContentPane().add(toolBar, gbc_toolBar);
 			
 			JButton btnExport = new JButton("Export");
 			btnExport.addActionListener(new ActionListener() {
@@ -198,7 +225,7 @@ public class frmTraceSummary {
 						fc.setApproveButtonText("Export");
 						fc.setFileFilter(new CSVFilter());
 
-						int returnVal = fc.showOpenDialog(frmTraceSummary);
+						int returnVal = fc.showOpenDialog(frmTraceSummaryMulti);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
 							String filepath=file.getAbsolutePath().replaceAll(".csv","");
@@ -223,11 +250,11 @@ public class frmTraceSummary {
 							
 							out.close();
 							
-							JOptionPane.showMessageDialog(frmTraceSummary, "Exported!");
+							JOptionPane.showMessageDialog(frmTraceSummaryMulti, "Exported!");
 						}
 
 					}catch(Exception er){
-						JOptionPane.showMessageDialog(frmTraceSummary,er.getMessage());
+						JOptionPane.showMessageDialog(frmTraceSummaryMulti,er.getMessage());
 						errorLog.recordError(er);
 					}
 				}
@@ -267,7 +294,7 @@ public class frmTraceSummary {
 			gbc_scrollPane.fill = GridBagConstraints.BOTH;
 			gbc_scrollPane.gridx = 1;
 			gbc_scrollPane.gridy = 1;
-			frmTraceSummary.getContentPane().add(scrollPane, gbc_scrollPane);
+			frmTraceSummaryMulti.getContentPane().add(scrollPane, gbc_scrollPane);
 			
 			updateChart(0); //show prevalence
 			

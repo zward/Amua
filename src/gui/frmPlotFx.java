@@ -320,6 +320,7 @@ public class frmPlotFx {
 						int index=myModel.getInnateVariableIndex("x");
 						if(index!=-1){myModel.innateVariables.set(index, curX);}
 						else{myModel.innateVariables.add(curX);}
+						curX.locked[0]=true;
 						
 						double curData[][]=new double[2][numIntervals+1];
 						for(int i=0; i<=numIntervals; i++){

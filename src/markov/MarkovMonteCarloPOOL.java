@@ -27,7 +27,6 @@ import javax.swing.ProgressMonitor;
 import base.AmuaModel;
 import base.MicroStats;
 import base.RunReport;
-import gui.frmTrace;
 import main.MersenneTwisterFast;
 import main.Variable;
 import math.Interpreter;
@@ -98,8 +97,10 @@ public class MarkovMonteCarloPOOL{
 		int indexT=myModel.getInnateVariableIndex("t");
 		curT=myModel.innateVariables.get(indexT);
 		curT.value=new Numeric[numThreads];
+		curT.locked=new boolean[numThreads];
 		for(int n=0; n<numThreads; n++){
 			curT.value[n]=new Numeric(0);
+			curT.locked[n]=true;
 		}
 		
 		numVars=myModel.variables.size();
@@ -113,7 +114,7 @@ public class MarkovMonteCarloPOOL{
 		}
 	}
 	
-	public void simulate(boolean showTrace, boolean showProgress) throws NumericException, Exception{
+	public void simulate(boolean showProgress) throws NumericException, Exception{
 		cancelled=false;
 		maxProg=(numChains+1)*guessMaxCycles; //initialize + simulate
 		progress=new ProgressMonitor(myModel.mainForm.frmMain, "Monte Carlo simulation", "", 0, (int) maxProg);
@@ -121,7 +122,7 @@ public class MarkovMonteCarloPOOL{
 		
 		initializePeople(showProgress); //create people and assign subgroups
 		if(cancelled==false){
-			runChains(showProgress,showTrace); //simulate each Markov chain
+			runChains(showProgress); //simulate each Markov chain
 		}
 		
 		progress.close();
@@ -168,22 +169,26 @@ public class MarkovMonteCarloPOOL{
 							people[p].rewards=new double[numDim];
 							people[p].rewardsDis=new double[numDim];
 
-							//initialize independent variables
+							//initialize variables
 							people[p].initVariableVals=new Numeric[numVars];
 							people[p].variableVals=new Numeric[numVars];
+							//eval independent vars
+							myModel.unlockVarsAll(finalN);
 							for(int v=0; v<numVars; v++){
 								if(variables[v].independent){
-									people[p].initVariableVals[v]=Interpreter.evaluateTokens(variables[v].parsedTokens, finalN, true);
-									variables[v].value[finalN]=people[p].initVariableVals[v];
+									variables[v].locked[finalN]=true;
+									variables[v].value[finalN]=Interpreter.evaluateTokens(variables[v].parsedTokens, finalN, true);
 								}
 							}
 							//Update any dependent variables
 							for(int v=0; v<numVars; v++){
-								if(variables[v].independent==false){
-									variables[v].updateDependents(myModel,finalN);
-									people[p].initVariableVals[v]=variables[v].value[finalN];
-								}
+								variables[v].updateDependents(myModel,finalN);
 							}
+							//assign vals to person
+							for(int v=0; v<numVars; v++) {
+								people[p].initVariableVals[v]=variables[v].value[finalN];
+							}
+							
 
 							//get subgroup
 							if(myModel.reportSubgroups){
@@ -245,7 +250,7 @@ public class MarkovMonteCarloPOOL{
 		}
 	}
 	
-	private void runChains(final boolean showProgress, boolean showTrace) throws NumericException, Exception{
+	private void runChains(final boolean showProgress) throws NumericException, Exception{
 		//set threads
 		for(int i=0; i<markovTree.nodes.size(); i++){
 			MarkovNode curNode=markovTree.nodes.get(i);
@@ -541,12 +546,6 @@ public class MarkovMonteCarloPOOL{
 					}
 				}
 				
-				if(showTrace){//Show trace
-					String subgroupNames[]=new String[numSubgroups];
-					for(int g=0; g<numSubgroups; g++){subgroupNames[g]=myModel.subgroupNames.get(g);}
-					frmTrace window=new frmTrace(trace,curChain.panel.errorLog,traceGroup,subgroupNames);
-					window.frmTrace.setVisible(true);
-				}
 			}
 			else{ //was cancelled
 				c=numChains; //end loop
@@ -575,20 +574,20 @@ public class MarkovMonteCarloPOOL{
 							}
 	
 							//initialize state
-							if(curChain.hasVarUpdates){
-								//re-point variables
-								for(int v=0; v<numVars; v++){
-									variables[v].value[finalN]=people[p].variableVals[v];
-								}
-								myModel.unlockVars(finalN);
+							if(curChain.hasVarUpdates && curChain.curVariableUpdatesT0!=null){
 								//Perform variable updates
-								for(int u=0; u<curChain.curVariableUpdates.length; u++){
-									curChain.curVariableUpdates[u].update(true,finalN);
+								for(int u=0; u<curChain.curVariableUpdatesT0.length; u++){
+									curChain.curVariableUpdatesT0[u].update(true,finalN);
 								}
 								//Update any dependent variables
-								for(int u=0; u<curChain.curVariableUpdates.length; u++){
-									curChain.curVariableUpdates[u].variable.updateDependents(myModel,finalN);
+								for(int u=0; u<curChain.curVariableUpdatesT0.length; u++){
+									curChain.curVariableUpdatesT0[u].variable.updateDependents(myModel,finalN);
 								}
+								//re-point variables
+								for(int v=0; v<numVars; v++){
+									curPerson.variableVals[v]=variables[v].value[finalN];
+								}
+								
 							}
 							//assign starting state
 							if(curChain.childHasProbVariables){
@@ -657,10 +656,17 @@ public class MarkovMonteCarloPOOL{
 							for(int v=0; v<numVars; v++){
 								variables[v].value[finalN]=curPerson.variableVals[v];
 							}
+							
+							//update time dependent variables
+							if(t>0) {
+								//myModel.unlockVars(finalN);
+								curT.unlockDependents(finalN);
+								curT.updateDependents(myModel, finalN);
+							}
 
 							//chain root variable updates
-							if(t>0 && curChain.hasVarUpdates){
-								myModel.unlockVars(finalN);
+							if(t>0 && curChain.hasVarUpdates && curChain.curVariableUpdates!=null){
+								//myModel.unlockVars(finalN);
 								//Perform variable updates
 								for(int u=0; u<curChain.curVariableUpdates.length; u++){
 									curChain.curVariableUpdates[u].update(true,finalN);
@@ -769,7 +775,7 @@ public class MarkovMonteCarloPOOL{
 	private void traverseNode(MarkovNode node, MarkovPerson curPerson, int curThread) throws Exception{
 		//Update variables
 		if(node.hasVarUpdates){
-			myModel.unlockVars(curThread);
+			//myModel.unlockVars(curThread);
 			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
 				node.curVariableUpdates[u].update(true,curThread);
@@ -1082,10 +1088,15 @@ public class MarkovMonteCarloPOOL{
 					for(int v=0; v<numVars; v++){
 						variables[v].value[finalN]=curPerson.variableVals[v];
 					}
+					
+					//update time dependent variables
+					if(t>0) {
+						curT.unlockDependents(finalN);
+						curT.updateDependents(myModel, finalN);
+					}
 
 					//chain root variable updates
-					if(t>0 && curChain.hasVarUpdates){
-						myModel.unlockVars(finalN);
+					if(t>0 && curChain.hasVarUpdates && curChain.curVariableUpdates!=null){
 						//Perform variable updates
 						for(int u=0; u<curChain.curVariableUpdates.length; u++){
 							curChain.curVariableUpdates[u].update(true,finalN);
@@ -1130,6 +1141,10 @@ public class MarkovMonteCarloPOOL{
 								cycleVariablesGroup[g][v][finalN]+=val; cycleVariablesDenomGroup[g][v][finalN]++;
 							}
 						}
+					}
+					//re-point variables
+					for(int v=0; v<numVars; v++){
+						curPerson.variableVals[v]=variables[v].value[finalN];
 					}
 				}
 			}catch(Exception e){

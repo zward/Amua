@@ -256,12 +256,14 @@ public class frmPlotSurface {
 						int index=myModel.getInnateVariableIndex("x");
 						if(index!=-1){myModel.innateVariables.set(index, curX);}
 						else{myModel.innateVariables.add(curX);}
+						curX.locked[0]=true;
 
 						Variable curY=new Variable();
 						curY.name="y";
 						index=myModel.getInnateVariableIndex("y");
 						if(index!=-1){myModel.innateVariables.set(index, curY);}
 						else{myModel.innateVariables.add(curY);}
+						curY.locked[0]=true;
 						
 						double dataSurface[][][]=new double[1][numIntervals+1][numIntervals+1];
 						int prog=0;

@@ -20,11 +20,13 @@ package markov;
 
 import java.awt.Color;
 import base.ModelTextField;
+import main.VariableUpdate;
 
 public class MarkovTextField extends ModelTextField{
 	MarkovNode node;
 	String checkTermination;
 	String checkRewards[];
+	String checkVarUpdatesT0;
 		
 	//Constructor
 	public MarkovTextField(PanelMarkov panel1, MarkovNode node, int type){
@@ -38,6 +40,7 @@ public class MarkovTextField extends ModelTextField{
 		else if(fieldType==2){validateTermination();}
 		else if(fieldType==3){validateRewards();}
 		else if(fieldType==4){validateVarUpdates();}
+		else if(fieldType==6) {validateVarUpdatesT0();} //T0
 	}
 	
 	private void validateTermination(){
@@ -76,12 +79,28 @@ public class MarkovTextField extends ModelTextField{
 		if(valid==false){this.setForeground(Color.RED);}
 	}
 	
+	protected void validateVarUpdatesT0(){
+		checkVarUpdatesT0=this.getText();
+		boolean valid=true;
+		this.setForeground(Color.BLACK);
+		try{
+			String strExpr[]=checkVarUpdatesT0.split(";");
+			int i=0;
+			while(valid==true && i<strExpr.length){
+				VariableUpdate test=new VariableUpdate(strExpr[i],myModel);
+				i++;
+			}
+		}catch(Exception ex){valid=false;}
+		if(valid==false){this.setForeground(Color.RED);}
+	}
+	
 	public void updateHistory(){
 		if(fieldType==0){updateProbHistory();}
 		else if(fieldType==1){updateCostHistory();}
 		else if(fieldType==2){updateTerminationHistory();}
 		else if(fieldType==3){updateRewardsHistory();}
 		else if(fieldType==4){updateVarUpdatesHistory();}
+		else if(fieldType==6){updateVarUpdatesHistoryT0();} //T0
 		
 		panel.paneFormula.setText("");
 		panel.paneFormula.setEditable(false);
@@ -134,6 +153,14 @@ public class MarkovTextField extends ModelTextField{
 		}
 		//Update current value
 		node.varUpdates=checkVarUpdates;
+	}
+	
+	private void updateVarUpdatesHistoryT0(){
+		if(node.tempVarUpdatesT0!=null && !node.tempVarUpdatesT0.equals(checkVarUpdatesT0)){ //Var updates changed
+			panel.saveSnapshot("Edit Variable Updates"); //add to undo stack
+		}
+		//Update current value
+		node.varUpdatesT0=checkVarUpdatesT0;
 	}
 
 	//Set up tool-tips

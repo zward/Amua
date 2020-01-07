@@ -45,6 +45,10 @@ public class MarkovTraceSummary{
 	public double prev[][][]; //[state][mean/lb/ub][cycle]
 	public double cycleRewards[][][], cycleRewardsDis[][][]; //[dim][mean/lb/ub][cycle]
 	public double cumRewards[][][], cumRewardsDis[][][];
+	public int numVariables;
+	public double cycleVars[][][]; //[var][mean/lb/ub][cycle]
+	public String varNames[];
+	
 	public DefaultTableModel modelTraceRounded;
 	DefaultTableModel modelTraceRaw;
 	AmuaModel myModel;
@@ -61,6 +65,8 @@ public class MarkovTraceSummary{
 		dimSymbols=traces[0].dimSymbols;
 		dimNames=traces[0].dimNames;
 		discounted=traces[0].discounted;
+		numVariables=traces[0].numVariables;
+		varNames=traces[0].varNames;
 		//Build Model headers
 		modelTraceRaw=new DefaultTableModel(); modelTraceRounded=new DefaultTableModel();
 		modelTraceRaw.addColumn("Cycle"); modelTraceRounded.addColumn("Cycle");
@@ -86,6 +92,11 @@ public class MarkovTraceSummary{
 				modelTraceRaw.addColumn("Cum_Dis_Mean_"+dimSymbols[d]); modelTraceRaw.addColumn("Cum_Dis_LB_"+dimSymbols[d]); modelTraceRaw.addColumn("Cum_Dis_UB_"+dimSymbols[d]);
 				modelTraceRounded.addColumn("Cum_Dis_Mean_"+dimSymbols[d]); modelTraceRounded.addColumn("Cum_Dis_LB_"+dimSymbols[d]); modelTraceRounded.addColumn("Cum_Dis_UB_"+dimSymbols[d]);
 			}
+		}
+		//variables
+		for(int v=0; v<numVariables; v++) {
+			modelTraceRaw.addColumn(traces[0].varNames[v]+"_Mean"); modelTraceRaw.addColumn(traces[0].varNames[v]+"_LB"); modelTraceRaw.addColumn(traces[0].varNames[v]+"_UB");
+			modelTraceRounded.addColumn(traces[0].varNames[v]+"_Mean"); modelTraceRounded.addColumn(traces[0].varNames[v]+"_LB"); modelTraceRounded.addColumn(traces[0].varNames[v]+"_UB");
 		}
 		modelTraceRaw.addColumn("Num_Sims"); modelTraceRounded.addColumn("Num_Sims");
 		
@@ -135,6 +146,9 @@ public class MarkovTraceSummary{
 		if(discounted){
 			cycleRewardsDis=new double[numDim][3][maxCyclesGlobal];
 			cumRewardsDis=new double[numDim][3][maxCyclesGlobal];
+		}
+		if(numVariables>0) {
+			cycleVars=new double[numVariables][3][maxCyclesGlobal];
 		}
 		
 		//calculate prev
@@ -197,6 +211,24 @@ public class MarkovTraceSummary{
 				}
 			}
 		}
+		//calculate variables
+		for(int v=0; v<numVariables; v++){
+			for(int c=0; c<maxCyclesGlobal; c++){
+				ArrayList<Double> curVars= new ArrayList<Double>();
+				double mean=0, denom=0;
+				for(int t=0; t<numTraces; t++){
+					if(maxCyclesLocal[t]>c){ //cycle observed
+						double val=traces[t].cycleVariables[v].get(c);
+						curVars.add(val);
+						mean+=val; denom++;
+					}
+				}
+				cycleVars[v][0][c]=mean/denom;
+				Collections.sort(curVars);
+				int bounds[]=MathUtils.getBoundIndices(denom); int lb=bounds[0], ub=bounds[1];
+				cycleVars[v][1][c]=curVars.get(lb); cycleVars[v][2][c]=curVars.get(ub);
+			}
+		}
 		
 		//build table
 		for(int t=0; t<maxCyclesGlobal; t++){
@@ -243,6 +275,14 @@ public class MarkovTraceSummary{
 						modelTraceRounded.setValueAt(MathUtils.round(cumRewardsDis[d][i][t],myModel.dimInfo.decimals[d]),t,curCol);
 						curCol++;
 					}
+				}
+			}
+			//variables
+			for(int v=0; v<numVariables; v++) {
+				for(int i=0; i<3; i++) {
+					modelTraceRaw.setValueAt(cycleVars[v][i][t], t, curCol);
+					modelTraceRounded.setValueAt(MathUtils.round(cycleVars[v][i][t], 6), t, curCol);
+					curCol++;
 				}
 			}
 			//record num sims observed by cycle

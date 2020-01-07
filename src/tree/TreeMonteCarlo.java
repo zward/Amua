@@ -145,15 +145,17 @@ public class TreeMonteCarlo{
 							people[p].costs=new double[numDim];
 							people[p].payoffs=new double[numDim];
 							//initialize independent variables
+							myModel.unlockVarsAll(finalN);
 							for(int v=0; v<numVars; v++){
 								if(variables[v].independent){
+									variables[v].locked[finalN]=true;
 									people[p].initVariableVals[v]=Interpreter.evaluateTokens(variables[v].parsedTokens, finalN, true);
 									variables[v].value[finalN]=people[p].initVariableVals[v];
 								}
 							}
 							//Update any dependent variables
 							for(int v=0; v<numVars; v++){
-								if(variables[v].independent==false){
+								if(variables[v].independent==true){
 									variables[v].updateDependents(myModel,finalN);
 									people[p].initVariableVals[v]=variables[v].value[finalN];
 								}
@@ -383,7 +385,7 @@ public class TreeMonteCarlo{
 				
 		//Update variables
 		if(node.hasVarUpdates){
-			myModel.unlockVars(curThread);
+			//myModel.unlockVars(curThread);
 			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
 				node.curVariableUpdates[u].update(true,curThread);

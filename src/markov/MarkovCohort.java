@@ -19,7 +19,6 @@
 package markov;
 
 import base.AmuaModel;
-import gui.frmTrace;
 import main.Variable;
 import math.Interpreter;
 import math.MathUtils;
@@ -74,27 +73,29 @@ public class MarkovCohort{
 		getTransitionIndex(chainRoot);
 	}
 	
-	public void simulate(boolean showTrace) throws NumericException, Exception{
+	public void simulate() throws NumericException, Exception{
 		//Get innate variable 't'
 		int indexT=myModel.getInnateVariableIndex("t");
 		curT=myModel.innateVariables.get(indexT);
 		curT.value[curThread]=new Numeric(0);
+		curT.locked[curThread]=true;
 
 		//Initialize variables
+		myModel.unlockVarsAll(curThread);
 		for(int c=0; c<numVariables; c++){
 			variables[c].value[curThread]=Interpreter.evaluateTokens(variables[c].parsedTokens, curThread, false);
+			variables[c].locked[curThread]=true;
 		}
 		
 		//Perform Markov Chain variable updates for t=0
-		if(chainRoot.hasVarUpdates){
-			myModel.unlockVars(curThread);
+		if(chainRoot.hasVarUpdates && chainRoot.curVariableUpdatesT0!=null){
 			//Perform variable updates
-			for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
-				chainRoot.curVariableUpdates[u].update(false,curThread);
+			for(int u=0; u<chainRoot.curVariableUpdatesT0.length; u++){
+				chainRoot.curVariableUpdatesT0[u].update(false,curThread);
 			}
 			//Update any dependent variables
-			for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
-				chainRoot.curVariableUpdates[u].variable.updateDependents(myModel,curThread);
+			for(int u=0; u<chainRoot.curVariableUpdatesT0.length; u++){
+				chainRoot.curVariableUpdatesT0[u].variable.updateDependents(myModel,curThread);
 			}
 		}
 		
@@ -136,9 +137,15 @@ public class MarkovCohort{
 		
 		boolean terminate=false;
 		while(terminate==false && t<markovTree.maxCycles){
+			//update time dependent variables
+			if(t>0) {
+				curT.unlockDependents(curThread);
+				curT.updateDependents(myModel, curThread);
+			}
+			
 			//chain root variable updates
-			if(t>0 && chainRoot.hasVarUpdates){
-				myModel.unlockVars(curThread);
+			if(t>0 && chainRoot.hasVarUpdates && chainRoot.curVariableUpdates!=null){
+				//myModel.unlockVars(curThread);
 				//Perform variable updates
 				for(int u=0; u<chainRoot.curVariableUpdates.length; u++){
 					chainRoot.curVariableUpdates[u].update(false,curThread);
@@ -191,11 +198,7 @@ public class MarkovCohort{
 
 		//Reset variable 't'
 		curT.value[curThread].setInt(0);
-
-		if(showTrace){//Show trace
-			frmTrace window=new frmTrace(trace,chainRoot.panel.errorLog,null,null);
-			window.frmTrace.setVisible(true);
-		}
+		
 	}
 	
 	private boolean checkTerminationCondition(){
@@ -234,7 +237,7 @@ public class MarkovCohort{
 		}
 		//Update variables
 		if(node.hasVarUpdates){
-			myModel.unlockVars(curThread);
+			//myModel.unlockVars(curThread);
 			//Perform variable updates
 			for(int u=0; u<node.curVariableUpdates.length; u++){
 				node.curVariableUpdates[u].update(false,curThread);
