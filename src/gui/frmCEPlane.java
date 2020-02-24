@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017-2019 Zachary J. Ward
+ * Copyright (C) 2017-2020 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -325,6 +325,7 @@ public class frmCEPlane {
 		boolean viable[]=new boolean[numStrat];
 		int numNonviable=0;
 		for(int s=0; s<numStrat; s++) {
+			viable[s]=true; //default to viable
 			String note=(String) table[s][5];
 			if(note==null || note.isEmpty()) {
 				viable[s]=true;

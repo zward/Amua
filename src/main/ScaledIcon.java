@@ -36,6 +36,8 @@ public class ScaledIcon implements Icon{
 	int width, height;
 	boolean enabled;
 		
+	byte repainted=0;
+	
 	//constructor
 	public ScaledIcon(String basePath, int origRes, int width, int height, boolean enabled) {
 		try {
@@ -106,9 +108,10 @@ public class ScaledIcon implements Icon{
 		else {
 			g.drawImage(imageDisabled, x, y, width, height, null);
 		}	
-		if(c!=null) {
+		if(c!=null && repainted<3) { //don't constantly re-paint, just enough to refresh the icon
 			c.repaint();
 			c.revalidate();
+			repainted++;
 		}
 	}
 

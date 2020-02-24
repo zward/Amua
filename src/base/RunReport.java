@@ -358,7 +358,7 @@ public class RunReport{
 		else if(type==1){
 			int numTrace=markovTraces.size();
 			for(int i=0; i<numTrace; i++){
-				markovTraces.get(i).write(filepath);
+				markovTraces.get(i).write(filepath+"_",-1);
 			}
 		}
 		

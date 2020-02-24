@@ -289,6 +289,36 @@ public class frmTraceSummaryMulti {
 			btnCopy.setToolTipText("Copy");
 			toolBar.add(btnCopy);
 			
+			JButton btnExportAll = new JButton("Export all");
+			btnExportAll.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						fc=new JFileChooser();
+						fc.setDialogTitle("Export All Traces");
+						fc.setApproveButtonText("Export");
+						fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+						fc.setFileFilter(new CSVFilter());
+
+						int returnVal = fc.showDialog(frmTraceSummaryMulti, "Export");
+						if (returnVal == JFileChooser.APPROVE_OPTION) {
+							File file = fc.getSelectedFile();
+							String filepath=file.getAbsolutePath()+File.separator;
+							int numChains=runReport.markovChainNames.length;
+							for(int c=0; c<numChains; c++) {
+								runReport.markovTraceSummary[c].writeAllTraces(filepath);
+							}
+							
+							JOptionPane.showMessageDialog(frmTraceSummaryMulti, "Exported!");
+						}
+
+					}catch(Exception er){
+						JOptionPane.showMessageDialog(frmTraceSummaryMulti,er.getMessage());
+						errorLog.recordError(er);
+					}
+				}
+			});
+			toolBar.add(btnExportAll);
+			
 			JScrollPane scrollPane = new JScrollPane();
 			GridBagConstraints gbc_scrollPane = new GridBagConstraints();
 			gbc_scrollPane.fill = GridBagConstraints.BOTH;

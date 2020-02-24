@@ -18,7 +18,10 @@
 
 package base;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -313,11 +316,16 @@ public class AmuaModel{
 			m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8"); //should be default, but make UTF explicit
 
 			// Write to File
-			FileWriter fstreamO=new FileWriter(filepath);
-			BufferedWriter out=new BufferedWriter(fstreamO);
-			m.marshal(this,out);
-			out.close();
+			//FileWriter fstreamO=new FileWriter(filepath);
+			//BufferedWriter out=new BufferedWriter(fstreamO);
+			//m.marshal(this,out);
+			//out.close();
 
+			FileOutputStream fileStream = new FileOutputStream(new File(filepath));
+			OutputStreamWriter writer = new OutputStreamWriter(fileStream, "UTF-8"); //ensure writer is UTF-8
+			m.marshal(this, writer);
+			writer.close();
+			
 			unsavedChanges=false;
 			
 			mainForm.recentFiles.updateList(filepath,type);

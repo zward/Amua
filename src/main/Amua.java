@@ -55,6 +55,7 @@ public class Amua {
 				try {
 					frmMain window = new frmMain();
 					window.frmMain.setVisible(true);
+					window.checkUpdates();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

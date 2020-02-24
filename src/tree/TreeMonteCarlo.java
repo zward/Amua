@@ -104,7 +104,7 @@ public class TreeMonteCarlo{
 		myModel.generatorVar=new MersenneTwisterFast[numThreads];
 		myModel.curGenerator=new MersenneTwisterFast[numThreads];
 		for(int n=0; n<numThreads; n++){
-			myModel.generatorVar[n]=new MersenneTwisterFast();
+			myModel.generatorVar[n]=new MersenneTwisterFast(System.currentTimeMillis()+n); //offset so that not all get the same time in millis
 			if(myModel.CRN){ //seend RNG
 				myModel.generatorVar[n].setSeed(myModel.crnSeed+555+n); //initialization seed
 			}

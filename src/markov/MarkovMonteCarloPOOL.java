@@ -145,7 +145,7 @@ public class MarkovMonteCarloPOOL{
 		myModel.generatorVar=new MersenneTwisterFast[numThreads];
 		myModel.curGenerator=new MersenneTwisterFast[numThreads];
 		for(int i=0; i<numThreads; i++){
-			generator[i]=new MersenneTwisterFast();
+			generator[i]=new MersenneTwisterFast(System.currentTimeMillis()+i); //offset so that not all get the same time in millis
 			if(myModel.CRN){ //Common random numbers
 				generator[i].setSeed(myModel.crnSeed+i+555); //initialization seed
 			}

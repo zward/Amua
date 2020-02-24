@@ -70,9 +70,11 @@ public class CEAHelper{
 		});
 		
 		//Make table
+		int stratIndices[]=new int[numStrat];
 		Object table[][]=new Object[numStrat][6];
 		for(int s=0; s<numStrat; s++){  //add other strategies in order by cost
 			int curStrat=(int) costTable[s][0];
+			stratIndices[curStrat]=s;
 			table[s][0]=curStrat;
 			table[s][1]=myModel.strategyNames[curStrat];
 			table[s][2]=costs[curStrat];
@@ -89,18 +91,22 @@ public class CEAHelper{
 		double baseCost=costs[baseline], baseEffect=effects[baseline];
 		boolean anyCostSaving=false;
 		for(int s=0; s<numStrat; s++){
-			if(s!=baseline){
+			//if(s!=baseline){
+			if((int)table[s][0]!=baseline) {
 				double cost1=(double) table[s][2]; double effect1=(double) table[s][3];
 				if(cost1<baseCost && effect1>=baseEffect){
 					table[s][4]=Double.NaN;
 					table[s][5]="Cost Saving";
-					table[baseline][4]=Double.NaN;
 					anyCostSaving=true;
 				}
 			}
 		}
 		if(anyCostSaving==true){
-			viable.remove(baseline);
+			//viable.remove(baseline);
+			int baseIndex=stratIndices[baseline];
+			viable.remove(baseIndex);
+			table[baseIndex][4]=Double.NaN;
+			table[baseIndex][5]="Strongly Dominated";
 		}
 				
 		//CEA algorithm
@@ -111,6 +117,10 @@ public class CEAHelper{
 			double curMaxICER=0;
 			int v=1;
 			while(v<numViable && repeat==false){
+				//int strat0=viable.get(v-1);
+				//int strat1=viable.get(v);
+				//int index0=stratIndices[strat0];
+				//int index1=stratIndices[strat1];
 				int index0=viable.get(v-1);
 				int index1=viable.get(v);
 				double incCost=(double)table[index1][2]-(double)table[index0][2];
@@ -170,6 +180,7 @@ public class CEAHelper{
 				if(curNote==null || curNote.isEmpty()){table[s][5]="Baseline";}
 				else{table[s][5]+=" (Baseline)";}
 			}
+			if(table[s][4]==null) {table[s][4]=Double.NaN;} //replace nulls with NaNs
 		}
 
 		return(table);

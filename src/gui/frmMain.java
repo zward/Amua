@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017-2019 Zachary J. Ward
+ * Copyright (C) 2017-2020 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -50,9 +50,11 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+import javax.net.ssl.HttpsURLConnection;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -124,7 +126,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.2.7";
+	public String version="0.2.8";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -174,6 +176,8 @@ public class frmMain {
 		main=this;
 		initialize();
 		checkAnyModels();
+		//check for Amua updates
+		//checkUpdates();
 	}
 
 	/**
@@ -1913,7 +1917,6 @@ public class frmMain {
 				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
-
 	}
 
 	private void addTab(int modelType, JScrollPane scrollPane, String name){
@@ -2239,6 +2242,41 @@ public class frmMain {
 		}
 	}
 
+	public void checkUpdates() {
+		try {
+			URL url = new URL("https://raw.githubusercontent.com/zward/Amua/master/src/gui/frmMain.java");
+			HttpsURLConnection  conn = (HttpsURLConnection)url.openConnection();
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			String gitVersion=null;
+			
+			String input;
+			while (gitVersion==null && (input = br.readLine()) != null){
+				if(input.contains("public String version=")) {
+					String data[]=input.split("\"");
+					gitVersion=data[1];
+				}
+			}
+			br.close();
+			
+			if(!gitVersion.equals(version)) { //different git version
+				int choice=JOptionPane.showConfirmDialog(null, 
+						"A newer version of Amua is available ("+gitVersion+"). Would you like to download it?",
+						"Amua Update", JOptionPane.YES_NO_OPTION);
+				if(choice==JOptionPane.YES_OPTION) {
+					//go to wiki
+					Desktop.getDesktop().browse(new URI("https://github.com/zward/Amua/wiki/Getting-Started"));
+				}
+				else {
+					//do nothing
+				}
+			}
+						
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private void exit(){
 		boolean proceed=true;
 		int numPanels=modelList.size();

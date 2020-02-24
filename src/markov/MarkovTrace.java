@@ -306,8 +306,13 @@ public class MarkovTrace{
 		return(col);
 	}
 	
-	public void write(String filepath) throws IOException{
-		FileWriter fstream = new FileWriter(filepath+"_"+traceName+".csv"); //Create new file
+	public void write(String filepath, int index) throws IOException{
+		String curFilepath=filepath+traceName;
+		if(index!=-1) {
+			curFilepath+="_"+index;
+		}
+		
+		FileWriter fstream = new FileWriter(curFilepath+".csv"); //Create new file
 		BufferedWriter out = new BufferedWriter(fstream);
 		
 		int numRows=modelTraceRaw.getRowCount();
