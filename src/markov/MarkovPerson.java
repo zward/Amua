@@ -23,8 +23,8 @@ import math.Numeric;
 public class MarkovPerson{
 	int curState;
 	Numeric variableVals[];
-	double rewards[];
-	double rewardsDis[];
+	double rewards[], rewardsDis[]; //cumulative rewards
+	double prevRewards[], prevRewardsDis[]; //cumulative rewards from last cycle - for last cycle half-cycle correction
 	boolean inSubgroup[];
 	int subgroupIndex[];
 	Numeric initVariableVals[];

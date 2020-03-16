@@ -313,10 +313,15 @@ public class MarkovCohort{
 			trace.cumRewards[d].add(cumRewards[d]);
 			if(markovTree.discountRewards){
 				double discountRate=markovTree.discountRates[d]/100.0;
-				int disCycle=t;
-				if(t<markovTree.discountStartCycle){disCycle=0;} //don't discount yet
-				else{disCycle=(t-markovTree.discountStartCycle)+1;}
-				double discountFactor=1.0/Math.pow(1+discountRate, disCycle);
+				double discountFactor=1.0;
+				if(t<markovTree.discountStartCycle) { //don't discount yet
+					discountFactor=1.0;
+				}
+				else { //discount
+					int disCycle=(t-markovTree.discountStartCycle)+1;
+					double disYear=disCycle/markovTree.cyclesPerYear; //convert to years
+					discountFactor=1.0/Math.pow(1+discountRate, disYear);
+				}
 				
 				cycleRewardsDis[d]=cycleRewards[d]*discountFactor;
 				cumRewardsDis[d]+=cycleRewardsDis[d];

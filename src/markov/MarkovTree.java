@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2020 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -19,8 +19,6 @@
 package markov;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -55,6 +53,7 @@ public class MarkovTree{
 	@XmlElement public boolean discountRewards;
 	@XmlElement public double discountRates[];
 	@XmlElement public int discountStartCycle=0;
+	@XmlElement public double cyclesPerYear=1;
 	@XmlElement public boolean showTrace=true;
 	@XmlElement public boolean compileTraces;
 		

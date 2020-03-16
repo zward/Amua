@@ -1,6 +1,6 @@
 /**
  * Amua - An open source modeling framework.
- * Copyright (C) 2017 Zachary J. Ward
+ * Copyright (C) 2017-2020 Zachary J. Ward
  *
  * This file is part of Amua. Amua is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License
@@ -168,7 +168,9 @@ public class MarkovMonteCarloPOOL{
 							people[p]=new MarkovPerson();
 							people[p].rewards=new double[numDim];
 							people[p].rewardsDis=new double[numDim];
-
+							people[p].prevRewards=new double[numDim];
+							people[p].prevRewardsDis=new double[numDim];
+							
 							//initialize variables
 							people[p].initVariableVals=new Numeric[numVars];
 							people[p].variableVals=new Numeric[numVars];
@@ -345,8 +347,7 @@ public class MarkovMonteCarloPOOL{
 			discountFactor=new double[numDim];
 			
 			boolean terminate=false;
-			
-			
+						
 			ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numThreads);
 						
 			while(terminate==false && t<markovTree.maxCycles){
@@ -357,13 +358,16 @@ public class MarkovMonteCarloPOOL{
 				
 				//Update discount factor
 				if(markovTree.discountRewards){
-					int disCycle=t;
-					if(t<markovTree.discountStartCycle){disCycle=0;} //don't discount yet
-					else{disCycle=(t-markovTree.discountStartCycle)+1;}
-					
-					for(int d=0; d<numDim; d++){
+					for(int d=0; d<numDim; d++) {
 						double discountRate=markovTree.discountRates[d]/100.0;
-						discountFactor[d]=1.0/Math.pow(1+discountRate, disCycle);
+						if(t<markovTree.discountStartCycle) { //don't discount yet
+							discountFactor[d]=1.0;
+						}
+						else { //discount
+							int disCycle=(t-markovTree.discountStartCycle)+1;
+							double disYear=disCycle/markovTree.cyclesPerYear; //convert to years
+							discountFactor[d]=1.0/Math.pow(1+discountRate, disYear);
+						}
 					}
 				}
 				
@@ -391,7 +395,7 @@ public class MarkovMonteCarloPOOL{
 					int beginIndex = n * blockSize;
 					int endIndex = (n==numThreads-1) ? numPeople :(n+1)*blockSize;
 					
-					Runnable worker = new testThread(beginIndex,endIndex,n,t,curChain);
+					Runnable worker = new simCycleThread(beginIndex,endIndex,n,t,curChain);
 					futures[n]=executor.submit(worker);
 				}
 				for(int n=0; n<numThreads; n++){ //join
@@ -403,7 +407,8 @@ public class MarkovMonteCarloPOOL{
 				
 								
 				terminate=checkTerminationCondition(curChain); //check condition
-				if(terminate && markovTree.halfCycleCorrection==true){
+				if(terminate && markovTree.halfCycleCorrection==true){ //half-cycle correction - last cycle
+					//overall
 					trace.updateHalfCycle();
 					for(int d=0; d<numDim; d++){ //adjust cum rewards
 						cumRewards[d]=trace.cumRewards[d].get(t);
@@ -419,6 +424,16 @@ public class MarkovMonteCarloPOOL{
 							if(markovTree.discountRewards){
 								cumRewardsDisGroup[g][d]=traceGroup[g].cumRewardsDis[d].get(t);
 							}
+						}
+					}
+					//individual level
+					for(int p=0; p<numPeople; p++) {
+						MarkovPerson curPerson=people[p];
+						for(int d=0; d<numDim; d++) {
+							double lastCycleRewards=curPerson.rewards[d]-curPerson.prevRewards[d];
+							curPerson.rewards[d]=curPerson.prevRewards[d]+(lastCycleRewards/2.0);
+							lastCycleRewards=curPerson.rewardsDis[d]-curPerson.prevRewardsDis[d];
+							curPerson.rewardsDis[d]=curPerson.prevRewardsDis[d]+(lastCycleRewards/2.0);
 						}
 					}
 				}
@@ -917,11 +932,19 @@ public class MarkovMonteCarloPOOL{
 			}
 			trace.prev[s].add(totalPrev); //prev at beginning of cycle
 		}
-		//Check for half-cycle correction - first and last cycle
+		//Check for half-cycle correction - first cycle
 		if(t==0 && markovTree.halfCycleCorrection==true){
 			for(int d=0; d<numDim; d++){
 				for(int n=0; n<numThreads; n++){
 					cycleRewards[d][n]*=0.5; //half-cycle correction
+				}
+			}
+			//individual-level
+			for(int p=0; p<numPeople; p++) {
+				MarkovPerson curPerson=people[p];
+				for(int d=0; d<numDim; d++) {
+					curPerson.rewards[d]*=0.5;
+					curPerson.rewardsDis[d]*=0.5;
 				}
 			}
 		}
@@ -1063,13 +1086,13 @@ public class MarkovMonteCarloPOOL{
 	}
 	
 	
-	private class testThread implements Runnable{
+	private class simCycleThread implements Runnable{
 		private int beginIndex, endIndex;
 		private int finalN; //cur thread
 		private int t;
 		private MarkovNode curChain;
 		
-		public testThread(int beginIndex, int endIndex, int finalN, int t, MarkovNode curChain){
+		public simCycleThread(int beginIndex, int endIndex, int finalN, int t, MarkovNode curChain){
 			this.beginIndex=beginIndex;
 			this.endIndex=endIndex;
 			this.finalN=finalN;
@@ -1110,6 +1133,10 @@ public class MarkovMonteCarloPOOL{
 					//rewards
 					int curState=curPerson.curState;
 					for(int d=0; d<numDim; d++){ //Update state rewards
+						//record prev cum rewards
+						curPerson.prevRewards[d]=curPerson.rewards[d];
+						curPerson.prevRewardsDis[d]=curPerson.rewardsDis[d];
+						//update rewards
 						if(states[curState].rewardHasVariables[d]==false){ //use pre-calculated reward
 							cycleRewards[d][finalN]+=states[curState].curRewards[d][finalN];
 							for(int g=0; g<numSubgroups; g++){

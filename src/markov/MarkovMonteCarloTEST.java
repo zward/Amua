@@ -31,6 +31,11 @@ import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
 
+/**
+ * @deprecated
+ * @author zward
+ *
+ */
 public class MarkovMonteCarloTEST{
 	AmuaModel myModel;
 	MarkovTree markovTree;

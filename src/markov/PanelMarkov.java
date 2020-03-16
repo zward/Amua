@@ -1070,7 +1070,12 @@ public class PanelMarkov extends ModelPanel{
 
 	private void openNode(MarkovNode node){
 		node.setPanel(this);
-		if(node.type==1){node.chain=node;} //set chain
+		if(node.type==1){ //chain
+			node.chain=node; //set chain
+			if(node.stateNames==null) { //no state names saved
+				node.stateNames=new ArrayList<String>();
+			}
+		} 
 		node.curScale=myModel.scale;
 		node.numDimensions=myModel.dimInfo.dimNames.length;
 		updateNodeDisplay(node);

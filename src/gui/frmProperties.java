@@ -123,6 +123,8 @@ public class frmProperties {
 	private JTable tableDiscountRates;
 	JLabel lblDiscountStartCycle;
 	private JTextField textDiscountStartCycle;
+	JLabel lblCyclesPerYear;
+	private JTextField textCyclesPerYear;
 	JCheckBox chckbxShowMarkovTrace;
 	JCheckBox chckbxCompileTraces;
 	private JTextField textMarkovStateDecimals;
@@ -582,12 +584,12 @@ public class frmProperties {
 			
 			lblDiscountStartCycle = new JLabel("Discount start cycle:");
 			lblDiscountStartCycle.setEnabled(false);
-			lblDiscountStartCycle.setBounds(144, 86, 116, 16);
+			lblDiscountStartCycle.setBounds(251, 121, 116, 16);
 			panelMarkov.add(lblDiscountStartCycle);
 			
 			textDiscountStartCycle = new JTextField();
 			textDiscountStartCycle.setEnabled(false);
-			textDiscountStartCycle.setBounds(254, 80, 57, 28);
+			textDiscountStartCycle.setBounds(361, 115, 57, 28);
 			panelMarkov.add(textDiscountStartCycle);
 			textDiscountStartCycle.setColumns(10);
 			
@@ -597,11 +599,15 @@ public class frmProperties {
 					if(chckbxDiscount.isSelected()){
 						lblDiscountStartCycle.setEnabled(true);
 						textDiscountStartCycle.setEnabled(true);
+						lblCyclesPerYear.setEnabled(true);
+						textCyclesPerYear.setEnabled(true);
 						tableDiscountRates.setEnabled(true);
 					}
 					else{
 						lblDiscountStartCycle.setEnabled(false);
 						textDiscountStartCycle.setEnabled(false);
+						lblCyclesPerYear.setEnabled(false);
+						textCyclesPerYear.setEnabled(false);
 						tableDiscountRates.setEnabled(false);
 					}
 				}
@@ -610,7 +616,7 @@ public class frmProperties {
 			panelMarkov.add(chckbxDiscount);
 			
 			JScrollPane scrollPane_1 = new JScrollPane();
-			scrollPane_1.setBounds(6, 115, 233, 71);
+			scrollPane_1.setBounds(6, 115, 233, 83);
 			panelMarkov.add(scrollPane_1);
 			
 			modelDiscountRates=new DefaultTableModel(
@@ -646,6 +652,17 @@ public class frmProperties {
 			chckbxCompileTraces = new JCheckBox("Compile traces");
 			chckbxCompileTraces.setBounds(322, 17, 109, 18);
 			panelMarkov.add(chckbxCompileTraces);
+			
+			lblCyclesPerYear = new JLabel("Cycles per year:");
+			lblCyclesPerYear.setEnabled(false);
+			lblCyclesPerYear.setBounds(251, 148, 104, 16);
+			panelMarkov.add(lblCyclesPerYear);
+			
+			textCyclesPerYear = new JTextField();
+			textCyclesPerYear.setEnabled(false);
+			textCyclesPerYear.setColumns(10);
+			textCyclesPerYear.setBounds(361, 142, 57, 28);
+			panelMarkov.add(textCyclesPerYear);
 			
 			
 			//Subgroups ###########################################################################
@@ -828,9 +845,12 @@ public class frmProperties {
 		if(myModel.markov.discountRewards==true){
 			lblDiscountStartCycle.setEnabled(true);
 			textDiscountStartCycle.setEnabled(true);
+			lblCyclesPerYear.setEnabled(true);
+			textCyclesPerYear.setEnabled(true);
 			tableDiscountRates.setEnabled(true);
 		}
 		textDiscountStartCycle.setText(myModel.markov.discountStartCycle+"");
+		textCyclesPerYear.setText(myModel.markov.cyclesPerYear+"");
 		modelDiscountRates.setRowCount(0);
 		for(int i=0; i<tempDimInfo.dimNames.length; i++){
 			modelDiscountRates.addRow(new Object[]{null});
@@ -1146,6 +1166,17 @@ public class frmProperties {
 					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount start cycle ("+textDiscountStartCycle.getText()+")");
 				}
 				
+				try {
+					double test=Double.parseDouble(textCyclesPerYear.getText());
+					if(test<=0) {
+						valid=false;
+						JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of cycles per year ("+textDiscountStartCycle.getText()+")");
+					}
+				} catch(Exception er) {
+					valid=false;
+					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of cycles per year ("+textDiscountStartCycle.getText()+")");
+				}
+				
 				for(int i=0; i<numDimensions; i++){
 					try{
 						double test=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
@@ -1219,6 +1250,7 @@ public class frmProperties {
 				myModel.markov.discountRewards=chckbxDiscount.isSelected();
 				if(myModel.markov.discountRewards==true){
 					myModel.markov.discountStartCycle=Integer.parseInt(textDiscountStartCycle.getText());
+					myModel.markov.cyclesPerYear=Double.parseDouble(textCyclesPerYear.getText());
 					myModel.markov.discountRates=new double[numDimensions];
 					for(int i=0; i<numDimensions; i++){
 						myModel.markov.discountRates[i]=tempDiscountRates[i];
