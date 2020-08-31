@@ -116,8 +116,8 @@ public class MarkovMonteCarloPOOL{
 	
 	public void simulate(boolean showProgress) throws NumericException, Exception{
 		cancelled=false;
-		maxProg=(numChains+1)*guessMaxCycles; //initialize + simulate
-		progress=new ProgressMonitor(myModel.mainForm.frmMain, "Monte Carlo simulation", "", 0, (int) maxProg);
+		//maxProg=(numChains+1)*guessMaxCycles; //initialize + simulate
+		//progress=new ProgressMonitor(myModel.mainForm.frmMain, "Monte Carlo simulation", "", 0, (int) maxProg);
 		startTime=System.currentTimeMillis();
 		
 		initializePeople(showProgress); //create people and assign subgroups
@@ -125,7 +125,7 @@ public class MarkovMonteCarloPOOL{
 			runChains(showProgress); //simulate each Markov chain
 		}
 		
-		progress.close();
+		if(myModel.cluster==false) {progress.close();}
 		endTime=System.currentTimeMillis();
 	}
 	
@@ -133,6 +133,14 @@ public class MarkovMonteCarloPOOL{
 	private void initializePeople(final boolean showProgress) throws Exception{
 		numPeople=myModel.cohortSize;
 		people=new MarkovPerson[numPeople];
+		
+		maxProg=numPeople; //initialize + simulate
+		if(myModel.cluster==false) { //desktop
+			progress=new ProgressMonitor(myModel.mainForm.frmMain, "Initializing simulants", "", 0, (int) maxProg);
+		}
+		else { //cluster
+			System.out.println("Initializing simulants...");
+		}
 		
 		numSubgroups=0;
 		if(myModel.reportSubgroups){
@@ -201,11 +209,12 @@ public class MarkovMonteCarloPOOL{
 								}
 							}
 
-							if(finalN==0 && showProgress){ //update progress from thread 0
+							if(finalN==0 && showProgress && myModel.cluster==false){ //update progress from thread 0
 								threadProg++;
 								int prog=threadProg*numThreads;
-								double curProg=(prog/(numPeople*1.0))*guessMaxCycles; //convert to cycle prog
-								updateProgress((int)curProg);
+								progress.setProgress(prog);
+								//double curProg=(prog/(numPeople*1.0));
+								//updateProgress((int)curProg,"Initializing simulants");
 								if(progress.isCanceled()){
 									cancelled=true;	p=numPeople;
 								}
@@ -261,11 +270,23 @@ public class MarkovMonteCarloPOOL{
 			curNode.curChildProbs=new double[curNode.numChildren][numThreads];
 		}
 		
+		curProg=0;
+		maxProg=numChains*guessMaxCycles; //initialize + simulate
+		if(myModel.cluster==false) { //desktop
+			progress=new ProgressMonitor(myModel.mainForm.frmMain, "Monte Carlo simulation", "", 0, (int) maxProg);
+		}
+		else { //cluster
+			System.out.println("Monte Carlo simulation...");
+		}
+		
 		//Chain
-		curProg=guessMaxCycles;
 		for(int c=0; c<numChains; c++){
 			final MarkovNode curChain=markovTree.chains.get(c);
 			final int finalC=c;
+			
+			if(myModel.cluster==true) {
+				System.out.println("Chain: "+curChain.name);
+			}
 			
 			//Reset t
 			for(int n=0; n<numThreads; n++){
@@ -342,6 +363,26 @@ public class MarkovMonteCarloPOOL{
 			
 			initializeChain(curChain,showProgress,finalC);
 			
+			//check termination condition type
+			boolean staticTerimnationCondition=false;
+			String curString=curChain.terminationCondition.replaceAll(" ", ""); //remove spaces
+			if(curString.startsWith("t==")) { //may be static condition
+				if(curString.contains("&") || curString.contains("|")) { //multiple conditions
+					staticTerimnationCondition=false;
+				}
+				else {
+					staticTerimnationCondition=true;
+					String cycles=curString.substring(3); //trim "t=="
+					guessMaxCycles=Integer.parseInt(cycles);
+					maxProg=numChains*guessMaxCycles;
+					curProg=c*guessMaxCycles;
+					if(myModel.cluster==false) {
+						progress.setMaximum((int) maxProg);
+					}
+				}
+			}
+			
+			
 			//Simulate chain cycles
 			int t=0;
 			discountFactor=new double[numDim];
@@ -353,7 +394,10 @@ public class MarkovMonteCarloPOOL{
 			while(terminate==false && t<markovTree.maxCycles){
 				if(showProgress){
 					curProg++;
-					updateProgress(curProg);
+					updateProgress(curProg,"Running "+curChain.name);
+				}
+				if(myModel.cluster==true) {
+					System.out.println("t: "+t);
 				}
 				
 				//Update discount factor
@@ -443,9 +487,11 @@ public class MarkovMonteCarloPOOL{
 					curT.value[n].setInt(t);
 				}
 				
-				if(progress.isCanceled()){
-					cancelled=true;
-					terminate=true;
+				if(myModel.cluster==false) {
+					if(progress.isCanceled()){
+						cancelled=true;
+						terminate=true;
+					}
 				}
 				
 			} //end cycle loop
@@ -454,8 +500,10 @@ public class MarkovMonteCarloPOOL{
 			
 			//Update max cycle guess
 			guessMaxCycles=t;
-			maxProg=(numChains+1)*guessMaxCycles; //initialize + simulate
-			progress.setMaximum((int) maxProg);
+			maxProg=numChains*guessMaxCycles; //initialize + simulate
+			if(myModel.cluster==false) {
+				progress.setMaximum((int) maxProg);
+			}
 			
 			//Reset variable 't'
 			for(int n=0; n<numThreads; n++){
@@ -756,8 +804,7 @@ public class MarkovMonteCarloPOOL{
 	}
 	
 	
-	private void updateProgress(int curProg){
-		progress.setProgress(curProg);
+	private void updateProgress(int curProg, String note){
 		//Update progress
 		double prog=((curProg+1)/maxProg)*100;
 		long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
@@ -767,8 +814,13 @@ public class MarkovMonteCarloPOOL{
 		String minutes = Integer.toString((int)(remTime/60));
 		if(seconds.length()<2){seconds="0"+seconds;}
 		if(minutes.length()<2){minutes="0"+minutes;}
-		progress.setProgress(curProg+1);
-		progress.setNote("Time left: "+minutes+":"+seconds);
+		if(myModel.cluster==false) { //desktop
+			progress.setProgress(curProg+1);
+			progress.setNote(note+" - Total time left: "+minutes+":"+seconds);
+		}
+		else { //cluster
+			System.out.println("Progress: "+(curProg+1));
+		}
 	}
 	
 		
@@ -889,12 +941,15 @@ public class MarkovMonteCarloPOOL{
 			}
 			if(indexCompProb==-1){
 				if(Math.abs(1.0-sumProb)>MathUtils.tolerance){ //throw error
-					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.name+")");
+					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
 				}
 			}
 			else{
-				if(sumProb>1.0 || sumProb<0.0){ //throw error
-					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.name+")");
+				if(sumProb<0.0) { //throw error
+					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
+				}
+				else if(sumProb>1.0){ //check if should renorm
+					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
 				}
 				else{
 					MarkovNode curChild=node.children[indexCompProb];
@@ -1033,7 +1088,8 @@ public class MarkovMonteCarloPOOL{
 	
 	private void getTransitionIndex(MarkovNode node){
 		if(node.type==4){ //get transition to
-			String nextState=(String) node.comboTransition.getSelectedItem();
+			//String nextState=(String) node.comboTransition.getSelectedItem();
+			String nextState=node.transition;
 			node.transTo=getStateIndex(nextState);
 		}
 		else{

@@ -18,6 +18,7 @@
 
 package math.distributions;
 
+import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
@@ -25,66 +26,189 @@ import math.NumericException;
 public final class NegativeBinomial{
 	
 	public static Numeric pmf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt();
-		int r=params[1].getInt();
-		double p=params[2].getProb();
-		if(r<0){throw new NumericException("r should be ≥0","NBin");}
-		return(new Numeric(MathUtils.choose(r+k-1,r-1)*Math.pow(p, r)*Math.pow(1-p, k)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			int k=params[0].getInt();
+			int r=params[1].getInt();
+			double p=params[2].getProb();
+			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			return(new Numeric(MathUtils.choose(r+k-1,r-1)*Math.pow(p, r)*Math.pow(1-p, k)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and r should be the same size","NBin");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int)params[0].matrix[i][j];
+					int r=(int)params[1].matrix[i][j];
+					double p=params[2].getMatrixProb(i, j);
+					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					vals.matrix[i][j]=MathUtils.choose(r+k-1,r-1)*Math.pow(p, r)*Math.pow(1-p, k);
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt();
-		int r=params[1].getInt();
-		double p=params[2].getProb();
-		if(r<0){throw new NumericException("r should be ≥0","NBin");}
-		double val=0;
-		for(int n=0; n<=k; n++){
-			val+=(MathUtils.choose(r+n-1,r-1)*Math.pow(p, r)*Math.pow(1-p, n));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			int k=params[0].getInt();
+			int r=params[1].getInt();
+			double p=params[2].getProb();
+			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			double val=0;
+			for(int n=0; n<=k; n++){
+				val+=(MathUtils.choose(r+n-1,r-1)*Math.pow(p, r)*Math.pow(1-p, n));
+			}
+			return(new Numeric(val));
 		}
-		return(new Numeric(val));
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and r should be the same size","NBin");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int)params[0].matrix[i][j];
+					int r=(int)params[1].matrix[i][j];
+					double p=params[2].getMatrixProb(i, j);
+					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					double val=0;
+					for(int n=0; n<=k; n++){
+						val+=(MathUtils.choose(r+n-1,r-1)*Math.pow(p, r)*Math.pow(1-p, n));
+					}
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble();
-		int r=params[1].getInt();
-		double p=params[2].getProb();
-		if(r<0){throw new NumericException("r should be ≥0","NBin");}
-		if(x==1){return(new Numeric(Double.POSITIVE_INFINITY));}
-		int k=0;
-		double CDF=0;
-		while(x>CDF){
-			CDF+=MathUtils.choose(r+k-1,r-1)*Math.pow(p,r*1.0)*Math.pow(1-p, k*1.0);
-			k++;
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getProb();
+			int r=params[1].getInt();
+			double p=params[2].getProb();
+			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			if(x==1){return(new Numeric(Double.POSITIVE_INFINITY));}
+			int k=0;
+			double CDF=0;
+			while(x>CDF){
+				CDF+=MathUtils.choose(r+k-1,r-1)*Math.pow(p,r*1.0)*Math.pow(1-p, k*1.0);
+				k++;
+			}
+			return(new Numeric(k));
 		}
-		return(new Numeric(k));
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and r should be the same size","NBin");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j);
+					int r=(int)params[1].matrix[i][j];
+					double p=params[2].getMatrixProb(i, j);
+					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					if(x==1) {vals.matrix[i][j]=Double.POSITIVE_INFINITY;}
+					else {
+						int k=0;
+						double CDF=0;
+						while(x>CDF){
+							CDF+=MathUtils.choose(r+k-1,r-1)*Math.pow(p,r*1.0)*Math.pow(1-p, k*1.0);
+							k++;
+						}
+						vals.matrix[i][j]=k;
+					}
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		int r=params[0].getInt();
-		double p=params[1].getProb();
-		if(r<0){throw new NumericException("r should be ≥0","NBin");}
-		return(new Numeric((r*(1-p))/p));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			int r=params[0].getInt();
+			double p=params[1].getProb();
+			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			return(new Numeric((r*(1-p))/p));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int r=(int)params[0].matrix[i][j];
+					double p=params[1].getMatrixProb(i, j);
+					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					vals.matrix[i][j]=(r*(1-p))/p;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		int r=params[0].getInt();
-		double p=params[1].getProb();
-		if(r<0){throw new NumericException("r should be ≥0","NBin");}
-		return(new Numeric((r*(1-p))/(p*p)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			int r=params[0].getInt();
+			double p=params[1].getProb();
+			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			return(new Numeric((r*(1-p))/(p*p)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int r=(int)params[0].matrix[i][j];
+					double p=params[1].getMatrixProb(i, j);
+					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					vals.matrix[i][j]=(r*(1-p))/(p*p);
+				}
+			}
+			return(vals);
+		}
 	}
 	
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==2){
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=2){
+			throw new NumericException("Incorrect number parameters","NBin");
+		}
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
 			int r=params[0].getInt(), k=0;
 			double p=params[1].getProb(), CDF=0;
 			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			double rand=generator.nextDouble();
 			while(rand>CDF){
 				CDF+=MathUtils.choose(r+k-1,r-1)*Math.pow(p,r*1.0)*Math.pow(1-p, k*1.0);
 				k++;
 			}
 			return(new Numeric(k));
 		}
-		else{throw new NumericException("Incorrect number parameters","NBin");}
+		else{ //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int r=(int)params[0].matrix[i][j];
+					double p=params[1].getMatrixProb(i, j);
+					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					int k=0;
+					double CDF=0;
+					double rand=generator.nextDouble();
+					while(rand>CDF){
+						CDF+=MathUtils.choose(r+k-1,r-1)*Math.pow(p,r*1.0)*Math.pow(1-p, k*1.0);
+						k++;
+					}
+					vals.matrix[i][j]=k;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

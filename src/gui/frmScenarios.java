@@ -564,7 +564,7 @@ public class frmScenarios {
 									
 									//Run reports
 									for(int i=0; i<numIterations; i++){
-										runReports[r][i].write(path+scenarioNames[r]+"_"+i);
+										runReports[r][i].write(path+scenarioNames[r],i);
 									}
 								}
 							}

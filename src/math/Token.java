@@ -197,8 +197,9 @@ public class Token{
 					}
 					else{ //see if can sample
 						if(myModel.curGenerator[curThread]!=null){ //RNG available
-							double rand=myModel.curGenerator[curThread].nextDouble();
-							numeric[curThread]=Distributions.sample(word,argsNumeric,rand,myModel.curGenerator[curThread]);
+							//double rand=myModel.curGenerator[curThread].nextDouble();
+							//numeric[curThread]=Distributions.sample(word,argsNumeric,rand,myModel.curGenerator[curThread]);
+							numeric[curThread]=Distributions.sample(word,argsNumeric,myModel.curGenerator[curThread]);
 						}
 						else{ //no RNG, shouldn't sample
 							numeric[curThread]=Distributions.evaluate(word,argsNumeric,distFx);

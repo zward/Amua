@@ -103,6 +103,8 @@ import main.StyledTextPane;
 import main.Variable;
 import markov.PanelMarkov;
 import tree.PanelTree;
+import java.awt.BorderLayout;
+import javax.swing.border.LineBorder;
 
 public class frmMain {
 
@@ -126,14 +128,14 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.2.9";
+	public String version="0.3.0";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
 	JMenuItem mntmSave, mntmSaveAs, mntmDocument, mntmExport, mntmImport, mntmProperties;
 	JMenu mnEdit, mnRun;
 	JButton btnOCD, btnClearAnnotations, btnZoomOut, btnZoomIn, btnSnapshot;
-	
+
 	//Main menu items to be accessible to panel
 	public JButton btnDecisionNode;
 	public JButton btnMarkovChain;
@@ -157,13 +159,14 @@ public class frmMain {
 	public JMenuItem mntmPaste;
 	public JMenuItem mntmRunModel;
 	public JMenuItem mntmCalibrateModel;
+	public JMenuItem mntmClusterRun;
 	JButton btnAddVariable;
 	JSlider sliderZoom;
-	
+
 	public JButton btnFx; //build expression button
 	public boolean updateCurFx=false; //if Update Operators are allowed
 	StyledTextPane curFxPane;
-	
+
 	public DefaultTableModel modelParameters, modelVariables, modelTables, modelConstraints, modelParamSets;
 	private JTable tableParameters, tableVariables, tableTables, tableConstraints, tableParamSets;
 
@@ -172,8 +175,9 @@ public class frmMain {
 	/**
 	 * Create the application.
 	 */
-	public frmMain() {
+	public frmMain(String version) {
 		main=this;
+		this.version=version;
 		initialize();
 		checkAnyModels();
 		//check for Amua updates
@@ -193,7 +197,7 @@ public class frmMain {
 		});
 		frmMain.setTitle("Amua");
 		frmMain.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_128.png")));
-		
+
 		frmMain.setBounds(100, 100, 800, 600);
 		frmMain.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frmMain.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -276,7 +280,7 @@ public class frmMain {
 			}
 		});
 		mnModel.add(mntmOpenModel);
-		
+
 		final JMenu mnOpenRecent = new JMenu("Open Recent");
 		mnOpenRecent.addMenuListener(new MenuListener() {
 			public void menuCanceled(MenuEvent arg0) {
@@ -288,7 +292,7 @@ public class frmMain {
 			}
 		});
 		mnModel.add(mnOpenRecent);
-		
+
 		JSeparator separator_2 = new JSeparator();
 		mnModel.add(separator_2);
 
@@ -370,7 +374,7 @@ public class frmMain {
 
 		JSeparator separator_6 = new JSeparator();
 		mnModel.add(separator_6);
-		
+
 		mntmDocument = new JMenuItem("Document...");
 		mntmDocument.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -388,9 +392,9 @@ public class frmMain {
 		mntmDocument.setIcon(new ScaledIcon("/images/document",16,16,16,true));
 		mntmDocument.setDisabledIcon(new ScaledIcon("/images/document",16,16,16,false));
 		mnModel.add(mntmDocument);
-		
-		
-		
+
+
+
 		mntmExport = new JMenuItem("Export...");
 		mntmExport.setIcon(new ScaledIcon("/images/export",16,16,16,true));
 		mntmExport.setDisabledIcon(new ScaledIcon("/images/export",16,16,16,false));
@@ -408,7 +412,7 @@ public class frmMain {
 			}
 		});
 		mnModel.add(mntmExport);
-		
+
 		mntmImport = new JMenuItem("Import...");
 		mntmImport.setIcon(new ScaledIcon("/images/import",16,16,16,true));
 		mntmImport.setDisabledIcon(new ScaledIcon("/images/import",16,16,16,false));
@@ -419,9 +423,9 @@ public class frmMain {
 					fc=new JFileChooser(curModel.filepath);
 					fc.setFileFilter(new AmuaModelFilter());
 					fc.setAcceptAllFileFilterUsed(false);
-					
+
 					fc.setDialogTitle("Import Model Objects");
-					
+
 					int returnVal = fc.showDialog(frmMain, "Import");
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
 						File file = fc.getSelectedFile();
@@ -437,7 +441,7 @@ public class frmMain {
 							AmuaModel donorModel = (AmuaModel) un.unmarshal(new File(path));
 
 							frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-							
+
 							frmImport window=new frmImport(curModel,donorModel);
 							window.frmImport.setVisible(true);
 						}
@@ -448,11 +452,11 @@ public class frmMain {
 					console.print("Error: "+e1.getMessage()); console.newLine();
 					errorLog.recordError(e1);
 				}
-			
+
 			}
 		});
 		mnModel.add(mntmImport);
-		
+
 
 		JSeparator separator_5 = new JSeparator();
 		mnModel.add(separator_5);
@@ -558,7 +562,7 @@ public class frmMain {
 		JSeparator separator_9 = new JSeparator();
 		mnEdit.add(separator_9);
 		mntmFindreplace.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		
+
 		mnEdit.add(mntmFindreplace);
 
 		mnRun = new JMenu("Run");
@@ -621,7 +625,7 @@ public class frmMain {
 				window.frmSensTwoWay.setVisible(true);
 			}
 		});
-		
+
 		JMenuItem mntmOnewayBest = new JMenuItem("Stacked One-way");
 		mntmOnewayBest.setIcon(new ScaledIcon("/images/oneWayStacked",16,16,16,true));
 		mntmOnewayBest.addActionListener(new ActionListener() {
@@ -632,7 +636,7 @@ public class frmMain {
 		});
 		mnSensitivityAnalysis.add(mntmOnewayBest);
 		mnSensitivityAnalysis.add(mntmTwoway);
-		
+
 		JMenuItem mntmProbabilisticpsa = new JMenuItem("Probabilistic (PSA)");
 		mntmProbabilisticpsa.setIcon(new ScaledIcon("/images/psa",16,16,16,true));
 		mntmProbabilisticpsa.addActionListener(new ActionListener() {
@@ -642,7 +646,7 @@ public class frmMain {
 			}
 		});
 		mnSensitivityAnalysis.add(mntmProbabilisticpsa);
-		
+
 		JMenuItem mntmBatchRuns = new JMenuItem("Batch Runs");
 		mntmBatchRuns.setIcon(new ScaledIcon("/images/runBatch",16,16,16,true));
 		mntmBatchRuns.addActionListener(new ActionListener() {
@@ -651,10 +655,10 @@ public class frmMain {
 				window.frmBatch.setVisible(true);
 			}
 		});
-		
+
 		JMenu mnValueOfInformation = new JMenu("Value of Information");
 		mnRun.add(mnValueOfInformation);
-		
+
 		JMenuItem mntmEVPI = new JMenuItem("Perfect Information (EVPI/EVPPI)");
 		mntmEVPI.setIcon(new ScaledIcon("/images/evpi",16,16,16,true));
 		mntmEVPI.addActionListener(new ActionListener() {
@@ -664,9 +668,9 @@ public class frmMain {
 			}
 		});
 		mnValueOfInformation.add(mntmEVPI);
-		
+
 		mnRun.add(mntmBatchRuns);
-		
+
 		JMenuItem mntmScenarios = new JMenuItem("Scenarios");
 		mntmScenarios.setIcon(new ScaledIcon("/images/scenario",16,16,16,true));
 		mntmScenarios.addActionListener(new ActionListener() {
@@ -693,7 +697,20 @@ public class frmMain {
 		});
 		mnRun.add(mntmCalibrateModel);
 		mntmCalibrateModel.setEnabled(false);
-
+		
+		JSeparator separator_12 = new JSeparator();
+		mnRun.add(separator_12);
+		
+		mntmClusterRun = new JMenuItem("Cluster Run");
+		mntmClusterRun.setIcon(new ScaledIcon("/images/cluster",16,16,16,true));
+		mntmClusterRun.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frmDefineClusterRun window=new frmDefineClusterRun(curModel);
+				window.frmDefineClusterRun.setVisible(true);
+			}
+		});
+		mnRun.add(mntmClusterRun);
+		
 		JMenu mnTools = new JMenu("Tools");
 		menuBar.add(mnTools);
 
@@ -716,7 +733,7 @@ public class frmMain {
 			}
 		});
 		mnTools.add(mntmPlotSurface);
-	
+
 		JMenuItem mntmTestExpressions = new JMenuItem("Test Expressions");
 		mntmTestExpressions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -725,7 +742,7 @@ public class frmMain {
 			}
 		});
 		//mnTools.add(mntmTestExpressions); //for debugging interpreter
-		
+
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
 
@@ -772,7 +789,7 @@ public class frmMain {
 
 		JSeparator separator_11 = new JSeparator();
 		mnHelp.add(separator_11);
-		
+
 		JMenuItem mntmAboutAmua = new JMenuItem("About Amua");
 		mntmAboutAmua.setIcon(new ScaledIcon("/images/logo",16,16,16,true));
 		mntmAboutAmua.addActionListener(new ActionListener() {
@@ -1010,7 +1027,7 @@ public class frmMain {
 		lblParam.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneRight.addTab("Parameters", null, panelParams, null);
 		tabbedPaneRight.setTabComponentAt(0, lblParam);
-		
+
 		JScrollPane scrollPaneParameters = new JScrollPane();
 		GridBagConstraints gbc_scrollPaneParameters = new GridBagConstraints();
 		gbc_scrollPaneParameters.fill = GridBagConstraints.BOTH;
@@ -1295,7 +1312,7 @@ public class frmMain {
 		tableConstraints.getTableHeader().setReorderingAllowed(false);
 		tableConstraints.setAutoCreateRowSorter(true);
 		scrollPaneConst.setViewportView(tableConstraints);
-		
+
 		//Parameter sets
 		modelParamSets=new DefaultTableModel(new Object[][] {}, new String[] {"Set", "Score"}); 
 		tableParamSets = new JTable();
@@ -1316,16 +1333,49 @@ public class frmMain {
 		splitPaneLeft.setLeftComponent(panelLeft);
 		GridBagLayout gbl_panelLeft = new GridBagLayout();
 		gbl_panelLeft.columnWidths = new int[]{0, 0, 0};
-		gbl_panelLeft.rowHeights = new int[]{34, 0, 0};
-		gbl_panelLeft.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-		gbl_panelLeft.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+		gbl_panelLeft.rowHeights = new int[]{0, 0, 0};
+		gbl_panelLeft.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
+		gbl_panelLeft.rowWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
 		panelLeft.setLayout(gbl_panelLeft);
 
+		JSplitPane splitPaneFx = new JSplitPane();
+		splitPaneFx.setDividerSize(5);
+		splitPaneFx.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		GridBagConstraints gbc_splitPaneFx = new GridBagConstraints();
+		gbc_splitPaneFx.gridwidth = 2;
+		gbc_splitPaneFx.gridheight = 2;
+		gbc_splitPaneFx.insets = new Insets(0, 0, 0, 5);
+		gbc_splitPaneFx.fill = GridBagConstraints.BOTH;
+		gbc_splitPaneFx.gridx = 0;
+		gbc_splitPaneFx.gridy = 0;
+		panelLeft.add(splitPaneFx, gbc_splitPaneFx);
+
+		tabbedPaneCanvas = new JTabbedPane(JTabbedPane.TOP);
+		splitPaneFx.setRightComponent(tabbedPaneCanvas);
+
+		JPanel panelFx = new JPanel();
+		splitPaneFx.setLeftComponent(panelFx);
+		GridBagLayout gbl_panelFx = new GridBagLayout();
+		gbl_panelFx.columnWidths = new int[]{20, 156, 0};
+		gbl_panelFx.rowHeights = new int[]{34, 0};
+		gbl_panelFx.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+		gbl_panelFx.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		panelFx.setLayout(gbl_panelFx);
+
 		JToolBar toolbarFx=new JToolBar();
+		toolbarFx.setAlignmentX(Component.LEFT_ALIGNMENT);
+		toolbarFx.setAlignmentY(Component.TOP_ALIGNMENT);
+		GridBagConstraints gbc_toolbarFx = new GridBagConstraints();
+		gbc_toolbarFx.fill = GridBagConstraints.VERTICAL;
+		gbc_toolbarFx.anchor = GridBagConstraints.WEST;
+		gbc_toolbarFx.insets = new Insets(0, 0, 0, 5);
+		gbc_toolbarFx.gridx = 0;
+		gbc_toolbarFx.gridy = 0;
+		panelFx.add(toolbarFx, gbc_toolbarFx);
 		toolbarFx.setFloatable(false);
 		toolbarFx.setRollover(true);
 		toolbarFx.setBorderPainted(false);
-		
+
 		btnFx=new JButton("");
 		btnFx.setEnabled(false);
 		btnFx.setFocusable(false);
@@ -1341,32 +1391,18 @@ public class frmMain {
 			}
 		});
 		toolbarFx.add(btnFx);
-		
-		GridBagConstraints gbc_lblFx = new GridBagConstraints();
-		gbc_lblFx.anchor = GridBagConstraints.EAST;
-		gbc_lblFx.gridx = 0;
-		gbc_lblFx.gridy = 0;
-		panelLeft.add(toolbarFx, gbc_lblFx);
 
 		scrollPaneFx = new JScrollPane();
 		GridBagConstraints gbc_scrollPaneFx = new GridBagConstraints();
 		gbc_scrollPaneFx.fill = GridBagConstraints.BOTH;
 		gbc_scrollPaneFx.gridx = 1;
 		gbc_scrollPaneFx.gridy = 0;
-		panelLeft.add(scrollPaneFx, gbc_scrollPaneFx);
-
-		tabbedPaneCanvas = new JTabbedPane(JTabbedPane.TOP);
+		panelFx.add(scrollPaneFx, gbc_scrollPaneFx);
 		tabbedPaneCanvas.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
 				switchTabs();
 			}
 		});
-		GridBagConstraints gbc_scrollPaneCanvas = new GridBagConstraints();
-		gbc_scrollPaneCanvas.gridwidth = 2;
-		gbc_scrollPaneCanvas.fill = GridBagConstraints.BOTH;
-		gbc_scrollPaneCanvas.gridx = 0;
-		gbc_scrollPaneCanvas.gridy = 1;
-		panelLeft.add(tabbedPaneCanvas,gbc_scrollPaneCanvas);
 
 		tabbedPaneBottom = new JTabbedPane(JTabbedPane.TOP);
 		splitPaneLeft.setRightComponent(tabbedPaneBottom);
@@ -1432,10 +1468,10 @@ public class frmMain {
 						boolean ok=true;
 						int numParams=headers.length-2;
 						if(numParams != curModel.parameters.size()) {
-							JOptionPane.showMessageDialog(frmMain,"Error: Expected "+curModel.parameters.size()+" parameters, but got "+numParams);
-							ok=false;
+							JOptionPane.showMessageDialog(frmMain,"Warning: Expected "+curModel.parameters.size()+" parameters, but got "+numParams);
+							//ok=false;
 						}
-						else {
+						//else {
 							paramNames=new String[numParams];
 							for(int p=0; p<numParams; p++) {
 								String curStr=headers[p+2];
@@ -1448,8 +1484,8 @@ public class frmMain {
 									paramNames[p]=curStr;
 								}
 							}
-						}
-						
+						//}
+
 						if(ok==true) {
 							ArrayList<ParameterSet> sets=new ArrayList<ParameterSet>();
 							strLine=br.readLine(); //first set
@@ -1459,7 +1495,7 @@ public class frmMain {
 								sets.add(curSet);
 								strLine=br.readLine();
 							}
-							
+
 							//add to model
 							curModel.saveSnapshot("Import Parameter Sets");
 							curModel.parameterNames=paramNames;
@@ -1471,7 +1507,7 @@ public class frmMain {
 							curModel.refreshParamSetsTable();
 						}
 						br.close();
-						
+
 					}
 
 				}catch(Exception e1){
@@ -1486,7 +1522,7 @@ public class frmMain {
 		gbc_btnImport.gridx = 1;
 		gbc_btnImport.gridy = 0;
 		panelParamSets.add(btnImport, gbc_btnImport);
-		
+
 		JButton btnExportParamSets = new JButton("Export...");
 		btnExportParamSets.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -1556,8 +1592,8 @@ public class frmMain {
 		gbc_btnClearParamSets.gridx = 3;
 		gbc_btnClearParamSets.gridy = 0;
 		panelParamSets.add(btnClearParamSets, gbc_btnClearParamSets);
-		
-		
+
+
 
 		JScrollPane scrollPaneParamSets = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
@@ -1573,7 +1609,7 @@ public class frmMain {
 		lblParamSets.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneBottom.addTab("Parameter Sets", (Icon) null, panelParamSets, null);
 		tabbedPaneBottom.setTabComponentAt(2, lblParamSets);
-		
+
 		scrollPaneProperties = new JScrollPane();
 
 
@@ -1752,10 +1788,10 @@ public class frmMain {
 
 				btnAlignLeft.setIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,true));
 				btnAlignLeft.setDisabledIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,false));
-								
+
 				btnAlignRight.setIcon(new ScaledIcon("/images/alignRight",24,24,24,true));
 				btnAlignRight.setDisabledIcon(new ScaledIcon("/images/alignRight",24,24,24,false));
-				
+
 				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
@@ -1772,10 +1808,10 @@ public class frmMain {
 
 				btnAlignRight.setIcon(new ScaledIcon("/images/alignRightSelected",24,24,24,true));
 				btnAlignRight.setDisabledIcon(new ScaledIcon("/images/alignRightSelected",24,24,24,false));
-				
+
 				btnAlignLeft.setIcon(new ScaledIcon("/images/alignLeft",24,24,24,true));
 				btnAlignLeft.setDisabledIcon(new ScaledIcon("/images/alignLeft",24,24,24,false));
-				
+
 				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
@@ -1834,7 +1870,7 @@ public class frmMain {
 		JSeparator separator_4 = new JSeparator();
 		separator_4.setOrientation(SwingConstants.VERTICAL);
 		toolBar.add(separator_4);
-		
+
 		final JLabel lblZoom = new JLabel("100% ");
 
 		sliderZoom = new JSlider();
@@ -1940,7 +1976,7 @@ public class frmMain {
 		lbl.setIcon(icon);
 		lbl.setIconTextGap(5);
 		lbl.setHorizontalTextPosition(SwingConstants.RIGHT);
-		
+
 		JButton btnClose = new JButton();
 		btnClose.setIcon(new ScaledIcon("/images/close",7,21));
 		btnClose.setRolloverIcon(new ScaledIcon("/images/close_press",7,21));
@@ -2050,7 +2086,7 @@ public class frmMain {
 			toolBar.add(btnStateTransition,4);
 			btnChangeNodeType.setIcon(new ScaledIcon("/images/changeTypeTrans",24,24,24,true));
 			btnChangeNodeType.setDisabledIcon(new ScaledIcon("/images/changeTypeTrans",24,24,24,false));
-			
+
 			toolBar.revalidate();
 			mntmCalibrateModel.setEnabled(true);
 
@@ -2141,7 +2177,7 @@ public class frmMain {
 			btnSnapshot.setEnabled(true);
 		}
 	}
-	
+
 	public void setZoomVal(int scale){
 		//Calculate slider value
 		int val=240;
@@ -2180,7 +2216,7 @@ public class frmMain {
 			errorLog.recordError(e1);
 		}
 	}
-	
+
 	public void openModel(File file){
 		try{
 			String name=file.getName();
@@ -2200,11 +2236,11 @@ public class frmMain {
 				}
 				else{m++;}
 			}
-						
+
 			//Not open, open it
 			if(isOpen==false){
 				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				
+
 				JAXBContext context = JAXBContext.newInstance(AmuaModel.class);
 				Unmarshaller un = context.createUnmarshaller();
 				AmuaModel newModel = (AmuaModel) un.unmarshal(new File(filepath));
@@ -2226,7 +2262,7 @@ public class frmMain {
 				recentFiles.updateList(filepath,newModel.type);
 
 				checkAnyModels();
-				
+
 				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		}catch(Exception e){
@@ -2244,12 +2280,12 @@ public class frmMain {
 
 	public void checkUpdates() {
 		try {
-			URL url = new URL("https://raw.githubusercontent.com/zward/Amua/master/src/gui/frmMain.java");
+			URL url = new URL("https://raw.githubusercontent.com/zward/Amua/master/src/main/Amua.java");
 			HttpsURLConnection  conn = (HttpsURLConnection)url.openConnection();
 
 			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			String gitVersion=null;
-			
+
 			String input;
 			while (gitVersion==null && (input = br.readLine()) != null){
 				if(input.contains("public String version=")) {
@@ -2258,7 +2294,7 @@ public class frmMain {
 				}
 			}
 			br.close();
-			
+
 			if(!gitVersion.equals(version)) { //different git version
 				int choice=JOptionPane.showConfirmDialog(null, 
 						"A newer version of Amua is available ("+gitVersion+"). Would you like to download it?",
@@ -2271,12 +2307,12 @@ public class frmMain {
 					//do nothing
 				}
 			}
-						
+
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void exit(){
 		boolean proceed=true;
 		int numPanels=modelList.size();

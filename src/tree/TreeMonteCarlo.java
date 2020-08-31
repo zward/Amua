@@ -42,6 +42,7 @@ public class TreeMonteCarlo{
 	long startTime, endTime;
 	ProgressMonitor progress;
 	double maxProg;
+	int curProg;
 	MicroStats microStats[];
 	MicroStats microStatsGroup[][];
 	String strategyNames[];
@@ -60,7 +61,12 @@ public class TreeMonteCarlo{
 		
 		//Individuals
 		numPeople=myModel.cohortSize;
-		progress=new ProgressMonitor(myModel.mainForm.frmMain, "Monte Carlo simulation", "", 0, 100);
+		if(myModel.cluster==false) { //desktop
+			progress=new ProgressMonitor(myModel.mainForm.frmMain, "Monte Carlo simulation", "", 0, 100);
+		}
+		else {
+			System.out.println("Monte Carlo simulation...");
+		}
 		
 		numDim=root.numDimensions;
 		numVars=myModel.variables.size();
@@ -90,7 +96,9 @@ public class TreeMonteCarlo{
 				
 		cancelled=false;
 		maxProg=(numPeople+numPeople*numStrat)*1.0; //initialization + simulation
-		progress.setMaximum((int) maxProg); 
+		if(myModel.cluster==false) { //desktop
+			progress.setMaximum((int) maxProg); 
+		}
 		startTime=System.currentTimeMillis();
 		
 		//multi-thread
@@ -173,8 +181,10 @@ public class TreeMonteCarlo{
 							if(finalN==0 && display){ //update progress from thread 0
 								threadProg++;
 								updateProgress(threadProg*numThreads);
-								if(progress.isCanceled()){
-									cancelled=true;	p=numPeople;
+								if(myModel.cluster==false) {
+									if(progress.isCanceled()){
+										cancelled=true;	p=numPeople;
+									}
 								}
 							}
 						}
@@ -280,8 +290,10 @@ public class TreeMonteCarlo{
 								if(finalN==0 && display){ //update progress from thread 0
 									threadProg++;
 									updateProgress(numPeople+(finalS*numPeople)+(threadProg*numThreads));
-									if(progress.isCanceled()){
-										cancelled=true;	p=numPeople;
+									if(myModel.cluster==false) {
+										if(progress.isCanceled()){
+											cancelled=true;	p=numPeople;
+										}
 									}
 								}
 							} //end simulate loop
@@ -310,7 +322,9 @@ public class TreeMonteCarlo{
 
 		} //end strategy loop
 
-		progress.close();
+		if(myModel.cluster==false) {
+			progress.close();
+		}
 		
 		//sum across threads
 		for(int s=0; s<tree.nodes.size(); s++){
@@ -357,7 +371,7 @@ public class TreeMonteCarlo{
 	
 	
 	private void updateProgress(int curProg){
-		progress.setProgress(curProg);
+		//progress.setProgress(curProg);
 		//Update progress
 		double prog=((curProg+1)/maxProg)*100;
 		long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
@@ -367,8 +381,17 @@ public class TreeMonteCarlo{
 		String minutes = Integer.toString((int)(remTime/60));
 		if(seconds.length()<2){seconds="0"+seconds;}
 		if(minutes.length()<2){minutes="0"+minutes;}
-		progress.setProgress(curProg+1);
-		progress.setNote("Time left: "+minutes+":"+seconds);
+		if(myModel.cluster==false) { //desktop
+			progress.setProgress(curProg+1);
+			progress.setNote("Time left: "+minutes+":"+seconds);
+		}
+		else { //cluster
+			int intProg=(int)prog;
+			if(intProg>curProg) {
+				curProg=intProg;
+				System.out.println("Progress: "+curProg);
+			}
+		}
 	}
 
 	

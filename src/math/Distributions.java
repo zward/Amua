@@ -562,39 +562,39 @@ public final class Distributions{
 		return(null);
 	}
 
-	public static Numeric sample(String dist, Numeric params[], double rand,MersenneTwisterFast generator) throws NumericException{
+	public static Numeric sample(String dist, Numeric params[], MersenneTwisterFast generator) throws NumericException{
 		switch(dist){
 		//Discrete
-		case "Bern": return(Bernoulli.sample(params,rand));
-		case "Bin": return(Binomial.sample(params, rand));
-		case "Cat": return(Categorical.sample(params, rand));
-		case "DUnif": return(DiscreteUniform.sample(params, rand));
-		case "Geom": return(Geometric.sample(params, rand));
-		case "HGeom": return(Hypergeometric.sample(params,rand));
-		case "NBin": return(NegativeBinomial.sample(params, rand));
-		case "Pois": return(Poisson.sample(params, rand));
-		case "Zipf": return(Zipf.sample(params, rand));
+		case "Bern": return(Bernoulli.sample(params, generator));
+		case "Bin": return(Binomial.sample(params, generator));
+		case "Cat": return(Categorical.sample(params, generator));
+		case "DUnif": return(DiscreteUniform.sample(params, generator));
+		case "Geom": return(Geometric.sample(params, generator));
+		case "HGeom": return(Hypergeometric.sample(params, generator));
+		case "NBin": return(NegativeBinomial.sample(params, generator));
+		case "Pois": return(Poisson.sample(params, generator));
+		case "Zipf": return(Zipf.sample(params, generator));
 		//Continuous
-		case "Beta": return(Beta.sample(params, rand));
-		case "Cauchy": return(Cauchy.sample(params,rand));
-		case "ChiSq": return(ChiSquare.sample(params, rand));
-		case "Expo": return(Exponential.sample(params, rand));
-		case "Gamma": return(Gamma.sample(params, rand));
-		case "Gumbel": return(Gumbel.sample(params, rand));
-		case "HalfCauchy": return(HalfCauchy.sample(params, rand));
-		case "HalfNorm": return(HalfNormal.sample(params, rand));
-		case "Laplace": return(Laplace.sample(params, rand));
-		case "Logistic": return(Logistic.sample(params, rand));
-		case "LogNorm": return(LogNormal.sample(params, rand));
-		case "Norm": return(Normal.sample(params, rand));
-		case "Pareto": return(Pareto.sample(params, rand));
-		case "PERT": return(PERT.sample(params, rand));
-		case "StudentT": return(StudentT.sample(params, rand));
-		case "Tri": return(Triangular.sample(params, rand));
-		case "Unif": return(Uniform.sample(params, rand));
-		case "Weibull": return(Weibull.sample(params, rand));
+		case "Beta": return(Beta.sample(params, generator));
+		case "Cauchy": return(Cauchy.sample(params, generator));
+		case "ChiSq": return(ChiSquare.sample(params, generator));
+		case "Expo": return(Exponential.sample(params, generator));
+		case "Gamma": return(Gamma.sample(params, generator));
+		case "Gumbel": return(Gumbel.sample(params, generator));
+		case "HalfCauchy": return(HalfCauchy.sample(params, generator));
+		case "HalfNorm": return(HalfNormal.sample(params, generator));
+		case "Laplace": return(Laplace.sample(params, generator));
+		case "Logistic": return(Logistic.sample(params, generator));
+		case "LogNorm": return(LogNormal.sample(params, generator));
+		case "Norm": return(Normal.sample(params, generator));
+		case "Pareto": return(Pareto.sample(params, generator));
+		case "PERT": return(PERT.sample(params, generator));
+		case "StudentT": return(StudentT.sample(params, generator));
+		case "Tri": return(Triangular.sample(params, generator));
+		case "Unif": return(Uniform.sample(params, generator));
+		case "Weibull": return(Weibull.sample(params, generator));
 		//Truncated
-		case "TruncNorm": return(TruncatedNormal.sample(params, rand));
+		case "TruncNorm": return(TruncatedNormal.sample(params, generator));
 		//Multivariate
 		case "Dir": return(Dirichlet.sample(params, generator));
 		case "MvNorm": return(MultivariateNormal.sample(params, generator));

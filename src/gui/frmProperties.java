@@ -141,26 +141,32 @@ public class frmProperties {
 	 *  Default Constructor
 	 */
 	public frmProperties(AmuaModel myModel) {
-		this.myModel=myModel;
-		this.tempDimInfo=myModel.dimInfo.copy();
-		int numDim=tempDimInfo.dimNames.length;
-		numDimensions=numDim;
-		prevDimNames=new ArrayList<String>();
-		for(int d=0; d<numDim; d++) {
-			prevDimNames.add(tempDimInfo.dimNames[d]);
-		}
-		if(myModel.type==1) { //markov
-			tempDiscountRates=new double[numDim];
-			if(myModel.markov.discountRates!=null) {
-				for(int d=0; d<numDim; d++) {
-					tempDiscountRates[d]=myModel.markov.discountRates[d];
+		try {
+			this.myModel=myModel;
+			this.tempDimInfo=myModel.dimInfo.copy();
+			int numDim=tempDimInfo.dimNames.length;
+			numDimensions=numDim;
+			prevDimNames=new ArrayList<String>();
+			for(int d=0; d<numDim; d++) {
+				prevDimNames.add(tempDimInfo.dimNames[d]);
+			}
+			if(myModel.type==1) { //markov
+				tempDiscountRates=new double[numDim];
+				if(myModel.markov.discountRates!=null) {
+					int minNum=Math.min(numDim, myModel.markov.discountRates.length); //don't go over length of array if shorter for some reason,
+					for(int d=0; d<minNum; d++) {
+						tempDiscountRates[d]=myModel.markov.discountRates[d];
+					}
 				}
 			}
+
+			myModel.getStrategies();
+			initialize();
+			refreshDisplay();
+		} catch (Exception ex){
+			ex.printStackTrace();
+			myModel.errorLog.recordError(ex);
 		}
-		
-		myModel.getStrategies();
-		initialize();
-		refreshDisplay();
 	}
 
 	/**
@@ -855,7 +861,7 @@ public class frmProperties {
 		for(int i=0; i<tempDimInfo.dimNames.length; i++){
 			modelDiscountRates.addRow(new Object[]{null});
 			modelDiscountRates.setValueAt(tempDimInfo.dimNames[i],i,0);
-			if(myModel.markov.discountRates!=null){
+			if(myModel.markov.discountRates!=null && i<myModel.markov.discountRates.length){
 				modelDiscountRates.setValueAt(myModel.markov.discountRates[i]+"", i, 1);
 			}
 		}

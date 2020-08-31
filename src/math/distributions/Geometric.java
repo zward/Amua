@@ -18,6 +18,7 @@
 
 package math.distributions;
 
+import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
@@ -25,56 +26,172 @@ import math.NumericException;
 public final class Geometric{
 	
 	public static Numeric pmf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt();
-		double p=params[1].getProb();
-		double val=0;
-		val=Math.pow(1.0-p, k)*p;
-		return(new Numeric(val));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			int k=params[0].getInt();
+			double p=params[1].getProb();
+			double val=0;
+			if(k<0) {val=0;} //outside support
+			else{val=Math.pow(1.0-p, k)*p;}
+			return(new Numeric(val));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("k and p should be the same size","Geom");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int) params[0].matrix[i][j];
+					double p=params[1].getMatrixProb(i, j);
+					double val=0;
+					if(k<0) {val=0;} //outside support
+					else{val=Math.pow(1.0-p, k)*p;}
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt();
-		double p=params[1].getProb();
-		double val=0;
-		for(int i=0; i<=k; i++){val+=Math.pow(1.0-p, i)*p;}
-		return(new Numeric(val));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			int k=params[0].getInt();
+			double p=params[1].getProb();
+			double val=0;
+			for(int i=0; i<=k; i++){val+=Math.pow(1.0-p, i)*p;}
+			return(new Numeric(val));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("k and p should be the same size","Geom");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int) params[0].matrix[i][j];
+					double p=params[1].getMatrixProb(i, j);
+					double val=0;
+					for(int z=0; z<=k; z++){val+=Math.pow(1.0-p, z)*p;}
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb();
-		double p=params[1].getProb();
-		if(x==1){return(new Numeric(Double.POSITIVE_INFINITY));}
-		double CDF=0;
-		int k=-1;
-		while(x>CDF){
-			CDF+=Math.pow(1.0-p, k+1)*p;
-			k++;
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getProb();
+			double p=params[1].getProb();
+			if(x==1){return(new Numeric(Double.POSITIVE_INFINITY));}
+			double CDF=0;
+			int k=-1;
+			while(x>CDF){
+				CDF+=Math.pow(1.0-p, k+1)*p;
+				k++;
+			}
+			k=Math.max(0, k);
+			return(new Numeric(k));
 		}
-		k=Math.max(0, k);
-		return(new Numeric(k));
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and p should be the same size","Geom");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j);
+					double p=params[1].getMatrixProb(i, j);
+					if(x==1) {vals.matrix[i][j]=Double.POSITIVE_INFINITY;}
+					else {
+						double CDF=0;
+						int k=-1;
+						while(x>CDF){
+							CDF+=Math.pow(1.0-p, k+1)*p;
+							k++;
+						}
+						k=Math.max(0, k);
+						vals.matrix[i][j]=k;
+					}
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double p=params[0].getProb();
-		return(new Numeric((1.0-p)/p));
+		if(params[0].isMatrix()) { //real number
+			double p=params[0].getProb();
+			return(new Numeric((1.0-p)/p));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double p=params[0].getMatrixProb(i, j);
+					double val=(1.0-p)/p;
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		double p=params[0].getProb();
-		return(new Numeric((1.0-p)/(p*p)));
+		if(params[0].isMatrix()) { //real number
+			double p=params[0].getProb();
+			return(new Numeric((1.0-p)/(p*p)));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double p=params[0].getMatrixProb(i, j);
+					double val=(1.0-p)/(p*p);
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
+		}
 	}
 	
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==1){
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=1){
+			throw new NumericException("Incorrect number of parameters","Geom");
+		}
+		if(params[0].isMatrix()) { //real number
 			double p=params[0].getProb(), CDF=0;
 			int k=-1;
+			double rand=generator.nextDouble();
 			while(rand>CDF){
 				CDF+=Math.pow(1.0-p, k+1)*p;
 				k++;
 			}
 			return(new Numeric(k));
 		}
-		else{throw new NumericException("Incorrect number of parameters","Geom");}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double p=params[0].getMatrixProb(i, j);
+					double CDF=0;
+					int k=-1;
+					double rand=generator.nextDouble();
+					while(rand>CDF){
+						CDF+=Math.pow(1.0-p, k+1)*p;
+						k++;
+					}
+					vals.matrix[i][j]=k;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

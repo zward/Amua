@@ -137,6 +137,7 @@ public class frmPSA {
 	int numIterations;
 	JCheckBox chckbxSeed;
 	private JTextField textSeed;
+	JCheckBox chckbxSampleParameterSets;
 	String outcome;
 	
 	
@@ -402,6 +403,16 @@ public class frmPSA {
 			textSeed.setBounds(223, 6, 59, 28);
 			panel_2.add(textSeed);
 			textSeed.setColumns(10);
+			
+			chckbxSampleParameterSets = new JCheckBox("Sample parameter sets");
+			chckbxSampleParameterSets.setEnabled(false);
+			chckbxSampleParameterSets.setBounds(162, 41, 185, 18);
+			panel_2.add(chckbxSampleParameterSets);
+			
+			if(myModel.parameterSets!=null) {
+				chckbxSampleParameterSets.setEnabled(true);
+			}
+			
 
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 			GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
@@ -631,8 +642,7 @@ public class frmPSA {
 				Stroke dashed = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
 				chartCEAC.getXYPlot().addDomainMarker(new ValueMarker(myModel.dimInfo.WTP, Color.BLACK,dashed));
 			}
-			
-			
+						
 			GridBagLayout gbl_panelCEAC = new GridBagLayout();
 			gbl_panelCEAC.columnWidths = new int[]{0, 0};
 			gbl_panelCEAC.rowHeights = new int[]{35, 41, 0};
@@ -745,6 +755,12 @@ public class frmPSA {
 										int seed=Integer.parseInt(textSeed.getText());
 										myModel.generatorParam.setSeed(seed);
 									}
+									myModel.simParamSets=false; //turn off use parameter sets (no looping through)
+									boolean sampleParamSets=chckbxSampleParameterSets.isSelected();
+									int numSets=-1;
+									if(sampleParamSets) {
+										numSets=myModel.parameterSets.length;
+									}
 																		
 									numIterations=Integer.parseInt(textIterations.getText().replaceAll(",", ""));
 									progress.setMaximum(numIterations);
@@ -848,8 +864,13 @@ public class frmPSA {
 													validParams=false;
 												}
 											}
+										} //end sample params
+										if(sampleParamSets) {
+											int curSet=myModel.generatorParam.nextInt(numSets);
+											myModel.parameterSets[curSet].setParameters(myModel);
 										}
-
+										
+										
 										for(int v=0; v<numParams; v++){ //Record value
 											dataParamsIter[v][0][n]=n; dataParamsVal[v][0][n]=n;
 											try{

@@ -21,51 +21,153 @@ package math.distributions;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
+
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+
+import main.MersenneTwisterFast;
 
 public final class ChiSquare{
 	
 	public static Numeric pdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), k=params[1].getInt();
-		if(k<1){throw new NumericException("k should be >0","ChiSq");}
-		ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
-		return(new Numeric(chiSq.density(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), k=params[1].getInt();
+			if(k<1){throw new NumericException("k should be >0","ChiSq");}
+			ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
+			return(new Numeric(chiSq.density(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and k should be the same size","ChiSq");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j], k=params[1].matrix[i][j];
+					if(k<1){throw new NumericException("k should be >0","ChiSq");}
+					ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
+					vals.matrix[i][j]=chiSq.density(x);
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), k=params[1].getInt();
-		if(k<1){throw new NumericException("k should be >0","ChiSq");}
-		ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
-		return(new Numeric(chiSq.cumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), k=params[1].getInt();
+			if(k<1){throw new NumericException("k should be >0","ChiSq");}
+			ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
+			return(new Numeric(chiSq.cumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and k should be the same size","ChiSq");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j], k=params[1].matrix[i][j];
+					if(k<1){throw new NumericException("k should be >0","ChiSq");}
+					ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
+					vals.matrix[i][j]=chiSq.cumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb(), k=params[1].getInt();
-		if(k<1){throw new NumericException("k should be >0","ChiSq");}
-		ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
-		return(new Numeric(chiSq.inverseCumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getProb(), k=params[1].getInt();
+			if(k<1){throw new NumericException("k should be >0","ChiSq");}
+			ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
+			return(new Numeric(chiSq.inverseCumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and k should be the same size","ChiSq");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j), k=params[1].matrix[i][j];
+					if(k<1){throw new NumericException("k should be >0","ChiSq");}
+					ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
+					vals.matrix[i][j]=chiSq.inverseCumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double k=params[0].getInt();
-		if(k<1){throw new NumericException("k should be >0","ChiSq");}
-		return(new Numeric(k));
+		if(params[0].isMatrix()==false) { //real number
+			double k=params[0].getInt();
+			if(k<1){throw new NumericException("k should be >0","ChiSq");}
+			return(new Numeric(k));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double k=params[0].matrix[i][j];
+					if(k<1){throw new NumericException("k should be >0","ChiSq");}
+					vals.matrix[i][j]=k;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		double k=params[0].getInt();
-		if(k<1){throw new NumericException("k should be >0","ChiSq");}
-		return(new Numeric(2*k));
+		if(params[0].isMatrix()==false) { //real number
+			double k=params[0].getInt();
+			if(k<1){throw new NumericException("k should be >0","ChiSq");}
+			return(new Numeric(2*k));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double k=params[0].matrix[i][j];
+					if(k<1){throw new NumericException("k should be >0","ChiSq");}
+					vals.matrix[i][j]=2*k;
+				}
+			}
+			return(vals);
+		}
 	}
 
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==1){
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=1){
+			throw new NumericException("Incorrect number of parameters","ChiSq");
+		}
+		if(params[0].isMatrix()==false) { //real number
 			double k=params[0].getInt();
 			if(k<1){throw new NumericException("k should be >0","ChiSq");}
 			ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
+			double rand=generator.nextDouble();
 			return(new Numeric(chiSq.inverseCumulativeProbability(rand)));
 		}
-		else{throw new NumericException("Incorrect number of parameters","ChiSq");}
+		else{ //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double k=params[0].matrix[i][j];
+					if(k<1){throw new NumericException("k should be >0","ChiSq");}
+					ChiSquaredDistribution chiSq=new ChiSquaredDistribution(null,k);
+					double rand=generator.nextDouble();
+					vals.matrix[i][j]=chiSq.inverseCumulativeProbability(rand);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

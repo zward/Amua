@@ -24,62 +24,197 @@ import math.NumericException;
 
 import org.apache.commons.math3.distribution.TriangularDistribution;
 
+import main.MersenneTwisterFast;
+
 public final class Triangular{
 	
 	public static Numeric pdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble(), c=params[3].getDouble();
-		if(c<=a){throw new NumericException("c should be >a","Tri");}
-		if(b<a){throw new NumericException("b should be ≥a","Tri");}
-		if(b>c){throw new NumericException("b should be ≤c","Tri");}
-		TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
-		return(new Numeric(tri.density(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble(), c=params[3].getDouble();
+			if(c<=a){throw new NumericException("c should be >a","Tri");}
+			if(b<a){throw new NumericException("b should be ≥a","Tri");}
+			if(b>c){throw new NumericException("b should be ≤c","Tri");}
+			TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
+			return(new Numeric(tri.density(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and a should be the same size","Tri");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("a and b should be the same size","Tri");}
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and c should be the same size","Tri");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j];
+					double a=params[1].matrix[i][j];
+					double b=params[2].matrix[i][j];
+					double c=params[3].matrix[i][j];
+					if(c<=a){throw new NumericException("c should be >a","Tri");}
+					if(b<a){throw new NumericException("b should be ≥a","Tri");}
+					if(b>c){throw new NumericException("b should be ≤c","Tri");}
+					TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
+					vals.matrix[i][j]=tri.density(x);
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble(), c=params[3].getDouble();
-		if(c<=a){throw new NumericException("c should be >a","Tri");}
-		if(b<a){throw new NumericException("b should be ≥a","Tri");}
-		if(b>c){throw new NumericException("b should be ≤c","Tri");}
-		TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
-		return(new Numeric(tri.cumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble(), c=params[3].getDouble();
+			if(c<=a){throw new NumericException("c should be >a","Tri");}
+			if(b<a){throw new NumericException("b should be ≥a","Tri");}
+			if(b>c){throw new NumericException("b should be ≤c","Tri");}
+			TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
+			return(new Numeric(tri.cumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and a should be the same size","Tri");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("a and b should be the same size","Tri");}
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and c should be the same size","Tri");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j];
+					double a=params[1].matrix[i][j];
+					double b=params[2].matrix[i][j];
+					double c=params[3].matrix[i][j];
+					if(c<=a){throw new NumericException("c should be >a","Tri");}
+					if(b<a){throw new NumericException("b should be ≥a","Tri");}
+					if(b>c){throw new NumericException("b should be ≤c","Tri");}
+					TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
+					vals.matrix[i][j]=tri.cumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble(), c=params[3].getDouble();
-		if(c<=a){throw new NumericException("c should be >a","Tri");}
-		if(b<a){throw new NumericException("b should be ≥a","Tri");}
-		if(b>c){throw new NumericException("b should be ≤c","Tri");}
-		TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
-		return(new Numeric(tri.inverseCumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
+			double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble(), c=params[3].getDouble();
+			if(c<=a){throw new NumericException("c should be >a","Tri");}
+			if(b<a){throw new NumericException("b should be ≥a","Tri");}
+			if(b>c){throw new NumericException("b should be ≤c","Tri");}
+			TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
+			return(new Numeric(tri.inverseCumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and a should be the same size","Tri");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("a and b should be the same size","Tri");}
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and c should be the same size","Tri");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j);
+					double a=params[1].matrix[i][j];
+					double b=params[2].matrix[i][j];
+					double c=params[3].matrix[i][j];
+					if(c<=a){throw new NumericException("c should be >a","Tri");}
+					if(b<a){throw new NumericException("b should be ≥a","Tri");}
+					if(b>c){throw new NumericException("b should be ≤c","Tri");}
+					TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
+					vals.matrix[i][j]=tri.inverseCumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double a=params[0].getDouble(), b=params[1].getDouble(), c=params[2].getDouble(); 
-		if(c<=a){throw new NumericException("c should be >a","Tri");}
-		if(b<a){throw new NumericException("b should be ≥a","Tri");}
-		if(b>c){throw new NumericException("b should be ≤c","Tri");}
-		return(new Numeric((a+b+c)/3.0));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double a=params[0].getDouble(), b=params[1].getDouble(), c=params[2].getDouble(); 
+			if(c<=a){throw new NumericException("c should be >a","Tri");}
+			if(b<a){throw new NumericException("b should be ≥a","Tri");}
+			if(b>c){throw new NumericException("b should be ≤c","Tri");}
+			return(new Numeric((a+b+c)/3.0));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("a and b should be the same size","Tri");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and c should be the same size","Tri");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double a=params[0].matrix[i][j];
+					double b=params[1].matrix[i][j];
+					double c=params[2].matrix[i][j];
+					if(c<=a){throw new NumericException("c should be >a","Tri");}
+					if(b<a){throw new NumericException("b should be ≥a","Tri");}
+					if(b>c){throw new NumericException("b should be ≤c","Tri");}
+					vals.matrix[i][j]=(a+b+c)/3.0;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		double a=params[0].getDouble(), b=params[1].getDouble(), c=params[2].getDouble(); 
-		if(c<=a){throw new NumericException("c should be >a","Tri");}
-		if(b<a){throw new NumericException("b should be ≥a","Tri");}
-		if(b>c){throw new NumericException("b should be ≤c","Tri");}
-		double num=(a*a)+(b*b)+(c*c)-(a*b)-(a*c)-(b*c);
-		return(new Numeric(num/18.0));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double a=params[0].getDouble(), b=params[1].getDouble(), c=params[2].getDouble(); 
+			if(c<=a){throw new NumericException("c should be >a","Tri");}
+			if(b<a){throw new NumericException("b should be ≥a","Tri");}
+			if(b>c){throw new NumericException("b should be ≤c","Tri");}
+			double num=(a*a)+(b*b)+(c*c)-(a*b)-(a*c)-(b*c);
+			return(new Numeric(num/18.0));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("a and b should be the same size","Tri");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and c should be the same size","Tri");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double a=params[0].matrix[i][j];
+					double b=params[1].matrix[i][j];
+					double c=params[2].matrix[i][j];
+					if(c<=a){throw new NumericException("c should be >a","Tri");}
+					if(b<a){throw new NumericException("b should be ≥a","Tri");}
+					if(b>c){throw new NumericException("b should be ≤c","Tri");}
+					double num=(a*a)+(b*b)+(c*c)-(a*b)-(a*c)-(b*c);
+					vals.matrix[i][j]=num/18.0;
+				}
+			}
+			return(vals);
+		}
 	}
 
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==3){
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=3){
+			throw new NumericException("Incorrect number of parameters","Tri");
+		}
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
 			double a=params[0].getDouble(), b=params[1].getDouble(), c=params[2].getDouble();
 			if(c<=a){throw new NumericException("c should be >a","Tri");}
 			if(b<a){throw new NumericException("b should be ≥a","Tri");}
 			if(b>c){throw new NumericException("b should be ≤c","Tri");}
 			TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
+			double rand=generator.nextDouble();
 			return(new Numeric(tri.inverseCumulativeProbability(rand)));
 		}
-		else{throw new NumericException("Incorrect number of parameters","Tri");}
+		else{ //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("a and b should be the same size","Tri");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and c should be the same size","Tri");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double a=params[0].matrix[i][j];
+					double b=params[1].matrix[i][j];
+					double c=params[2].matrix[i][j];
+					if(c<=a){throw new NumericException("c should be >a","Tri");}
+					if(b<a){throw new NumericException("b should be ≥a","Tri");}
+					if(b>c){throw new NumericException("b should be ≤c","Tri");}
+					TriangularDistribution tri=new TriangularDistribution(null,a,b,c);
+					double rand=generator.nextDouble();
+					vals.matrix[i][j]=tri.inverseCumulativeProbability(rand);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

@@ -18,6 +18,7 @@
 
 package math.distributions;
 
+import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
@@ -25,140 +26,297 @@ import math.NumericException;
 public final class Categorical{
 	
 	public static Numeric pmf(Numeric params[]) throws NumericException{
-		//Validate parameters
-		int k=params[0].getInt();
-		Numeric p=params[1];
-		if(p.nrow!=1){throw new NumericException("p should be a row vector","Cat");}
-		int n=p.ncol;
-		double pmf[]=new double[n];
-		double cdf[]=new double[n];
-		pmf[0]=p.matrix[0][0];
-		cdf[0]=p.matrix[0][0];
-		if(p.matrix[0][0]<0 || p.matrix[0][0]>1){throw new NumericException("Invalid probability in p ("+p.matrix[0][0]+")","Cat");}
-		for(int i=1; i<n; i++){
-			double curP=p.matrix[0][i];
-			if(curP<0 || curP>1){throw new NumericException("Invalid probability in p ("+curP+")","Cat");}
-			pmf[i]=curP;
-			cdf[i]=cdf[i-1]+curP;
+		if(params[0].isMatrix()==false && params[1].isMatrix()==true) { //real number
+			//Validate parameters
+			int k=params[0].getInt();
+			Numeric p=params[1];
+			if(p.nrow!=1){throw new NumericException("p should be a row vector","Cat");}
+			int n=p.ncol;
+			double pmf[]=new double[n];
+			double cdf[]=new double[n];
+			pmf[0]=p.getMatrixProb(0,0); //p.matrix[0][0];
+			cdf[0]=p.getMatrixProb(0,0);
+			for(int i=1; i<n; i++){
+				double curP=p.getMatrixProb(0, i);
+				pmf[i]=curP;
+				cdf[i]=cdf[i-1]+curP;
+			}
+			if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+				throw new NumericException("p sums to "+cdf[n-1],"Cat");
+			}
+			if(k<0||k>=n){return(new Numeric(0));}
+			return(new Numeric(pmf[k]));
 		}
-		if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
-			throw new NumericException("p sums to "+cdf[n-1],"Cat");
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow) {
+				throw new NumericException("k and p should have the same number of rows","Cat");
+			}
+			if(params[0].ncol!=1) {
+				throw new NumericException("k should be a column vector","Cat");
+			}
+			int nrow=params[0].nrow; int ncol=1;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			Numeric p=params[1];
+			int n=p.ncol;
+			for(int r=0; r<nrow; r++) {
+				int k=(int) params[0].matrix[r][0];
+				double val=0;
+				double pmf[]=new double[n];
+				double cdf[]=new double[n];
+				pmf[0]=p.getMatrixProb(r,0);
+				cdf[0]=p.getMatrixProb(r,0);
+				for(int i=1; i<n; i++){
+					double curP=p.getMatrixProb(r, i);
+					pmf[i]=curP;
+					cdf[i]=cdf[i-1]+curP;
+				}
+				if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+					throw new NumericException("p sums to "+cdf[n-1],"Cat");
+				}
+				if(k<0||k>=n){val=0;}
+				else {val=pmf[k];}
+				vals.matrix[r][0]=val;
+			}
+			return(vals);
 		}
-		if(k<0||k>=n){return(new Numeric(0));}
-		return(new Numeric(pmf[k]));
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		//Validate parameters
-		int k=params[0].getInt();
-		Numeric p=params[1];
-		if(p.nrow!=1){throw new NumericException("p should be a row vector","Cat");}
-		int n=p.ncol;
-		double cdf[]=new double[n];
-		cdf[0]=p.matrix[0][0];
-		if(p.matrix[0][0]<0 || p.matrix[0][0]>1){throw new NumericException("Invalid probability in p ("+p.matrix[0][0]+")","Cat");}
-		for(int i=1; i<n; i++){
-			double curP=p.matrix[0][i];
-			if(curP<0 || curP>1){throw new NumericException("Invalid probability in p ("+curP+")","Cat");}
-			cdf[i]=cdf[i-1]+curP;
+		if(params[0].isMatrix()==false && params[1].isMatrix()==true) { //real number
+			//Validate parameters
+			int k=params[0].getInt();
+			Numeric p=params[1];
+			if(p.nrow!=1){throw new NumericException("p should be a row vector","Cat");}
+			int n=p.ncol;
+			double cdf[]=new double[n];
+			cdf[0]=p.getMatrixProb(0, 0);
+			for(int i=1; i<n; i++){
+				double curP=p.getMatrixProb(0, i);
+				cdf[i]=cdf[i-1]+curP;
+			}
+			if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+				throw new NumericException("p sums to "+cdf[n-1],"Cat");
+			}
+			if(k<0){return(new Numeric(0));}
+			if(k>=n){return(new Numeric(1.0));}
+			return(new Numeric(cdf[k]));
 		}
-		if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
-			throw new NumericException("p sums to "+cdf[n-1],"Cat");
+		else {
+			if(params[0].nrow!=params[1].nrow) {
+				throw new NumericException("k and p should have the same number of rows","Cat");
+			}
+			if(params[0].ncol!=1) {
+				throw new NumericException("k should be a column vector","Cat");
+			}
+			int nrow=params[0].nrow; int ncol=1;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			Numeric p=params[1];
+			int n=p.ncol;
+			for(int r=0; r<nrow; r++) {
+				int k=(int) params[0].matrix[r][0];
+				double val=0;
+				double cdf[]=new double[n];
+				cdf[0]=p.getMatrixProb(r,0);
+				for(int i=1; i<n; i++){
+					double curP=p.getMatrixProb(r, i);
+					cdf[i]=cdf[i-1]+curP;
+				}
+				if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+					throw new NumericException("p sums to "+cdf[n-1],"Cat");
+				}
+				if(k<0) {val=0;}
+				else if(k>=n) {val=1.0;}
+				else {val=cdf[k];}
+				vals.matrix[r][0]=val;
+			}
+			return(vals);
 		}
-		if(k<0){return(new Numeric(0));}
-		if(k>=n){return(new Numeric(1.0));}
-		return(new Numeric(cdf[k]));
 	}
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		//Validate parameters
-		double x=params[0].getProb();
-		Numeric p=params[1];
-		if(p.nrow!=1){throw new NumericException("p should be a row vector","Cat");}
-		int n=p.ncol;
-		double cdf[]=new double[n];
-		cdf[0]=p.matrix[0][0];
-		if(p.matrix[0][0]<0 || p.matrix[0][0]>1){throw new NumericException("Invalid probability in p ("+p.matrix[0][0]+")","Cat");}
-		for(int i=1; i<n; i++){
-			double curP=p.matrix[0][i];
-			if(curP<0 || curP>1){throw new NumericException("Invalid probability in p ("+curP+")","Cat");}
-			cdf[i]=cdf[i-1]+curP;
+		if(params[0].isMatrix()==false && params[1].isMatrix()==true) { //real number
+			//Validate parameters
+			double x=params[0].getProb();
+			Numeric p=params[1];
+			if(p.nrow!=1){throw new NumericException("p should be a row vector","Cat");}
+			int n=p.ncol;
+			double cdf[]=new double[n];
+			cdf[0]=p.getMatrixProb(0,0);
+			for(int i=1; i<n; i++){
+				double curP=p.getMatrixProb(0, i);
+				cdf[i]=cdf[i-1]+curP;
+			}
+			if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+				throw new NumericException("p sums to "+cdf[n-1],"Cat");
+			}
+			//Sample
+			int k=0;
+			while(cdf[k]<x){k++;}
+			return(new Numeric(k));
 		}
-		if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
-			throw new NumericException("p sums to "+cdf[n-1],"Cat");
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow) {
+				throw new NumericException("x and p should have the same number of rows","Cat");
+			}
+			if(params[0].ncol!=1) {
+				throw new NumericException("x should be a column vector","Cat");
+			}
+			int nrow=params[0].nrow; int ncol=1;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			Numeric p=params[1];
+			int n=p.ncol;
+			for(int r=0; r<nrow; r++) {
+				double x=params[0].getMatrixProb(r,0);
+				double cdf[]=new double[n];
+				cdf[0]=p.getMatrixProb(r,0);
+				for(int i=1; i<n; i++){
+					double curP=p.getMatrixProb(r, i);
+					cdf[i]=cdf[i-1]+curP;
+				}
+				if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+					throw new NumericException("p sums to "+cdf[n-1],"Cat");
+				}
+				//Sample
+				int k=0;
+				while(cdf[k]<x){k++;}
+				vals.matrix[r][0]=k;
+			}
+			return(vals);
 		}
-		//Sample
-		int k=0;
-		while(cdf[k]<x){k++;}
-		return(new Numeric(k));
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		//Validate parameters
 		Numeric p=params[0];
-		if(p.nrow!=1){throw new NumericException("p should be a row vector","Cat");}
-		int n=p.ncol;
-		double cdf[]=new double[n];
-		double sum=0;
-		cdf[0]=p.matrix[0][0];
-		if(p.matrix[0][0]<0 || p.matrix[0][0]>1){throw new NumericException("Invalid probability in p ("+p.matrix[0][0]+")","Cat");}
-		for(int i=1; i<n; i++){
-			double curP=p.matrix[0][i];
-			if(curP<0 || curP>1){throw new NumericException("Invalid probability in p ("+curP+")","Cat");}
-			cdf[i]=cdf[i-1]+curP;
-			sum+=curP*i;
+		if(p.isMatrix()==false) {
+			throw new NumericException("p should be a row vector or matrix","Cat");
 		}
-		if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
-			throw new NumericException("p sums to "+cdf[n-1],"Cat");
+		if(p.nrow==1) { //row vector
+			int n=p.ncol;
+			double cdf[]=new double[n];
+			double sum=0;
+			cdf[0]=p.getMatrixProb(0, 0);
+			for(int i=1; i<n; i++){
+				double curP=p.getMatrixProb(0, i);
+				cdf[i]=cdf[i-1]+curP;
+				sum+=curP*i;
+			}
+			if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+				throw new NumericException("p sums to "+cdf[n-1],"Cat");
+			}
+			return(new Numeric((int)Math.round(sum)));
 		}
-		return(new Numeric((int)Math.round(sum)));
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=1;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			int n=p.ncol;
+			for(int r=0; r<nrow; r++) {
+				double cdf[]=new double[n];
+				double sum=0;
+				cdf[0]=p.getMatrixProb(r,0);
+				for(int i=1; i<n; i++){
+					double curP=p.getMatrixProb(r, i);
+					cdf[i]=cdf[i-1]+curP;
+					sum+=curP*i;
+				}
+				if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+					throw new NumericException("p sums to "+cdf[n-1],"Cat");
+				}
+				vals.matrix[r][0]=(int)Math.round(sum);
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		//Validate parameters
 		Numeric p=params[0];
-		if(p.nrow!=1){throw new NumericException("p should be a row vector","Cat");}
-		int n=p.ncol;
-		double cdf[]=new double[n];
-		double eX=0, eX2=0;
-		cdf[0]=p.matrix[0][0];
-		if(p.matrix[0][0]<0 || p.matrix[0][0]>1){throw new NumericException("Invalid probability in p ("+p.matrix[0][0]+")","Cat");}
-		for(int i=1; i<n; i++){
-			double curP=p.matrix[0][i];
-			if(curP<0 || curP>1){throw new NumericException("Invalid probability in p ("+curP+")","Cat");}
-			cdf[i]=cdf[i-1]+curP;
-			eX+=curP*i;
-			eX2+=curP*i*i;
+		if(p.isMatrix()==false) {
+			throw new NumericException("p should be a row vector or matrix","Cat");
 		}
-		double thresh=Math.pow(10, -10);
-		if(Math.abs(1.0-cdf[n-1])>thresh){
-			throw new NumericException("p sums to "+cdf[n-1],"Cat");
+		if(p.nrow==1) { //row vector
+			int n=p.ncol;
+			double cdf[]=new double[n];
+			double eX=0, eX2=0;
+			cdf[0]=p.getMatrixProb(0, 0);
+			for(int i=1; i<n; i++){
+				double curP=p.getMatrixProb(0, i);
+				cdf[i]=cdf[i-1]+curP;
+				eX+=curP*i;
+				eX2+=curP*i*i;
+			}
+			if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+				throw new NumericException("p sums to "+cdf[n-1],"Cat");
+			}
+			double var=eX2-eX*eX;
+			return(new Numeric(var));
 		}
-		double var=eX2-eX*eX;
-		return(new Numeric(var));
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=1;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			int n=p.ncol;
+			for(int r=0; r<nrow; r++) {
+				double cdf[]=new double[n];
+				double eX=0, eX2=0;
+				cdf[0]=p.getMatrixProb(r, 0);
+				for(int i=1; i<n; i++){
+					double curP=p.getMatrixProb(r, i);
+					cdf[i]=cdf[i-1]+curP;
+					eX+=curP*i;
+					eX2+=curP*i*i;
+				}
+				if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+					throw new NumericException("p sums to "+cdf[n-1],"Cat");
+				}
+				double var=eX2-eX*eX;
+				vals.matrix[r][0]=var;
+			}
+			return(vals);
+		}
 	}
 	
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		//Validate parameters
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
 		Numeric p=params[0];
-		if(p.nrow!=1){throw new NumericException("p should be a row vector","Cat");}
-		int n=p.ncol;
-		double cdf[]=new double[n];
-		cdf[0]=p.matrix[0][0];
-		if(p.matrix[0][0]<0 || p.matrix[0][0]>1){throw new NumericException("Invalid probability in p ("+p.matrix[0][0]+")","Cat");}
-		for(int i=1; i<n; i++){
-			double curP=p.matrix[0][i];
-			if(curP<0 || curP>1){throw new NumericException("Invalid probability in p ("+curP+")","Cat");}
-			cdf[i]=cdf[i-1]+curP;
+		if(p.isMatrix()==false) {
+			throw new NumericException("p should be a row vector or matrix","Cat");
 		}
-		double thresh=Math.pow(10, -10);
-		if(Math.abs(1.0-cdf[n-1])>thresh){
-			throw new NumericException("p sums to "+cdf[n-1],"Cat");
+		if(p.nrow==1) { //row vector
+			int n=p.ncol;
+			double cdf[]=new double[n];
+			cdf[0]=p.getMatrixProb(0, 0);
+			for(int i=1; i<n; i++){
+				double curP=p.getMatrixProb(0, i);
+				cdf[i]=cdf[i-1]+curP;
+			}
+			if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+				throw new NumericException("p sums to "+cdf[n-1],"Cat");
+			}
+			//Sample
+			double rand=generator.nextDouble();
+			int k=0;
+			while(cdf[k]<rand){k++;}
+			return(new Numeric(k));
 		}
-		//Sample
-		int k=0;
-		while(cdf[k]<rand){k++;}
-		return(new Numeric(k));
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=1;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			int n=p.ncol;
+			for(int r=0; r<nrow; r++) {
+				double cdf[]=new double[n];
+				cdf[0]=p.getMatrixProb(r,0);
+				for(int i=1; i<n; i++){
+					double curP=p.getMatrixProb(r, i);
+					cdf[i]=cdf[i-1]+curP;
+				}
+				if(Math.abs(1.0-cdf[n-1])>MathUtils.tolerance){
+					throw new NumericException("p sums to "+cdf[n-1],"Cat");
+				}
+				//Sample
+				double rand=generator.nextDouble();
+				int k=0;
+				while(cdf[k]<rand){k++;}
+				vals.matrix[r][0]=k;
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

@@ -24,49 +24,149 @@ import math.NumericException;
 
 import org.apache.commons.math3.distribution.LogisticDistribution;
 
+import main.MersenneTwisterFast;
+
 public final class Logistic{
 	
 	public static Numeric pdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), mu=params[1].getDouble(), s=params[2].getDouble();
-		if(s<=0){throw new NumericException("s should be >0","Logistic");}
-		LogisticDistribution logi=new LogisticDistribution(null,mu,s);
-		return(new Numeric(logi.density(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), mu=params[1].getDouble(), s=params[2].getDouble();
+			if(s<=0){throw new NumericException("s should be >0","Logistic");}
+			LogisticDistribution logi=new LogisticDistribution(null,mu,s);
+			return(new Numeric(logi.density(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and μ should be the same size","Logistic");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("μ and s should be the same size","Logistic");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j], mu=params[1].matrix[i][j], s=params[2].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Logistic");}
+					LogisticDistribution logi=new LogisticDistribution(null,mu,s);
+					vals.matrix[i][j]=logi.density(x);
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), mu=params[1].getDouble(), s=params[2].getDouble();
-		if(s<=0){throw new NumericException("s should be >0","Logistic");}
-		LogisticDistribution logi=new LogisticDistribution(null,mu,s);
-		return(new Numeric(logi.cumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), mu=params[1].getDouble(), s=params[2].getDouble();
+			if(s<=0){throw new NumericException("s should be >0","Logistic");}
+			LogisticDistribution logi=new LogisticDistribution(null,mu,s);
+			return(new Numeric(logi.cumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and μ should be the same size","Logistic");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("μ and s should be the same size","Logistic");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j], mu=params[1].matrix[i][j], s=params[2].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Logistic");}
+					LogisticDistribution logi=new LogisticDistribution(null,mu,s);
+					vals.matrix[i][j]=logi.cumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb(), mu=params[1].getDouble(), s=params[2].getDouble();
-		if(s<=0){throw new NumericException("s should be >0","Logistic");}
-		LogisticDistribution logi=new LogisticDistribution(null,mu,s);
-		return(new Numeric(logi.inverseCumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getProb(), mu=params[1].getDouble(), s=params[2].getDouble();
+			if(s<=0){throw new NumericException("s should be >0","Logistic");}
+			LogisticDistribution logi=new LogisticDistribution(null,mu,s);
+			return(new Numeric(logi.inverseCumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and μ should be the same size","Logistic");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("μ and s should be the same size","Logistic");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j), mu=params[1].matrix[i][j], s=params[2].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Logistic");}
+					LogisticDistribution logi=new LogisticDistribution(null,mu,s);
+					vals.matrix[i][j]=logi.inverseCumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double mu=params[0].getDouble(), s=params[1].getDouble();
-		if(s<=0){throw new NumericException("s should be >0","Logistic");}
-		return(new Numeric(mu)); 
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double mu=params[0].getDouble(), s=params[1].getDouble();
+			if(s<=0){throw new NumericException("s should be >0","Logistic");}
+			return(new Numeric(mu)); 
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("μ and s should be the same size","Logistic");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double mu=params[0].matrix[i][j], s=params[1].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Logistic");}
+					vals.matrix[i][j]=mu;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		double s=params[1].getDouble();
-		if(s<=0){throw new NumericException("s should be >0","Logistic");}
-		return(new Numeric((s*s*Math.PI*Math.PI)/3.0)); 
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double s=params[1].getDouble();
+			if(s<=0){throw new NumericException("s should be >0","Logistic");}
+			return(new Numeric((s*s*Math.PI*Math.PI)/3.0)); 
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("μ and s should be the same size","Logistic");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double mu=params[0].matrix[i][j], s=params[1].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Logistic");}
+					vals.matrix[i][j]=(s*s*Math.PI*Math.PI)/3.0;
+				}
+			}
+			return(vals);
+		}
 	}
 
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==2){
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=2){
+			throw new NumericException("Incorrect number of parameters","Logistic");
+		}
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
 			double mu=params[0].getDouble(), s=params[1].getDouble();
 			if(s<=0){throw new NumericException("s should be >0","Logistic");}
 			LogisticDistribution logi=new LogisticDistribution(null,mu,s);
+			double rand=generator.nextDouble();
 			return(new Numeric(logi.inverseCumulativeProbability(rand))); //mean
 		}
-		else{throw new NumericException("Incorrect number of parameters","Logistic");}
+		else{ //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("μ and s should be the same size","Logistic");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double mu=params[0].matrix[i][j], s=params[1].matrix[i][j];
+					LogisticDistribution logi=new LogisticDistribution(null,mu,s);
+					double rand=generator.nextDouble();
+					vals.matrix[i][j]=logi.inverseCumulativeProbability(rand);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

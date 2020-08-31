@@ -223,8 +223,9 @@ public final class InterpreterOLD{
 								}
 								else{ //see if can sample
 									if(myModel.curGenerator[curThread]!=null){ //RNG available
-										double rand=myModel.curGenerator[curThread].nextDouble();
-										distResult=Distributions.sample(word,paramsEval,rand,myModel.curGenerator[curThread]);
+										//double rand=myModel.curGenerator[curThread].nextDouble();
+										//distResult=Distributions.sample(word,paramsEval,rand,myModel.curGenerator[curThread]);
+										distResult=Distributions.sample(word,paramsEval,myModel.curGenerator[curThread]);
 									}
 									else{ //no RNG, shouldn't sample
 										distResult=Distributions.evaluate(word,paramsEval,df);

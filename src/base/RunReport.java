@@ -18,6 +18,8 @@
 
 package base;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -270,6 +272,32 @@ public class RunReport{
 		
 		console.newLine();
 	}
+	
+	private void writeCEAResults(String outpath) throws IOException{
+		FileWriter fstream = new FileWriter(outpath); //Create new file
+		BufferedWriter out = new BufferedWriter(fstream);
+		
+		//Print results
+		//headers
+		out.write("Strategy,"+dimInfo.dimNames[dimInfo.costDim]+","+dimInfo.dimNames[dimInfo.effectDim]+",ICER,Notes"); out.newLine();
+		for(int s=0; s<numStrat; s++){
+			out.write(table[s][1]+","+table[s][2]+","+table[s][3]+","+table[s][4]+","+table[s][5]); out.newLine();
+		}
+		out.newLine();
+		
+		if(numSubgroups>0){
+			for(int g=0; g<numSubgroups; g++){
+				out.write("Subgroup Results:,"+subgroupNames[g]+",n=,"+subgroupSizes[g]); out.newLine();
+				out.write("Strategy,"+dimInfo.dimNames[dimInfo.costDim]+","+dimInfo.dimNames[dimInfo.effectDim]+",ICER,Notes"); out.newLine();
+				for(int s=0; s<numStrat; s++){
+					out.write(tableGroup[g][s][1]+","+tableGroup[g][s][2]+","+tableGroup[g][s][3]+","+tableGroup[g][s][4]+","+tableGroup[g][s][5]); 
+					out.newLine();
+				}
+				out.newLine();
+			}
+		}
+		out.close();
+	}
 
 	private void printBCAResults(Console console){
 		console.print("\nBCA Results:\n");
@@ -297,6 +325,31 @@ public class RunReport{
 		}
 		
 		console.newLine();
+	}
+	
+	private void writeBCAResults(String outpath) throws IOException{
+		FileWriter fstream = new FileWriter(outpath); //Create new file
+		BufferedWriter out = new BufferedWriter(fstream);
+		
+		//headers
+		out.write("Strategy,"+dimInfo.dimNames[dimInfo.effectDim]+","+dimInfo.dimNames[dimInfo.costDim]+",NMB"); out.newLine();
+		for(int s=0; s<numStrat; s++){
+			out.write(table[s][1]+","+table[s][2]+","+table[s][3]+","+table[s][4]); out.newLine();
+		}
+		out.newLine();
+		
+		if(numSubgroups>0){
+			for(int g=0; g<numSubgroups; g++){
+				out.write("Subgroup Results:,"+subgroupNames[g]+",n=,"+subgroupSizes[g]); out.newLine();
+				for(int s=0; s<numStrat; s++){
+					out.write(tableGroup[g][s][1]+","+tableGroup[g][s][2]+","+tableGroup[g][s][3]+","+tableGroup[g][s][4]);
+					out.newLine();
+				}
+				out.newLine();
+			}
+		}
+		
+		out.close();
 	}
 
 	private void printECEAResults(Console console){
@@ -327,6 +380,34 @@ public class RunReport{
 		console.newLine();
 	}
 	
+	private void writeECEAResults(String outpath) throws IOException{
+		FileWriter fstream = new FileWriter(outpath); //Create new file
+		BufferedWriter out = new BufferedWriter(fstream);
+		
+		//headers
+		out.write("Strategy,"+dimInfo.dimNames[dimInfo.effectDim]+","+dimInfo.dimNames[dimInfo.costDim]+",NMB,"+dimInfo.dimNames[dimInfo.extendedDim]);
+		out.newLine();
+		for(int s=0; s<numStrat; s++){
+			out.write(table[s][1]+","+table[s][2]+","+table[s][3]+","+table[s][4]+","+table[s][5]); out.newLine();
+		}
+		out.newLine();
+		
+		if(numSubgroups>0){
+			for(int g=0; g<numSubgroups; g++){
+				out.write("Subgroup Results:,"+subgroupNames[g]+",n=,"+subgroupSizes[g]); out.newLine();
+				out.write("Strategy,"+dimInfo.dimNames[dimInfo.effectDim]+","+dimInfo.dimNames[dimInfo.costDim]+",NMB,"+dimInfo.dimNames[dimInfo.extendedDim]);
+				out.newLine();
+				for(int s=0; s<numStrat; s++){
+					out.write(tableGroup[g][s][1]+","+tableGroup[g][s][2]+","+tableGroup[g][s][3]+","+tableGroup[g][s][4]+","+tableGroup[g][s][5]);
+					out.newLine();
+				}
+				out.newLine();
+			}
+		}
+		
+		out.close();
+	}
+	
 	private void printMicroResults(Console console){
 		console.print("\nIndividual-level Results:\n");
 		int numMicro=microStats.size();
@@ -353,12 +434,33 @@ public class RunReport{
 		console.newLine();
 	}
 	
-	public void write(String filepath) throws IOException{
-		if(type==0){treeReport.write(filepath+"_TreeReport.csv");}
-		else if(type==1){
+	public void writeSummary(String file, int iteration) throws IOException {
+		if(dimInfo.analysisType==0) { //EV
+			if(myModel.type==0) { //decision tree
+				myModel.tree.writeEVResults(file+"results_"+iteration+".csv",this);
+			}
+			else if(myModel.type==1) { //markov
+				myModel.markov.writeModelResults(file+"results_"+iteration+".csv",this);
+			}
+		}
+		else if(dimInfo.analysisType==1){writeCEAResults(file+"results_"+iteration+".csv");}
+		else if(dimInfo.analysisType==2){writeBCAResults(file+"results_"+iteration+".csv");}
+		else if(dimInfo.analysisType==3){writeECEAResults(file+"results_"+iteration+".csv");}
+	}
+	
+	public void write(String filepath, int iteration) throws IOException{
+		if(type==0){treeReport.write(filepath+"_TreeReport"+iteration+".csv");} //decision tree
+		else if(type==1){ //markov
 			int numTrace=markovTraces.size();
 			for(int i=0; i<numTrace; i++){
-				markovTraces.get(i).write(filepath+"_",-1);
+				markovTraces.get(i).write(filepath+"trace_",iteration);
+			}
+			if(numSubgroups>0) {
+				for(int g=0; g<numSubgroups; g++) {
+					for(int i=0; i<numTrace; i++) {
+						markovTracesGroup[g].get(i).write(filepath+"trace_"+subgroupNames[g], iteration);
+					}
+				}
 			}
 		}
 		

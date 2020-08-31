@@ -18,6 +18,9 @@
 
 package markov;
 import java.awt.Color;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -221,8 +224,10 @@ public class MarkovTree{
 			}
 		}
 		else{ //Transition, validate next state
-			curNode.comboTransition.setBackground(new Color(0,0,0,0));
-			curNode.comboTransition.setBorder(null);
+			if(myModel.cluster==false) {
+				curNode.comboTransition.setBackground(new Color(0,0,0,0));
+				curNode.comboTransition.setBorder(null);
+			}
 			int index=curNode.chain.stateNames.indexOf(curNode.transition);
 			if(index==-1){
 				curNode.comboTransition.setBackground(Color.YELLOW);
@@ -273,7 +278,7 @@ public class MarkovTree{
 		if(curNode.type==1){ //Chain, check name
 			chains.add(curNode);
 			curNode.highlightTextField(5, null);
-			if(curNode.name==null || curNode.name.isEmpty()){
+			if(curNode.name==null || curNode.name.trim().isEmpty()){
 				curNode.highlightTextField(5, Color.YELLOW);
 				errors.add("Markov Chain Error: Chain not named");
 			}
@@ -306,14 +311,14 @@ public class MarkovTree{
 		}
 		if(curNode.hasVarUpdates && curNode.type==1) { //var updates, chain
 			//ensure both var updates are not empty
-			if((curNode.varUpdatesT0==null ||curNode.varUpdatesT0.isBlank()) && 
-					(curNode.varUpdates==null || curNode.varUpdates.isBlank())) {
+			if((curNode.varUpdatesT0==null ||curNode.varUpdatesT0.trim().isEmpty()) && 
+					(curNode.varUpdates==null || curNode.varUpdates.trim().isEmpty())) {
 				curNode.highlightTextField(4, Color.YELLOW); //Variable updates
 				curNode.highlightTextField(6, Color.YELLOW); //Variable updates
 				errors.add("Node "+curNode.name+": Variable Update Error - No entry for either update field");
 			}
 			else { //at least one is entered
-				if(curNode.varUpdatesT0!=null && curNode.varUpdatesT0.isBlank()==false) {
+				if(curNode.varUpdatesT0!=null && curNode.varUpdatesT0.trim().isEmpty()==false) {
 					String updates[]=null;
 					int curU=-1;
 					try{
@@ -334,7 +339,7 @@ public class MarkovTree{
 						errors.add("Node "+curNode.name+": Variable Update Error ("+updates[curU]+")");
 					}
 				}
-				if(curNode.varUpdates!=null && curNode.varUpdates.isBlank()==false) {
+				if(curNode.varUpdates!=null && curNode.varUpdates.trim().isEmpty()==false) {
 					String updates[]=null;
 					int curU=-1;
 					try{
@@ -444,6 +449,7 @@ public class MarkovTree{
 			}catch(Exception e){
 				//curNode.lblTermination.setBackground(Color.YELLOW);
 				errors.add("Node "+curNode.name+": Termination Condition Error ("+curNode.terminationCondition+")");
+				e.printStackTrace();
 			}
 		}
 	}
@@ -826,6 +832,72 @@ public class MarkovTree{
 		
 		console.newLine();
 	}
+	
+	
+	public void writeModelResults(String outpath, RunReport report) throws IOException{
+		FileWriter fstream = new FileWriter(outpath); //Create new file
+		BufferedWriter out = new BufferedWriter(fstream);
+		
+		//Write output for each strategy
+		DimInfo dimInfo=myModel.dimInfo;
+		int numDimensions=dimInfo.dimSymbols.length;
+		//headers
+		out.write("Strategy");
+		for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]);}
+		if(discountRewards){
+			for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]+" (Dis)");}
+		}
+		out.newLine();
+		
+		//strategy results
+		MarkovNode root=nodes.get(0);
+		for(int c=0; c<root.numChildren; c++){
+			MarkovNode curNode=root.children[c];
+			out.write(curNode.name);
+			if(curNode.expectedValues!=null){
+				for(int d=0; d<numDimensions; d++){
+					out.write(","+MathUtils.round(curNode.expectedValues[d],myModel.dimInfo.decimals[d]));
+				}
+				if(discountRewards){
+					for(int d=0; d<numDimensions; d++){
+						out.write(","+MathUtils.round(curNode.expectedValuesDis[d],myModel.dimInfo.decimals[d]));
+					}
+				}
+			}
+			out.newLine();
+		}
+		out.newLine();
+		
+		//subgroups
+		for(int g=0; g<report.numSubgroups; g++){
+			out.write("Subgroup Results:,"+report.subgroupNames[g]+"n=,"+report.subgroupSizes[g]); out.newLine();
+			//headers
+			out.write("Strategy");
+			for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]);}
+			if(discountRewards){
+				for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]+" (Dis)");}
+			}
+			out.newLine();
+			for(int c=0; c<root.numChildren; c++){
+				MarkovNode curNode=root.children[c];
+				out.write(curNode.name);
+				if(curNode.expectedValuesGroup[g]!=null){
+					for(int d=0; d<numDimensions; d++){
+						out.write(","+MathUtils.round(curNode.expectedValuesGroup[g][d], myModel.dimInfo.decimals[d]));
+					}
+					if(discountRewards){
+						for(int d=0; d<numDimensions; d++){
+							out.write(","+MathUtils.round(curNode.expectedValuesDisGroup[g][d], myModel.dimInfo.decimals[d]));
+						}
+					}
+				}
+				out.newLine();
+			}
+			out.newLine();
+		}
+		out.close();
+	}
+	
 	
 	public void printChainResults(Console console, MarkovNode curChain, RunReport report){
 		DimInfo dimInfo=myModel.dimInfo;

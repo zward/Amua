@@ -16,43 +16,28 @@
  * along with Amua.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package main;
-import java.util.Date;
-
+package cluster;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
-@XmlRootElement(name="Metadata")
-public class Metadata{
-	@XmlTransient public String version;
+@XmlRootElement(name="ClusterInputs")
+public class ClusterInputs{
 	
-	@XmlElement public String author;
-	@XmlElement public String dateCreated;
-	@XmlElement public String versionCreated;
-	@XmlElement public String modifier;
-	@XmlElement public String dateModified;
-	@XmlElement public String versionModified;
 	
+	@XmlElement public String operation;
+	@XmlElement public boolean seedIterationRNG;
+	
+	//psa inputs
+	@XmlElement public boolean seedParamRNG;
+	@XmlElement public int paramSeed;
+	@XmlElement public boolean sampleParamSets;
+	
+		
 	//Constructor
-	public Metadata(){ //no-arg constructor for xml binding
+	public ClusterInputs(){
 		
 	}
+		
 	
-	public Metadata(String version){
-		this.version=version;
-	}
-	
-	public void update(){
-		if(author==null){ //Create
-			author=System.getProperty("user.name");
-			dateCreated=(new Date()+"");
-			versionCreated=version;	
-		}
-		else{ //Modify
-			modifier=System.getProperty("user.name");
-			dateModified=(new Date()+"");
-			versionModified=version;
-		}
-	}
+
 }

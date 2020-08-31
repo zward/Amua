@@ -18,6 +18,9 @@
 
 package tree;
 import java.awt.Color;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -368,6 +371,53 @@ public class DecisionTree{
 		}
 		
 		console.newLine();
+	}
+	
+	public void writeEVResults(String outpath, RunReport report) throws IOException{
+		FileWriter fstream = new FileWriter(outpath); //Create new file
+		BufferedWriter out = new BufferedWriter(fstream);
+		
+		//Write output for each strategy
+		DimInfo dimInfo=myModel.dimInfo;
+		TreeNode root=nodes.get(0);
+		int numDimensions=root.numDimensions;
+		int numChildren=root.numChildren; //Root
+		//headers
+		out.write("Strategy");
+		for(int d=0; d<numDimensions; d++){out.write(",EV ("+dimInfo.dimSymbols[d]+")");}
+		out.newLine();
+		//strategy results
+		for(int i=0; i<numChildren; i++){ //strategy results
+			TreeNode child=root.children[i];
+			out.write(child.name);
+			for(int d=0; d<numDimensions; d++){
+				out.write(","+MathUtils.round(child.expectedValues[d]*myModel.cohortSize,dimInfo.decimals[d]));
+			}
+			out.newLine();
+		}
+		out.newLine();
+		
+		if(myModel.simType==1 && myModel.reportSubgroups){ //subgroups
+			int numSubgroups=myModel.subgroupNames.size();
+			for(int g=0; g<numSubgroups; g++){
+				out.write("Subgroup Results:,"+report.subgroupNames[g]+",n=,"+report.subgroupSizes[g]+"\n"); out.newLine();
+				//headers
+				out.write("Strategy");
+				for(int d=0; d<numDimensions; d++){out.write(",EV ("+dimInfo.dimSymbols[d]+")");}
+				out.newLine();
+				//strategy results
+				for(int i=0; i<numChildren; i++){ 
+					TreeNode child=root.children[i];
+					out.write(child.name);
+					for(int d=0; d<numDimensions; d++){
+						out.write(","+MathUtils.round(child.totalNetGroup[g][d], dimInfo.decimals[d]));
+					}
+					out.newLine();
+				}
+				out.newLine();
+			}
+		}
+		out.close();
 	}
 
 	public void displayCEAResults(RunReport report){

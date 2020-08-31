@@ -39,6 +39,7 @@ encoding//src/math/distributions/Gamma.java=UTF-8
 encoding//src/math/distributions/Gumbel.java=UTF-8
 encoding//src/math/distributions/HalfCauchy.java=UTF-8
 encoding//src/math/distributions/HalfNormal.java=UTF-8
+encoding//src/math/distributions/Hypergeometric.java=UTF-8
 encoding//src/math/distributions/Laplace.java=UTF-8
 encoding//src/math/distributions/LogNormal.java=UTF-8
 encoding//src/math/distributions/Logistic.java=UTF-8

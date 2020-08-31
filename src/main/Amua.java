@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
+import cluster.ClusterRun;
 import gui.frmMain;
 
 public class Amua {
@@ -31,36 +32,48 @@ public class Amua {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		//get current OS
-		String curOS=System.getProperty("os.name").toLowerCase();
-		if(curOS.contains("mac")){ //if Mac
-			System.setProperty( "com.apple.mrj.application.apple.menu.about.name", "Amua" );
-			System.setProperty( "com.apple.macos.useScreenMenuBar", "true" );
-			System.setProperty( "apple.laf.useScreenMenuBar", "true" ); // for older versions of Java
-		}
+		String version="0.3.0";
 		
-		try {
-			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-				if ("Nimbus".equals(info.getName())) {
-					UIManager.setLookAndFeel(info.getClassName());
-					break;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		boolean gui=true;
+		if(args.length>0) {
+			gui=false;
 		}
-		
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					frmMain window = new frmMain();
-					window.frmMain.setVisible(true);
-					window.checkUpdates();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+
+		if(gui==true) { //show desktop gui
+			//get current OS
+			String curOS=System.getProperty("os.name").toLowerCase();
+			if(curOS.contains("mac")){ //if Mac
+				System.setProperty( "com.apple.mrj.application.apple.menu.about.name", "Amua" );
+				System.setProperty( "com.apple.macos.useScreenMenuBar", "true" );
+				System.setProperty( "apple.laf.useScreenMenuBar", "true" ); // for older versions of Java
 			}
-		});
+
+			try {
+				for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+					if ("Nimbus".equals(info.getName())) {
+						UIManager.setLookAndFeel(info.getClassName());
+						break;
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			EventQueue.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						frmMain window = new frmMain(version);
+						window.frmMain.setVisible(true);
+						window.checkUpdates();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
+		}
+		else { //process arguments for cluster run
+			new ClusterRun(args,version);
+		}
 	
 	}
 }

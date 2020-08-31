@@ -21,62 +21,181 @@ package math.distributions;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
+
 import org.apache.commons.math3.distribution.ZipfDistribution;
+
+import main.MersenneTwisterFast;
 
 public final class Zipf{
 	
 	public static Numeric pmf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt();
-		double s=params[1].getDouble(); int n=params[2].getInt();
-		if(s<=0){throw new NumericException("s should be >0","Zipf");}
-		if(n<1){throw new NumericException("n should be ≥1","Zipf");}
-		ZipfDistribution zipf=new ZipfDistribution(null,n,s);
-		return(new Numeric(zipf.probability(k)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			int k=params[0].getInt();
+			double s=params[1].getDouble(); int n=params[2].getInt();
+			if(s<=0){throw new NumericException("s should be >0","Zipf");}
+			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+			return(new Numeric(zipf.probability(k)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and s should be the same size","Zipf");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int)params[0].matrix[i][j];
+					double s=params[1].matrix[i][j];
+					int n=(int)params[2].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Zipf");}
+					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+					vals.matrix[i][j]=zipf.probability(k);
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt();
-		double s=params[1].getDouble(); int n=params[2].getInt();
-		if(s<=0){throw new NumericException("s should be >0","Zipf");}
-		if(n<1){throw new NumericException("n should be ≥1","Zipf");}
-		ZipfDistribution zipf=new ZipfDistribution(null,n,s);
-		return(new Numeric(zipf.cumulativeProbability(k)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			int k=params[0].getInt();
+			double s=params[1].getDouble(); int n=params[2].getInt();
+			if(s<=0){throw new NumericException("s should be >0","Zipf");}
+			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+			return(new Numeric(zipf.cumulativeProbability(k)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and s should be the same size","Zipf");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int)params[0].matrix[i][j];
+					double s=params[1].matrix[i][j];
+					int n=(int)params[2].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Zipf");}
+					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+					vals.matrix[i][j]=zipf.cumulativeProbability(k);
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb();
-		double s=params[1].getDouble(); int n=params[2].getInt();
-		if(s<=0){throw new NumericException("s should be >0","Zipf");}
-		if(n<1){throw new NumericException("n should be ≥1","Zipf");}
-		ZipfDistribution zipf=new ZipfDistribution(null,n,s);
-		return(new Numeric(zipf.inverseCumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getProb();
+			double s=params[1].getDouble(); int n=params[2].getInt();
+			if(s<=0){throw new NumericException("s should be >0","Zipf");}
+			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+			return(new Numeric(zipf.inverseCumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and s should be the same size","Zipf");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j);
+					double s=params[1].matrix[i][j];
+					int n=(int)params[2].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Zipf");}
+					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+					vals.matrix[i][j]=zipf.inverseCumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double s=params[0].getDouble(); int n=params[1].getInt();
-		if(s<=0){throw new NumericException("s should be >0","Zipf");}
-		if(n<1){throw new NumericException("n should be ≥1","Zipf");}
-		ZipfDistribution zipf=new ZipfDistribution(null,n,s);
-		return(new Numeric(zipf.getNumericalMean()));
-	}
-	
-	public static Numeric variance(Numeric params[]) throws NumericException{
-		double s=params[0].getDouble(); int n=params[1].getInt();
-		if(s<=0){throw new NumericException("s should be >0","Zipf");}
-		if(n<1){throw new NumericException("n should be ≥1","Zipf");}
-		ZipfDistribution zipf=new ZipfDistribution(null,n,s);
-		return(new Numeric(zipf.getNumericalVariance()));
-	}
-	
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==2){
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
 			double s=params[0].getDouble(); int n=params[1].getInt();
 			if(s<=0){throw new NumericException("s should be >0","Zipf");}
 			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
 			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+			return(new Numeric(zipf.getNumericalMean()));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double s=params[0].matrix[i][j];
+					int n=(int)params[1].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Zipf");}
+					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+					vals.matrix[i][j]=zipf.getNumericalMean();
+				}
+			}
+			return(vals);
+		}
+	}
+	
+	public static Numeric variance(Numeric params[]) throws NumericException{
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double s=params[0].getDouble(); int n=params[1].getInt();
+			if(s<=0){throw new NumericException("s should be >0","Zipf");}
+			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+			return(new Numeric(zipf.getNumericalVariance()));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double s=params[0].matrix[i][j];
+					int n=(int)params[1].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Zipf");}
+					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+					vals.matrix[i][j]=zipf.getNumericalVariance();
+				}
+			}
+			return(vals);
+		}
+	}
+	
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=2){
+			throw new NumericException("Incorrect number of parameters","Zipf");
+		}
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double s=params[0].getDouble(); int n=params[1].getInt();
+			if(s<=0){throw new NumericException("s should be >0","Zipf");}
+			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+			double rand=generator.nextDouble();
 			return(new Numeric(zipf.inverseCumulativeProbability(rand)));
 		}
-		else{throw new NumericException("Incorrect number of parameters","Zipf");}
+		else{ //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double s=params[0].matrix[i][j];
+					int n=(int)params[1].matrix[i][j];
+					if(s<=0){throw new NumericException("s should be >0","Zipf");}
+					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
+					double rand=generator.nextDouble();
+					vals.matrix[i][j]=zipf.inverseCumulativeProbability(rand);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

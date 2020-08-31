@@ -18,6 +18,7 @@
 
 package math.distributions;
 
+import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
@@ -25,77 +26,229 @@ import math.NumericException;
 public final class Hypergeometric{
 	
 	public static Numeric pmf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt(), w=params[1].getInt(), b=params[2].getInt(), n=params[3].getInt();
-		if(w<=0){throw new NumericException("w should be >0","HGeom");}
-		if(b<=0){throw new NumericException("b should be >0","HGeom");}
-		if(n<=0){throw new NumericException("n should be >0","HGeom");}
-		double val=(MathUtils.choose(w,k)*MathUtils.choose(b,n-k))/(MathUtils.choose(w+b,n)*1.0);
-		return(new Numeric(val));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
+			int k=params[0].getInt(), w=params[1].getInt(), b=params[2].getInt(), n=params[3].getInt();
+			if(w<=0){throw new NumericException("w should be >0","HGeom");}
+			if(b<=0){throw new NumericException("b should be >0","HGeom");}
+			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			double val=(MathUtils.choose(w,k)*MathUtils.choose(b,n-k))/(MathUtils.choose(w+b,n)*1.0);
+			return(new Numeric(val));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and w should be the same size","HGeom");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int)params[0].matrix[i][j];
+					int w=(int)params[1].matrix[i][j];
+					int b=(int)params[2].matrix[i][j];
+					int n=(int)params[3].matrix[i][j];
+					if(w<=0){throw new NumericException("w should be >0","HGeom");}
+					if(b<=0){throw new NumericException("b should be >0","HGeom");}
+					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					double val=(MathUtils.choose(w,k)*MathUtils.choose(b,n-k))/(MathUtils.choose(w+b,n)*1.0);
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt(), w=params[1].getInt(), b=params[2].getInt(), n=params[3].getInt();
-		if(w<=0){throw new NumericException("w should be >0","HGeom");}
-		if(b<=0){throw new NumericException("b should be >0","HGeom");}
-		if(n<=0){throw new NumericException("n should be >0","HGeom");}
-		double val=0;
-		for(int i=0; i<=k; i++){
-			val+=(MathUtils.choose(w,i)*MathUtils.choose(b,n-i))/(MathUtils.choose(w+b,n)*1.0);
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
+			int k=params[0].getInt(), w=params[1].getInt(), b=params[2].getInt(), n=params[3].getInt();
+			if(w<=0){throw new NumericException("w should be >0","HGeom");}
+			if(b<=0){throw new NumericException("b should be >0","HGeom");}
+			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			double val=0;
+			for(int i=0; i<=k; i++){
+				val+=(MathUtils.choose(w,i)*MathUtils.choose(b,n-i))/(MathUtils.choose(w+b,n)*1.0);
+			}
+			return(new Numeric(val));
 		}
-		return(new Numeric(val));
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and w should be the same size","HGeom");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int)params[0].matrix[i][j];
+					int w=(int)params[1].matrix[i][j];
+					int b=(int)params[2].matrix[i][j];
+					int n=(int)params[3].matrix[i][j];
+					if(w<=0){throw new NumericException("w should be >0","HGeom");}
+					if(b<=0){throw new NumericException("b should be >0","HGeom");}
+					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					double val=0;
+					for(int z=0; z<=k; z++){
+						val+=(MathUtils.choose(w,z)*MathUtils.choose(b,n-z))/(MathUtils.choose(w+b,n)*1.0);
+					}
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb();
-		int w=params[1].getInt(), b=params[2].getInt(), n=params[3].getInt();
-		if(w<=0){throw new NumericException("w should be >0","HGeom");}
-		if(b<=0){throw new NumericException("b should be >0","HGeom");}
-		if(n<=0){throw new NumericException("n should be >0","HGeom");}
-		int k=-1;
-		double CDF=0;
-		while(x>CDF){
-			CDF+=(MathUtils.choose(w,(k+1))*MathUtils.choose(b,n-(k+1)))/(MathUtils.choose(w+b,n)*1.0);
-			k++;
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
+			double x=params[0].getProb();
+			int w=params[1].getInt(), b=params[2].getInt(), n=params[3].getInt();
+			if(w<=0){throw new NumericException("w should be >0","HGeom");}
+			if(b<=0){throw new NumericException("b should be >0","HGeom");}
+			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			int k=-1;
+			double CDF=0;
+			while(x>CDF){
+				CDF+=(MathUtils.choose(w,(k+1))*MathUtils.choose(b,n-(k+1)))/(MathUtils.choose(w+b,n)*1.0);
+				k++;
+			}
+			k=Math.max(0, k);
+			return(new Numeric(k));
 		}
-		k=Math.max(0, k);
-		return(new Numeric(k));
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and w should be the same size","HGeom");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j);
+					int w=(int)params[1].matrix[i][j];
+					int b=(int)params[2].matrix[i][j];
+					int n=(int)params[3].matrix[i][j];
+					if(w<=0){throw new NumericException("w should be >0","HGeom");}
+					if(b<=0){throw new NumericException("b should be >0","HGeom");}
+					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					int k=-1;
+					double CDF=0;
+					while(x>CDF){
+						CDF+=(MathUtils.choose(w,(k+1))*MathUtils.choose(b,n-(k+1)))/(MathUtils.choose(w+b,n)*1.0);
+						k++;
+					}
+					k=Math.max(0, k);
+					vals.matrix[i][j]=k;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		int w=params[0].getInt(), b=params[1].getInt(), n=params[2].getInt();
-		if(w<=0){throw new NumericException("w should be >0","HGeom");}
-		if(b<=0){throw new NumericException("b should be >0","HGeom");}
-		if(n<=0){throw new NumericException("n should be >0","HGeom");}
-		return(new Numeric((n*w)/((w+b)*1.0)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			int w=params[0].getInt(), b=params[1].getInt(), n=params[2].getInt();
+			if(w<=0){throw new NumericException("w should be >0","HGeom");}
+			if(b<=0){throw new NumericException("b should be >0","HGeom");}
+			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			return(new Numeric((n*w)/((w+b)*1.0)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int w=(int)params[0].matrix[i][j];
+					int b=(int)params[1].matrix[i][j];
+					int n=(int)params[2].matrix[i][j];
+					if(w<=0){throw new NumericException("w should be >0","HGeom");}
+					if(b<=0){throw new NumericException("b should be >0","HGeom");}
+					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					double val=(n*w)/((w+b)*1.0);
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		int w=params[0].getInt(), b=params[1].getInt(), n=params[2].getInt();
-		if(w<=0){throw new NumericException("w should be >0","HGeom");}
-		if(b<=0){throw new NumericException("b should be >0","HGeom");}
-		if(n<=0){throw new NumericException("n should be >0","HGeom");}
-		double mu=mean(params).getDouble();
-		double one=(w+b-n)/((w+b-1)*1.0);
-		double two=n*(mu/(n*1.0));
-		double three=1-mu/(n*1.0);
-		double var=one*two*three;
-		return(new Numeric(var));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			int w=params[0].getInt(), b=params[1].getInt(), n=params[2].getInt();
+			if(w<=0){throw new NumericException("w should be >0","HGeom");}
+			if(b<=0){throw new NumericException("b should be >0","HGeom");}
+			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			double mu=mean(params).getDouble();
+			double one=(w+b-n)/((w+b-1)*1.0);
+			double two=n*(mu/(n*1.0));
+			double three=1-mu/(n*1.0);
+			double var=one*two*three;
+			return(new Numeric(var));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int w=(int)params[0].matrix[i][j];
+					int b=(int)params[1].matrix[i][j];
+					int n=(int)params[2].matrix[i][j];
+					if(w<=0){throw new NumericException("w should be >0","HGeom");}
+					if(b<=0){throw new NumericException("b should be >0","HGeom");}
+					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					double mu=mean(params).getDouble();
+					double one=(w+b-n)/((w+b-1)*1.0);
+					double two=n*(mu/(n*1.0));
+					double three=1-mu/(n*1.0);
+					double var=one*two*three;
+					vals.matrix[i][j]=var;
+				}
+			}
+			return(vals);
+		}
 	}
 	
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==3){
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=3){
+			throw new NumericException("Incorrect number of parameters","HGeom");
+		}
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
 			int w=params[0].getInt(), b=params[1].getInt(), n=params[2].getInt(), k=-1;
 			if(w<=0){throw new NumericException("w should be >0","HGeom");}
 			if(b<=0){throw new NumericException("b should be >0","HGeom");}
 			if(n<=0){throw new NumericException("n should be >0","HGeom");}
 			double CDF=0;
+			double rand=generator.nextDouble();
 			while(rand>CDF){
 				CDF+=(MathUtils.choose(w,(k+1))*MathUtils.choose(b,n-(k+1)))/(MathUtils.choose(w+b,n)*1.0);
 				k++;
 			}
 			return(new Numeric(k));
 		}
-		else{throw new NumericException("Incorrect number of parameters","HGeom");}
+		else{ //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int w=(int)params[0].matrix[i][j];
+					int b=(int)params[1].matrix[i][j];
+					int n=(int)params[2].matrix[i][j];
+					if(w<=0){throw new NumericException("w should be >0","HGeom");}
+					if(b<=0){throw new NumericException("b should be >0","HGeom");}
+					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					int k=-1;
+					double CDF=0;
+					double rand=generator.nextDouble();
+					while(rand>CDF){
+						CDF+=(MathUtils.choose(w,(k+1))*MathUtils.choose(b,n-(k+1)))/(MathUtils.choose(w+b,n)*1.0);
+						k++;
+					}
+					vals.matrix[i][j]=k;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

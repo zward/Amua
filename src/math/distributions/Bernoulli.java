@@ -18,6 +18,7 @@
 
 package math.distributions;
 
+import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
@@ -25,43 +26,141 @@ import math.NumericException;
 public final class Bernoulli{
 	
 	public static Numeric pmf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt();
-		double p=params[1].getProb();
-		if(k==0){return(new Numeric(1-p));}
-		else if(k==1){return(new Numeric(p));}
-		else{return(new Numeric(0));} //outside support
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			int k=params[0].getInt();
+			double p=params[1].getProb();
+			if(k==0){return(new Numeric(1-p));}
+			else if(k==1){return(new Numeric(p));}
+			else{return(new Numeric(0));} //outside support
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("k and p should be the same size","Bern");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int) params[0].matrix[i][j];
+					double p=params[1].getMatrixProb(i, j);
+					if(k==0) {vals.matrix[i][j]=1-p;}
+					else if(k==1) {vals.matrix[i][j]=p;}
+					else {vals.matrix[i][j]=0;} //outside support
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		int k=params[0].getInt();
-		double p=params[1].getProb();
-		if(k<0){return(new Numeric(0));}
-		else if(k==0){return(new Numeric(1-p));}
-		else{return(new Numeric(1.0));}  //k>=1
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			int k=params[0].getInt();
+			double p=params[1].getProb();
+			if(k<0){return(new Numeric(0));}
+			else if(k==0){return(new Numeric(1-p));}
+			else{return(new Numeric(1.0));}  //k>=1
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("k and p should be the same size","Bern");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					int k=(int) params[0].matrix[i][j];
+					double p=params[1].getMatrixProb(i, j);
+					if(k<0) {vals.matrix[i][j]=0;}
+					else if(k==0) {vals.matrix[i][j]=1-p;}
+					else {vals.matrix[i][j]=1.0;} //k>=1
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb();
-		double p=params[1].getProb();
-		if(x<=(1-p)){return(new Numeric(0));}
-		else{return(new Numeric(1));}
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getProb();
+			double p=params[1].getProb();
+			if(x<=(1-p)){return(new Numeric(0));}
+			else{return(new Numeric(1));}
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and p should be the same size","Bern");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j);
+					double p=params[1].getMatrixProb(i, j);
+					if(x<=(1-p)) {vals.matrix[i][j]=0;}
+					else {vals.matrix[i][j]=1;}
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double p=params[0].getProb();
-		return(new Numeric(p));
+		if(params[0].isMatrix()==false) { //real number
+			double p=params[0].getProb();
+			return(new Numeric(p));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double p=params[0].getMatrixProb(i, j);
+					vals.matrix[i][j]=p;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		double p=params[0].getProb();
-		return(new Numeric(p*(1-p)));
+		if(params[0].isMatrix()==false) { //real number
+			double p=params[0].getProb();
+			return(new Numeric(p*(1-p)));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double p=params[0].getMatrixProb(i, j);
+					vals.matrix[i][j]=p*(1-p);
+				}
+			}
+			return(vals);
+		}
 	}
 	
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
 		if(params.length!=1){throw new NumericException("Incorrect number of parameters","Bern");}
-		double p=params[0].getProb();
-		if(rand<p){return(new Numeric(1));}
-		else{return(new Numeric(0));}
+		if(params[0].isMatrix()==false) { //real number
+			double p=params[0].getProb();
+			double rand=generator.nextDouble();
+			if(rand<p){return(new Numeric(1));}
+			else{return(new Numeric(0));}
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double p=params[0].getMatrixProb(i, j);
+					double rand=generator.nextDouble();
+					if(rand<p) {vals.matrix[i][j]=1.0;}
+					else {vals.matrix[i][j]=0;}
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

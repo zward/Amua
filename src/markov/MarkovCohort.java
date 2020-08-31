@@ -265,12 +265,12 @@ public class MarkovCohort{
 			}
 			if(indexCompProb==-1){
 				if(Math.abs(1.0-sumProb)>MathUtils.tolerance){ //throw error
-					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.name+")");
+					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
 				}
 			}
 			else{
 				if(sumProb>1.0 || sumProb<0.0){ //throw error
-					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.name+")");
+					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
 				}
 				else{
 					MarkovNode curChild=node.children[indexCompProb];
@@ -343,7 +343,8 @@ public class MarkovCohort{
 	
 	private void getTransitionIndex(MarkovNode node){
 		if(node.type==4){ //get transition to
-			String nextState=(String) node.comboTransition.getSelectedItem();
+			//String nextState=(String) node.comboTransition.getSelectedItem();
+			String nextState=node.transition;
 			node.transTo=getStateIndex(nextState);
 		}
 		else{

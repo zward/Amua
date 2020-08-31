@@ -71,7 +71,7 @@ public class TreeNode extends ModelNode{
 	
 	//Visual Attributes
 	@XmlTransient PanelTree panel;
-	@XmlTransient DecisionTree tree;
+	@XmlTransient public DecisionTree tree;
 	@XmlTransient JLabel lblProb; TreeTextField textProb;
 	@XmlTransient JLabel lblCost; TreeTextField textCost;
 	@XmlTransient JLabel lblVarUpdates; TreeTextField textVarUpdates;

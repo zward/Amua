@@ -116,6 +116,8 @@ public class AmuaModel{
 	@XmlTransient public frmMain mainForm;
 	@XmlTransient public PanelTree panelTree;
 	@XmlTransient public PanelMarkov panelMarkov;
+	
+	@XmlTransient public boolean cluster=false;
 
 
 	//Constructor
@@ -171,6 +173,7 @@ public class AmuaModel{
 		try{
 			this.mainForm=mainFrm;
 			this.errorLog=errorLog;
+			this.meta.version=mainFrm.version;
 			
 			innateVariables=new ArrayList<Variable>();
 			if(type==1) { //Markov
@@ -805,12 +808,17 @@ public class AmuaModel{
 	
 	public ArrayList<String> parseModel(){
 		if(type==0){return(tree.parseTree());}
-		else if(type==1){
-			if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, check whole model
+		else if(type==1){ //markov model
+			if(cluster==true) {
 				return(markov.parseTree());
 			}
-			else{ //Markov Chain selected
-				return(markov.parseChain(panelMarkov.curNode));
+			else { //desktop
+				if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, check whole model
+					return(markov.parseTree());
+				}
+				else{ //Markov Chain selected
+					return(markov.parseChain(panelMarkov.curNode));
+				}
 			}
 		}
 		return(null);
@@ -885,43 +893,58 @@ public class AmuaModel{
 				}
 			}
 		}catch(Exception e){
-			JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());
-			errorLog.recordError(e);
+			if(cluster==false) {
+				JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());
+				errorLog.recordError(e);
+			}
+			else {
+				e.printStackTrace();
+			}
 		}
 	}
 	
 	private void runMarkov(Console console, boolean display, RunReport runReport){
 		try{
 			evaluateParameters(); //get parameters
-			if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, run all chains
-				if(display){console.print("Running model... ");}
-				markov.runModel(display,runReport,true);
-				runReport.getResults(true);
-				if(display){
-					console.print(" done!\n");
-					printSimInfo(console);
-					runReport.printResults(console,true);
-					if(dimInfo.analysisType>0){ //display ICERs/NMB on tree
-						markov.displayCEAResults(runReport);
-						if(dimInfo.analysisType==1) { //CEA
-							frmCEPlane plane=new frmCEPlane(this,runReport);
-							plane.frmCEPlane.setVisible(true);
+			if(cluster==false) { //desktop
+				if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, run all chains
+					if(display){console.print("Running model... ");}
+					markov.runModel(display,runReport,true);
+					runReport.getResults(true);
+					if(display){
+						console.print(" done!\n");
+						printSimInfo(console);
+						runReport.printResults(console,true);
+						if(dimInfo.analysisType>0){ //display ICERs/NMB on tree
+							markov.displayCEAResults(runReport);
+							if(dimInfo.analysisType==1) { //CEA
+								frmCEPlane plane=new frmCEPlane(this,runReport);
+								plane.frmCEPlane.setVisible(true);
+							}
 						}
 					}
 				}
-			}
-			else{ //Single Markov Chain selected
-				if(display){console.print("Running Markov Chain: "+panelMarkov.curNode.name);}
-				markov.runModel(display,runReport,false);
-				
-				if(display){
-					console.print(" done!\n");
+				else{ //Single Markov Chain selected
+					if(display){console.print("Running Markov Chain: "+panelMarkov.curNode.name);}
+					markov.runModel(display,runReport,false);
+
+					if(display){
+						console.print(" done!\n");
+					}
 				}
+			}
+			else { //cluster
+				markov.runModel(false, runReport, true);
 			}
 			unlockParams(); //unlock parameters
 		}catch(Exception e){
-			JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());
-			errorLog.recordError(e);
+			if(cluster==false) {
+				JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());
+				errorLog.recordError(e);
+			}
+			else {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -1090,8 +1113,13 @@ public class AmuaModel{
 				}
 			} //end check cancelled == false
 		}catch(Exception e){
-			JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());
-			errorLog.recordError(e);
+			if(cluster==false) {
+				JOptionPane.showMessageDialog(mainForm.frmMain, e.toString());
+				errorLog.recordError(e);
+			}
+			else {
+				e.printStackTrace();
+			}
 		}
 	}
 	

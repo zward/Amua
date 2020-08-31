@@ -18,6 +18,7 @@
 
 package math.distributions;
 
+import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
@@ -25,42 +26,137 @@ import math.NumericException;
 public final class Exponential{
 	
 	public static Numeric pdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), lambda=params[1].getDouble();
-		if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
-		return(new Numeric(lambda*Math.exp(-lambda*x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), lambda=params[1].getDouble();
+			if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+			return(new Numeric(lambda*Math.exp(-lambda*x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and λ should be the same size","Expo");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j], lambda=params[1].matrix[i][j];
+					if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+					vals.matrix[i][j]=lambda*Math.exp(-lambda*x);
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), lambda=params[1].getDouble();
-		if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
-		return(new Numeric(1.0-Math.exp(-lambda*x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), lambda=params[1].getDouble();
+			if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+			return(new Numeric(1.0-Math.exp(-lambda*x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and λ should be the same size","Expo");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j], lambda=params[1].matrix[i][j];
+					if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+					vals.matrix[i][j]=1.0-Math.exp(-lambda*x);
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb(), lambda=params[1].getDouble();
-		if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
-		return(new Numeric(-Math.log(1.0-x)/lambda));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getProb(), lambda=params[1].getDouble();
+			if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+			return(new Numeric(-Math.log(1.0-x)/lambda));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and λ should be the same size","Expo");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j), lambda=params[1].matrix[i][j];
+					if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+					vals.matrix[i][j]=-Math.log(1.0-x)/lambda;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double lambda=params[0].getDouble();
-		if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
-		return(new Numeric(1.0/lambda));
+		if(params[0].isMatrix()==false) { //real number
+			double lambda=params[0].getDouble();
+			if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+			return(new Numeric(1.0/lambda));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double lambda=params[0].matrix[i][j];
+					if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+					vals.matrix[i][j]=1.0/lambda;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		double lambda=params[0].getDouble();
-		if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
-		return(new Numeric(1.0/(lambda*lambda)));
-	}
-
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==1){
+		if(params[0].isMatrix()==false) { //real number
 			double lambda=params[0].getDouble();
 			if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+			return(new Numeric(1.0/(lambda*lambda)));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double lambda=params[0].matrix[i][j];
+					if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+					vals.matrix[i][j]=1.0/(lambda*lambda);
+				}
+			}
+			return(vals);
+		}
+	}
+
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=1){
+			throw new NumericException("Incorrect number of parameters","Expo");
+		}
+		if(params[0].isMatrix()==false) { //real number
+			double lambda=params[0].getDouble();
+			if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+			double rand=generator.nextDouble();
 			return(new Numeric(-Math.log(1-rand)/lambda));
 		}
-		else{throw new NumericException("Incorrect number of parameters","Expo");}
+		else{ //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double lambda=params[0].matrix[i][j];
+					if(lambda<=0){throw new NumericException("λ should be >0","Expo");}
+					double rand=generator.nextDouble();
+					vals.matrix[i][j]=-Math.log(1-rand)/lambda;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

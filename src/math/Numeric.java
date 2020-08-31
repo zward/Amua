@@ -136,6 +136,23 @@ public class Numeric{
 	public double getProb() throws NumericException{
 		double prob=doubleNum;
 		if(format==Format.INTEGER){prob=intNum;}
+		else if(format==Format.MATRIX) {
+			throw(new NumericException("Matrix type, not real number","Numeric"));
+		}
+		
+		if(prob<0 || prob>1){
+			throw(new NumericException("Invalid probability: "+prob,"Numeric"));
+		}
+		else{
+			return(prob);
+		}
+	}
+	
+	public double getMatrixProb(int i, int j) throws NumericException{
+		if(format!=Format.MATRIX) {
+			throw(new NumericException("Not Matrix type","Numeric"));
+		}
+		double prob=matrix[i][j];
 		if(prob<0 || prob>1){
 			throw(new NumericException("Invalid probability: "+prob,"Numeric"));
 		}

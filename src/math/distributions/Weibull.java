@@ -24,57 +24,175 @@ import math.NumericException;
 
 import org.apache.commons.math3.distribution.WeibullDistribution;
 
+import main.MersenneTwisterFast;
+
 public final class Weibull{
 	
 	public static Numeric pdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Weibull");}
-		if(b<=0){throw new NumericException("b should be >0","Weibull");}
-		WeibullDistribution weib=new WeibullDistribution(null,a,b);
-		return(new Numeric(weib.density(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Weibull");}
+			if(b<=0){throw new NumericException("b should be >0","Weibull");}
+			WeibullDistribution weib=new WeibullDistribution(null,a,b);
+			return(new Numeric(weib.density(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and a should be the same size","Weibull");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("a and b should be the same size","Weibull");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j];
+					double a=params[1].matrix[i][j];
+					double b=params[2].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Weibull");}
+					if(b<=0){throw new NumericException("b should be >0","Weibull");}
+					WeibullDistribution weib=new WeibullDistribution(null,a,b);
+					vals.matrix[i][j]=weib.density(x);
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Weibull");}
-		if(b<=0){throw new NumericException("b should be >0","Weibull");}
-		WeibullDistribution weib=new WeibullDistribution(null,a,b);
-		return(new Numeric(weib.cumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Weibull");}
+			if(b<=0){throw new NumericException("b should be >0","Weibull");}
+			WeibullDistribution weib=new WeibullDistribution(null,a,b);
+			return(new Numeric(weib.cumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and a should be the same size","Weibull");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("a and b should be the same size","Weibull");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j];
+					double a=params[1].matrix[i][j];
+					double b=params[2].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Weibull");}
+					if(b<=0){throw new NumericException("b should be >0","Weibull");}
+					WeibullDistribution weib=new WeibullDistribution(null,a,b);
+					vals.matrix[i][j]=weib.cumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Weibull");}
-		if(b<=0){throw new NumericException("b should be >0","Weibull");}
-		WeibullDistribution weib=new WeibullDistribution(null,a,b);
-		return(new Numeric(weib.inverseCumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Weibull");}
+			if(b<=0){throw new NumericException("b should be >0","Weibull");}
+			WeibullDistribution weib=new WeibullDistribution(null,a,b);
+			return(new Numeric(weib.inverseCumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and a should be the same size","Weibull");}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("a and b should be the same size","Weibull");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i,j);
+					double a=params[1].matrix[i][j];
+					double b=params[2].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Weibull");}
+					if(b<=0){throw new NumericException("b should be >0","Weibull");}
+					WeibullDistribution weib=new WeibullDistribution(null,a,b);
+					vals.matrix[i][j]=weib.inverseCumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double a=params[0].getDouble(), b=params[1].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Weibull");}
-		if(b<=0){throw new NumericException("b should be >0","Weibull");}
-		WeibullDistribution weib=new WeibullDistribution(null,a,b);
-		return(new Numeric(weib.getNumericalMean()));
-	}
-	
-	public static Numeric variance(Numeric params[]) throws NumericException{
-		double a=params[0].getDouble(), b=params[1].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Weibull");}
-		if(b<=0){throw new NumericException("b should be >0","Weibull");}
-		WeibullDistribution weib=new WeibullDistribution(null,a,b);
-		return(new Numeric(weib.getNumericalVariance()));
-	}
-
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==2){
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
 			double a=params[0].getDouble(), b=params[1].getDouble();
 			if(a<=0){throw new NumericException("a should be >0","Weibull");}
 			if(b<=0){throw new NumericException("b should be >0","Weibull");}
 			WeibullDistribution weib=new WeibullDistribution(null,a,b);
+			return(new Numeric(weib.getNumericalMean()));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("a and b should be the same size","Weibull");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double a=params[0].matrix[i][j];
+					double b=params[1].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Weibull");}
+					if(b<=0){throw new NumericException("b should be >0","Weibull");}
+					WeibullDistribution weib=new WeibullDistribution(null,a,b);
+					vals.matrix[i][j]=weib.getNumericalMean();
+				}
+			}
+			return(vals);
+		}
+	}
+	
+	public static Numeric variance(Numeric params[]) throws NumericException{
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double a=params[0].getDouble(), b=params[1].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Weibull");}
+			if(b<=0){throw new NumericException("b should be >0","Weibull");}
+			WeibullDistribution weib=new WeibullDistribution(null,a,b);
+			return(new Numeric(weib.getNumericalVariance()));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("a and b should be the same size","Weibull");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double a=params[0].matrix[i][j];
+					double b=params[1].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Weibull");}
+					if(b<=0){throw new NumericException("b should be >0","Weibull");}
+					WeibullDistribution weib=new WeibullDistribution(null,a,b);
+					vals.matrix[i][j]=weib.getNumericalVariance();
+				}
+			}
+			return(vals);
+		}
+	}
+
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=2){
+			throw new NumericException("Incorrect number of parameters","Weibull");
+		}
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double a=params[0].getDouble(), b=params[1].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Weibull");}
+			if(b<=0){throw new NumericException("b should be >0","Weibull");}
+			WeibullDistribution weib=new WeibullDistribution(null,a,b);
+			double rand=generator.nextDouble();
 			return(new Numeric(weib.inverseCumulativeProbability(rand)));
 		}
-		else{throw new NumericException("Incorrect number of parameters","Weibull");}
+		else{ //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("a and b should be the same size","Weibull");}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double a=params[0].matrix[i][j];
+					double b=params[1].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Weibull");}
+					if(b<=0){throw new NumericException("b should be >0","Weibull");}
+					WeibullDistribution weib=new WeibullDistribution(null,a,b);
+					double rand=generator.nextDouble();
+					vals.matrix[i][j]=weib.inverseCumulativeProbability(rand);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

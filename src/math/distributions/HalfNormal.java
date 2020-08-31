@@ -25,59 +25,174 @@ import math.NumericException;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.special.Erf;
 
+import main.MersenneTwisterFast;
+
 public final class HalfNormal{
 	
 	public static Numeric pdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), sigma=params[1].getDouble();
-		if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
-		if(x<0){return(new Numeric(0));}
-		else{
-			double pre=Math.sqrt(2)/(sigma*Math.sqrt(Math.PI));
-			double inner=-(x*x)/(2*sigma*sigma);
-			double density=pre*Math.exp(inner);
-			return(new Numeric(density));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), sigma=params[1].getDouble();
+			if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+			if(x<0){return(new Numeric(0));}
+			else{
+				double pre=Math.sqrt(2)/(sigma*Math.sqrt(Math.PI));
+				double inner=-(x*x)/(2*sigma*sigma);
+				double density=pre*Math.exp(inner);
+				return(new Numeric(density));
+			}
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and σ should be the same size","HalfNorm");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j], sigma=params[1].matrix[i][j];
+					if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+					double val=0;
+					if(x<0) {val=0;}
+					else {
+						double pre=Math.sqrt(2)/(sigma*Math.sqrt(Math.PI));
+						double inner=-(x*x)/(2*sigma*sigma);
+						double density=pre*Math.exp(inner);
+						val=density;
+					}
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
 		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		double x=params[0].getDouble(), sigma=params[1].getDouble();
-		if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
-		if(x<=0){return(new Numeric(0));}
-		else{
-			double inner=x/(sigma*Math.sqrt(2));
-			return(new Numeric(Erf.erf(inner)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getDouble(), sigma=params[1].getDouble();
+			if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+			if(x<=0){return(new Numeric(0));}
+			else{
+				double inner=x/(sigma*Math.sqrt(2));
+				return(new Numeric(Erf.erf(inner)));
+			}
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and σ should be the same size","HalfNorm");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].matrix[i][j], sigma=params[1].matrix[i][j];
+					if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+					double val=0;
+					if(x<=0) {val=0;}
+					else {
+						double inner=x/(sigma*Math.sqrt(2));
+						val=Erf.erf(inner);
+					}
+					vals.matrix[i][j]=val;
+				}
+			}
+			return(vals);
 		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb(), sigma=params[1].getDouble();
-		if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
-		double q=sigma*Math.sqrt(2)*Erf.erfInv(x);
-		return(new Numeric(q));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double x=params[0].getProb(), sigma=params[1].getDouble();
+			if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+			double q=sigma*Math.sqrt(2)*Erf.erfInv(x);
+			return(new Numeric(q));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and σ should be the same size","HalfNorm");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i,j), sigma=params[1].matrix[i][j];
+					if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+					double q=sigma*Math.sqrt(2)*Erf.erfInv(x);
+					vals.matrix[i][j]=q;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double sigma=params[0].getDouble();
-		if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
-		double mean=sigma*Math.sqrt(2.0/Math.PI);
-		return(new Numeric(mean));
+		if(params[0].isMatrix()==false) { //real number
+			double sigma=params[0].getDouble();
+			if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+			double mean=sigma*Math.sqrt(2.0/Math.PI);
+			return(new Numeric(mean));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double sigma=params[0].matrix[i][j];
+					if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+					double mean=sigma*Math.sqrt(2.0/Math.PI);
+					vals.matrix[i][j]=mean;
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		double sigma=params[0].getDouble();
-		if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
-		double var=(sigma*sigma)*(1-2/Math.PI);
-		return(new Numeric(var));
+		if(params[0].isMatrix()==false) { //real number
+			double sigma=params[0].getDouble();
+			if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+			double var=(sigma*sigma)*(1-2/Math.PI);
+			return(new Numeric(var));
+		}
+		else { //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double sigma=params[0].matrix[i][j];
+					if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+					double var=(sigma*sigma)*(1-2/Math.PI);
+					vals.matrix[i][j]=var;
+				}
+			}
+			return(vals);
+		}
 	}
 
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==1){
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=1){
+			throw new NumericException("Incorrect number of parameters","HalfNorm");
+		}
+		if(params[0].isMatrix()==false) { //real number
 			double sigma=params[0].getDouble(), mu=0;
 			if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
 			NormalDistribution norm=new NormalDistribution(null,mu,sigma);
+			double rand=generator.nextDouble();
 			return(new Numeric(Math.abs(norm.inverseCumulativeProbability(rand))));
 		}
-		else{throw new NumericException("Incorrect number of parameters","HalfNorm");}
+		else{ //matrix
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double sigma=params[0].matrix[i][j];
+					if(sigma<=0){throw new NumericException("σ should be >0","HalfNorm");}
+					NormalDistribution norm=new NormalDistribution(null,0,sigma);
+					double rand=generator.nextDouble();
+					vals.matrix[i][j]=Math.abs(norm.inverseCumulativeProbability(rand));
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

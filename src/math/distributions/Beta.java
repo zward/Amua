@@ -23,59 +23,191 @@ import math.Numeric;
 import math.NumericException;
 import org.apache.commons.math3.distribution.BetaDistribution;
 
+import main.MersenneTwisterFast;
+
 public final class Beta{
 	
 	public static Numeric pdf(Numeric params[]) throws NumericException{
-		double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Beta");}
-		if(b<=0){throw new NumericException("b should be >0","Beta");}
-		BetaDistribution beta=new BetaDistribution(null,a,b);
-		return(new Numeric(beta.density(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Beta");}
+			if(b<=0){throw new NumericException("b should be >0","Beta");}
+			BetaDistribution beta=new BetaDistribution(null,a,b);
+			return(new Numeric(beta.density(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and a should be the same size","Beta");
+			}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {
+				throw new NumericException("a and b should be the same size","Beta");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j);
+					double a=params[1].matrix[i][j], b=params[2].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Beta");}
+					if(b<=0){throw new NumericException("b should be >0","Beta");}
+					BetaDistribution beta=new BetaDistribution(null,a,b);
+					vals.matrix[i][j]=beta.density(x);
+				}
+			}
+			return(vals);
+		}
 	}
 
 	public static Numeric cdf(Numeric params[]) throws NumericException{
-		double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Beta");}
-		if(b<=0){throw new NumericException("b should be >0","Beta");}
-		BetaDistribution beta=new BetaDistribution(null,a,b);
-		return(new Numeric(beta.cumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Beta");}
+			if(b<=0){throw new NumericException("b should be >0","Beta");}
+			BetaDistribution beta=new BetaDistribution(null,a,b);
+			return(new Numeric(beta.cumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and a should be the same size","Beta");
+			}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {
+				throw new NumericException("a and b should be the same size","Beta");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j);
+					double a=params[1].matrix[i][j], b=params[2].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Beta");}
+					if(b<=0){throw new NumericException("b should be >0","Beta");}
+					BetaDistribution beta=new BetaDistribution(null,a,b);
+					vals.matrix[i][j]=beta.cumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}	
 	
 	public static Numeric quantile(Numeric params[]) throws NumericException{
-		double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Beta");}
-		if(b<=0){throw new NumericException("b should be >0","Beta");}
-		BetaDistribution beta=new BetaDistribution(null,a,b);
-		return(new Numeric(beta.inverseCumulativeProbability(x)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
+			double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Beta");}
+			if(b<=0){throw new NumericException("b should be >0","Beta");}
+			BetaDistribution beta=new BetaDistribution(null,a,b);
+			return(new Numeric(beta.inverseCumulativeProbability(x)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("x and a should be the same size","Beta");
+			}
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {
+				throw new NumericException("a and b should be the same size","Beta");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double x=params[0].getMatrixProb(i, j);
+					double a=params[1].matrix[i][j], b=params[2].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Beta");}
+					if(b<=0){throw new NumericException("b should be >0","Beta");}
+					BetaDistribution beta=new BetaDistribution(null,a,b);
+					vals.matrix[i][j]=beta.inverseCumulativeProbability(x);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric mean(Numeric params[]) throws NumericException{
-		double a=params[0].getDouble(), b=params[1].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Beta");}
-		if(b<=0){throw new NumericException("b should be >0","Beta");}
-		return(new Numeric(a/(a+b)));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double a=params[0].getDouble(), b=params[1].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Beta");}
+			if(b<=0){throw new NumericException("b should be >0","Beta");}
+			return(new Numeric(a/(a+b)));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("a and b should be the same size","Beta");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double a=params[0].matrix[i][j], b=params[1].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Beta");}
+					if(b<=0){throw new NumericException("b should be >0","Beta");}
+					vals.matrix[i][j]=a/(a+b);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static Numeric variance(Numeric params[]) throws NumericException{
-		double a=params[0].getDouble(), b=params[1].getDouble();
-		if(a<=0){throw new NumericException("a should be >0","Beta");}
-		if(b<=0){throw new NumericException("b should be >0","Beta");}
-		double num=a*b;
-		double oneD=(a+b)*(a+b);
-		double twoD=(a+b+1);
-		double var=num/(oneD*twoD);
-		return(new Numeric(var));
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
+			double a=params[0].getDouble(), b=params[1].getDouble();
+			if(a<=0){throw new NumericException("a should be >0","Beta");}
+			if(b<=0){throw new NumericException("b should be >0","Beta");}
+			double num=a*b;
+			double oneD=(a+b)*(a+b);
+			double twoD=(a+b+1);
+			double var=num/(oneD*twoD);
+			return(new Numeric(var));
+		}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("a and b should be the same size","Beta");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double a=params[0].matrix[i][j], b=params[1].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Beta");}
+					if(b<=0){throw new NumericException("b should be >0","Beta");}
+					double num=a*b;
+					double oneD=(a+b)*(a+b);
+					double twoD=(a+b+1);
+					double var=num/(oneD*twoD);
+					vals.matrix[i][j]=var;
+				}
+			}
+			return(vals);
+		}
 	}
 	
-	public static Numeric sample(Numeric params[], double rand) throws NumericException{
-		if(params.length==2){
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+		if(params.length!=2){
+			throw new NumericException("Incorrect number of parameters","Beta");
+		}
+		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
 			double a=params[0].getDouble(), b=params[1].getDouble();
 			if(a<=0){throw new NumericException("a should be >0","Beta");}
 			if(b<=0){throw new NumericException("b should be >0","Beta");}
 			BetaDistribution beta=new BetaDistribution(null,a,b);
+			double rand=generator.nextDouble();
 			return(new Numeric(beta.inverseCumulativeProbability(rand)));
 		}
-		else{throw new NumericException("Incorrect number of parameters","Beta");}
+		else { //matrix
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
+				throw new NumericException("a and b should be the same size","Beta");
+			}
+			int nrow=params[0].nrow; int ncol=params[0].ncol;
+			Numeric vals=new Numeric(nrow,ncol); //create result matrix
+			for(int i=0; i<nrow; i++) {
+				for(int j=0; j<ncol; j++) {
+					double a=params[0].matrix[i][j], b=params[1].matrix[i][j];
+					if(a<=0){throw new NumericException("a should be >0","Beta");}
+					if(b<=0){throw new NumericException("b should be >0","Beta");}
+					BetaDistribution beta=new BetaDistribution(null,a,b);
+					double rand=generator.nextDouble();
+					vals.matrix[i][j]=beta.inverseCumulativeProbability(rand);
+				}
+			}
+			return(vals);
+		}
 	}
 	
 	public static String description(){

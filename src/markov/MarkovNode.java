@@ -80,7 +80,7 @@ public class MarkovNode extends ModelNode{
 	
 	//Visual Attributes
 	@XmlTransient PanelMarkov panel;
-	@XmlTransient MarkovTree tree;
+	@XmlTransient public MarkovTree tree;
 	@XmlTransient public MarkovNode chain;
 	@XmlTransient JLabel lblProb; MarkovTextField textProb;
 	@XmlTransient JLabel lblCost; MarkovTextField textCost;

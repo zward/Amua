@@ -718,7 +718,7 @@ public class frmBatch {
 			gbc_comboScatterType.gridy = 0;
 			panelScatter.add(comboScatterType, gbc_comboScatterType);
 
-			ChartPanel panelChartScatter = new ChartPanel(chartScatter);
+			ChartPanel panelChartScatter = new ChartPanel(chartScatter,false);
 			GridBagConstraints gbc_panelChartScatter = new GridBagConstraints();
 			gbc_panelChartScatter.gridwidth = 2;
 			gbc_panelChartScatter.fill = GridBagConstraints.BOTH;
