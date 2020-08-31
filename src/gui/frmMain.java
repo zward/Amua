@@ -2288,7 +2288,7 @@ public class frmMain {
 
 			String input;
 			while (gitVersion==null && (input = br.readLine()) != null){
-				if(input.contains("public String version=")) {
+				if(input.contains("String version=")) {
 					String data[]=input.split("\"");
 					gitVersion=data[1];
 				}
