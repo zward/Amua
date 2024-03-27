@@ -128,7 +128,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.3.0";
+	public String version="0.3.1-test";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened

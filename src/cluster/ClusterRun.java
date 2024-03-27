@@ -150,7 +150,13 @@ public class ClusterRun{
 					}
 					new ClusterPSA(myModel, myInputs, outpath, iteration);
 				}
-
+				else if(myInputs.operation.contains("Scenarios")) {
+					if(iteration==1) { //model properties
+						writeModelProperties(myModel, outpath);
+					}
+					new ClusterScenarios(myModel, myInputs, outpath, iteration);
+				}
+				
 			}
 			
 			

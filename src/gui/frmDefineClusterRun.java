@@ -46,6 +46,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.JPanel;
+import javax.swing.border.EtchedBorder;
 
 /**
  *
@@ -155,40 +157,9 @@ public class frmDefineClusterRun {
 			btnCancel.setBounds(370, 289, 90, 28);
 			frmDefineClusterRun.getContentPane().add(btnCancel);
 			
-			
-			JLabel lblPsa = new JLabel("PSA:");
-			lblPsa.setFont(new Font("SansSerif", Font.BOLD, 12));
-			lblPsa.setBounds(291, 105, 54, 16);
-			frmDefineClusterRun.getContentPane().add(lblPsa);
-			
-			chckbxPSASeed = new JCheckBox("Seed");
-			chckbxPSASeed.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if(chckbxPSASeed.isSelected()) {
-						textPSASeed.setEnabled(true);
-					}
-					else {
-						textPSASeed.setEnabled(false);
-					}
-				}
-			});
-			chckbxPSASeed.setBounds(291, 131, 68, 18);
-			frmDefineClusterRun.getContentPane().add(chckbxPSASeed);
-			
-			chckbxSampleParameterSets = new JCheckBox("Sample parameter sets");
-			chckbxSampleParameterSets.setEnabled(false);
-			chckbxSampleParameterSets.setBounds(291, 161, 159, 18);
-			frmDefineClusterRun.getContentPane().add(chckbxSampleParameterSets);
-			
 			if(myModel.parameterSets!=null) {
 				chckbxSampleParameterSets.setEnabled(true);
 			}
-			
-			textPSASeed = new JTextField();
-			textPSASeed.setEnabled(false);
-			textPSASeed.setBounds(357, 126, 54, 28);
-			frmDefineClusterRun.getContentPane().add(textPSASeed);
-			textPSASeed.setColumns(10);
 								
 			JLabel lblRun = new JLabel("Run Type:");
 			lblRun.setBounds(6, 6, 74, 16);
@@ -208,7 +179,7 @@ public class frmDefineClusterRun {
 			});
 			listRuns.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			listRuns.setModel(new AbstractListModel() {
-				String[] values = new String[] {"PSA"};
+				String[] values = new String[] {"PSA", "Scenarios"};
 				public int getSize() {
 					return values.length;
 				}
@@ -221,8 +192,45 @@ public class frmDefineClusterRun {
 			
 			chckbxSeedIteration = new JCheckBox("Use iteration as RNG seed");
 			chckbxSeedIteration.setSelected(true);
-			chckbxSeedIteration.setBounds(291, 39, 185, 18);
+			chckbxSeedIteration.setBounds(275, 29, 185, 18);
 			frmDefineClusterRun.getContentPane().add(chckbxSeedIteration);
+			
+			JPanel panel = new JPanel();
+			panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			panel.setBounds(275, 64, 203, 85);
+			frmDefineClusterRun.getContentPane().add(panel);
+			panel.setLayout(null);
+			
+			
+			JLabel lblPsa = new JLabel("PSA:");
+			lblPsa.setBounds(6, 6, 54, 16);
+			panel.add(lblPsa);
+			lblPsa.setFont(new Font("SansSerif", Font.BOLD, 12));
+			
+			chckbxPSASeed = new JCheckBox("Seed");
+			chckbxPSASeed.setBounds(6, 32, 68, 18);
+			panel.add(chckbxPSASeed);
+			
+			textPSASeed = new JTextField();
+			textPSASeed.setBounds(72, 27, 54, 28);
+			panel.add(textPSASeed);
+			textPSASeed.setEnabled(false);
+			textPSASeed.setColumns(10);
+			
+			chckbxSampleParameterSets = new JCheckBox("Sample parameter sets");
+			chckbxSampleParameterSets.setBounds(6, 62, 159, 18);
+			panel.add(chckbxSampleParameterSets);
+			chckbxSampleParameterSets.setEnabled(false);
+			chckbxPSASeed.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(chckbxPSASeed.isSelected()) {
+						textPSASeed.setEnabled(true);
+					}
+					else {
+						textPSASeed.setEnabled(false);
+					}
+				}
+			});
 			
 		
 			

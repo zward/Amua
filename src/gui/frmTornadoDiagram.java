@@ -93,7 +93,7 @@ public class frmTornadoDiagram {
 	JLabel lblSubgroup, lblOutcome;
 
 	JFreeChart chart;
-	String paramNames[];
+	ArrayList<String> paramNames;
 	
 	/**
 	 * [Subgroup][Strategy][Dimension]
@@ -280,7 +280,7 @@ public class frmTornadoDiagram {
 							for(int p=0; p<numParams; p++) {
 								ParamResult result=curResults.get(p);
 								out.write(result.name);
-								int pIndex=myModel.getParameterIndex(result.name);
+								int pIndex=paramNames.indexOf(result.name);
 								for(int s=0; s<numStrategies; s++) {
 									out.write(","+results[curGroup][s][curOutcome][pIndex][0]);
 									out.write(","+results[curGroup][s][curOutcome][pIndex][1]);
@@ -343,12 +343,12 @@ public class frmTornadoDiagram {
 
 						double globalMin=Double.POSITIVE_INFINITY, globalMax=Double.NEGATIVE_INFINITY;
 
-						int numParams=paramNames.length;
+						int numParams=paramNames.size();
 
 						curResults=new ArrayList<ParamResult>();
 						for(int p=0; p<numParams; p++) {
 							ParamResult result=new ParamResult();
-							result.name=paramNames[p];
+							result.name=paramNames.get(p);
 							result.minVal=new double[numStrat];
 							result.maxVal=new double[numStrat];
 							for(int s=0; s<numStrat; s++) {
@@ -522,11 +522,11 @@ public class frmTornadoDiagram {
 										
 										numParams=paramIndices.size();
 										results=new double[1+numSubgroups][numStrategies][numOutcomes][numParams][2];
-										paramNames=new String[numParams];
+										paramNames=new ArrayList<String>();
 										
 										for(int p=0; p<numParams; p++){
 											int pIndex=paramIndices.get(p);
-											paramNames[p]=(String)tableParams.getValueAt(pIndex, 0);
+											paramNames.add((String)tableParams.getValueAt(pIndex, 0));
 											String strMin=(String)tableParams.getValueAt(pIndex, 2);
 											String strMax=(String)tableParams.getValueAt(pIndex, 3);
 											strMin=strMin.replaceAll(",",""); //Replace any commas
@@ -547,7 +547,7 @@ public class frmTornadoDiagram {
 												curParam.value=origValue;
 												curParam.locked=false;
 												myModel.validateModelObjects();
-												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramNames[p]+" - Min value");
+												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramNames.get(p)+" - Min value");
 												break;
 											}
 											else{
@@ -593,7 +593,7 @@ public class frmTornadoDiagram {
 												curParam.value=origValue;
 												curParam.locked=false;
 												myModel.validateModelObjects();
-												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramNames[p]+" - Max value");
+												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramNames.get(p)+" - Max value");
 												break;
 											}
 											else{

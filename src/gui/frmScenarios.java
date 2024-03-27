@@ -899,7 +899,7 @@ public class frmScenarios {
 												curScenario.overwriteParams(myModel);
 											}
 											
-											
+											myModel.curGenerator=myModel.generatorVar;
 											RunReport curReport=myModel.runModel(null, false);
 											runReports[n][i]=curReport;
 

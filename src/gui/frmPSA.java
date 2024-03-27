@@ -123,9 +123,16 @@ public class frmPSA {
 	 * [Group][Outcome][Strategy][x,y][Iteration]
 	 */
 	double dataResultsIter[][][][][], dataResultsVal[][][][][], dataResultsDens[][][], dataResultsCumDens[][][][][];
-	double dataParamsIter[][][], dataParamsVal[][][], dataParamsDens[][][], dataParamsCumDens[][][];
 	double dataScatterAbs[][][][], dataScatterRel[][][][];
 	String CEAnotes[][][];
+	
+	int paramDims[];
+	/**
+	 * [Parameter][Parameter Dimension][Iteration][Value]
+	 */
+	double dataParamsIter[][][][], dataParamsVal[][][][], dataParamsDens[][][][], dataParamsCumDens[][][][];
+	
+	
 	/**
 	 * [Strategy][x,y][WTP]
 	 */
@@ -199,12 +206,18 @@ public class frmPSA {
 			numParams=myModel.parameters.size();
 			numConstraints=myModel.constraints.size();
 			paramNames=new String[numParams];
+			paramDims=new int[numParams];
 			for(int i=0; i<numParams; i++){
 				modelParams.addRow(new Object[]{null});
-				modelParams.setValueAt(myModel.parameters.get(i).name, i, 0);
-				modelParams.setValueAt(myModel.parameters.get(i).expression, i, 1);
+				Parameter curParam=myModel.parameters.get(i);
+				modelParams.setValueAt(curParam.name, i, 0);
+				modelParams.setValueAt(curParam.expression, i, 1);
 				//modelParams.setValueAt(Boolean.TRUE , i, 2);
-				paramNames[i]=myModel.parameters.get(i).name;
+				paramNames[i]=curParam.name;
+				paramDims[i]=1; //default to single dimension (scalar)
+				if(curParam.value.isMatrix()) {
+					paramDims[i]=curParam.value.nrow*curParam.value.ncol;
+				}
 			}
 
 			JScrollPane scrollPaneParams = new JScrollPane();
@@ -297,15 +310,27 @@ public class frmPSA {
 								int numStrat=myModel.strategyNames.length;
 								out.write("Iteration");
 								out.write(",Parameters");
-								for(int p=0; p<numParams; p++){out.write(","+paramNames[p]);}
+								for(int p=0; p<numParams; p++){
+									int curDim=paramDims[p];
+									if(curDim==1) { //scalar
+										out.write(",\""+paramNames[p]+"\"");
+									}
+									else { //matrix
+										Numeric val=myModel.parameters.get(p).value;
+										for(int z=0; z<curDim; z++) {
+											String curLbl=getParamDimLbl(val, z);
+											out.write(",\""+(paramNames[p]+curLbl)+"\"");
+										}
+									}
+								}
 								for(int d=0; d<numDim; d++){ //EVs
-									out.write(","+info.dimNames[d]);
-									for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
+									out.write(",\""+info.dimNames[d]+"\"");
+									for(int s=0; s<numStrat; s++){out.write(",\""+myModel.strategyNames[s]+"\"");}
 								}
 								if(analysisType>0){ //CEA or BCA
-									if(analysisType==1){out.write(",ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
-									else if(analysisType==2){out.write(",NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
-									for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
+									if(analysisType==1){out.write(",\"ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")\"");}
+									else if(analysisType==2){out.write(",\"NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")\"");}
+									for(int s=0; s<numStrat; s++){out.write(",\""+myModel.strategyNames[s]+"\"");}
 								}
 								out.newLine();
 
@@ -318,7 +343,12 @@ public class frmPSA {
 									out.write((i+1)+""); //Iteration
 									//Parameters
 									out.write(",");
-									for(int p=0; p<numParams; p++){out.write(","+dataParamsIter[p][1][i]);}
+									for(int p=0; p<numParams; p++){
+										int curDim=paramDims[p];
+										for(int z=0; z<curDim; z++) {
+											out.write(","+dataParamsIter[p][z][1][i]);
+										}
+									}
 									//Outcomes
 									for(int d=0; d<numDim; d++){ //EVs
 										out.write(",");
@@ -779,10 +809,16 @@ public class frmPSA {
 									dataResultsVal=new double[1+numSubgroups][numOutcomes][numStrat][2][numIterations];
 									dataResultsCumDens=new double[1+numSubgroups][numOutcomes][numStrat][2][numIterations];
 
-									dataParamsIter=new double[numParams][2][numIterations];
-									dataParamsVal=new double[numParams][2][numIterations];
-									dataParamsCumDens=new double[numParams][2][numIterations];
-
+									dataParamsIter=new double[numParams][][][];
+									dataParamsVal=new double[numParams][][][];
+									dataParamsCumDens=new double[numParams][][][];
+									for(int p=0; p<numParams; p++) {
+										int curDim=paramDims[p];
+										dataParamsIter[p]=new double[curDim][2][numIterations];
+										dataParamsVal[p]=new double[curDim][2][numIterations];
+										dataParamsCumDens[p]=new double[curDim][2][numIterations];
+									}
+									
 									dataScatterAbs=new double[1+numSubgroups][numStrat][2][numIterations];
 									dataScatterRel=new double[1+numSubgroups][numStrat][2][numIterations];
 									
@@ -870,15 +906,29 @@ public class frmPSA {
 											myModel.parameterSets[curSet].setParameters(myModel);
 										}
 										
-										
 										for(int v=0; v<numParams; v++){ //Record value
-											dataParamsIter[v][0][n]=n; dataParamsVal[v][0][n]=n;
-											try{
-												dataParamsIter[v][1][n]=myModel.parameters.get(v).value.getDouble();
-											} catch(Exception e){
-												dataParamsIter[v][1][n]=Double.NaN;
+											int curDim=paramDims[v];
+											if(curDim==1) { //scalar
+												dataParamsIter[v][0][0][n]=n; dataParamsVal[v][0][0][n]=n;
+												try{
+													dataParamsIter[v][0][1][n]=myModel.parameters.get(v).value.getDouble();
+												} catch(Exception e){
+													dataParamsIter[v][0][1][n]=Double.NaN;
+												}
+												dataParamsVal[v][0][1][n]=dataParamsIter[v][0][1][n];
 											}
-											dataParamsVal[v][1][n]=dataParamsIter[v][1][n];
+											else { //matrix
+												Numeric val=myModel.parameters.get(v).value;
+												int z=0;
+												for(int i=0; i<val.nrow; i++) {
+													for(int j=0; j<val.ncol; j++) {
+														dataParamsIter[v][z][0][n]=n; dataParamsVal[v][z][0][n]=n;
+														dataParamsIter[v][z][1][n]=val.matrix[i][j];
+														dataParamsVal[v][z][1][n]=val.matrix[i][j];
+														z++;
+													}
+												}
+											}
 										} 
 
 										//Run model
@@ -1018,11 +1068,14 @@ public class frmPSA {
 											}
 										}
 										for(int v=0; v<numParams; v++){
-											Arrays.sort(dataParamsVal[v][1]);
-											for(int n=0; n<numIterations; n++){
-												dataParamsVal[v][0][n]=n/(numIterations*1.0);
-												dataParamsCumDens[v][0][n]=dataParamsVal[v][1][n];
-												dataParamsCumDens[v][1][n]=dataParamsVal[v][0][n];
+											int curDim=paramDims[v];
+											for(int z=0; z<curDim; z++) {
+												Arrays.sort(dataParamsVal[v][z][1]);
+												for(int n=0; n<numIterations; n++){
+													dataParamsVal[v][z][0][n]=n/(numIterations*1.0);
+													dataParamsCumDens[v][z][0][n]=dataParamsVal[v][z][1][n];
+													dataParamsCumDens[v][z][1][n]=dataParamsVal[v][z][0][n];
+												}
 											}
 										}
 
@@ -1261,8 +1314,19 @@ public class frmPSA {
 			chartParams.getXYPlot().getRangeAxis().setLabel("Density");
 			for(int v=0; v<numParams; v++){
 				if(listParams.isSelectedIndex(v)){
-					double kde[][]=KernelSmooth.density(dataParamsIter[v][1], 100);
-					chartDataParams.addSeries(paramNames[v],kde);
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						double kde[][]=KernelSmooth.density(dataParamsIter[v][0][1], 100);
+						chartDataParams.addSeries(paramNames[v],kde);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							double kde[][]=KernelSmooth.density(dataParamsIter[v][z][1], 100);
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, kde);
+						}
+					}
 				}
 			}
 		}
@@ -1271,8 +1335,19 @@ public class frmPSA {
 			chartParams.getXYPlot().getRangeAxis().setLabel("Frequency");
 			for(int v=0; v<numParams; v++){
 				if(listParams.isSelectedIndex(v)){
-					double hist[][]=KernelSmooth.histogram(dataParamsIter[v][1], 100, 10);
-					chartDataParams.addSeries(paramNames[v],hist);
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						double hist[][]=KernelSmooth.histogram(dataParamsIter[v][0][1], 100, 10);
+						chartDataParams.addSeries(paramNames[v],hist);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							double hist[][]=KernelSmooth.histogram(dataParamsIter[v][z][1], 100, 10);
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, hist);
+						}
+					}
 				}
 			}
 		}
@@ -1280,21 +1355,57 @@ public class frmPSA {
 			chartParams.getXYPlot().getDomainAxis().setLabel("Value");
 			chartParams.getXYPlot().getRangeAxis().setLabel("Cumulative Distribution");
 			for(int v=0; v<numParams; v++){
-				if(listParams.isSelectedIndex(v)){chartDataParams.addSeries(paramNames[v],dataParamsCumDens[v]);}
+				if(listParams.isSelectedIndex(v)){
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						chartDataParams.addSeries(paramNames[v],dataParamsCumDens[v][0]);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, dataParamsCumDens[v][z]);
+						}
+					}
+				}
 			}
 		}
 		else if(selected==3){ //Quantile
 			chartParams.getXYPlot().getDomainAxis().setLabel("Quantile");
 			chartParams.getXYPlot().getRangeAxis().setLabel("Value");
 			for(int v=0; v<numParams; v++){
-				if(listParams.isSelectedIndex(v)){chartDataParams.addSeries(paramNames[v],dataParamsVal[v]);}
+				if(listParams.isSelectedIndex(v)){
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						chartDataParams.addSeries(paramNames[v],dataParamsVal[v][0]);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, dataParamsVal[v][z]);
+						}
+					}
+				}
 			}
 		}
 		else if(selected==4){ //Iteration
 			chartParams.getXYPlot().getDomainAxis().setLabel("Iteration");
 			chartParams.getXYPlot().getRangeAxis().setLabel("Value");
 			for(int v=0; v<numParams; v++){
-				if(listParams.isSelectedIndex(v)){chartDataParams.addSeries(paramNames[v],dataParamsIter[v]);}
+				if(listParams.isSelectedIndex(v)){
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						chartDataParams.addSeries(paramNames[v],dataParamsIter[v][0]);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, dataParamsIter[v][z]);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -1462,5 +1573,26 @@ public class frmPSA {
 			curTable.addRow(row);
 		}
 		curTable.print();
+	}
+	
+	//get dimension index label
+	private String getParamDimLbl(Numeric val, int z) {
+		String curLbl="";
+		int curZ=-1;
+		for(int i=0; i<val.nrow; i++) {
+			for(int j=0; j<val.ncol; j++) {
+				curZ++;
+				if(z==curZ) {
+					if(val.nrow>1 && val.ncol>1) { //matrix
+						curLbl="["+i+","+j+"]";
+					}
+					else { //vector
+						curLbl="["+Math.max(i, j)+"]";
+					}
+					return(curLbl);
+				}
+			}
+		}
+		return(curLbl);
 	}
 }

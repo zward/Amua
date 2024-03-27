@@ -51,7 +51,7 @@ public class Console{
 		textConsole.setFont(new Font("Consolas", Font.PLAIN, 15));
 		//Start-up text
 		textConsole.setText("Amua version "+version+"\n");
-		print("Copyright \u00A9 2017-2020 Zachary J. Ward (https://github.com/zward/Amua)\n\n");
+		print("Copyright \u00A9 2017-2024 Zachary J. Ward (https://github.com/zward/Amua)\n\n");
 		print("Amua is free software and is distributed in the hope that it will be useful, but comes with ABSOLUTELY NO WARRANTY.\n");
 		print("See Help -> About Amua for distribution details.\n");
 		

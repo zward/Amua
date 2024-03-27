@@ -202,20 +202,26 @@ public class DecisionTree{
 			//check variable updates
 			curNode.highlightTextField(3,null); //Variable updates
 			if(curNode.hasVarUpdates){
-				String updates[]=curNode.varUpdates.split(";");
-				int numUpdates=updates.length;
-				curNode.curVariableUpdates=new VariableUpdate[numUpdates];
-				for(int u=0; u<updates.length; u++){
-					try{
-						curNode.curVariableUpdates[u]=new VariableUpdate(updates[u],myModel);
-						double testVal=curNode.curVariableUpdates[u].testVal.getDouble();
-						if(Double.isNaN(testVal)){
+				if(curNode.varUpdates==null) {
+					curNode.highlightTextField(3, Color.YELLOW); //Variable updates
+					errors.add("Node "+curNode.name+": Variable Update is null!");
+				}
+				else {
+					String updates[]=curNode.varUpdates.split(";");
+					int numUpdates=updates.length;
+					curNode.curVariableUpdates=new VariableUpdate[numUpdates];
+					for(int u=0; u<updates.length; u++){
+						try{
+							curNode.curVariableUpdates[u]=new VariableUpdate(updates[u],myModel);
+							double testVal=curNode.curVariableUpdates[u].testVal.getDouble();
+							if(Double.isNaN(testVal)){
+								curNode.highlightTextField(3, Color.YELLOW); //Variable updates
+								errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
+							}
+						}catch(Exception e){
 							curNode.highlightTextField(3, Color.YELLOW); //Variable updates
 							errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
 						}
-					}catch(Exception e){
-						curNode.highlightTextField(3, Color.YELLOW); //Variable updates
-						errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
 					}
 				}
 			}

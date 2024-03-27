@@ -706,6 +706,11 @@ public class AmuaModel{
 	}
 	
 	public boolean checkModel(Console console, boolean checkProbs){
+		//Reset t=0 if Markov
+		if(type==1) {
+			resetT();
+		}
+		
 		if(simParamSets){ //check paramsets
 			boolean validParams=checkParamSets(console);
 			if(validParams==false){
@@ -790,10 +795,6 @@ public class AmuaModel{
 				return(panelTree.checkTree(console,checkProbs));
 			} 
 			else if(type==1){ //Markov
-
-				//Reset t=0
-				resetT();
-
 				if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, check whole model
 					return(panelMarkov.checkModel(console, checkProbs));
 				}

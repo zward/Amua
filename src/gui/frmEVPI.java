@@ -123,8 +123,13 @@ public class frmEVPI {
 	 * [Group][Outcome][Strategy][x,y][Iteration]
 	 */
 	double dataResultsIter[][][][][], dataResultsVal[][][][][], dataResultsDens[][][], dataResultsCumDens[][][][][];
-	double dataParamsIter[][][], dataParamsVal[][][], dataParamsDens[][][], dataParamsCumDens[][][];
 	String CEAnotes[][][];
+	
+	int paramDims[];
+	/**
+	 * [Parameter][Parameter Dimension][Iteration][Value]
+	 */
+	double dataParamsIter[][][][], dataParamsVal[][][][], dataParamsDens[][][][], dataParamsCumDens[][][][];
 	
 	JTextPane textEVPI;
 	
@@ -135,7 +140,10 @@ public class frmEVPI {
 	
 	ArrayList<SortedResult> sortedResults;
 	
-	double evppiBins[][][];
+	/**
+	 * [Parameter][Parameter Dimension][Value][Bins]
+	 */
+	double evppiBins[][][][];
 	boolean exportReady=false;
 	
 	JList<String> listParams;
@@ -200,12 +208,18 @@ public class frmEVPI {
 			numParams=myModel.parameters.size();
 			numConstraints=myModel.constraints.size();
 			paramNames=new String[numParams];
+			paramDims=new int[numParams];
 			for(int i=0; i<numParams; i++){
 				modelParams.addRow(new Object[]{null});
-				modelParams.setValueAt(myModel.parameters.get(i).name, i, 0);
-				modelParams.setValueAt(myModel.parameters.get(i).expression, i, 1);
+				Parameter curParam=myModel.parameters.get(i);
+				modelParams.setValueAt(curParam.name, i, 0);
+				modelParams.setValueAt(curParam.expression, i, 1);
 				//modelParams.setValueAt(Boolean.TRUE , i, 2);
-				paramNames[i]=myModel.parameters.get(i).name;
+				paramNames[i]=curParam.name;
+				paramDims[i]=1; //default to single dimension (scalar)
+				if(curParam.value.isMatrix()) {
+					paramDims[i]=curParam.value.nrow*curParam.value.ncol;
+				}
 			}
 
 			JScrollPane scrollPaneParams = new JScrollPane();
@@ -292,13 +306,27 @@ public class frmEVPI {
 							if(tabIndex==1) { //EVPPI estimates
 								//Headers
 								out.write("# Bins");
-								for(int p=0; p<numParams; p++) {out.write(","+paramNames[p]);}
+								for(int p=0; p<numParams; p++) {
+									int curDim=paramDims[p];
+									if(curDim==1) { //scalar
+										out.write(",\""+paramNames[p]+"\"");
+									}
+									else { //matrix
+										Numeric val=myModel.parameters.get(p).value;
+										for(int z=0; z<curDim; z++) {
+											out.write(",\""+paramNames[p]+getParamDimLbl(val,z)+"\"");
+										}
+									}
+								}
 								out.newLine();
-								int numBins=evppiBins[0][0].length;
+								int numBins=evppiBins[0][0][0].length;
 								for(int b=0; b<numBins; b++) {
-									out.write(evppiBins[0][0][b]+"");
+									out.write(evppiBins[0][0][0][b]+"");
 									for(int p=0; p<numParams; p++) {
-										out.write(","+evppiBins[p][1][b]);
+										int curDim=paramDims[p];
+										for(int z=0; z<curDim; z++) {
+											out.write(","+evppiBins[p][z][1][b]);
+										}
 									}
 									out.newLine();
 								}
@@ -311,7 +339,18 @@ public class frmEVPI {
 								int numStrat=myModel.strategyNames.length;
 								out.write("Iteration");
 								out.write(",Parameters");
-								for(int p=0; p<numParams; p++){out.write(","+paramNames[p]);}
+								for(int p=0; p<numParams; p++) {
+									int curDim=paramDims[p];
+									if(curDim==1) { //scalar
+										out.write(",\""+paramNames[p]+"\"");
+									}
+									else { //matrix
+										Numeric val=myModel.parameters.get(p).value;
+										for(int z=0; z<curDim; z++) {
+											out.write(",\""+paramNames[p]+getParamDimLbl(val,z)+"\"");
+										}
+									}
+								}
 								for(int d=0; d<numDim; d++){ //EVs
 									out.write(","+info.dimNames[d]);
 									for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
@@ -332,7 +371,12 @@ public class frmEVPI {
 									out.write((i+1)+""); //Iteration
 									//Parameters
 									out.write(",");
-									for(int p=0; p<numParams; p++){out.write(","+dataParamsIter[p][1][i]);}
+									for(int p=0; p<numParams; p++){
+										int curDim=paramDims[p];
+										for(int z=0; z<curDim; z++) {
+											out.write(","+dataParamsIter[p][z][1][i]);
+										}
+									}
 									//Outcomes
 									for(int d=0; d<numDim; d++){ //EVs
 										out.write(",");
@@ -692,9 +736,15 @@ public class frmEVPI {
 									dataResultsVal=new double[1+numSubgroups][numOutcomes][numStrat][2][numIterations];
 									dataResultsCumDens=new double[1+numSubgroups][numOutcomes][numStrat][2][numIterations];
 
-									dataParamsIter=new double[numParams][2][numIterations];
-									dataParamsVal=new double[numParams][2][numIterations];
-									dataParamsCumDens=new double[numParams][2][numIterations];
+									dataParamsIter=new double[numParams][][][];
+									dataParamsVal=new double[numParams][][][];
+									dataParamsCumDens=new double[numParams][][][];
+									for(int p=0; p<numParams; p++) {
+										int curDim=paramDims[p];
+										dataParamsIter[p]=new double[curDim][2][numIterations];
+										dataParamsVal[p]=new double[curDim][2][numIterations];
+										dataParamsCumDens[p]=new double[curDim][2][numIterations];
+									}
 									
 									results=new double[numStrat][numIterations];
 									sortedResults=new ArrayList<SortedResult>();
@@ -764,13 +814,28 @@ public class frmEVPI {
 										}
 
 										for(int v=0; v<numParams; v++){ //Record value
-											dataParamsIter[v][0][n]=n; dataParamsVal[v][0][n]=n;
-											try{
-												dataParamsIter[v][1][n]=myModel.parameters.get(v).value.getDouble();
-											} catch(Exception e){
-												dataParamsIter[v][1][n]=Double.NaN;
+											int curDim=paramDims[v];
+											if(curDim==1) { //scalar
+												dataParamsIter[v][0][0][n]=n; dataParamsVal[v][0][0][n]=n;
+												try{
+													dataParamsIter[v][0][1][n]=myModel.parameters.get(v).value.getDouble();
+												} catch(Exception e){
+													dataParamsIter[v][0][1][n]=Double.NaN;
+												}
+												dataParamsVal[v][0][1][n]=dataParamsIter[v][0][1][n];
 											}
-											dataParamsVal[v][1][n]=dataParamsIter[v][1][n];
+											else { //matrix
+												Numeric val=myModel.parameters.get(v).value;
+												int z=0;
+												for(int i=0; i<val.nrow; i++) {
+													for(int j=0; j<val.ncol; j++) {
+														dataParamsIter[v][z][0][n]=n; dataParamsVal[v][z][0][n]=n;
+														dataParamsIter[v][z][1][n]=val.matrix[i][j];
+														dataParamsVal[v][z][1][n]=val.matrix[i][j];
+														z++;
+													}
+												}
+											}
 										} 
 
 										//Run model
@@ -845,7 +910,11 @@ public class frmEVPI {
 										//Get EVPI results
 										SortedResult curResult=new SortedResult(n,numStrat,numParams);
 										for(int p=0; p<numParams; p++){ //Record parameter value
-											curResult.paramVals[p]=dataParamsIter[p][1][n];
+											int curDim=paramDims[p];
+											curResult.paramVals[p]=new double[curDim];
+											for(int z=0; z<curDim; z++) {
+												curResult.paramVals[p][z]=dataParamsIter[p][z][1][n];
+											}
 										} 
 										if(analysisType==0) { //EV
 											for(int s=0; s<numStrat; s++) {
@@ -909,11 +978,14 @@ public class frmEVPI {
 											}
 										}
 										for(int v=0; v<numParams; v++){
-											Arrays.sort(dataParamsVal[v][1]);
-											for(int n=0; n<numIterations; n++){
-												dataParamsVal[v][0][n]=n/(numIterations*1.0);
-												dataParamsCumDens[v][0][n]=dataParamsVal[v][1][n];
-												dataParamsCumDens[v][1][n]=dataParamsVal[v][0][n];
+											int curDim=paramDims[v];
+											for(int z=0; z<curDim; z++) {
+												Arrays.sort(dataParamsVal[v][z][1]);
+												for(int n=0; n<numIterations; n++){
+													dataParamsVal[v][z][0][n]=n/(numIterations*1.0);
+													dataParamsCumDens[v][z][0][n]=dataParamsVal[v][z][1][n];
+													dataParamsCumDens[v][z][1][n]=dataParamsVal[v][z][0][n];
+												}
 											}
 										}
 
@@ -955,60 +1027,20 @@ public class frmEVPI {
 										double evpi=bestOutcome-bestMean;
 																				
 										//Calculate EVPPI (for each parameter)
-										double bestPPI[]=new double[numParams];
-										double evppi[]=new double[numParams];
+										double bestPPI[][]=new double[numParams][];
+										double evppi[][]=new double[numParams][];
 										
 										int numBins=Integer.parseInt(textNumBins.getText());
 										int reportNumBins=numBins;
 										
 										int numSamp=numIterations/numBins;
 										for(int p=0; p<numParams; p++) {
-											Collections.sort(sortedResults, new ResultComparator(-1)); //order by iteration (reset previous ordering)
-											Collections.sort(sortedResults, new ResultComparator(p)); //re-sort ascending by parameter
-											double curMax[]=new double[numBins];
-											double avgMax=0;
-											for(int k=0; k<numBins; k++) {
-												int index0=k*numSamp;
-												int index1=index0+numSamp;
-												//calculate strategy mean within bin
-												double binMeans[]=new double[numStrat];
-												for(int i=index0; i<index1; i++) {
-													for(int s=0; s<numStrat; s++) {
-														binMeans[s]+=sortedResults.get(i).outcomes[s];
-													}
-												}
-												//get best strategy among bin means
-												double binMax=Double.NEGATIVE_INFINITY;
-												for(int s=0; s<numStrat; s++) {
-													binMeans[s]/=(numSamp*1.0);
-													binMax=Math.max(binMax, sign*binMeans[s]);
-												}
-												curMax[k]=binMax;
-												avgMax+=binMax;
-											}
-											avgMax/=(numBins*1.0);
-											bestPPI[p]=avgMax;
-											evppi[p]=avgMax-bestMean;
-										}
-										
-										//Calculate EVPPI for varying bin sizes
-										ArrayList<Integer> binSizes=new ArrayList<Integer>();
-										for(int b=1; b<numIterations/2; b++) {
-											if(numIterations%b==0) { //divides evenly
-												binSizes.add(b);
-											}
-										}
-										
-										evppiBins=new double[numParams][2][binSizes.size()];
-										
-										for(int p=0; p<numParams; p++) {
-											Collections.sort(sortedResults, new ResultComparator(-1)); //order by iteration (reset previous ordering)
-											Collections.sort(sortedResults, new ResultComparator(p)); //re-sort ascending by parameter
-										
-											for(int b=0; b<binSizes.size(); b++) { //number of bins
-												numBins=binSizes.get(b);
-												evppiBins[p][0][b]=numBins;
-												numSamp=numIterations/numBins;
+											int curDim=paramDims[p];
+											bestPPI[p]=new double[curDim];
+											evppi[p]=new double[curDim];
+											for(int z=0; z<curDim; z++) {
+												Collections.sort(sortedResults, new ResultComparator(-1,-1)); //order by iteration (reset previous ordering)
+												Collections.sort(sortedResults, new ResultComparator(p,z)); //re-sort ascending by parameter
 												double curMax[]=new double[numBins];
 												double avgMax=0;
 												for(int k=0; k<numBins; k++) {
@@ -1031,7 +1063,56 @@ public class frmEVPI {
 													avgMax+=binMax;
 												}
 												avgMax/=(numBins*1.0);
-												evppiBins[p][1][b]=avgMax-bestMean;
+												bestPPI[p][z]=avgMax;
+												evppi[p][z]=avgMax-bestMean;
+											}
+										}
+										
+										//Calculate EVPPI for varying bin sizes
+										ArrayList<Integer> binSizes=new ArrayList<Integer>();
+										for(int b=1; b<numIterations/2; b++) {
+											if(numIterations%b==0) { //divides evenly
+												binSizes.add(b);
+											}
+										}
+										
+										evppiBins=new double[numParams][][][];
+
+										for(int p=0; p<numParams; p++) {
+											int curDim=paramDims[p];
+											evppiBins[p]=new double[curDim][2][binSizes.size()];
+											for(int z=0; z<curDim; z++) {
+												Collections.sort(sortedResults, new ResultComparator(-1,-1)); //order by iteration (reset previous ordering)
+												Collections.sort(sortedResults, new ResultComparator(p,z)); //re-sort ascending by parameter
+
+												for(int b=0; b<binSizes.size(); b++) { //number of bins
+													numBins=binSizes.get(b);
+													evppiBins[p][z][0][b]=numBins;
+													numSamp=numIterations/numBins;
+													double curMax[]=new double[numBins];
+													double avgMax=0;
+													for(int k=0; k<numBins; k++) {
+														int index0=k*numSamp;
+														int index1=index0+numSamp;
+														//calculate strategy mean within bin
+														double binMeans[]=new double[numStrat];
+														for(int i=index0; i<index1; i++) {
+															for(int s=0; s<numStrat; s++) {
+																binMeans[s]+=sortedResults.get(i).outcomes[s];
+															}
+														}
+														//get best strategy among bin means
+														double binMax=Double.NEGATIVE_INFINITY;
+														for(int s=0; s<numStrat; s++) {
+															binMeans[s]/=(numSamp*1.0);
+															binMax=Math.max(binMax, sign*binMeans[s]);
+														}
+														curMax[k]=binMax;
+														avgMax+=binMax;
+													}
+													avgMax/=(numBins*1.0);
+													evppiBins[p][z][1][b]=avgMax-bestMean;
+												}
 											}
 										}
 										
@@ -1051,8 +1132,6 @@ public class frmEVPI {
 										}
 										plotParams.setRenderer(rendererParams);
 										updateParamChart();
-										
-										btnExport.setEnabled(true);
 										
 										//Print results summary to textpane
 										HTMLEditorKit kit = new HTMLEditorKit();
@@ -1111,9 +1190,20 @@ public class frmEVPI {
 										strReport+=("<tr><th>Parameter</th><th>Expression</th><th>EVPPI</th></tr>");
 										for(int p=0; p<numParams; p++) {
 											Parameter curParam=myModel.parameters.get(p);
-											strReport+=("<tr><td>"+curParam.name+"</td>");
-											strReport+=("<td>"+curParam.expression+"</td>");
-											strReport+=("<td align=\"right\">"+MathUtils.round(evppi[p],numDecimals)+"</td></tr>");
+											int curDim=paramDims[p];
+											if(curDim==1) { //scalar
+												strReport+=("<tr><td>"+curParam.name+"</td>");
+												strReport+=("<td>"+curParam.expression+"</td>");
+												strReport+=("<td align=\"right\">"+MathUtils.round(evppi[p][0],numDecimals)+"</td></tr>");
+											}
+											else { //matrix
+												Numeric val=curParam.value;
+												for(int z=0; z<curDim; z++) {
+													strReport+=("<tr><td>"+curParam.name+getParamDimLbl(val,z)+"</td>");
+													strReport+=("<td>"+curParam.expression+"</td>");
+													strReport+=("<td align=\"right\">"+MathUtils.round(evppi[p][z],numDecimals)+"</td></tr>");
+												}
+											}
 										}
 										strReport+=("</table>");
 										strReport+=("<br><br>");
@@ -1164,6 +1254,14 @@ public class frmEVPI {
 										exportReady=true;
 										btnCopy.setEnabled(true);
 										
+										int index=tabbedPane.getSelectedIndex();
+										if(index==0) { //EVPI report
+											btnExport.setEnabled(false);
+										}
+										else if(index>0 && exportReady==true) {
+											btnExport.setEnabled(true);
+										}
+										
 										//subgroups
 										/*for(int g=0; g<numSubgroups; g++){
 											console.print("\nSubgroup Results: "+myModel.subgroupNames.get(g)+"\n");
@@ -1208,23 +1306,37 @@ public class frmEVPI {
 	}
 
 	public void updateEVPPIChart(){
-		if(chartDataEVPPI.getSeriesCount()>0){
-			for(int p=0; p<numParams; p++){
-				chartDataEVPPI.removeSeries(myModel.parameters.get(p).name);
-			}
+		while(chartDataEVPPI.getSeriesCount()>0){
+			chartDataEVPPI.removeSeries(chartDataEVPPI.getSeriesKey(0));
 		}
+		
 		XYPlot plotResults = chartEVPPI.getXYPlot();
 		XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,true);
 		DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
 		Shape circle=new Ellipse2D.Double(-2.5,-2.5,5,5);
+		int i=0;
 		for(int p=0; p<numParams; p++){
-			rendererResults.setSeriesPaint(p, supplierResults.getNextPaint());
-			rendererResults.setSeriesShape(p, circle);
+			int curDim=paramDims[p];
+			for(int z=0; z<curDim; z++) {
+				rendererResults.setSeriesPaint(i, supplierResults.getNextPaint());
+				rendererResults.setSeriesShape(i, circle);
+				i++;
+			}
 		}
 		plotResults.setRenderer(rendererResults);
 		
 		for(int p=0; p<numParams; p++){
-			chartDataEVPPI.addSeries(myModel.parameters.get(p).name,evppiBins[p]);
+			Parameter curParam=myModel.parameters.get(p);
+			int curDim=paramDims[p];
+			if(curDim==1) { //scalar
+				chartDataEVPPI.addSeries(curParam.name, evppiBins[p][0]);
+			}
+			else { //matrix
+				Numeric val=curParam.value;
+				for(int z=0; z<curDim; z++) {
+					chartDataEVPPI.addSeries(curParam.name+getParamDimLbl(val, z), evppiBins[p][z]);
+				}
+			}
 		}
 	}
 	
@@ -1314,8 +1426,19 @@ public class frmEVPI {
 			chartParams.getXYPlot().getRangeAxis().setLabel("Density");
 			for(int v=0; v<numParams; v++){
 				if(listParams.isSelectedIndex(v)){
-					double kde[][]=KernelSmooth.density(dataParamsIter[v][1], 100);
-					chartDataParams.addSeries(paramNames[v],kde);
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						double kde[][]=KernelSmooth.density(dataParamsIter[v][0][1], 100);
+						chartDataParams.addSeries(paramNames[v],kde);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							double kde[][]=KernelSmooth.density(dataParamsIter[v][z][1], 100);
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, kde);
+						}
+					}
 				}
 			}
 		}
@@ -1324,8 +1447,19 @@ public class frmEVPI {
 			chartParams.getXYPlot().getRangeAxis().setLabel("Frequency");
 			for(int v=0; v<numParams; v++){
 				if(listParams.isSelectedIndex(v)){
-					double hist[][]=KernelSmooth.histogram(dataParamsIter[v][1], 100, 10);
-					chartDataParams.addSeries(paramNames[v],hist);
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						double hist[][]=KernelSmooth.histogram(dataParamsIter[v][0][1], 100, 10);
+						chartDataParams.addSeries(paramNames[v],hist);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							double hist[][]=KernelSmooth.histogram(dataParamsIter[v][z][1], 100, 10);
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, hist);
+						}
+					}
 				}
 			}
 		}
@@ -1333,43 +1467,103 @@ public class frmEVPI {
 			chartParams.getXYPlot().getDomainAxis().setLabel("Value");
 			chartParams.getXYPlot().getRangeAxis().setLabel("Cumulative Distribution");
 			for(int v=0; v<numParams; v++){
-				if(listParams.isSelectedIndex(v)){chartDataParams.addSeries(paramNames[v],dataParamsCumDens[v]);}
+				if(listParams.isSelectedIndex(v)){
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						chartDataParams.addSeries(paramNames[v],dataParamsCumDens[v][0]);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, dataParamsCumDens[v][z]);
+						}
+					}
+				}
 			}
 		}
 		else if(selected==3){ //Quantile
 			chartParams.getXYPlot().getDomainAxis().setLabel("Quantile");
 			chartParams.getXYPlot().getRangeAxis().setLabel("Value");
 			for(int v=0; v<numParams; v++){
-				if(listParams.isSelectedIndex(v)){chartDataParams.addSeries(paramNames[v],dataParamsVal[v]);}
+				if(listParams.isSelectedIndex(v)){
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						chartDataParams.addSeries(paramNames[v],dataParamsVal[v][0]);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, dataParamsVal[v][z]);
+						}
+					}
+				}
 			}
 		}
 		else if(selected==4){ //Iteration
 			chartParams.getXYPlot().getDomainAxis().setLabel("Iteration");
 			chartParams.getXYPlot().getRangeAxis().setLabel("Value");
 			for(int v=0; v<numParams; v++){
-				if(listParams.isSelectedIndex(v)){chartDataParams.addSeries(paramNames[v],dataParamsIter[v]);}
+				if(listParams.isSelectedIndex(v)){
+					int curDim=paramDims[v];
+					if(curDim==1) { //scalar
+						chartDataParams.addSeries(paramNames[v],dataParamsIter[v][0]);
+					}
+					else { //matrix
+						Numeric val=myModel.parameters.get(v).value;
+						for(int z=0; z<curDim; z++) {
+							String curLbl=getParamDimLbl(val, z);
+							chartDataParams.addSeries(paramNames[v]+curLbl, dataParamsIter[v][z]);
+						}
+					}
+				}
 			}
 		}
 	}
+	
+	//get dimension index label
+	private String getParamDimLbl(Numeric val, int z) {
+		String curLbl="";
+		int curZ=-1;
+		for(int i=0; i<val.nrow; i++) {
+			for(int j=0; j<val.ncol; j++) {
+				curZ++;
+				if(z==curZ) {
+					if(val.nrow>1 && val.ncol>1) { //matrix
+						curLbl="["+i+","+j+"]";
+					}
+					else { //vector
+						curLbl="["+Math.max(i, j)+"]";
+					}
+					return(curLbl);
+				}
+			}
+		}
+		return(curLbl);
+	}
+	
 }
 
 class SortedResult{
 	int iteration;
 	double outcomes[]; //strategy outcome of interest (e.g. NMB)
-	double paramVals[];
+	double paramVals[][]; //[parameter][dimension]
 	
 	SortedResult(int i, int numStrat, int numParams){ //constructor
 		iteration=i;
 		outcomes=new double[numStrat];
-		paramVals=new double[numParams];
+		paramVals=new double[numParams][];
 	}
 }
 
 class ResultComparator implements Comparator<SortedResult> {
 	int pIndex; //parameter index to sort by
+	int dIndex; //parameter dimension to sort by
 	
-	ResultComparator(int p){ //Constructor
+	ResultComparator(int p, int d){ //Constructor
 		this.pIndex=p;
+		this.dIndex=d;
 	}
 	
 	@Override public int compare(SortedResult o1, SortedResult o2) {
@@ -1377,7 +1571,7 @@ class ResultComparator implements Comparator<SortedResult> {
 			return(Double.compare(o1.iteration, o2.iteration));
 		}
 		else { //sort by parameter value
-			return(Double.compare(o1.paramVals[pIndex], o2.paramVals[pIndex]));
+			return(Double.compare(o1.paramVals[pIndex][dIndex], o2.paramVals[pIndex][dIndex]));
 		}
 	}
 }
