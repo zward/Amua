@@ -135,6 +135,18 @@ public final class MathUtils{
 		return(var);
 	}
 	
+	public static double calcRange(double vals[]) {
+		int numVals=vals.length;
+		double min=vals[0], max=vals[0];
+		for(int i=0; i<numVals; i++) {
+			min=Math.min(min, vals[i]);
+			max=Math.max(max, vals[i]);
+		}
+		double range=max-min;
+		return(range);
+	}
+	
+	
 	public static String consoleFont(String str){
 		return("<font face=\"Consolas\">"+str+"</font>");
 	}

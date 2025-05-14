@@ -659,7 +659,7 @@ public class frmMain {
 		JMenu mnValueOfInformation = new JMenu("Value of Information");
 		mnRun.add(mnValueOfInformation);
 
-		JMenuItem mntmEVPI = new JMenuItem("Perfect Information (EVPI/EVPPI)");
+		JMenuItem mntmEVPI = new JMenuItem("Perfect Information (EVPI)");
 		mntmEVPI.setIcon(new ScaledIcon("/images/evpi",16,16,16,true));
 		mntmEVPI.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -668,6 +668,17 @@ public class frmMain {
 			}
 		});
 		mnValueOfInformation.add(mntmEVPI);
+		
+		JMenuItem mntmEVPPI = new JMenuItem("Partial Perfect Information (EVPPI)");
+		mntmEVPPI.setIcon(new ScaledIcon("/images/evppi",16,16,16,true));
+		mntmEVPPI.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frmEVPPI window = new frmEVPPI(curModel);
+				window.frmEVPPI.setVisible(true);
+			}
+		});
+		mnValueOfInformation.add(mntmEVPPI);
+		
 
 		mnRun.add(mntmBatchRuns);
 
@@ -1843,11 +1854,13 @@ public class frmMain {
 			public void actionPerformed(ActionEvent arg0) {
 				Thread SimThread = new Thread(){ //Non-UI
 					public void run(){
+						//for(int z=0; z<100; z++) {
 						//long startTime=System.currentTimeMillis(); //time testing
 						curModel.clearAnnotations();
 						runModel();
 						//long endTime=System.currentTimeMillis();
-						//System.out.println(endTime-startTime);
+						//System.out.println((endTime-startTime)/1000.0);
+						//}
 					}
 				};
 				SimThread.start();

@@ -129,7 +129,7 @@ public class frmAboutAmua {
 			lblGnuGeneralPublic.setBounds(6, 126, 182, 16);
 			frmAboutAmua.getContentPane().add(lblGnuGeneralPublic);
 			
-			JLabel lblNewLabel = new JLabel("\u00A9 2017-2024 Zachary J. Ward");
+			JLabel lblNewLabel = new JLabel("\u00A9 2017-2025 Zachary J. Ward");
 			lblNewLabel.setBounds(162, 98, 182, 16);
 			frmAboutAmua.getContentPane().add(lblNewLabel);
 			

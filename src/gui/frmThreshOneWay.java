@@ -277,6 +277,9 @@ public class frmThreshOneWay {
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
+								frmThreshOneWay.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+								btnRun.setEnabled(false);
+								
 								boolean proceed=true;
 								
 								int strat1=comboStrat1.getSelectedIndex();
@@ -307,6 +310,8 @@ public class frmThreshOneWay {
 								if(tableParams.getSelectedRow()==-1) {
 									JOptionPane.showMessageDialog(frmThreshOneWay, "Please select a parameter!");
 									proceed=false;
+									frmThreshOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+									btnRun.setEnabled(true);
 								}
 								else { //validate entry
 									int row=tableParams.getSelectedRow();
@@ -410,6 +415,11 @@ public class frmThreshOneWay {
 										if(analysisType==1){CEAnotes=new String[numStrat][intervals+1];} //CEA
 										else{CEAnotes=null;}
 										
+										progress.setMillisToDecideToPopup(0);
+										progress.setMillisToPopup(0);
+										
+										long startTime=System.currentTimeMillis();
+										
 										boolean origShowTrace=false;
 										if(myModel.type==1) {
 											origShowTrace=myModel.markov.showTrace;
@@ -418,6 +428,8 @@ public class frmThreshOneWay {
 										
 										double diffs[]=new double[intervals+1];
 										for(int i=0; i<=intervals; i++){
+											updateProgress(progress, i, intervals+1, startTime);
+											
 											double curVal=min+(step*i);
 											curParam.value.setDouble(curVal);
 											curParam.locked=true;
@@ -458,7 +470,7 @@ public class frmThreshOneWay {
 												minDist=curDist;
 												minIndex=i;
 											}
-											progress.setProgress(i);
+											
 											if(progress.isCanceled()){ //End loop
 												cancelled=true;
 												i=intervals+1;
@@ -494,7 +506,7 @@ public class frmThreshOneWay {
 													int i=0;
 													progress.setMaximum(100);
 													while(minDist>tol && i<100){ //Binary search of neighbourhood until convergence
-														progress.setProgress(i);
+														updateProgress(progress, i, 100, startTime);
 														progress.setNote("Distance: "+MathUtils.round(minDist, dec));
 														
 														//Left
@@ -639,8 +651,13 @@ public class frmThreshOneWay {
 										}
 										
 										progress.close();
+										
 									}
 								}
+								
+								frmThreshOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+								btnRun.setEnabled(true);
+								
 							} catch (Exception e) {
 								frmThreshOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 								curParam.locked=false;
@@ -648,6 +665,8 @@ public class frmThreshOneWay {
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(frmThreshOneWay, e.getMessage());
 								myModel.errorLog.recordError(e);
+								frmThreshOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+								btnRun.setEnabled(true);
 							}
 						}
 					};
@@ -676,6 +695,21 @@ public class frmThreshOneWay {
 		} catch (Exception ex){
 			ex.printStackTrace();
 			myModel.errorLog.recordError(ex);
+		}
+	}
+	
+	private void updateProgress(ProgressMonitor progress, int curProg, int numRuns, long startTime) {
+		double prog=(curProg/(numRuns*1.0))*100;
+		long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
+		remTime=(long) (remTime*(100-prog));
+		remTime=remTime/1000;
+		String seconds = Integer.toString((int)(remTime % 60));
+		String minutes = Integer.toString((int)(remTime/60));
+		if(seconds.length()<2){seconds="0"+seconds;}
+		if(minutes.length()<2){minutes="0"+minutes;}
+		progress.setProgress(curProg);
+		if(curProg>0) {
+			progress.setNote("Time left: "+minutes+":"+seconds);
 		}
 	}
 }

@@ -520,11 +520,15 @@ public class MarkovTree{
 			else if(myModel.dimInfo.analysisType>0){ //CEA or BCA
 				int dimCost=myModel.dimInfo.costDim;
 				int dimBenefit=myModel.dimInfo.effectDim;
+				int objSign=1;
+				if(myModel.dimInfo.objective==1) { //minimize
+					objSign=-1;
+				}
 				double wtp=myModel.dimInfo.WTP;
-				double bestNMB=(wtp*childEVs[0][dimBenefit][disIndex])-childEVs[0][dimCost][disIndex];
+				double bestNMB=(wtp*childEVs[0][dimBenefit][disIndex]*objSign)-childEVs[0][dimCost][disIndex];
 				int bestChild=0;
 				for(int c=1; c<node.numChildren; c++){
-					double curNMB=(wtp*childEVs[c][dimBenefit][disIndex])-childEVs[c][dimCost][disIndex];
+					double curNMB=(wtp*childEVs[c][dimBenefit][disIndex]*objSign)-childEVs[c][dimCost][disIndex];
 					if(curNMB>bestNMB){
 						bestNMB=curNMB; bestChild=c;
 					}

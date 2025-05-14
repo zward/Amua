@@ -126,6 +126,7 @@ public class RMarkovCohort{
 				writeLine("newPrev <- curPrev  # copy inital prev");
 				if(numVars>0){
 					writeLine("# Initialize variables");
+					writeLine("t <- 0  # initialize cycle");
 					//independent vars
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);

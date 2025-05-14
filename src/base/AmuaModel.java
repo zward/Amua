@@ -866,6 +866,8 @@ public class AmuaModel{
 		long endTime=System.currentTimeMillis();
 		report.runTime=endTime-startTime;
 		
+		//System.out.println(report.runTime/1000.0); //for benchmarking
+		
 		return(report);
 	}
 	

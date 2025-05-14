@@ -37,7 +37,7 @@ public class CEAHelper{
 	 * 
 	 * @param myModel
 	 * @param group -1: Overall, 0-n: Subgroup index
-	 * @parma getResults: If true gets EVs from model, if false uses global variables in this class
+	 * @param getResults: If true gets EVs from model, if false uses global variables in this class
 	 * @return
 	 */
 	public Object[][] calculateICERs(AmuaModel myModel, int group, boolean getResults){
@@ -87,13 +87,16 @@ public class CEAHelper{
 		for(int s=0; s<numStrat; s++){viable.add(s);}
 
 		//CEA algorithm
+		int objSign=1;
+		if(myModel.dimInfo.objective==1) { //minimize
+			objSign=-1;
+		}
 		//Check for cost saving
-		double baseCost=costs[baseline], baseEffect=effects[baseline];
+		double baseCost=costs[baseline], baseEffect=effects[baseline]*objSign;
 		boolean anyCostSaving=false;
 		for(int s=0; s<numStrat; s++){
-			//if(s!=baseline){
 			if((int)table[s][0]!=baseline) {
-				double cost1=(double) table[s][2]; double effect1=(double) table[s][3];
+				double cost1=(double) table[s][2]; double effect1=(double) table[s][3]*objSign;
 				if(cost1<baseCost && effect1>=baseEffect){
 					table[s][4]=Double.NaN;
 					table[s][5]="Cost Saving";
@@ -102,7 +105,6 @@ public class CEAHelper{
 			}
 		}
 		if(anyCostSaving==true){
-			//viable.remove(baseline);
 			int baseIndex=stratIndices[baseline];
 			viable.remove(baseIndex);
 			table[baseIndex][4]=Double.NaN;
@@ -117,14 +119,10 @@ public class CEAHelper{
 			double curMaxICER=0;
 			int v=1;
 			while(v<numViable && repeat==false){
-				//int strat0=viable.get(v-1);
-				//int strat1=viable.get(v);
-				//int index0=stratIndices[strat0];
-				//int index1=stratIndices[strat1];
 				int index0=viable.get(v-1);
 				int index1=viable.get(v);
 				double incCost=(double)table[index1][2]-(double)table[index0][2];
-				double incEffect=(double)table[index1][3]-(double)table[index0][3];
+				double incEffect=((double)table[index1][3]*objSign)-((double)table[index0][3]*objSign);
 				if(incEffect<0){ //smaller effect
 					repeat=true;
 					table[index1][4]=Double.NaN;
@@ -170,12 +168,10 @@ public class CEAHelper{
 		}
 		//Set first ICER to NAN
 		table[0][4]=Double.NaN;
-		//table[baseline][5]="Baseline";
-
+		
 		for(int s=0; s<numStrat; s++){
 			int curStrat=(int) costTable[s][0];
 			if(curStrat==baseline){
-				//table[s][4]=Double.NaN;
 				String curNote=(String) table[s][5];
 				if(curNote==null || curNote.isEmpty()){table[s][5]="Baseline";}
 				else{table[s][5]+=" (Baseline)";}
@@ -221,6 +217,11 @@ public class CEAHelper{
 		
 		Object table[][]=new Object[numStrat][6];
 		
+		int objSign=1;
+		if(myModel.dimInfo.objective==1) { //minimize
+			objSign=-1;
+		}
+		
 		//Get EVs
 		for(int s=0; s<numStrat; s++){
 			table[s][0]=s; //Row
@@ -230,7 +231,7 @@ public class CEAHelper{
 			benefit=effects[s];
 			table[s][2]=benefit;
 			table[s][3]=cost;
-			table[s][4]=(benefit*myModel.dimInfo.WTP)-cost; //NMB
+			table[s][4]=(benefit*objSign*myModel.dimInfo.WTP)-cost; //NMB
 		}
 
 		//Sort by NMB
@@ -253,6 +254,11 @@ public class CEAHelper{
 		
 		Object table[][]=new Object[numStrat][7];
 		
+		int objSign=1;
+		if(myModel.dimInfo.objective==1) { //minimize
+			objSign=-1;
+		}
+		
 		//Get EVs
 		for(int s=0; s<numStrat; s++){
 			table[s][0]=s; //Row
@@ -262,7 +268,7 @@ public class CEAHelper{
 			benefit=effects[s];
 			table[s][2]=benefit;
 			table[s][3]=cost;
-			table[s][4]=(benefit*myModel.dimInfo.WTP)-cost; //NMB
+			table[s][4]=(benefit*objSign*myModel.dimInfo.WTP)-cost; //NMB
 			table[s][5]=extendedDim[s]; //Extended dimension
 		}
 

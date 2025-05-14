@@ -25,12 +25,14 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -61,8 +63,12 @@ import javax.swing.table.DefaultTableModel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYLineAnnotation;
+import org.jfree.chart.annotations.XYShapeAnnotation;
+import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.SeriesRenderingOrder;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -86,6 +92,8 @@ import math.Interpreter;
 import math.KernelSmooth;
 import math.MathUtils;
 import math.Numeric;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
 /**
  *
@@ -110,6 +118,7 @@ public class frmPSA {
 	JComboBox<String> comboParams;
 	
 	JComboBox<String> comboScatterType;
+	JCheckBox chckbxScatterMeans;
 	JComboBox<String> comboGroupScatter;
 	
 	String paramNames[];
@@ -122,15 +131,20 @@ public class frmPSA {
 	/**
 	 * [Group][Outcome][Strategy][x,y][Iteration]
 	 */
-	double dataResultsIter[][][][][], dataResultsVal[][][][][], dataResultsDens[][][], dataResultsCumDens[][][][][];
+	double dataResultsIter[][][][][], dataResultsVal[][][][][], dataResultsCumDens[][][][][];
 	double dataScatterAbs[][][][], dataScatterRel[][][][];
+	/**
+	 * [Group][Strategy][Outcome]
+	 */
+	double meanScatterAbs[][][][], meanScatterRel[][][][];
+	
 	String CEAnotes[][][];
 	
 	int paramDims[];
 	/**
 	 * [Parameter][Parameter Dimension][Iteration][Value]
 	 */
-	double dataParamsIter[][][][], dataParamsVal[][][][], dataParamsDens[][][][], dataParamsCumDens[][][][];
+	double dataParamsIter[][][][], dataParamsVal[][][][], dataParamsCumDens[][][][];
 	
 	
 	/**
@@ -318,7 +332,7 @@ public class frmPSA {
 									else { //matrix
 										Numeric val=myModel.parameters.get(p).value;
 										for(int z=0; z<curDim; z++) {
-											String curLbl=getParamDimLbl(val, z);
+											String curLbl=val.getDimLbl(z);
 											out.write(",\""+(paramNames[p]+curLbl)+"\"");
 										}
 									}
@@ -513,14 +527,6 @@ public class frmPSA {
 				}
 			});
 			
-			comboGroupScatter = new JComboBox<String>();
-			comboGroupScatter.setVisible(false);
-			comboGroupScatter.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					updateScatter();
-				}
-			});
-			
 			GridBagConstraints gbc_comboGroup = new GridBagConstraints();
 			gbc_comboGroup.insets = new Insets(0, 0, 0, 5);
 			gbc_comboGroup.fill = GridBagConstraints.HORIZONTAL;
@@ -615,9 +621,9 @@ public class frmPSA {
 			chartScatter.getXYPlot().addRangeMarker(marker);
 
 			GridBagLayout gbl_panelScatter = new GridBagLayout();
-			gbl_panelScatter.columnWidths = new int[]{155, 165, 680, 0};
+			gbl_panelScatter.columnWidths = new int[]{155, 111, 156, 680, 0};
 			gbl_panelScatter.rowHeights = new int[]{0, 420, 0};
-			gbl_panelScatter.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gbl_panelScatter.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 			gbl_panelScatter.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 			panelScatter.setLayout(gbl_panelScatter);
 			
@@ -635,16 +641,38 @@ public class frmPSA {
 			gbc_comboScatterType.gridy = 0;
 			panelScatter.add(comboScatterType, gbc_comboScatterType);
 			
+			comboGroupScatter = new JComboBox<String>();
+			comboGroupScatter.setVisible(false);
+			comboGroupScatter.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					updateScatter();
+				}
+			});
+			
+			chckbxScatterMeans = new JCheckBox("Display Means");
+			chckbxScatterMeans.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					updateScatter();
+				}
+			});
+			chckbxScatterMeans.setSelected(true);
+			GridBagConstraints gbc_chckbxScatterMeans = new GridBagConstraints();
+			gbc_chckbxScatterMeans.anchor = GridBagConstraints.WEST;
+			gbc_chckbxScatterMeans.insets = new Insets(0, 0, 5, 5);
+			gbc_chckbxScatterMeans.gridx = 1;
+			gbc_chckbxScatterMeans.gridy = 0;
+			panelScatter.add(chckbxScatterMeans, gbc_chckbxScatterMeans);
+			
 			GridBagConstraints gbc_comboGroupScatter = new GridBagConstraints();
 			gbc_comboGroupScatter.insets = new Insets(0, 0, 5, 5);
 			gbc_comboGroupScatter.fill = GridBagConstraints.HORIZONTAL;
-			gbc_comboGroupScatter.gridx = 1;
+			gbc_comboGroupScatter.gridx = 2;
 			gbc_comboGroupScatter.gridy = 0;
 			panelScatter.add(comboGroupScatter, gbc_comboGroupScatter);
 
 			ChartPanel panelChartScatter = new ChartPanel(chartScatter,false);
 			GridBagConstraints gbc_panelChartScatter = new GridBagConstraints();
-			gbc_panelChartScatter.gridwidth = 3;
+			gbc_panelChartScatter.gridwidth = 4;
 			gbc_panelChartScatter.fill = GridBagConstraints.BOTH;
 			gbc_panelChartScatter.gridx = 0;
 			gbc_panelChartScatter.gridy = 1;
@@ -762,6 +790,7 @@ public class frmPSA {
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
+								btnRun.setEnabled(false);
 								frmPSA.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 								tabbedPane.setEnabledAt(2, false);
 								tabbedPane.setEnabledAt(3, false);
@@ -794,6 +823,8 @@ public class frmPSA {
 																		
 									numIterations=Integer.parseInt(textIterations.getText().replaceAll(",", ""));
 									progress.setMaximum(numIterations);
+									progress.setMillisToDecideToPopup(0);
+									progress.setMillisToPopup(0);
 
 									numStrat=myModel.getStrategies();
 									int numOutcomes=comboDimensions.getItemCount();
@@ -821,6 +852,8 @@ public class frmPSA {
 									
 									dataScatterAbs=new double[1+numSubgroups][numStrat][2][numIterations];
 									dataScatterRel=new double[1+numSubgroups][numStrat][2][numIterations];
+									meanScatterAbs=new double[1+numSubgroups][numStrat][2][1];
+									meanScatterRel=new double[1+numSubgroups][numStrat][2][1];
 									
 									dataCEAC=new double[numStrat][][];
 									
@@ -858,7 +891,7 @@ public class frmPSA {
 									
 									for(int n=0; n<numIterations; n++){
 										//Update progress
-										double prog=((n+1)/(numIterations*1.0))*100;
+										double prog=((n)/(numIterations*1.0))*100;
 										long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
 										remTime=(long) (remTime*(100-prog));
 										remTime=remTime/1000;
@@ -866,8 +899,10 @@ public class frmPSA {
 										String minutes = Integer.toString((int)(remTime/60));
 										if(seconds.length()<2){seconds="0"+seconds;}
 										if(minutes.length()<2){minutes="0"+minutes;}
-										progress.setProgress(n+1);
-										progress.setNote("Time left: "+minutes+":"+seconds);
+										progress.setProgress(n);
+										if(n>0) {
+											progress.setNote("Time left: "+minutes+":"+seconds);
+										}
 										
 										//Sample parameters
 										myModel.curGenerator[0]=myModel.generatorParam;
@@ -987,7 +1022,15 @@ public class frmPSA {
 															double baseCost=(double) table[baseRow][2];
 															double baseBenefit=(double) table[baseRow][3];
 															dataScatterRel[g][origStrat][0][n]=benefit-baseBenefit;
+															if(myModel.dimInfo.objective==1) { //minimize
+																dataScatterRel[g][origStrat][0][n]*=-1; //flip sign
+															}
 															dataScatterRel[g][origStrat][1][n]=cost-baseCost;
+															//update means
+															meanScatterAbs[g][origStrat][0][0]+=dataScatterAbs[g][origStrat][0][n];
+															meanScatterAbs[g][origStrat][1][0]+=dataScatterAbs[g][origStrat][1][n];
+															meanScatterRel[g][origStrat][0][0]+=dataScatterRel[g][origStrat][0][n];
+															meanScatterRel[g][origStrat][1][0]+=dataScatterRel[g][origStrat][1][n];
 														}
 													}
 												}
@@ -1017,8 +1060,15 @@ public class frmPSA {
 														double baseBenefit=(double) table[baseRow][2]; 
 														double baseCost=(double) table[baseRow][3];
 														dataScatterRel[g][origStrat][0][n]=benefit-baseBenefit;
+														if(myModel.dimInfo.objective==1) { //minimize
+															dataScatterRel[g][origStrat][0][n]*=-1; //flip sign
+														}
 														dataScatterRel[g][origStrat][1][n]=cost-baseCost;
-														
+														//update means
+														meanScatterAbs[g][origStrat][0][0]+=dataScatterAbs[g][origStrat][0][n];
+														meanScatterAbs[g][origStrat][1][0]+=dataScatterAbs[g][origStrat][1][n];
+														meanScatterRel[g][origStrat][0][0]+=dataScatterRel[g][origStrat][0][n];
+														meanScatterRel[g][origStrat][1][0]+=dataScatterRel[g][origStrat][1][n];
 													}
 												}
 											}
@@ -1094,16 +1144,52 @@ public class frmPSA {
 
 										//Update scatter chart and CEAC
 										if(analysisType>0){
+											//calc mean
+											for(int g=0; g<(1+numSubgroups); g++) {
+												for(int s=0; s<numStrat; s++) {
+													for(int i=0; i<2; i++) { //outcome
+														meanScatterAbs[g][s][i][0]/=(numIterations*1.0);
+														meanScatterRel[g][s][i][0]/=(numIterations*1.0);
+													}
+												}
+											}
+											
 											tabbedPane.setEnabledAt(2, true);
 											XYPlot plotScatter = chartScatter.getXYPlot();
 											XYLineAndShapeRenderer rendererScatter = new XYLineAndShapeRenderer(false,true);
-											Shape dot=new Ellipse2D.Double(0,0,3,3);
+											rendererScatter.setDrawOutlines(true);
+											rendererScatter.setUseOutlinePaint(true);
+											rendererScatter.setBaseShapesFilled(true);
 											DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+											Paint colours[]=new Paint[numStrat];
+											//iterations
+											Shape dot=new Ellipse2D.Double(-2,-2,4,4);
 											for(int s=0; s<numStrat; s++){
-												rendererScatter.setSeriesPaint(s, supplier.getNextPaint());
+												colours[s]=supplier.getNextPaint();
+												rendererScatter.setSeriesPaint(s, colours[s]);
+												rendererScatter.setSeriesOutlinePaint(s, null);
+												rendererScatter.setSeriesOutlineStroke(s, new BasicStroke(0.0f));
 												rendererScatter.setSeriesShape(s, dot);
 											}
+											//means
+											//Shape mean=new Rectangle2D.Double(-5,-5,10,10);
+											Shape mean=new Ellipse2D.Double(-5,-5,10,10);
+											for(int s=0; s<numStrat; s++){
+												Color curCol=(Color) colours[s];
+												int r=(int) (curCol.getRed()*0.6);
+												int g=(int) (curCol.getGreen()*0.6);
+												int b=(int) (curCol.getBlue()*0.6);
+												Color newCol=new Color(r, g, b);
+												//rendererScatter.setSeriesPaint(numStrat+s, colours[s]);
+												rendererScatter.setSeriesPaint(numStrat+s, newCol);
+												rendererScatter.setSeriesShape(numStrat+s, mean);
+												rendererScatter.setSeriesOutlinePaint(numStrat+s, Color.LIGHT_GRAY);
+												rendererScatter.setSeriesOutlineStroke(numStrat+s, new BasicStroke(1.5f));
+												rendererScatter.setSeriesVisibleInLegend(numStrat+s, Boolean.FALSE);
+											}
+											
 											plotScatter.setRenderer(rendererScatter);
+											plotScatter.setSeriesRenderingOrder(SeriesRenderingOrder.FORWARD);
 											updateScatter();
 											
 											tabbedPane.setEnabledAt(3, true);
@@ -1209,10 +1295,12 @@ public class frmPSA {
 									}
 									progress.close();
 								}
+								btnRun.setEnabled(true);
 								frmPSA.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 								
 							} catch (Exception e) {
 								e.printStackTrace();
+								btnRun.setEnabled(true);
 								frmPSA.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 								JOptionPane.showMessageDialog(frmPSA, e.getMessage());
 								myModel.errorLog.recordError(e);
@@ -1323,7 +1411,7 @@ public class frmPSA {
 						Numeric val=myModel.parameters.get(v).value;
 						for(int z=0; z<curDim; z++) {
 							double kde[][]=KernelSmooth.density(dataParamsIter[v][z][1], 100);
-							String curLbl=getParamDimLbl(val, z);
+							String curLbl=val.getDimLbl(z);
 							chartDataParams.addSeries(paramNames[v]+curLbl, kde);
 						}
 					}
@@ -1344,7 +1432,7 @@ public class frmPSA {
 						Numeric val=myModel.parameters.get(v).value;
 						for(int z=0; z<curDim; z++) {
 							double hist[][]=KernelSmooth.histogram(dataParamsIter[v][z][1], 100, 10);
-							String curLbl=getParamDimLbl(val, z);
+							String curLbl=val.getDimLbl(z);
 							chartDataParams.addSeries(paramNames[v]+curLbl, hist);
 						}
 					}
@@ -1363,7 +1451,7 @@ public class frmPSA {
 					else { //matrix
 						Numeric val=myModel.parameters.get(v).value;
 						for(int z=0; z<curDim; z++) {
-							String curLbl=getParamDimLbl(val, z);
+							String curLbl=val.getDimLbl(z);
 							chartDataParams.addSeries(paramNames[v]+curLbl, dataParamsCumDens[v][z]);
 						}
 					}
@@ -1382,7 +1470,7 @@ public class frmPSA {
 					else { //matrix
 						Numeric val=myModel.parameters.get(v).value;
 						for(int z=0; z<curDim; z++) {
-							String curLbl=getParamDimLbl(val, z);
+							String curLbl=val.getDimLbl(z);
 							chartDataParams.addSeries(paramNames[v]+curLbl, dataParamsVal[v][z]);
 						}
 					}
@@ -1401,7 +1489,7 @@ public class frmPSA {
 					else { //matrix
 						Numeric val=myModel.parameters.get(v).value;
 						for(int z=0; z<curDim; z++) {
-							String curLbl=getParamDimLbl(val, z);
+							String curLbl=val.getDimLbl(z);
 							chartDataParams.addSeries(paramNames[v]+curLbl, dataParamsIter[v][z]);
 						}
 					}
@@ -1412,27 +1500,44 @@ public class frmPSA {
 
 	private void updateScatter(){
 		int type=comboScatterType.getSelectedIndex();
+		boolean showMeans=chckbxScatterMeans.isSelected();
 		int numStrat=myModel.strategyNames.length;
 		int group=0; //overall
 		if(comboGroupScatter.isVisible()){group=comboGroupScatter.getSelectedIndex();}
 				
-		
-		DimInfo info=myModel.dimInfo;
-		if(chartDataScatter.getSeriesCount()>0){
-			for(int s=0; s<numStrat; s++){chartDataScatter.removeSeries(myModel.strategyNames[s]);}
-		}		
-		if(type==0){ //absolute
-			chartScatter.getXYPlot().getRangeAxis().setLabel(info.dimNames[info.costDim]);
-			chartScatter.getXYPlot().getDomainAxis().setLabel(info.dimNames[info.effectDim]);
-			for(int s=0; s<numStrat; s++){
-				chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterAbs[group][s]);
+		if(dataScatterAbs!=null) { //dataset has been created
+
+			DimInfo info=myModel.dimInfo;
+			while(chartDataScatter.getSeriesCount()>0) {
+				chartDataScatter.removeSeries(chartDataScatter.getSeriesKey(0));
 			}
-		}
-		else if(type==1){ //relative to baseline
-			chartScatter.getXYPlot().getRangeAxis().setLabel("∆ "+info.dimNames[info.costDim]);
-			chartScatter.getXYPlot().getDomainAxis().setLabel("∆ "+info.dimNames[info.effectDim]);
-			for(int s=0; s<numStrat; s++){
-				chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterRel[group][s]);
+			if(type==0){ //absolute
+				chartScatter.getXYPlot().getRangeAxis().setLabel(info.dimNames[info.costDim]);
+				chartScatter.getXYPlot().getDomainAxis().setLabel(info.dimNames[info.effectDim]);
+				//iterations
+				for(int s=0; s<numStrat; s++){
+					chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterAbs[group][s]);
+				}
+				if(showMeans) {
+					//means
+					for(int s=0; s<numStrat; s++){
+						chartDataScatter.addSeries("Mean-"+myModel.strategyNames[s],meanScatterAbs[group][s]);
+					}
+				}
+			}
+			else if(type==1){ //relative to baseline
+				chartScatter.getXYPlot().getRangeAxis().setLabel("∆ "+info.dimNames[info.costDim]);
+				chartScatter.getXYPlot().getDomainAxis().setLabel("∆ "+info.dimNames[info.effectDim]);
+				//iterations
+				for(int s=0; s<numStrat; s++){
+					chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterRel[group][s]);
+				}
+				if(showMeans) {
+					//means
+					for(int s=0; s<numStrat; s++){
+						chartDataScatter.addSeries("Mean-"+myModel.strategyNames[s],meanScatterRel[group][s]);
+					}
+				}
 			}
 		}
 	}
@@ -1575,24 +1680,4 @@ public class frmPSA {
 		curTable.print();
 	}
 	
-	//get dimension index label
-	private String getParamDimLbl(Numeric val, int z) {
-		String curLbl="";
-		int curZ=-1;
-		for(int i=0; i<val.nrow; i++) {
-			for(int j=0; j<val.ncol; j++) {
-				curZ++;
-				if(z==curZ) {
-					if(val.nrow>1 && val.ncol>1) { //matrix
-						curLbl="["+i+","+j+"]";
-					}
-					else { //vector
-						curLbl="["+Math.max(i, j)+"]";
-					}
-					return(curLbl);
-				}
-			}
-		}
-		return(curLbl);
-	}
 }

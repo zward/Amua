@@ -189,11 +189,15 @@ public class TreeCohort{
 			else if(myModel.dimInfo.analysisType>0){ //CEA or BCA
 				int dimCost=myModel.dimInfo.costDim;
 				int dimBenefit=myModel.dimInfo.effectDim;
+				int objSign=1;
+				if(myModel.dimInfo.objective==1) { //minimize
+					objSign=-1;
+				}
 				double wtp=myModel.dimInfo.WTP;
-				double bestNMB=(wtp*childEVs[0][dimBenefit])-childEVs[0][dimCost];
+				double bestNMB=(wtp*childEVs[0][dimBenefit]*objSign)-childEVs[0][dimCost];
 				int bestChild=0;
 				for(int c=1; c<node.numChildren; c++){
-					double curNMB=(wtp*childEVs[c][dimBenefit])-childEVs[c][dimCost];
+					double curNMB=(wtp*childEVs[c][dimBenefit]*objSign)-childEVs[c][dimCost];
 					if(curNMB>bestNMB){
 						bestNMB=curNMB; bestChild=c;
 					}

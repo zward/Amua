@@ -62,6 +62,8 @@ import javax.swing.border.LineBorder;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
+
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.border.EtchedBorder;
@@ -336,10 +338,13 @@ public class frmSensOneWay {
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					final ProgressMonitor progress=new ProgressMonitor(frmSensOneWay, "One-way sensitivity", "Running", 0, 100);
-
+					
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
+								frmSensOneWay.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+								btnRun.setEnabled(false);
+								
 								//Check model first
 								boolean proceed=true;
 								ArrayList<String> errorsBase=myModel.parseModel();
@@ -363,6 +368,10 @@ public class frmSensOneWay {
 										proceed=false;
 										JOptionPane.showMessageDialog(frmSensOneWay, "Error: Max value missing!");
 									}
+								}
+								if(proceed==false) {
+									btnRun.setEnabled(true);
+									frmSensOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 								}
 								
 								if(proceed==true) {
@@ -430,7 +439,24 @@ public class frmSensOneWay {
 											myModel.markov.showTrace=false;
 										}
 										
+										progress.setMillisToDecideToPopup(0);
+										progress.setMillisToPopup(0);
+										
 										for(int i=0; i<=intervals; i++){
+											//Update progress
+											double prog=((i)/((intervals+1)*1.0))*100;
+											long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
+											remTime=(long) (remTime*(100-prog));
+											remTime=remTime/1000;
+											String seconds = Integer.toString((int)(remTime % 60));
+											String minutes = Integer.toString((int)(remTime/60));
+											if(seconds.length()<2){seconds="0"+seconds;}
+											if(minutes.length()<2){minutes="0"+minutes;}
+											progress.setProgress(i);
+											if(i>0) {
+												progress.setNote("Time left: "+minutes+":"+seconds);
+											}
+											
 											double curVal=min+(step*i);
 											curParam.value.setDouble(curVal);
 											curParam.locked=true;
@@ -493,18 +519,6 @@ public class frmSensOneWay {
 												}
 											}
 											
-											//Update progress
-											double prog=(i/(intervals*1.0))*100;
-											long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
-											remTime=(long) (remTime*(100-prog));
-											remTime=remTime/1000;
-											String seconds = Integer.toString((int)(remTime % 60));
-											String minutes = Integer.toString((int)(remTime/60));
-											if(seconds.length()<2){seconds="0"+seconds;}
-											if(minutes.length()<2){minutes="0"+minutes;}
-											progress.setProgress(i);
-											progress.setNote("Time left: "+minutes+":"+seconds);
-											
 											
 											if(progress.isCanceled()){ //End loop
 												cancelled=true;
@@ -528,6 +542,10 @@ public class frmSensOneWay {
 											comboGroup.setEnabled(true);
 											btnExport.setEnabled(true);
 										}
+										
+										btnRun.setEnabled(true);
+										frmSensOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+										
 										progress.close();
 									}
 								}
@@ -538,6 +556,9 @@ public class frmSensOneWay {
 								
 								curParam.locked=false;
 								myModel.validateModelObjects();
+								
+								btnRun.setEnabled(true);
+								frmSensOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 							}
 						}
 					};

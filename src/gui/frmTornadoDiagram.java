@@ -72,6 +72,8 @@ import javax.swing.border.LineBorder;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
+
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.border.EtchedBorder;
@@ -474,7 +476,14 @@ public class frmTornadoDiagram {
 										}
 									}
 									
+									progress.setMillisToDecideToPopup(0);
+									progress.setMillisToPopup(0);
+									
+									long startTime=System.currentTimeMillis();
+									
 									if(proceed==true) {
+										frmTornadoDiagram.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+										btnRun.setEnabled(false);
 
 										boolean origShowTrace=false;
 										if(myModel.type==1) {
@@ -482,12 +491,12 @@ public class frmTornadoDiagram {
 											myModel.markov.showTrace=false;
 										}
 										progress.setMaximum(numRuns+1);
-										int curProg=1;
+										int curProg=0;
 										progress.setProgress(curProg);
 
 										//Get baseline
 										myModel.runModel(null, false);
-										curProg++; progress.setProgress(curProg);
+										curProg++; updateProgress(progress, curProg, numRuns+1, startTime);
 
 										baseOutcomes=new double[1+numSubgroups][numStrategies][numOutcomes];
 
@@ -553,7 +562,7 @@ public class frmTornadoDiagram {
 											else{
 												myModel.parseModel();
 												myModel.runModel(null, false);
-												curProg++; progress.setProgress(curProg);
+												curProg++; updateProgress(progress, curProg, numRuns+1, startTime);
 
 												//get results
 												for(int s=0; s<numStrategies; s++) {
@@ -599,7 +608,7 @@ public class frmTornadoDiagram {
 											else{
 												myModel.parseModel();
 												myModel.runModel(null, false);
-												curProg++; progress.setProgress(curProg);
+												curProg++; updateProgress(progress, curProg, numRuns+1, startTime);
 
 												//get results
 												for(int s=0; s<numStrategies; s++) {
@@ -645,6 +654,9 @@ public class frmTornadoDiagram {
 										if(myModel.type==1) {
 											myModel.markov.showTrace=origShowTrace;
 										}
+										
+										frmTornadoDiagram.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+										btnRun.setEnabled(true);
 
 									} //end proceed check
 								}
@@ -655,6 +667,8 @@ public class frmTornadoDiagram {
 								JOptionPane.showMessageDialog(frmTornadoDiagram, e1.getMessage());
 								e1.printStackTrace();
 								myModel.errorLog.recordError(e1);
+								frmTornadoDiagram.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+								btnRun.setEnabled(true);
 							}
 
 						}
@@ -679,6 +693,22 @@ public class frmTornadoDiagram {
 		
 	}
 
+	private void updateProgress(ProgressMonitor progress, int curProg, int numRuns, long startTime) {
+		double prog=(curProg/(numRuns*1.0))*100;
+		long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
+		remTime=(long) (remTime*(100-prog));
+		remTime=remTime/1000;
+		String seconds = Integer.toString((int)(remTime % 60));
+		String minutes = Integer.toString((int)(remTime/60));
+		if(seconds.length()<2){seconds="0"+seconds;}
+		if(minutes.length()<2){minutes="0"+minutes;}
+		progress.setProgress(curProg);
+		if(curProg>0) {
+			progress.setNote("Time left: "+minutes+":"+seconds);
+		}
+	}
+	
+	
 	private void enablePlot(boolean enabled) {
 		lblStrategies.setEnabled(enabled);
 		listStrategies.setEnabled(enabled);

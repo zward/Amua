@@ -436,6 +436,26 @@ public class Numeric{
 		return(equal);
 	}
 	
+	public String getDimLbl(int z) {
+		String curLbl="";
+		int curZ=-1;
+		for(int i=0; i<nrow; i++) {
+			for(int j=0; j<ncol; j++) {
+				curZ++;
+				if(z==curZ) {
+					if(nrow>1 && ncol>1) { //matrix
+						curLbl="["+i+","+j+"]";
+					}
+					else { //vector
+						curLbl="["+Math.max(i, j)+"]";
+					}
+					return(curLbl);
+				}
+			}
+		}
+		return(curLbl);
+	}
+	
 	private static double roundDouble(double num, int numDigits){
 		double digits=Math.pow(10, numDigits);
 		return((Math.round(num*digits)/digits));

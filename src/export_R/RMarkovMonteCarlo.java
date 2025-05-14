@@ -127,6 +127,7 @@ public class RMarkovMonteCarlo{
 				writeLine("person.state <- sample(1:numStates, numPeople, replace=TRUE, prob=initPrev)  # sample initial states");
 				if(numVars>0){
 					writeLine("# Initialize variables");
+					writeLine("t <- 0  # initialize cycle");
 					for(int v=0; v<numVars; v++){
 						Variable curVar=myModel.variables.get(v);
 						writeLine("person."+curVar.name+" <- c()"); //initialize vector

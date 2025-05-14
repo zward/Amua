@@ -65,4 +65,26 @@ public class DimInfo{
 		return(copy);
 	}
 	
+	public String[] getOutcomes() {
+		String outcomes[] = null;
+		if(analysisType==0){ //EV
+			outcomes=new String[dimNames.length];
+			for(int d=0; d<dimNames.length; d++){
+				outcomes[d]=dimNames[d];
+			}
+		}
+		else{ //CEA or BCA
+			outcomes=new String[dimNames.length+1];
+			for(int d=0; d<dimNames.length; d++){
+				outcomes[d]=dimNames[d];
+			}
+			if(analysisType==1){ //CEA
+				outcomes[dimNames.length]="ICER ("+dimNames[costDim]+"/"+dimNames[effectDim]+")";
+			}
+			else if(analysisType==2){ //BCA
+				outcomes[dimNames.length]="NMB ("+dimNames[effectDim]+"-"+dimNames[costDim]+")";
+			}
+		}
+		return(outcomes);
+	}
 }

@@ -98,10 +98,10 @@ public class CubicSpline{
 			double h=knots[i+1]-knots[i];
 			constraints[row]=0;
 			matrix[row][col]=0; //a1
-			matrix[row][col+1]=1; //a2
-			matrix[row][col+2]=3*h; //a3
+			matrix[row][col+1]=2; //a2 (was 1)
+			matrix[row][col+2]=6*h; //a3 (was 3*h)
 			matrix[row][col+3]=0; //b1
-			matrix[row][col+4]=-1; //b2
+			matrix[row][col+4]=-2; //b2 (was -1)
 			row++;
 			col+=3;
 		}
@@ -110,13 +110,13 @@ public class CubicSpline{
 		if(boundaryCondition==0){ //natural - f''=0 at boundaries
 			//left
 			constraints[row]=0;
-			matrix[row][1]=1; //a2
+			matrix[row][1]=2; //a2
 			row++;
 			//right
 			double h=knots[numSplines]-knots[numSplines-1];
 			constraints[row]=0;
-			matrix[row][numCoeffs-2]=1; //a2
-			matrix[row][numCoeffs-1]=3*h; //a3
+			matrix[row][numCoeffs-2]=2; //a2 (was 1)
+			matrix[row][numCoeffs-1]=6*h; //a3 (was 3*h)
 		}
 		else if(boundaryCondition==1){ //clamped - fixed f' at boundaries
 			//left

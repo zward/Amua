@@ -44,6 +44,8 @@ import main.ErrorLog;
 import main.ScaledIcon;
 
 import javax.swing.border.LineBorder;
+
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Ellipse2D;
@@ -59,6 +61,9 @@ import javax.swing.JLabel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.JTextField;
+import javax.swing.JCheckBox;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
 /**
  *
@@ -95,6 +100,7 @@ public class frmCEPlane {
 	private JTextField textMarkerSize;
 	private JButton buttonMarkerDec;
 	private JButton buttonMarkerInc;
+	private JCheckBox chckbxWTP;
 
 	/**
 	 *  Default Constructor
@@ -115,7 +121,7 @@ public class frmCEPlane {
 			frmCEPlane = new JFrame();
 			frmCEPlane.setTitle("Amua - "+myModel.name+" - C/E Plane");
 			frmCEPlane.setIconImage(Toolkit.getDefaultToolkit().getImage(frmCEPlane.class.getResource("/images/logo_128.png")));
-			frmCEPlane.setBounds(100, 100, 500, 500);
+			frmCEPlane.setBounds(100, 100, 535, 550);
 			frmCEPlane.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.columnWidths = new int[]{561, 0};
@@ -200,6 +206,15 @@ public class frmCEPlane {
 				comboGroup.setVisible(true);
 			}
 			toolBar.add(comboGroup);
+			
+			chckbxWTP = new JCheckBox("Plot WTP");
+			chckbxWTP.setSelected(true);
+			chckbxWTP.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					updateChart();
+				}
+			});
+			toolBar.add(chckbxWTP);
 			
 			separator = new JSeparator();
 			separator.setOrientation(SwingConstants.VERTICAL);
@@ -352,13 +367,17 @@ public class frmCEPlane {
 		int indexViable=0, indexNonviable=0;
 		double minCost=Double.POSITIVE_INFINITY, maxCost=Double.NEGATIVE_INFINITY;
 		double minEffect=Double.POSITIVE_INFINITY, maxEffect=Double.NEGATIVE_INFINITY;
+		int effectObjective=myModel.dimInfo.objective;
 		
 		for(int i=0; i<numStrat; i++) {
 			double cost=(double)table[i][2];
 			double effect=(double)table[i][3];
-			if(relative==0) {
+			if(relative==0) { //plot relative
 				cost-=baseCost;
 				effect-=baseEffect;
+				if(effectObjective==1) { //minimize
+					effect=-effect; //flip sign
+				}
 			}
 			minCost=Math.min(minCost, cost); maxCost=Math.max(maxCost, cost);
 			minEffect=Math.min(minEffect, effect); maxEffect=Math.max(maxEffect, effect);
@@ -395,7 +414,7 @@ public class frmCEPlane {
 		plot.getRangeAxis().setRange(minCost,maxCost);
 		plot.getDomainAxis().setRange(minEffect,maxEffect);
 		
-		if(relative==0) {
+		if(relative==0) { //plot relative
 			plot.getRangeAxis().setLabel("∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]);
 			plot.getDomainAxis().setLabel("∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]);
 		}
@@ -405,6 +424,30 @@ public class frmCEPlane {
 		}
 		
 		panelChart.zoomOutBoth(0, 0);
+		
+		//add WTP threshold
+		if(chckbxWTP.isSelected()) {
+			double xMin=plot.getDomainAxis().getLowerBound();
+			double xMax=plot.getDomainAxis().getUpperBound();
+			double slope=myModel.dimInfo.WTP;
+			double yMin=slope*xMin;
+			double yMax=slope*xMax;
+			
+			if(relative==1) { //absolute, plot WTP through baseline
+				if(effectObjective==1) { //minimize effect
+					slope=-slope; //WTP to avert
+				}
+				double b=baseCost-slope*baseEffect;
+				yMin=slope*xMin+b;
+				yMax=slope*xMax+b;
+			}
+
+			float[] dashPattern= {5.0f, 5.0f};
+			BasicStroke dashedStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f);
+			XYLineAnnotation wtp=new XYLineAnnotation(xMin, yMin, xMax, yMax, dashedStroke, new Color(139, 0, 0));
+			plot.addAnnotation(wtp);
+		}
+		
 	}
 	
 }

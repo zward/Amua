@@ -72,6 +72,8 @@ import javax.swing.border.LineBorder;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
+
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.border.EtchedBorder;
@@ -381,17 +383,28 @@ public class frmSensOneWayStacked {
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
+								
 								//Check model first
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
 									JOptionPane.showMessageDialog(frmSensOneWayStacked, "Errors in base case model!");
+									
 								}
 								else{
+									frmSensOneWayStacked.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+									btnRun.setEnabled(false);
+									
 									boolean origShowTrace=false;
 									if(myModel.type==1) {
 										origShowTrace=myModel.markov.showTrace;
 										myModel.markov.showTrace=false;
 									}
+									
+									long startTime=System.currentTimeMillis();
+									progress.setMaximum(100);
+									progress.setMillisToDecideToPopup(0);
+									progress.setMillisToPopup(0);
+									progress.setProgress(0);
 									
 									//Get baseline results
 									myModel.runModel(null, false);
@@ -475,9 +488,12 @@ public class frmSensOneWayStacked {
 									}
 
 									if(proceed==true) {
-
+										
 										intervals=Integer.parseInt(textIntervals.getText());
 										numParams=paramIndices.size();
+										
+										double maxProg=numParams*(intervals+1)+1;
+										progress.setMaximum((int)maxProg);
 										
 										results=new double[numDim+1][numStrat][numParams][intervals+1];
 										resultsGroup=new double[numSubgroups][numDim+1][numStrat][numParams][intervals+1];
@@ -491,9 +507,6 @@ public class frmSensOneWayStacked {
 										}
 										
 										boolean cancelled=false;
-										long startTime=System.currentTimeMillis();
-										double maxProg=numParams*(intervals+1);
-										progress.setMaximum((int)maxProg);
 										
 										paramNames=new String[numParams];
 										paramVals=new double[numParams][2];
@@ -542,6 +555,20 @@ public class frmSensOneWayStacked {
 												curParam.sensMax=strMax;
 
 												for(int i=0; i<=intervals; i++){
+													//Update progress
+													int curProg=(p*intervals+i)+1;
+													double prog=((curProg)/maxProg)*100;
+													long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
+													remTime=(long) (remTime*(100-prog));
+													remTime=remTime/1000;
+													String seconds = Integer.toString((int)(remTime % 60));
+													String minutes = Integer.toString((int)(remTime/60));
+													if(seconds.length()<2){seconds="0"+seconds;}
+													if(minutes.length()<2){minutes="0"+minutes;}
+													progress.setProgress(curProg);
+													progress.setNote("Time left: "+minutes+":"+seconds);
+													
+													
 													double curVal=min+(step*i);
 													curParam.value.setDouble(curVal);
 													curParam.locked=true;
@@ -596,20 +623,6 @@ public class frmSensOneWayStacked {
 														}
 													}
 													
-													
-													
-													//Update progress
-													double prog=((p*intervals+i)/maxProg)*100;
-													long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
-													remTime=(long) (remTime*(100-prog));
-													remTime=remTime/1000;
-													String seconds = Integer.toString((int)(remTime % 60));
-													String minutes = Integer.toString((int)(remTime/60));
-													if(seconds.length()<2){seconds="0"+seconds;}
-													if(minutes.length()<2){minutes="0"+minutes;}
-													progress.setProgress(p*intervals+i);
-													progress.setNote("Time left: "+minutes+":"+seconds);
-
 													if(progress.isCanceled()){ //End loop
 														cancelled=true;
 														i=intervals+1;
@@ -642,8 +655,11 @@ public class frmSensOneWayStacked {
 											btnExport.setEnabled(true);
 										}
 										progress.close();
-
+										
 									} //end if proceed==true
+									
+									frmSensOneWayStacked.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+									btnRun.setEnabled(true);
 								}
 							} catch (Exception e) {
 								curParam.locked=false;
@@ -651,6 +667,8 @@ public class frmSensOneWayStacked {
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(frmSensOneWayStacked, e.getMessage());
 								myModel.errorLog.recordError(e);
+								frmSensOneWayStacked.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+								btnRun.setEnabled(true);
 							}
 						}
 					};

@@ -21,6 +21,7 @@ package gui;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -409,6 +410,9 @@ public class frmSensTwoWay {
 								}
 
 								if(proceed==true) {
+									frmSensTwoWay.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+									btnRun.setEnabled(false);
+									
 									boolean error=false;
 									//Get parameters
 									int intervals=Integer.parseInt(textIntervals.getText());
@@ -513,12 +517,29 @@ public class frmSensTwoWay {
 										progress.setMaximum(numRuns);
 
 										long startTime=System.currentTimeMillis();
-
+										progress.setMillisToDecideToPopup(0);
+										progress.setMillisToPopup(0);
+										
 										int count=0;
 										for(int i=0; i<=intervals; i++){
 											double curVal1=min1+(step1*i);
 											curParam1.value.setDouble(curVal1);
+											
 											for(int j=0; j<=intervals; j++){
+												//Update progress
+												double prog=(count/(numRuns*1.0))*100;
+												long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
+												remTime=(long) (remTime*(100-prog));
+												remTime=remTime/1000;
+												String seconds = Integer.toString((int)(remTime % 60));
+												String minutes = Integer.toString((int)(remTime/60));
+												if(seconds.length()<2){seconds="0"+seconds;}
+												if(minutes.length()<2){minutes="0"+minutes;}
+												progress.setProgress(count);
+												if(count>0) {
+													progress.setNote("Time left: "+minutes+":"+seconds);
+												}
+												
 												double curVal2=min2+(step2*j);
 												param1Vals[i][j]=curVal1;
 												param2Vals[i][j]=curVal2;
@@ -619,18 +640,7 @@ public class frmSensTwoWay {
 												}
 
 												count++;
-												//Update progress
-												double prog=(count/(numRuns*1.0))*100;
-												long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
-												remTime=(long) (remTime*(100-prog));
-												remTime=remTime/1000;
-												String seconds = Integer.toString((int)(remTime % 60));
-												String minutes = Integer.toString((int)(remTime/60));
-												if(seconds.length()<2){seconds="0"+seconds;}
-												if(minutes.length()<2){minutes="0"+minutes;}
-												progress.setProgress(count);
-												progress.setNote("Time left: "+minutes+":"+seconds);
-
+												
 												if(progress.isCanceled()){ //End loop
 													cancelled=true;
 													j=intervals+1;
@@ -714,6 +724,9 @@ public class frmSensTwoWay {
 										}
 										progress.close();
 									}
+									
+									frmSensTwoWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+									btnRun.setEnabled(true);
 								}
 							} catch (Exception e) {
 								curParam1.locked=false; curParam2.locked=false;
@@ -721,6 +734,8 @@ public class frmSensTwoWay {
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(frmSensTwoWay, e.getMessage());
 								myModel.errorLog.recordError(e);
+								frmSensTwoWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+								btnRun.setEnabled(true);
 							}
 						}
 					};
