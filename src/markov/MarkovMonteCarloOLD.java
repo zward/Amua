@@ -348,7 +348,8 @@ public class MarkovMonteCarloOLD{
 					else{disCycle=(t-markovTree.discountStartCycle)+1;}
 					
 					for(int d=0; d<numDim; d++){
-						double discountRate=markovTree.discountRates[d]/100.0;
+						Numeric curVal=Interpreter.evaluate(markovTree.discountRates[d], myModel, false);
+						double discountRate=curVal.getValue()/100.0;
 						discountFactor[d]=1.0/Math.pow(1+discountRate, disCycle);
 					}
 				}

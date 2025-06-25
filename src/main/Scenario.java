@@ -43,7 +43,7 @@ public class Scenario{
 	//markov
 	@XmlElement public boolean halfCycleCorrection;
 	@XmlElement public boolean discountRewards;
-	@XmlElement public double discountRates[];
+	@XmlElement public String discountRates[];
 	@XmlElement public int discountStartCycle=0;
 	
 	//object updates
@@ -74,7 +74,7 @@ public class Scenario{
 			halfCycleCorrection=myModel.markov.halfCycleCorrection;
 			discountRewards=myModel.markov.discountRewards;
 			int numDim=myModel.markov.discountRates.length;
-			discountRates=new double[numDim];
+			discountRates=new String[numDim];
 			for(int d=0; d<numDim; d++) {
 				discountRates[d]=myModel.markov.discountRates[d];
 			}
@@ -111,7 +111,7 @@ public class Scenario{
 		copyScenario.discountStartCycle=discountStartCycle;
 		if(discountRates!=null) {
 			int numDim=discountRates.length;
-			copyScenario.discountRates=new double[numDim];
+			copyScenario.discountRates=new String[numDim];
 			for(int d=0; d<numDim; d++) {
 				copyScenario.discountRates[d]=discountRates[d];
 			}

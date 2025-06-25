@@ -156,11 +156,7 @@ public class frmDefineClusterRun {
 			});
 			btnCancel.setBounds(370, 289, 90, 28);
 			frmDefineClusterRun.getContentPane().add(btnCancel);
-			
-			if(myModel.parameterSets!=null) {
-				chckbxSampleParameterSets.setEnabled(true);
-			}
-								
+											
 			JLabel lblRun = new JLabel("Run Type:");
 			lblRun.setBounds(6, 6, 74, 16);
 			frmDefineClusterRun.getContentPane().add(lblRun);
@@ -232,7 +228,9 @@ public class frmDefineClusterRun {
 				}
 			});
 			
-		
+			if(myModel.parameterSets!=null) {
+				chckbxSampleParameterSets.setEnabled(true);
+			}
 			
 	
 		} catch (Exception ex){

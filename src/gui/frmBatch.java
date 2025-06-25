@@ -23,6 +23,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -40,8 +41,10 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.ProgressMonitor;
@@ -75,11 +78,14 @@ import math.MathUtils;
  */
 public class frmBatch {
 
+	frmBatch frmThis;
 	public JFrame frmBatch;
 	AmuaModel myModel;
 
 	DefaultXYDataset chartDataResults, chartDataScatter;
 	JFreeChart chartResults, chartScatter;
+	Paint seriesPaints[];
+	
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboResults;
 	JComboBox<String> comboGroup;
@@ -101,6 +107,7 @@ public class frmBatch {
 	RunReport reports[];
 	
 	public frmBatch(AmuaModel myModel){
+		this.frmThis=this;
 		this.myModel=myModel;
 		numStrat=myModel.getStrategies();
 		initialize();
@@ -168,6 +175,13 @@ public class frmBatch {
 			marker.setPaint(Color.black);
 			chartResults.getXYPlot().addDomainMarker(marker);
 			chartResults.getXYPlot().addRangeMarker(marker);
+			
+			numStrat=myModel.getStrategies();
+			seriesPaints=new Paint[numStrat];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			for(int s=0; s<numStrat; s++) {
+				seriesPaints[s]=supplier.getNextPaint();
+			}
 
 			ChartPanel panelChartResults = new ChartPanel(chartResults,false);
 			GridBagConstraints gbc_panelChartResults = new GridBagConstraints();
@@ -177,6 +191,17 @@ public class frmBatch {
 			gbc_panelChartResults.gridx = 0;
 			gbc_panelChartResults.gridy = 0;
 			panelResults.add(panelChartResults, gbc_panelChartResults);
+			
+			//pop-up menu
+			JPopupMenu popup = panelChartResults.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints, frmThis);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
 
 			JPanel panel = new JPanel();
 			panel.setLayout(null);
@@ -567,9 +592,9 @@ public class frmBatch {
 											XYPlot plotScatter = chartScatter.getXYPlot();
 											XYLineAndShapeRenderer rendererScatter = new XYLineAndShapeRenderer(false,true);
 											Shape dot=new Ellipse2D.Double(0,0,3,3);
-											DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+											//DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
 											for(int s=0; s<numStrat; s++){
-												rendererScatter.setSeriesPaint(s, supplier.getNextPaint());
+												rendererScatter.setSeriesPaint(s, seriesPaints[s]);
 												rendererScatter.setSeriesShape(s, dot);
 											}
 											plotScatter.setRenderer(rendererScatter);
@@ -726,6 +751,17 @@ public class frmBatch {
 			gbc_panelChartScatter.gridy = 1;
 			panelScatter.add(panelChartScatter, gbc_panelChartScatter);
 			panelChartScatter.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+			
+			//pop-up menu
+			popup = panelChartScatter.getPopupMenu();
+			JMenuItem mntmChangeColorScatter = new JMenuItem("Change Series Colors...");
+			mntmChangeColorScatter.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartScatter, chartDataScatter, seriesPaints, frmThis);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColorScatter, 0);
 
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -756,9 +792,9 @@ public class frmBatch {
 		}
 		XYPlot plotResults = chartResults.getXYPlot();
 		XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,false);
-		DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
+		//DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
 		for(int s=0; s<numStrat; s++){
-			rendererResults.setSeriesPaint(s, supplierResults.getNextPaint());
+			rendererResults.setSeriesPaint(s, seriesPaints[s]);
 		}
 		plotResults.setRenderer(rendererResults);
 
@@ -832,5 +868,24 @@ public class frmBatch {
 				chartDataScatter.addSeries(myModel.strategyNames[s],dataScatterRel[group][s]);
 			}
 		}
+	}
+	
+	public void updateStratSeriesColor(int s) {
+		//results
+		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) chartResults.getXYPlot().getRenderer();
+		renderer.setSeriesPaint(s, seriesPaints[s]);
+		
+		//scatter
+		renderer = (XYLineAndShapeRenderer) chartScatter.getXYPlot().getRenderer();
+		renderer.setSeriesPaint(s, seriesPaints[s]);
+		//mean
+		/*Color curCol=(Color) seriesPaints[s];
+		int r=(int) (curCol.getRed()*0.6);
+		int g=(int) (curCol.getGreen()*0.6);
+		int b=(int) (curCol.getBlue()*0.6);
+		Color newCol=new Color(r, g, b);
+		renderer.setSeriesPaint(numStrat+s, newCol);
+		*/
+		
 	}
 }

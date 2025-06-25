@@ -47,6 +47,7 @@ import base.ModelNode;
 import main.VariableUpdate;
 import math.MathUtils;
 import math.Token;
+import tree.TreeNode;
 
 @XmlRootElement(name="node")
 public class MarkovNode extends ModelNode{
@@ -143,8 +144,11 @@ public class MarkovNode extends ModelNode{
 		if(numSiblings>0) {//place below other children
 			int maxChildY=parent.yPos;
 			for(int c=0; c<numSiblings; c++) {
-				MarkovNode child=tree.nodes.get(parent.childIndices.get(c));
-				maxChildY=Math.max(maxChildY, child.yPos);
+				int index=parent.childIndices.get(c);
+				if(tree.nodes.size()>index) { //sibling exists (may not exist yet if pasting from another model)
+					MarkovNode child=tree.nodes.get(index);
+					maxChildY=Math.max(maxChildY, child.yPos);
+				}
 			}
 			yPos=maxChildY+scale(60);
 		}
@@ -1066,6 +1070,40 @@ public class MarkovNode extends ModelNode{
 		return(node);
 	}
 
+	/**
+	 * Converts attributes from TreeNode
+	 * @return
+	 */
+	public void convertFromTree(TreeNode origNode){
+		//copy common attributes
+		name=origNode.name;
+		xPos=origNode.xPos; yPos=origNode.yPos;
+		width=origNode.width; height=origNode.height;
+		parentX=origNode.parentX; parentY=origNode.parentY;
+		if(origNode.parentType==1) {parentType=3;} //parent = chance
+		level=origNode.level;
+		prob=origNode.prob;
+		numDimensions=origNode.numDimensions;
+		varUpdates=origNode.varUpdates;
+		cost=origNode.cost;
+		expectedValues=new double[origNode.numDimensions];
+		for(int i=0; i<numDimensions; i++){
+			cost[i]=origNode.cost[i];
+		}
+		notes=origNode.notes;
+		int numChildren=origNode.childIndices.size();
+		for(int i=0; i<numChildren; i++) {
+			childIndices.add(origNode.childIndices.get(i));
+		}
+		//Copy display variables
+		visible=origNode.visible;
+		hasVarUpdates=origNode.hasVarUpdates;
+		hasCost=origNode.hasCost;
+		collapsed=origNode.collapsed;
+	}
+
+	
+	
 
 	public void highlightTextField(int fieldIndex, Color color){
 		if(textHighlights==null){textHighlights=new Color[]{null,null,null,null,null,null};}

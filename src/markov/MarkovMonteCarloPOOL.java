@@ -403,7 +403,8 @@ public class MarkovMonteCarloPOOL{
 				//Update discount factor
 				if(markovTree.discountRewards){
 					for(int d=0; d<numDim; d++) {
-						double discountRate=markovTree.discountRates[d]/100.0;
+						Numeric curVal=Interpreter.evaluate(markovTree.discountRates[d], myModel, false);
+						double discountRate=curVal.getValue()/100.0;
 						if(t<markovTree.discountStartCycle) { //don't discount yet
 							discountFactor[d]=1.0;
 						}

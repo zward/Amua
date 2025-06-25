@@ -188,7 +188,7 @@ public class PanelTree extends ModelPanel{
 		mntmUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",16,16,16,false));
 		popup.add(mntmUpdateVariable);
 		
-		mntmShowCost= new JMenuItem("Add/Remove Cost");
+		mntmShowCost= new JMenuItem("Add/Remove Cost (One-time Event)");
 		mntmShowCost.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveCost();}});
 		mntmShowCost.setIcon(new ScaledIcon("/images/cost",16,16,16,true));
 		mntmShowCost.setDisabledIcon(new ScaledIcon("/images/cost",16,16,16,false));
@@ -530,12 +530,18 @@ public class PanelTree extends ModelPanel{
 
 	public void pasteSubtree(){
 		if(curNode!=null && mainForm.clipboard.copyTree!=null && curNode.type!=2 && curNode.collapsed==false){
-			//Check if dimensions are compatible
+			//Check if nodes are compatible
 			boolean compatible=mainForm.clipboard.isCompatible(myModel);
 			if(compatible==false){
-				JOptionPane.showMessageDialog(this, "Incompatible dimensions!");
+				JOptionPane.showMessageDialog(this, "Cannot paste here: Incompatible nodes!");
 			}
 			else{ //Paste
+				//check dimensions
+				if(mainForm.clipboard.compareDimensions(myModel)==false) {
+					String warn=mainForm.clipboard.coerceDimensions(myModel);
+					JOptionPane.showMessageDialog(this, "Warning: "+warn);
+				}
+				
 				saveSnapshot("Paste");
 				this.setVisible(false); //Don't paint anything until updated
 
@@ -884,8 +890,8 @@ public class PanelTree extends ModelPanel{
 		else{
 			mntmCollapse.setEnabled(false);
 		}
-		if(curNode.hasCost){mntmShowCost.setText("Remove Cost");}
-		else{mntmShowCost.setText("Add Cost");}
+		if(curNode.hasCost){mntmShowCost.setText("Remove Cost (One-time Event)");}
+		else{mntmShowCost.setText("Add Cost (One-time Event)");}
 
 		if(curNode.level==0){ //root
 			mntmShowCost.setEnabled(false);

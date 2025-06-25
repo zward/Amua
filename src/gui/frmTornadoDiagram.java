@@ -37,6 +37,8 @@ import javax.swing.DefaultListModel;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+
 import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Shape;
@@ -78,12 +80,14 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.border.EtchedBorder;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 
 /**
  *
  */
 public class frmTornadoDiagram {
 
+	public frmTornadoDiagram frmThis;
 	public JFrame frmTornadoDiagram;
 	AmuaModel myModel;
 	DefaultTableModel modelParams;
@@ -95,6 +99,8 @@ public class frmTornadoDiagram {
 	JLabel lblSubgroup, lblOutcome;
 
 	JFreeChart chart;
+	DefaultIntervalCategoryDataset dataset;
+	Paint seriesPaints[];
 	ArrayList<String> paramNames;
 	
 	/**
@@ -123,6 +129,7 @@ public class frmTornadoDiagram {
 	JButton btnUpdatePlot;
 	
 	public frmTornadoDiagram(AmuaModel model){
+		this.frmThis=this;
 		this.myModel=model;
 		numStrategies=myModel.getStrategies();
 		numOutcomes=myModel.dimInfo.dimNames.length;
@@ -327,6 +334,23 @@ public class frmTornadoDiagram {
 			listStrategies.setEnabled(false);
 			scrollPane.setViewportView(listStrategies);
 			
+			//get default series colors
+			seriesPaints=new Paint[numStrategies];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			if(numStrategies==1) { //get blue
+				seriesPaints[0]=supplier.getNextPaint(); //red
+				seriesPaints[0]=supplier.getNextPaint(); //skip to blue
+			}
+			else if(numStrategies>1){
+				for(int s=0; s<numStrategies; s++) {
+					seriesPaints[s]=supplier.getNextPaint();
+				}
+				Paint red=seriesPaints[0];
+				Paint blue=seriesPaints[1];
+				seriesPaints[0]=blue;
+				seriesPaints[1]=red;
+			}
+			
 			btnUpdatePlot = new JButton("Update Plot");
 			btnUpdatePlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -346,6 +370,7 @@ public class frmTornadoDiagram {
 						double globalMin=Double.POSITIVE_INFINITY, globalMax=Double.NEGATIVE_INFINITY;
 
 						int numParams=paramNames.size();
+						boolean anyNaN=false;
 
 						curResults=new ArrayList<ParamResult>();
 						for(int p=0; p<numParams; p++) {
@@ -356,10 +381,25 @@ public class frmTornadoDiagram {
 							for(int s=0; s<numStrat; s++) {
 								result.minVal[s]=Math.min(results[curGroup][strats[s]][dim][p][0],results[curGroup][strats[s]][dim][p][1]);
 								result.maxVal[s]=Math.max(results[curGroup][strats[s]][dim][p][0],results[curGroup][strats[s]][dim][p][1]);
-								globalMin=Math.min(globalMin, result.minVal[s]);
-								globalMax=Math.max(globalMax, result.maxVal[s]);
+								if(isNumber(result.minVal[s])) {
+									globalMin=Math.min(globalMin, result.minVal[s]);
+								}
+								else {
+									anyNaN=true;
+								}
+								
+								if(isNumber(result.maxVal[s])) {
+									globalMax=Math.max(globalMax, result.maxVal[s]);
+								}
+								else {
+									anyNaN=true;
+								}
 							}
 							result.calcMeanRange();
+							if(isNumber(result.meanRange)==false) {
+								anyNaN=true;
+							}
+							
 							curResults.add(result);
 						}
 						Collections.sort(curResults);
@@ -369,6 +409,9 @@ public class frmTornadoDiagram {
 						double[][] ends = new double[numStrat][numParams];  
 						for(int p=0; p<numParams; p++){
 							paramNamesChrt[p]=curResults.get(p).name;
+							if(isNumber(curResults.get(p).meanRange)==false) {
+								paramNamesChrt[p]+=" [Undefined]";
+							}
 							for(int s=0; s<numStrat; s++) {
 								starts[s][p]=curResults.get(p).minVal[s];
 								ends[s][p]=curResults.get(p).maxVal[s];
@@ -379,7 +422,7 @@ public class frmTornadoDiagram {
 						globalMin-=offset;
 						globalMax+=offset;
 
-						DefaultIntervalCategoryDataset dataset=new DefaultIntervalCategoryDataset(starts, ends);
+						dataset=new DefaultIntervalCategoryDataset(starts, ends);
 						dataset.setCategoryKeys(paramNamesChrt);
 						String seriesKeys[]=new String[numStrat];
 						for(int s=0; s<numStrat; s++) {
@@ -392,8 +435,17 @@ public class frmTornadoDiagram {
 						DimInfo info=myModel.dimInfo;
 						if(myModel.dimInfo.analysisType==0 || dim<(numOutcomes-1)) {yAxis.setLabel("EV ("+info.dimSymbols[dim]+")");}
 						else {
-							if(myModel.dimInfo.analysisType==1) {yAxis.setLabel("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
+							if(myModel.dimInfo.analysisType==1) { //CEA (ICERs)
+								yAxis.setLabel("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");
+								if(anyNaN) {
+									JOptionPane.showMessageDialog(frmTornadoDiagram, "Warning: One or more ICERs were undefined! Consider plotting NMB instead.");
+								}
+							}
 							else if(myModel.dimInfo.analysisType==2){yAxis.setLabel("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
+						}
+						if(globalMin==globalMax) { //ensure positive range length
+							globalMin-=0.01;
+							globalMax+=0.01;
 						}
 						yAxis.setRange(globalMin,globalMax);
 						IntervalBarRenderer renderer = new IntervalBarRenderer();
@@ -402,15 +454,8 @@ public class frmTornadoDiagram {
 						((BarRenderer) plot.getRenderer()).setShadowVisible(false);
 						plot.setOrientation(PlotOrientation.HORIZONTAL);
 						
-						DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
-						Paint paint2=supplier.getNextPaint(); //flip red and blue
-						Paint paint1=supplier.getNextPaint();
-						
 						for(int s=0; s<numStrat; s++){
-							Paint curPaint;
-							if(s==0) {curPaint=paint1;}
-							else if(s==1) {curPaint=paint2;}
-							else {curPaint=supplier.getNextPaint();}
+							Paint curPaint=seriesPaints[s];
 							plot.getRenderer().setSeriesPaint(s, curPaint);
 							
 							Stroke fill = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
@@ -422,6 +467,7 @@ public class frmTornadoDiagram {
 						chart = new JFreeChart(plot);
 						//chart.removeLegend();
 						panelChart.setChart(chart);
+												
 					}
 				}
 			});
@@ -685,6 +731,18 @@ public class frmTornadoDiagram {
 			gbc_panelChart.gridy = 0;
 			frmTornadoDiagram.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
+			
+			//pop-up menu
+			JPopupMenu popup = panelChart.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, dataset, seriesPaints, frmThis);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
+			
 
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -719,6 +777,31 @@ public class frmTornadoDiagram {
 			lblSubgroup.setEnabled(enabled);
 			comboSubgroup.setEnabled(enabled);
 		}
+	}
+	
+	public void updateRangeMarkers() {
+		CategoryPlot plot = chart.getCategoryPlot();
+		plot.clearRangeMarkers();
+		
+		int strats[]=listStrategies.getSelectedIndices();
+		int numStrat=strats.length;
+		int dim=comboDimensions.getSelectedIndex();
+		
+		Stroke fill = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
+		for(int s=0; s<numStrat; s++) {
+			Paint curPaint=seriesPaints[s];
+			if(numStrat==1) {curPaint=Color.BLACK;} //only 1 strategy, draw black baseline
+			plot.addRangeMarker(new ValueMarker(baseOutcomes[curGroup][strats[s]][dim], curPaint, fill));
+			plot.addRangeMarker(new ValueMarker(baseOutcomes[curGroup][strats[s]][dim], Color.BLACK, new CompositeStroke(fill,new BasicStroke(0.75f))));
+		}
+	}
+	
+	private boolean isNumber(double val) {
+		boolean valid=true;
+		if(Double.isInfinite(val) || Double.isNaN(val)) {
+			valid=false;
+		}
+		return(valid);
 	}
 	
 	class CompositeStroke implements Stroke {

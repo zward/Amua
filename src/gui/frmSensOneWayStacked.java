@@ -20,6 +20,7 @@ package gui;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JButton;
@@ -34,7 +35,10 @@ import javax.swing.DefaultComboBoxModel;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.Toolkit;
 
@@ -94,6 +98,8 @@ public class frmSensOneWayStacked {
 
 	ChartPanel panelChart;
 	JFreeChart chart;
+	Paint seriesPaints[];
+	XYIntervalSeriesCollection dataset;
 	
 	JComboBox<String> comboChartType;
 	JComboBox<String> comboGroup;
@@ -737,6 +743,24 @@ public class frmSensOneWayStacked {
 			gbc_panelChart.gridy = 1;
 			frmSensOneWayStacked.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
+			
+			numStrat=myModel.getStrategies();
+			seriesPaints=new Paint[numStrat];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			for(int s=0; s<numStrat; s++) {
+				seriesPaints[s]=supplier.getNextPaint();
+			}
+			
+			//pop-up menu
+			JPopupMenu popup = panelChart.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, dataset, seriesPaints);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
 
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -837,12 +861,16 @@ public class frmSensOneWayStacked {
 			int effectDim=dimInfo.effectDim;
 			int numDim=dimInfo.dimNames.length;
 			double WTP=dimInfo.WTP;
+			int objSign=1;
+			if(myModel.dimInfo.objective==1) { //minimize
+				objSign=-1;
+			}
 			
 			//overall
 			bestResultBase=resultsBase[numDim][0];
-			double bestNMB=(resultsBase[effectDim][0]*WTP)-resultsBase[costDim][0]; 
+			double bestNMB=(resultsBase[effectDim][0]*WTP*objSign)-resultsBase[costDim][0]; 
 			for(int s=1; s<numStrat; s++) {
-				double curNMB=(resultsBase[effectDim][s]*WTP)-resultsBase[costDim][s]; 
+				double curNMB=(resultsBase[effectDim][s]*WTP*objSign)-resultsBase[costDim][s]; 
 				if(curNMB>bestNMB) {
 					bestNMB=curNMB;
 					bestResultBase=resultsBase[numDim][s];
@@ -851,9 +879,9 @@ public class frmSensOneWayStacked {
 			//subgroups
 			for(int g=0; g<numSubgroups; g++) {
 				bestResultsBaseGroup[g]=resultsBaseGroup[g][numDim][0];
-				bestNMB=(resultsBaseGroup[g][effectDim][0]*WTP)-resultsBaseGroup[g][costDim][0]; 
+				bestNMB=(resultsBaseGroup[g][effectDim][0]*WTP*objSign)-resultsBaseGroup[g][costDim][0]; 
 				for(int s=1; s<numStrat; s++) {
-					double curNMB=(resultsBaseGroup[g][effectDim][s]*WTP)-resultsBaseGroup[g][costDim][s]; 
+					double curNMB=(resultsBaseGroup[g][effectDim][s]*WTP*objSign)-resultsBaseGroup[g][costDim][s]; 
 					if(curNMB>bestNMB) {
 						bestNMB=curNMB;
 						bestResultsBaseGroup[g]=resultsBaseGroup[g][numDim][s];
@@ -864,10 +892,10 @@ public class frmSensOneWayStacked {
 			
 			for(int p=0; p<numParams; p++) {
 				for(int i=0; i<=intervals; i++) {
-					bestNMB=(results[effectDim][0][p][i]*WTP)-results[costDim][0][p][i]; //initialize
+					bestNMB=(results[effectDim][0][p][i]*WTP*objSign)-results[costDim][0][p][i]; //initialize
 					bestStrategy[p][i]=0;
 					for(int s=1; s<numStrat; s++) {
-						double curNMB=(results[effectDim][s][p][i]*WTP)-results[costDim][s][p][i]; 
+						double curNMB=(results[effectDim][s][p][i]*WTP*objSign)-results[costDim][s][p][i]; 
 						if(curNMB>bestNMB) {
 							bestNMB=curNMB;
 							bestStrategy[p][i]=s;
@@ -876,10 +904,10 @@ public class frmSensOneWayStacked {
 				
 					//subgroups
 					for(int g=0; g<numSubgroups; g++) {
-						bestNMB=(resultsGroup[g][effectDim][0][p][i]*WTP)-resultsGroup[g][costDim][0][p][i]; //initialize
+						bestNMB=(resultsGroup[g][effectDim][0][p][i]*WTP*objSign)-resultsGroup[g][costDim][0][p][i]; //initialize
 						bestStrategyGroup[g][p][i]=0;
 						for(int s=1; s<numStrat; s++) {
-							double curNMB=(resultsGroup[g][effectDim][s][p][i]*WTP)-resultsGroup[g][costDim][s][p][i]; 
+							double curNMB=(resultsGroup[g][effectDim][s][p][i]*WTP*objSign)-resultsGroup[g][costDim][s][p][i]; 
 							if(curNMB>bestNMB) {
 								bestNMB=curNMB;
 								bestStrategyGroup[g][p][i]=s;
@@ -901,7 +929,7 @@ public class frmSensOneWayStacked {
 		
 		double globalMin=Double.POSITIVE_INFINITY, globalMax=Double.NEGATIVE_INFINITY;
 		
-		XYIntervalSeriesCollection dataset = new XYIntervalSeriesCollection();
+		dataset = new XYIntervalSeriesCollection();
 		XYIntervalSeries[] series = new XYIntervalSeries[numStrat];
 		for(int s=0; s<numStrat; s++) {
 			series[s]=new XYIntervalSeries(myModel.strategyNames[s]);
@@ -979,9 +1007,9 @@ public class frmSensOneWayStacked {
 	    xyRend.setUseYInterval(true);
 	    xyRend.setBarPainter(new StandardXYBarPainter());
 	    xyRend.setDrawBarOutline(true);
-	    DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+	    //DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
 	    for(int s=0; s<numStrat; s++) {
-	    	xyRend.setSeriesPaint(s, supplier.getNextPaint());
+	    	xyRend.setSeriesPaint(s, seriesPaints[s]);
 	    	xyRend.setSeriesOutlinePaint(s, Color.LIGHT_GRAY);
 	    }
 	   	    

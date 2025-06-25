@@ -29,6 +29,8 @@ import base.AmuaModel;
 import main.*;
 import markov.MarkovNode;
 import markov.MarkovTree;
+import math.Interpreter;
+import math.Numeric;
 
 public class RMarkovCohort{
 
@@ -78,8 +80,14 @@ public class RMarkovCohort{
 			writeLine("# Initialize discount rates");
 			if(myModel.markov.discountRewards){
 				out.write("discountRates <- c(");
-				for(int d=0; d<numDimensions-1; d++){out.write(myModel.markov.discountRates[d]/100.0+", ");}
-				out.write(myModel.markov.discountRates[numDimensions-1]/100.0+")"); out.newLine();
+				for(int d=0; d<numDimensions-1; d++){
+					Numeric curVal=Interpreter.evaluate(myModel.markov.discountRates[d], myModel, false);
+					double discountRate=curVal.getValue()/100.0;
+					out.write(discountRate+", ");
+				}
+				Numeric curVal=Interpreter.evaluate(myModel.markov.discountRates[numDimensions-1], myModel, false);
+				double discountRate=curVal.getValue()/100.0;
+				out.write(discountRate+")"); out.newLine();
 				writeLine("startDiscountCycle <- "+myModel.markov.discountStartCycle);
 			}
 			else{

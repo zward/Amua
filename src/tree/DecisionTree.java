@@ -477,16 +477,6 @@ public class DecisionTree{
 				}
 				
 			}
-			
-			/*
-			curNode.cost=Arrays.copyOf(curNode.cost, numDimensions);
-			curNode.payoff=Arrays.copyOf(curNode.payoff, numDimensions);
-			if(curNode.expectedValues==null){curNode.expectedValues=new double[numDimensions];}
-			else{curNode.expectedValues=Arrays.copyOf(curNode.expectedValues, numDimensions);}
-			for(int d=0; d<numDimensions; d++){
-				if(curNode.cost[d]==null){curNode.cost[d]="0";}
-				if(curNode.payoff[d]==null){curNode.payoff[d]="0";}
-			}*/
 		}
 		
 	}

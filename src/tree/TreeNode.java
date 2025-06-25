@@ -632,7 +632,6 @@ public class TreeNode extends ModelNode{
 		return(node);
 	}
 
-
 	public void highlightTextField(int fieldIndex, Color color){
 		if(textHighlights==null){textHighlights=new Color[]{null,null,null,null,null};}
 		textHighlights[fieldIndex]=color;

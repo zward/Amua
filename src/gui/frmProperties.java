@@ -54,6 +54,8 @@ import base.AmuaModel;
 import main.DimInfo;
 import main.Metadata;
 import main.ScaledIcon;
+import math.Interpreter;
+import math.Numeric;
 
 import javax.swing.JTabbedPane;
 import javax.swing.JComboBox;
@@ -93,7 +95,7 @@ public class frmProperties {
 	ArrayList<Integer> decimals;
 	//ArrayList<Double> dimDiscount;
 	ArrayList<String> prevDimNames;
-	double tempDiscountRates[];
+	String tempDiscountRates[];
 	
 	//Analysis
 	DefaultTableModel modelDimensions;
@@ -151,7 +153,7 @@ public class frmProperties {
 				prevDimNames.add(tempDimInfo.dimNames[d]);
 			}
 			if(myModel.type==1) { //markov
-				tempDiscountRates=new double[numDim];
+				tempDiscountRates=new String[numDim];
 				if(myModel.markov.discountRates!=null) {
 					int minNum=Math.min(numDim, myModel.markov.discountRates.length); //don't go over length of array if shorter for some reason,
 					for(int d=0; d<minNum; d++) {
@@ -417,13 +419,14 @@ public class frmProperties {
 												
 						//update discount names
 						if(myModel.type==1){
-							tempDiscountRates=new double[numDimensions];
+							tempDiscountRates=new String[numDimensions];
 							for(int i=0; i<numDimensions; i++){
 								modelDiscountRates.setValueAt(dimNames.get(i), i, 0);
 								try{
-									tempDiscountRates[i]=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
+									//tempDiscountRates[i]=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
+									tempDiscountRates[i]=(String) tableDiscountRates.getValueAt(i, 1);
 								}catch (Exception e1){
-									tempDiscountRates[i]=0;
+									tempDiscountRates[i]="0";
 								}
 							}
 						}
@@ -1196,7 +1199,21 @@ public class frmProperties {
 				
 				for(int i=0; i<numDimensions; i++){
 					try{
-						double test=Double.parseDouble((String) tableDiscountRates.getValueAt(i, 1));
+						String test=(String) tableDiscountRates.getValueAt(i, 1); 
+						Numeric testVal=Interpreter.evaluate(test, myModel,false);
+						if(!(testVal.isDouble() || testVal.isInteger()) ){ //not double or integer
+							valid=false;
+							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount rate ("+tableDiscountRates.getValueAt(i, 0)+")");
+						}
+						//check range of discount value
+						double curVal=testVal.getValue();
+						if(curVal<0) {
+							JOptionPane.showMessageDialog(frmProperties, "Warning: Discount rate <0 ("+tableDiscountRates.getValueAt(i, 0)+")");
+						}
+						else if(curVal>0 && curVal<0.5) {
+							JOptionPane.showMessageDialog(frmProperties, "Warning: Discount rates should be a percentage (%).  Current value is "+curVal+" ("+tableDiscountRates.getValueAt(i, 0)+")");
+						}
+						
 						tempDiscountRates[i]=test;
 					} catch(Exception er){
 						valid=false;
@@ -1269,7 +1286,7 @@ public class frmProperties {
 				if(myModel.markov.discountRewards==true){
 					myModel.markov.discountStartCycle=Integer.parseInt(textDiscountStartCycle.getText());
 					myModel.markov.cyclesPerYear=Double.parseDouble(textCyclesPerYear.getText());
-					myModel.markov.discountRates=new double[numDimensions];
+					myModel.markov.discountRates=new String[numDimensions];
 					for(int i=0; i<numDimensions; i++){
 						myModel.markov.discountRates[i]=tempDiscountRates[i];
 					}

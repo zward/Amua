@@ -293,7 +293,7 @@ public class MarkovCohort{
 	}
 	
 	
-	private void updateTrace(int t) throws NumericException{
+	private void updateTrace(int t) throws Exception{
 		trace.cycles.add(t);
 		//Update prev
 		for(int s=0; s<numStates; s++){
@@ -312,7 +312,8 @@ public class MarkovCohort{
 			trace.cycleRewards[d].add(cycleRewards[d]);
 			trace.cumRewards[d].add(cumRewards[d]);
 			if(markovTree.discountRewards){
-				double discountRate=markovTree.discountRates[d]/100.0;
+				Numeric curVal=Interpreter.evaluate(markovTree.discountRates[d], myModel, false);
+				double discountRate=curVal.getValue()/100.0;
 				double discountFactor=1.0;
 				if(t<markovTree.discountStartCycle) { //don't discount yet
 					discountFactor=1.0;

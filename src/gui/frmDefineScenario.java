@@ -39,6 +39,9 @@ import base.AmuaModel;
 import main.ScaledIcon;
 import main.Scenario;
 import main.StyledTextPane;
+import math.Interpreter;
+import math.Numeric;
+
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
@@ -97,7 +100,7 @@ public class frmDefineScenario {
 	DefaultTableModel modelDiscount;
 	private JTable tableDiscount;
 	boolean testHalfCycleCorrection, testDiscountRewards;
-	double testDiscountRates[];
+	String testDiscountRates[];
 	int testDiscountStartCycle=0;
 	
 
@@ -740,10 +743,24 @@ public class frmDefineScenario {
 				}
 
 				int numDim=myModel.dimInfo.dimNames.length;
-				testDiscountRates=new double[numDim];
+				testDiscountRates=new String[numDim];
 				for(int i=0; i<numDim; i++){
 					try{
-						double test=Double.parseDouble((String) tableDiscount.getValueAt(i, 1));
+						String test=(String) tableDiscount.getValueAt(i, 1); 
+						Numeric testVal=Interpreter.evaluate(test, myModel,false);
+						if(!(testVal.isDouble() || testVal.isInteger()) ){ //not double or integer
+							valid=false;
+							JOptionPane.showMessageDialog(frmDefineScenario, "Please enter a valid discount rate ("+tableDiscount.getValueAt(i, 0)+")");
+						}
+						//check range of discount value
+						double curVal=testVal.getValue();
+						if(curVal<0) {
+							JOptionPane.showMessageDialog(frmDefineScenario, "Warning: Discount rate <0 ("+tableDiscount.getValueAt(i, 0)+")");
+						}
+						else if(curVal>0 && curVal<0.5) {
+							JOptionPane.showMessageDialog(frmDefineScenario, "Warning: Discount rates should be a percentage (%).  Current value is "+curVal+" ("+tableDiscount.getValueAt(i, 0)+")");
+						}
+						
 						testDiscountRates[i]=test;
 					} catch(Exception er){
 						valid=false;

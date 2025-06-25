@@ -23,6 +23,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,8 +36,10 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -87,7 +90,9 @@ public class frmCalibrate {
 	
 	DefaultXYDataset chartData, chartDataScores;
 	JFreeChart chart, chartScores;
-		
+	Paint seriesPaints_Scores[], seriesPaints_Params[];
+	int numSeries_Params;
+	
 	JComboBox comboPlot;
 	private JTextField textNumSets;
 	String CEAnotes[][];
@@ -124,13 +129,22 @@ public class frmCalibrate {
 			gridBagLayout.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 			frmCalibrate.getContentPane().setLayout(gridBagLayout);
 			
+			//get default series colors
+			seriesPaints_Scores=new Paint[1];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			seriesPaints_Scores[0]=supplier.getNextPaint();
+			
 			numParams=myModel.parameters.size();
 			numConst=myModel.constraints.size();
 			paramNames=new String[numParams];
 			origValues=new Numeric[numParams];
+			DefaultDrawingSupplier supplierParams = new DefaultDrawingSupplier();
+			seriesPaints_Params=new Paint[numParams];
+			numSeries_Params=numParams;
 			for(int i=0; i<numParams; i++){
 				paramNames[i]=myModel.parameters.get(i).name;
 				origValues[i]=myModel.parameters.get(i).value.copy();
+				seriesPaints_Params[i]=supplierParams.getNextPaint();
 			}
 			
 			JToolBar toolBar = new JToolBar();
@@ -278,9 +292,22 @@ public class frmCalibrate {
 						chartData.removeSeries(chartData.getSeriesKey(0));
 					}
 					
+					
 					int plotType=comboPlot.getSelectedIndex();
 					int selected[]=tableParams.getSelectedRows();
 					int numSelected=selected.length;
+					
+					int numSeries=numSelected;
+					if(numSeries>0 && numSeries!=numSeries_Params) { //reset series colours
+						numSeries_Params=numSeries;
+						seriesPaints_Params=new Paint[numSeries];
+						DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+						XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) chart.getXYPlot().getRenderer();
+						for(int s=0; s<numSeries; s++) {
+							seriesPaints_Params[s]=supplier.getNextPaint();
+							renderer.setSeriesPaint(s, seriesPaints_Params[s]);
+						}
+					}
 					
 					if(plotType==0){ //Density
 						chart.getXYPlot().getDomainAxis().setLabel("Parameter Value");
@@ -335,9 +362,9 @@ public class frmCalibrate {
 					
 					XYPlot plotResults = chart.getXYPlot();
 					XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,false);
-					DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
+					//DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
 					for(int i=0; i<numSelected; i++){
-						rendererResults.setSeriesPaint(i, supplierResults.getNextPaint());
+						rendererResults.setSeriesPaint(i, seriesPaints_Params[i]);
 					}
 					plotResults.setRenderer(rendererResults);
 					
@@ -377,6 +404,17 @@ public class frmCalibrate {
 			gbc_panel_chart.gridx = 1;
 			gbc_panel_chart.gridy = 0;
 			panel_3.add(panelChart, gbc_panel_chart);
+			
+			//pop-up menu
+			JPopupMenu popup = panelChart.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints_Params);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
 
 			ChartPanel panelChartScores = new ChartPanel(chartScores,false);
 			GridBagConstraints gbc_panel_scores = new GridBagConstraints();
@@ -384,6 +422,17 @@ public class frmCalibrate {
 			gbc_panel_scores.gridx = 0;
 			gbc_panel_scores.gridy = 1;
 			panel.add(panelChartScores, gbc_panel_scores);
+			
+			//pop-up menu
+			popup = panelChartScores.getPopupMenu();
+			JMenuItem mntmChangeColorScores = new JMenuItem("Change Series Colors...");
+			mntmChangeColorScores.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartScores, chartDataScores, seriesPaints_Scores);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColorScores, 0);
 			
 			JPanel panel_1 = new JPanel();
 			GridBagConstraints gbc_panel_1 = new GridBagConstraints();

@@ -46,8 +46,10 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -89,6 +91,7 @@ import surface.SurfacePanel;
  */
 public class frmSensTwoWay {
 
+	frmSensTwoWay frmThis;
 	public JFrame frmSensTwoWay;
 	AmuaModel myModel;
 	DefaultTableModel modelParams;
@@ -96,7 +99,10 @@ public class frmSensTwoWay {
 
 	DefaultXYDataset chartData;
 	JFreeChart chart;
+	Paint seriesPaints[];
+	
 	SurfacePanel surfacePanel;
+	
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboStrategy;
 	JComboBox<String> comboGroup;
@@ -113,7 +119,14 @@ public class frmSensTwoWay {
 	Parameter curParam1, curParam2;
 	double baselineParamValue1, baselineParamValue2;
 
+	//plot dimensions/steps
+	int intervals;
+	double min1, min2;
+	double max1, max2;
+	double step1, step2;
+	
 	public frmSensTwoWay(AmuaModel model){
+		frmThis=this;
 		this.myModel=model;
 		myModel.getStrategies();
 		initialize();
@@ -415,7 +428,7 @@ public class frmSensTwoWay {
 									
 									boolean error=false;
 									//Get parameters
-									int intervals=Integer.parseInt(textIntervals.getText());
+									intervals=Integer.parseInt(textIntervals.getText());
 
 									String strMin1=(String)tableParams.getValueAt(row1,2);
 									String strMin2=(String)tableParams.getValueAt(row2,2);
@@ -425,12 +438,12 @@ public class frmSensTwoWay {
 									strMin2=strMin2.replaceAll(",", "");
 									strMax1=strMax1.replaceAll(",", "");
 									strMax2=strMax2.replaceAll(",", "");
-									double min1=Double.parseDouble(strMin1);
-									double min2=Double.parseDouble(strMin2);
-									double max1=Double.parseDouble(strMax1);
-									double max2=Double.parseDouble(strMax2);
-									double step1=(max1-min1)/(intervals*1.0);
-									double step2=(max2-min2)/(intervals*1.0);
+									min1=Double.parseDouble(strMin1);
+									min2=Double.parseDouble(strMin2);
+									max1=Double.parseDouble(strMax1);
+									max2=Double.parseDouble(strMax2);
+									step1=(max1-min1)/(intervals*1.0);
+									step2=(max2-min2)/(intervals*1.0);
 									curParam1=myModel.parameters.get(row1);
 									curParam2=myModel.parameters.get(row2);
 									//record min/max
@@ -678,11 +691,11 @@ public class frmSensTwoWay {
 											XYPlot plot = chart.getXYPlot();
 											XYLineAndShapeRenderer renderer1 = new XYLineAndShapeRenderer(false,true);
 											Shape square=new Rectangle(-3,-3,6,6);
-											Paint paints[]=new Paint[numStrat];
-											DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+											//Paint paints[]=new Paint[numStrat];
+											//DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
 											for(int s=0; s<numStrat; s++){
-												paints[s]=supplier.getNextPaint();
-												renderer1.setSeriesPaint(s, paints[s]);
+												//paints[s]=supplier.getNextPaint();
+												renderer1.setSeriesPaint(s, seriesPaints[s]);
 												renderer1.setSeriesShape(s, square);
 											}
 											plot.setRenderer(renderer1);
@@ -700,7 +713,7 @@ public class frmSensTwoWay {
 												for(int j=0; j<=intervals; j++){
 													double curVal2=min2+(step2*j);
 													Shape shape =  new Rectangle.Double(curVal1-w1/2.0, curVal2-w2/2.0, w1, w2);
-													XYShapeAnnotation annotation=new XYShapeAnnotation(shape,new BasicStroke(1.f),Color.LIGHT_GRAY,paints[bestStrategy[i][j]]);
+													XYShapeAnnotation annotation=new XYShapeAnnotation(shape,new BasicStroke(1.f),Color.LIGHT_GRAY,seriesPaints[bestStrategy[i][j]]);
 													plot.addAnnotation(annotation);
 												}
 											}
@@ -764,6 +777,25 @@ public class frmSensTwoWay {
 			tabbedPane.addTab("Area Chart", null, panelChart, null);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
 
+			int numStrat=myModel.getStrategies();
+			seriesPaints=new Paint[numStrat];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			for(int s=0; s<numStrat; s++) {
+				seriesPaints[s]=supplier.getNextPaint();
+			}
+			
+			//pop-up menu
+			JPopupMenu popup = panelChart.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints, frmThis);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
+			
+			
 			JPanel panelSurface = new JPanel();
 			panelSurface.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 			tabbedPane.addTab("Surface Chart", null, panelSurface, null);
@@ -819,5 +851,29 @@ public class frmSensTwoWay {
 			ex.printStackTrace();
 			myModel.errorLog.recordError(ex);
 		}
+	
+	}
+	
+	public void updatePlot() {
+		XYPlot plot = chart.getXYPlot();
+		plot.clearAnnotations();
+		double w1=step1, w2=step2;
+		
+		for(int i=0; i<=intervals; i++){
+			double curVal1=min1+(step1*i);
+			for(int j=0; j<=intervals; j++){
+				double curVal2=min2+(step2*j);
+				Shape shape =  new Rectangle.Double(curVal1-w1/2.0, curVal2-w2/2.0, w1, w2);
+				XYShapeAnnotation annotation=new XYShapeAnnotation(shape,new BasicStroke(1.f),Color.LIGHT_GRAY,seriesPaints[bestStrategy[i][j]]);
+				plot.addAnnotation(annotation);
+			}
+		}
+
+		//add baseline value
+		XYLineAnnotation annotation=new XYLineAnnotation(baselineParamValue1,baselineParamValue2-w2/4.0,baselineParamValue1,baselineParamValue2+w2/4.0, new BasicStroke(3.f),Color.black);
+		plot.addAnnotation(annotation);
+		
+		XYLineAnnotation annotation1=new XYLineAnnotation(baselineParamValue1-w1/4.0,baselineParamValue2,baselineParamValue1+w1/4.0,baselineParamValue2, new BasicStroke(3.f),Color.black);
+		plot.addAnnotation(annotation1);
 	}
 }

@@ -20,6 +20,7 @@ package gui;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JButton;
@@ -31,7 +32,10 @@ import javax.swing.DefaultComboBoxModel;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.Toolkit;
 
@@ -81,6 +85,8 @@ public class frmThreshOneWay {
 
 	DefaultXYDataset chartData;
 	JFreeChart chart;
+	Paint seriesPaints[];
+	
 	JComboBox<String> comboDimensions;
 	double dataEV[][][];
 	private JTextField textThresh;
@@ -629,9 +635,9 @@ public class frmThreshOneWay {
 											XYPlot plot = chart.getXYPlot();
 
 											XYLineAndShapeRenderer renderer1 = new XYLineAndShapeRenderer(true,false);
-											DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+											//DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
 											for(int s=0; s<numStrat; s++){
-												renderer1.setSeriesPaint(s, supplier.getNextPaint());
+												renderer1.setSeriesPaint(s, seriesPaints[s]);
 											}
 											plot.setRenderer(renderer1);
 											
@@ -691,6 +697,24 @@ public class frmThreshOneWay {
 			gbc_panelChart.gridy = 0;
 			frmThreshOneWay.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
+			
+			int numStrat=myModel.getStrategies();
+			seriesPaints=new Paint[numStrat];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			for(int s=0; s<numStrat; s++) {
+				seriesPaints[s]=supplier.getNextPaint();
+			}
+			
+			//pop-up menu
+			JPopupMenu popup = panelChart.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
 
 		} catch (Exception ex){
 			ex.printStackTrace();

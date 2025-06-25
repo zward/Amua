@@ -48,8 +48,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -100,6 +102,7 @@ import java.awt.event.ItemEvent;
  */
 public class frmPSA {
 
+	public frmPSA frmThis;
 	public JFrame frmPSA;
 	AmuaModel myModel;
 	int numParams;
@@ -108,8 +111,11 @@ public class frmPSA {
 	private JTable tableParams;
 
 	JTabbedPane tabbedPane;
-	DefaultXYDataset chartDataResults, chartDataParams, chartDataScatter, chartDataCEAC;
-	JFreeChart chartResults, chartParams, chartScatter, chartCEAC;
+	DefaultXYDataset chartDataResults, chartDataParams, chartDataScatter, chartDataCEAC, chartDataCEAF;
+	JFreeChart chartResults, chartParams, chartScatter, chartCEAC, chartCEAF;
+	Paint seriesPaints_Strat[], seriesPaints_Params[];
+	int numSeries_Params;
+	
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboResults;
 	JComboBox<String> comboGroup;
@@ -150,7 +156,7 @@ public class frmPSA {
 	/**
 	 * [Strategy][x,y][WTP]
 	 */
-	double dataCEAC[][][];
+	double dataCEAC[][][], dataCEAF[][][];
 	
 	JList<String> listParams;
 	DefaultListModel<String> listModelParams;
@@ -168,10 +174,17 @@ public class frmPSA {
 	private JTextField textCEACIntervals;
 	JComboBox comboCEACGroup;
 	
+	//CEAF
+	private JTextField textCEAFMin;
+	private JTextField textCEAFMax;
+	private JTextField textCEAFIntervals;
+	JComboBox comboCEAFGroup;
+	
 	RunReport reports[];
 	
 
 	public frmPSA(AmuaModel myModel){
+		this.frmThis=this;
 		this.myModel=myModel;
 		myModel.getStrategies();
 		initialize();
@@ -299,11 +312,14 @@ public class frmPSA {
 						fc.setAcceptAllFileFilterUsed(false);
 						fc.setFileFilter(new CSVFilter());
 
-						if(tabbedPane.getSelectedIndex()!=3) { //Not CEAC
+						if(tabbedPane.getSelectedIndex()<3) { //Not CEAC or CEAF
 							fc.setDialogTitle("Export PSA Results");
 						}
-						else {
+						else if(tabbedPane.getSelectedIndex()==3){
 							fc.setDialogTitle("Export CEAC Results");
+						}
+						else if(tabbedPane.getSelectedIndex()==4){
+							fc.setDialogTitle("Export CEAF Results");
 						}
 						fc.setApproveButtonText("Export");
 
@@ -316,7 +332,7 @@ public class frmPSA {
 							FileWriter fstream = new FileWriter(path+".csv"); //Create new file
 							BufferedWriter out = new BufferedWriter(fstream);
 							
-							if(tabbedPane.getSelectedIndex()!=3) { //Not CEAC
+							if(tabbedPane.getSelectedIndex()<3) { //Not CEAC or CEAF
 								//Headers
 								DimInfo info=myModel.dimInfo;
 								int numDim=info.dimNames.length;
@@ -386,7 +402,7 @@ public class frmPSA {
 								}
 								out.close();
 							}
-							else { //CEAC
+							else if(tabbedPane.getSelectedIndex()==3){ //CEAC
 								//Headers
 								int numStrat=myModel.strategyNames.length;
 								out.write("WTP");
@@ -401,6 +417,26 @@ public class frmPSA {
 									//Strategies
 									for(int s=0; s<numStrat; s++) {
 										out.write(","+dataCEAC[s][1][i]);
+									}
+									out.newLine();
+								}
+								out.close();
+							}
+							else if(tabbedPane.getSelectedIndex()==4){ //CEAF
+								//Headers
+								int numStrat=myModel.strategyNames.length;
+								out.write("WTP");
+								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
+								out.newLine();
+								
+								
+								//Results
+								int numPoints=dataCEAF[0][0].length;
+								for(int i=0; i<numPoints; i++){
+									out.write(dataCEAF[0][0][i]+""); //WTP
+									//Strategies
+									for(int s=0; s<numStrat; s++) {
+										out.write(","+dataCEAF[s][1][i]);
 									}
 									out.newLine();
 								}
@@ -482,7 +518,15 @@ public class frmPSA {
 			marker.setPaint(Color.black);
 			chartResults.getXYPlot().addDomainMarker(marker);
 			chartResults.getXYPlot().addRangeMarker(marker);
-
+			
+			//get default series colors
+			numStrat=myModel.getStrategies();
+			seriesPaints_Strat=new Paint[numStrat];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			for(int s=0; s<numStrat; s++) {
+				seriesPaints_Strat[s]=supplier.getNextPaint();
+			}
+			
 			ChartPanel panelChartResults = new ChartPanel(chartResults,false);
 			GridBagConstraints gbc_panelChartResults = new GridBagConstraints();
 			gbc_panelChartResults.gridwidth = 4;
@@ -491,6 +535,17 @@ public class frmPSA {
 			gbc_panelChartResults.gridx = 0;
 			gbc_panelChartResults.gridy = 0;
 			panelResults.add(panelChartResults, gbc_panelChartResults);
+			
+			//pop-up menu
+			JPopupMenu popup = panelChartResults.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints_Strat, frmThis);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
 
 			comboResults = new JComboBox<String>();
 			comboResults.addActionListener(new ActionListener() {
@@ -609,6 +664,23 @@ public class frmPSA {
 			gbc_panelChartParams.gridy = 0;
 			panelParams.add(panelChartParams, gbc_panelChartParams);
 
+			DefaultDrawingSupplier supplierParams = new DefaultDrawingSupplier();
+			seriesPaints_Params=new Paint[numParams];
+			for(int v=0; v<numParams; v++){
+				seriesPaints_Params[v]=supplierParams.getNextPaint();
+			}
+			
+			//pop-up menu
+			popup = panelChartParams.getPopupMenu();
+			JMenuItem mntmChangeColorParams = new JMenuItem("Change Series Colors...");
+			mntmChangeColorParams.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartParams, chartDataParams, seriesPaints_Params);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColorParams, 0);
+			
 			JPanel panelScatter = new JPanel();
 			tabbedPane.addTab("Scatter", null, panelScatter, null); 
 			tabbedPane.setEnabledAt(2, false);
@@ -679,6 +751,19 @@ public class frmPSA {
 			panelScatter.add(panelChartScatter, gbc_panelChartScatter);
 			panelChartScatter.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 			
+			//pop-up menu
+			popup = panelChartScatter.getPopupMenu();
+			JMenuItem mntmChangeColorScatter = new JMenuItem("Change Series Colors...");
+			mntmChangeColorScatter.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					//pass results chart, not scatter (extra series for means)
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints_Strat, frmThis);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColorScatter, 0);
+			
+			//CEAC *********************************
 			JPanel panelCEAC = new JPanel();
 			tabbedPane.addTab("CEAC", null, panelCEAC, "Cost-Effectiveness Acceptability Curve");
 			tabbedPane.setEnabledAt(3, false);
@@ -763,6 +848,128 @@ public class frmPSA {
 			comboCEACGroup.setBounds(389, 1, 139, 26);
 			panelCEACHeader.add(comboCEACGroup);
 			
+			ChartPanel panelChartCEAC = new ChartPanel(chartCEAC,false);
+			GridBagConstraints gbc_panelChartCEAC = new GridBagConstraints();
+			gbc_panelChartCEAC.fill = GridBagConstraints.BOTH;
+			gbc_panelChartCEAC.gridx = 0;
+			gbc_panelChartCEAC.gridy = 1;
+			panelCEAC.add(panelChartCEAC, gbc_panelChartCEAC);
+			
+			//pop-up menu
+			popup = panelChartCEAC.getPopupMenu();
+			JMenuItem mntmChangeColorCEAC = new JMenuItem("Change Series Colors...");
+			mntmChangeColorCEAC.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartCEAC, chartDataCEAC, seriesPaints_Strat, frmThis);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColorCEAC, 0);
+			
+			// CEAF ******************************************************
+			JPanel panelCEAF = new JPanel();
+			tabbedPane.addTab("CEAF", null, panelCEAF, "Cost-Effectiveness Acceptability Frontier");
+			tabbedPane.setEnabledAt(4, false);
+			
+			chartDataCEAF = new DefaultXYDataset();
+			costDim="Cost"; effectDim="Effect";
+			if(myModel.dimInfo.analysisType>0) {
+				costDim=myModel.dimInfo.dimNames[myModel.dimInfo.costDim];
+				effectDim=myModel.dimInfo.dimNames[myModel.dimInfo.effectDim];
+			}
+			chartCEAF = ChartFactory.createScatterPlot(null, "Willingness-to-pay ("+costDim+" per "+effectDim+")", 
+					"p(Optimal)", chartDataCEAF, PlotOrientation.VERTICAL, true, false, false);
+			chartCEAF.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
+			//Draw axes
+			chartCEAF.getXYPlot().addDomainMarker(marker);
+			chartCEAF.getXYPlot().addRangeMarker(marker);
+			//Add baseline WTP
+			if(myModel.dimInfo.analysisType>0) {
+				Stroke dashed = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
+				chartCEAF.getXYPlot().addDomainMarker(new ValueMarker(myModel.dimInfo.WTP, Color.BLACK,dashed));
+			}
+			
+			GridBagLayout gbl_panelCEAF = new GridBagLayout();
+			gbl_panelCEAF.columnWidths = new int[]{0, 0};
+			gbl_panelCEAF.rowHeights = new int[]{35, 41, 0};
+			gbl_panelCEAF.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+			gbl_panelCEAF.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+			panelCEAF.setLayout(gbl_panelCEAF);
+			
+			JPanel panelCEAFHeader = new JPanel();
+			panelCEAFHeader.setLayout(null);
+			GridBagConstraints gbc_panelCEAFHeader = new GridBagConstraints();
+			gbc_panelCEAFHeader.insets = new Insets(0, 0, 5, 0);
+			gbc_panelCEAFHeader.fill = GridBagConstraints.BOTH;
+			gbc_panelCEAFHeader.gridx = 0;
+			gbc_panelCEAFHeader.gridy = 0;
+			panelCEAF.add(panelCEAFHeader, gbc_panelCEAFHeader);
+			
+			JLabel lblCEAFMin = new JLabel("Min:");
+			lblCEAFMin.setBounds(0, 6, 23, 16);
+			panelCEAFHeader.add(lblCEAFMin);
+			
+			textCEAFMin = new JTextField();
+			textCEAFMin.setText("0");
+			textCEAFMin.setBounds(25, 0, 70, 28);
+			panelCEAFHeader.add(textCEAFMin);
+			textCEAFMin.setColumns(10);
+			
+			JLabel lblCEAFMax = new JLabel("Max:");
+			lblCEAFMax.setBounds(97, 6, 36, 16);
+			panelCEAFHeader.add(lblCEAFMax);
+			
+			textCEAFMax = new JTextField();
+			textCEAFMax.setBounds(127, 0, 70, 28);
+			panelCEAFHeader.add(textCEAFMax);
+			textCEAFMax.setColumns(10);
+			textCEAFMax.setText((myModel.dimInfo.WTP*3)+"");
+			
+			JLabel lblIntervalsCEAF = new JLabel("Intervals:");
+			lblIntervalsCEAF.setBounds(202, 6, 54, 16);
+			panelCEAFHeader.add(lblIntervalsCEAF);
+			
+			textCEAFIntervals = new JTextField();
+			textCEAFIntervals.setText("100");
+			textCEAFIntervals.setBounds(258, 0, 50, 28);
+			panelCEAFHeader.add(textCEAFIntervals);
+			textCEAFIntervals.setColumns(10);
+			
+			JButton btnUpdateCEAF = new JButton("Update");
+			btnUpdateCEAF.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int group=0;
+					if(comboCEAFGroup.isVisible()){group=comboCEAFGroup.getSelectedIndex();}
+					updateCEAF(group);
+				}
+			});
+			btnUpdateCEAF.setBounds(315, 0, 70, 28);
+			panelCEAFHeader.add(btnUpdateCEAF);
+			
+			comboCEAFGroup = new JComboBox();
+			comboCEAFGroup.setVisible(false);
+			comboCEAFGroup.setBounds(389, 1, 139, 26);
+			panelCEAFHeader.add(comboCEAFGroup);
+			
+			ChartPanel panelChartCEAF = new ChartPanel(chartCEAF,false);
+			GridBagConstraints gbc_panelChartCEAF = new GridBagConstraints();
+			gbc_panelChartCEAF.fill = GridBagConstraints.BOTH;
+			gbc_panelChartCEAF.gridx = 0;
+			gbc_panelChartCEAF.gridy = 1;
+			panelCEAF.add(panelChartCEAF, gbc_panelChartCEAF);
+			
+			//pop-up menu
+			popup = panelChartCEAF.getPopupMenu();
+			JMenuItem mntmChangeColorCEAF = new JMenuItem("Change Series Colors...");
+			mntmChangeColorCEAF.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartCEAF, chartDataCEAF, seriesPaints_Strat, frmThis);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColorCEAF, 0);
+			
+			//subgroup combos **************
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				int numGroups=myModel.subgroupNames.size();
 				subgroupNames=new String[numGroups+1];
@@ -774,14 +981,10 @@ public class frmPSA {
 				comboGroupScatter.setVisible(true);
 				comboCEACGroup.setModel(new DefaultComboBoxModel(subgroupNames));
 				comboCEACGroup.setVisible(true);
+				comboCEAFGroup.setModel(new DefaultComboBoxModel(subgroupNames));
+				comboCEAFGroup.setVisible(true);
 			}
 			
-			ChartPanel panelChartCEAC = new ChartPanel(chartCEAC,false);
-			GridBagConstraints gbc_panelChartCEAC = new GridBagConstraints();
-			gbc_panelChartCEAC.fill = GridBagConstraints.BOTH;
-			gbc_panelChartCEAC.gridx = 0;
-			gbc_panelChartCEAC.gridy = 1;
-			panelCEAC.add(panelChartCEAC, gbc_panelChartCEAC);
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -794,6 +997,7 @@ public class frmPSA {
 								frmPSA.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 								tabbedPane.setEnabledAt(2, false);
 								tabbedPane.setEnabledAt(3, false);
+								tabbedPane.setEnabledAt(4, false);
 
 								//Check model first
 								ArrayList<String> errorsBase=myModel.parseModel();
@@ -856,6 +1060,7 @@ public class frmPSA {
 									meanScatterRel=new double[1+numSubgroups][numStrat][2][1];
 									
 									dataCEAC=new double[numStrat][][];
+									dataCEAF=new double[numStrat][][];
 									
 									//Get orig values for all parameters
 									Numeric origValues[]=new Numeric[numParams];
@@ -1135,9 +1340,9 @@ public class frmPSA {
 										//Update param chart
 										XYPlot plotParams = chartParams.getXYPlot();
 										XYLineAndShapeRenderer rendererParams = new XYLineAndShapeRenderer(true,false);
-										DefaultDrawingSupplier supplierParams = new DefaultDrawingSupplier();
+										//DefaultDrawingSupplier supplierParams = new DefaultDrawingSupplier();
 										for(int v=0; v<numParams; v++){
-											rendererParams.setSeriesPaint(v, supplierParams.getNextPaint());
+											rendererParams.setSeriesPaint(v, seriesPaints_Params[v]);
 										}
 										plotParams.setRenderer(rendererParams);
 										updateParamChart();
@@ -1160,13 +1365,13 @@ public class frmPSA {
 											rendererScatter.setDrawOutlines(true);
 											rendererScatter.setUseOutlinePaint(true);
 											rendererScatter.setBaseShapesFilled(true);
-											DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
-											Paint colours[]=new Paint[numStrat];
+											//DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+											//Paint colours[]=new Paint[numStrat];
 											//iterations
 											Shape dot=new Ellipse2D.Double(-2,-2,4,4);
 											for(int s=0; s<numStrat; s++){
-												colours[s]=supplier.getNextPaint();
-												rendererScatter.setSeriesPaint(s, colours[s]);
+												//colours[s]=supplier.getNextPaint();
+												rendererScatter.setSeriesPaint(s, seriesPaints_Strat[s]);
 												rendererScatter.setSeriesOutlinePaint(s, null);
 												rendererScatter.setSeriesOutlineStroke(s, new BasicStroke(0.0f));
 												rendererScatter.setSeriesShape(s, dot);
@@ -1175,7 +1380,7 @@ public class frmPSA {
 											//Shape mean=new Rectangle2D.Double(-5,-5,10,10);
 											Shape mean=new Ellipse2D.Double(-5,-5,10,10);
 											for(int s=0; s<numStrat; s++){
-												Color curCol=(Color) colours[s];
+												Color curCol=(Color) seriesPaints_Strat[s];
 												int r=(int) (curCol.getRed()*0.6);
 												int g=(int) (curCol.getGreen()*0.6);
 												int b=(int) (curCol.getBlue()*0.6);
@@ -1192,9 +1397,15 @@ public class frmPSA {
 											plotScatter.setSeriesRenderingOrder(SeriesRenderingOrder.FORWARD);
 											updateScatter();
 											
+											//CEAC
 											tabbedPane.setEnabledAt(3, true);
 											if(comboCEACGroup.isVisible()){comboCEACGroup.setSelectedIndex(0);}
 											updateCEAC(0);
+											
+											//CEAF
+											tabbedPane.setEnabledAt(4, true);
+											if(comboCEAFGroup.isVisible()){comboCEAFGroup.setSelectedIndex(0);}
+											updateCEAF(0);
 											
 										}
 										btnExport.setEnabled(true);
@@ -1336,9 +1547,9 @@ public class frmPSA {
 		}
 		XYPlot plotResults = chartResults.getXYPlot();
 		XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,false);
-		DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
+		//DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
 		for(int s=0; s<numStrat; s++){
-			rendererResults.setSeriesPaint(s, supplierResults.getNextPaint());
+			rendererResults.setSeriesPaint(s, seriesPaints_Strat[s]);
 		}
 		plotResults.setRenderer(rendererResults);
 		
@@ -1395,6 +1606,18 @@ public class frmPSA {
 		int selected=comboParams.getSelectedIndex();
 		while(chartDataParams.getSeriesCount()>0){
 			chartDataParams.removeSeries(chartDataParams.getSeriesKey(0));
+		}
+		
+		int numSeries=listParams.getSelectedIndices().length;
+		if(numSeries>0 && numSeries!=numSeries_Params) { //reset series colours
+			numSeries_Params=numSeries;
+			seriesPaints_Params=new Paint[numSeries];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) chartParams.getXYPlot().getRenderer();
+			for(int s=0; s<numSeries; s++) {
+				seriesPaints_Params[s]=supplier.getNextPaint();
+				renderer.setSeriesPaint(s, seriesPaints_Params[s]);
+			}
 		}
 		
 		if(selected==0){ //Density
@@ -1598,17 +1821,125 @@ public class frmPSA {
 		}	
 		XYPlot plotResults = chartCEAC.getXYPlot();
 		XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,false);
-		DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
+		//DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
 		for(int s=0; s<numStrat; s++){
-			rendererResults.setSeriesPaint(s, supplierResults.getNextPaint());
+			rendererResults.setSeriesPaint(s, seriesPaints_Strat[s]);
 		}
 		plotResults.setRenderer(rendererResults);
 		
 		for(int s=0; s<numStrat; s++){
 			chartDataCEAC.addSeries(myModel.strategyNames[s],dataCEAC[s]);
 		}
+	}
+	
+	private void updateCEAF(int g) {
+		double minWTP=0, maxWTP=myModel.dimInfo.WTP*3;
+		try {
+			minWTP=Double.parseDouble(textCEAFMin.getText().replaceAll(",",""));
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(frmPSA, "CEAF: Please enter a valid min!");
+		}
+		try {
+			maxWTP=Double.parseDouble(textCEAFMax.getText().replaceAll(",",""));
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(frmPSA, "CEAF: Please enter a valid max!");
+		}
+		int numIntervals=100;
+		try {
+			numIntervals=Integer.parseInt(textCEAFIntervals.getText().replaceAll(",",""));
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(frmPSA, "CEAF: Please enter a valid number of intervals!");
+		}
+		double step=(maxWTP-minWTP)/(numIntervals*1.0);
 		
+		int costDim=myModel.dimInfo.costDim;
+		int effectDim=myModel.dimInfo.effectDim;
+				
+		//calculate 
+		for(int s=0; s<numStrat; s++) {
+			dataCEAF[s]=new double[2][numIntervals+1];
+		}
+		for(int w=0; w<=numIntervals; w++) {
+			double curWTP=minWTP+(step*w);
+			
+			double meanNMB[]=new double[numStrat];
+			int numBest[]=new int[numStrat]; //# of times strategy is the best
+			for(int i=0; i<numIterations; i++) {
+				double maxNMB=Double.NEGATIVE_INFINITY;
+				int maxIndex=-1;
+				for(int s=0; s<numStrat; s++) {
+					double cost=dataResultsIter[g][costDim][s][1][i];
+					double effect=dataResultsIter[g][effectDim][s][1][i];
+					double curNMB=(effect*curWTP)-cost;
+					meanNMB[s]+=curNMB;
+					if(curNMB>maxNMB) {
+						maxNMB=curNMB;
+						maxIndex=s;
+					}
+				}
+				numBest[maxIndex]++;
+			}
+			//find optimal strategy (E[NMB]) at current WTP
+			double maxMeanNMB=Double.NEGATIVE_INFINITY;
+			int bestStrat=-1;
+			for(int s=0; s<numStrat; s++) {
+				double curMean=meanNMB[s]/(numIterations*1.0);
+				if(curMean>maxMeanNMB) {
+					maxMeanNMB=curMean;
+					bestStrat=s;
+				}
+			}
+			//update disaply prob
+			for(int s=0; s<numStrat; s++) {
+				dataCEAF[s][0][w]=curWTP;
+				if(s==bestStrat) {
+					dataCEAF[s][1][w]=numBest[s]/(numIterations*1.0);
+				}
+				else {
+					dataCEAF[s][1][w]=Double.NaN; //don't display
+				}
+			}
+		}
 		
+		//plot
+		if(chartDataCEAF.getSeriesCount()>0){
+			for(int s=0; s<numStrat; s++){chartDataCEAF.removeSeries(myModel.strategyNames[s]);}
+		}	
+		XYPlot plotResults = chartCEAF.getXYPlot();
+		XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,false);
+		for(int s=0; s<numStrat; s++){
+			rendererResults.setSeriesPaint(s, seriesPaints_Strat[s]);
+		}
+		plotResults.setRenderer(rendererResults);
+		
+		for(int s=0; s<numStrat; s++){
+			chartDataCEAF.addSeries(myModel.strategyNames[s],dataCEAF[s]);
+		}
+	}
+	
+	public void updateStratSeriesColor(int s) {
+		//results
+		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) chartResults.getXYPlot().getRenderer();
+		renderer.setSeriesPaint(s, seriesPaints_Strat[s]);
+		
+		//scatter
+		renderer = (XYLineAndShapeRenderer) chartScatter.getXYPlot().getRenderer();
+		renderer.setSeriesPaint(s, seriesPaints_Strat[s]);
+		//mean
+		Color curCol=(Color) seriesPaints_Strat[s];
+		int r=(int) (curCol.getRed()*0.6);
+		int g=(int) (curCol.getGreen()*0.6);
+		int b=(int) (curCol.getBlue()*0.6);
+		Color newCol=new Color(r, g, b);
+		renderer.setSeriesPaint(numStrat+s, newCol);
+		
+		//ceac
+		renderer = (XYLineAndShapeRenderer) chartCEAC.getXYPlot().getRenderer();
+		renderer.setSeriesPaint(s, seriesPaints_Strat[s]);
+		
+		//ceaf
+		renderer = (XYLineAndShapeRenderer) chartCEAF.getXYPlot().getRenderer();
+		renderer.setSeriesPaint(s, seriesPaints_Strat[s]);
 	}
 	
 	private void printCEAResults(Console console, int group) {
@@ -1679,5 +2010,4 @@ public class frmPSA {
 		}
 		curTable.print();
 	}
-	
 }

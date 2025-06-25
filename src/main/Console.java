@@ -24,6 +24,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.text.Document;
@@ -246,6 +249,19 @@ public class Console{
 			ex2.printStackTrace();
 		}
 	}
+	
+	
+	public void export(String path) throws IOException {
+		
+		//Open file for writing
+		FileWriter fstream = new FileWriter(path+".txt"); //Create new file
+		BufferedWriter out = new BufferedWriter(fstream);
+		
+		out.write(textConsole.getText());
+	
+		out.close();
+	}
+	
 	
 	/*public void append(String text){
 		try{

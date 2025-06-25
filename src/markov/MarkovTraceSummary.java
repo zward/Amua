@@ -53,7 +53,7 @@ public class MarkovTraceSummary{
 	DefaultTableModel modelTraceRaw;
 	AmuaModel myModel;
 	
-	MarkovTrace allTraces[];
+	public MarkovTrace allTraces[];
 	
 	//Constructor
 	public MarkovTraceSummary(MarkovTrace traces[]){
@@ -324,6 +324,13 @@ public class MarkovTraceSummary{
 		int numSets=allTraces.length;
 		for(int s=0; s<numSets; s++) {
 			allTraces[s].write(filepath,(s+1));
+		}
+	}
+	
+	public void compileAllTraces(BufferedWriter out) throws IOException{
+		int numSets=allTraces.length;
+		for(int s=0; s<numSets; s++) {
+			allTraces[s].append(out, (s+1));
 		}
 	}
 

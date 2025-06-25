@@ -20,9 +20,13 @@ package gui;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
+
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,7 +38,10 @@ import javax.swing.DefaultComboBoxModel;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.Toolkit;
 
@@ -82,8 +89,11 @@ public class frmSensOneWay {
 	DefaultTableModel modelParams;
 	private JTable tableParams;
 
+	ChartPanel panelChart;
 	DefaultXYDataset chartData;
 	JFreeChart chart;
+	Paint seriesPaints[];
+	
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboGroup;
 	int numStrat;
@@ -603,7 +613,7 @@ public class frmSensOneWay {
 			gbc_comboGroup.gridy = 0;
 			frmSensOneWay.getContentPane().add(comboGroup, gbc_comboGroup);
 
-			ChartPanel panelChart = new ChartPanel(chart,false);
+			panelChart = new ChartPanel(chart,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
 			gbc_panelChart.gridwidth = 3;
 			gbc_panelChart.fill = GridBagConstraints.BOTH;
@@ -612,6 +622,24 @@ public class frmSensOneWay {
 			frmSensOneWay.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
 
+			numStrat=myModel.getStrategies();
+			seriesPaints=new Paint[numStrat];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			for(int s=0; s<numStrat; s++) {
+				seriesPaints[s]=supplier.getNextPaint();
+			}
+			
+			//pop-up menu
+			JPopupMenu popup = panelChart.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
+			
 		} catch (Exception ex){
 			ex.printStackTrace();
 			myModel.errorLog.recordError(ex);
@@ -659,9 +687,10 @@ public class frmSensOneWay {
 		XYPlot plot = chart.getXYPlot();
 
 		XYLineAndShapeRenderer renderer1 = new XYLineAndShapeRenderer(true,false);
-		DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+		//DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
 		for(int s=0; s<numStrat; s++){
-			renderer1.setSeriesPaint(s, supplier.getNextPaint());
+			//renderer1.setSeriesPaint(s, supplier.getNextPaint());
+			renderer1.setSeriesPaint(s, seriesPaints[s]);
 		}
 		plot.setRenderer(renderer1);
 		
@@ -669,6 +698,6 @@ public class frmSensOneWay {
 		plot.clearDomainMarkers();
 		Stroke fill = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
 		plot.addDomainMarker(new ValueMarker(baselineParamValue, Color.BLACK, fill));
-	
+		
 	}
 }

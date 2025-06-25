@@ -335,5 +335,21 @@ public class MarkovTrace{
 		}
 		out.close();
 	}
+	
+	public void append(BufferedWriter out, int index) throws IOException{
+		int numRows=modelTraceRaw.getRowCount();
+		int numCols=modelTraceRaw.getColumnCount();
+		
+		//Data
+		for(int r=0; r<numRows; r++){
+			out.write(traceName+","+index+",");
+			out.write(modelTraceRaw.getValueAt(r, 0)+"");
+			for(int i=1; i<numCols; i++){
+				out.write(","+modelTraceRaw.getValueAt(r,i));
+			}
+			out.newLine();
+		}
+		
+	}
 
 }

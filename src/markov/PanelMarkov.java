@@ -293,7 +293,7 @@ public class PanelMarkov extends ModelPanel{
 		mntmUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",16,16,16,false));
 		popup.add(mntmUpdateVariable);
 		
-		mntmShowCost= new JMenuItem("Add/Remove Cost");
+		mntmShowCost= new JMenuItem("Add/Remove Cost (One-time Event)");
 		mntmShowCost.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveCost();}});
 		mntmShowCost.setIcon(new ScaledIcon("/images/cost",16,16,16,true));
 		mntmShowCost.setDisabledIcon(new ScaledIcon("/images/cost",16,16,16,false));
@@ -701,30 +701,19 @@ public class PanelMarkov extends ModelPanel{
 	}
 
 	public void pasteSubtree(){
-		if(curNode!=null && mainForm.clipboard.copyMarkov!=null && curNode.type!=4 && curNode.collapsed==false){
-			//Check if dimensions are compatible
+		if(curNode!=null && (mainForm.clipboard.copyMarkov!=null || mainForm.clipboard.copyTree!=null) && curNode.type!=4 && curNode.collapsed==false){
+			//Check if nodes are compatible
 			boolean compatible=mainForm.clipboard.isCompatible(myModel);
 			if(compatible==false){
-				JOptionPane.showMessageDialog(this, "Incompatible dimensions!");
+				JOptionPane.showMessageDialog(this, "Cannot paste here: Incompatible nodes!");
 			}
-			//Check if Markov nodes are compatible
-			if(compatible){
-				int subrootType=mainForm.clipboard.copyMarkov.nodes.get(0).type;
-				if(curNode.type==1 && subrootType!=2){
-					compatible=false;
-					JOptionPane.showMessageDialog(this, "Incompatible subtree!");
+			else{ //Paste
+				//check dimensions
+				if(mainForm.clipboard.compareDimensions(myModel)==false) {
+					String warn=mainForm.clipboard.coerceDimensions(myModel);
+					JOptionPane.showMessageDialog(this, "Warning: "+warn);
 				}
-				else if(curNode.type!=1 && subrootType==2){
-					compatible=false;
-					JOptionPane.showMessageDialog(this, "Incompatible subtree!");
-				}
-				else if(curNode.chain!=null && subrootType==1){
-					compatible=false;
-					JOptionPane.showMessageDialog(this, "Incompatible subtree!");
-				}
-			}
-
-			if(compatible){ //Paste
+				
 				saveSnapshot("Paste");
 				this.setVisible(false); //Don't paint anything until updated
 
@@ -793,8 +782,9 @@ public class PanelMarkov extends ModelPanel{
 					mainForm.mntmPaste.setEnabled(false);
 				}
 
+				rescale(myModel.scale); //Refresh
 				resizeCanvas();
-				
+								
 				this.setVisible(true);
 			}
 		}
@@ -1117,8 +1107,8 @@ public class PanelMarkov extends ModelPanel{
 		}
 
 		//cost
-		if(curNode.hasCost){mntmShowCost.setText("Remove Cost");}
-		else{mntmShowCost.setText("Add Cost");}
+		if(curNode.hasCost){mntmShowCost.setText("Remove Cost (One-time Event)");}
+		else{mntmShowCost.setText("Add Cost (One-time Event)");}
 		if(curNode.level==0 || curNode.type==2){mntmShowCost.setEnabled(false);}
 		else{mntmShowCost.setEnabled(true);}
 	

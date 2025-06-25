@@ -54,7 +54,7 @@ public class MarkovTree{
 	@XmlElement public int stateDecimals=4;
 	@XmlElement public boolean halfCycleCorrection;
 	@XmlElement public boolean discountRewards;
-	@XmlElement public double discountRates[];
+	@XmlElement public String discountRates[];
 	@XmlElement public int discountStartCycle=0;
 	@XmlElement public double cyclesPerYear=1;
 	@XmlElement public boolean showTrace=true;
@@ -114,7 +114,7 @@ public class MarkovTree{
 		copy.halfCycleCorrection=halfCycleCorrection;
 		copy.discountRewards=discountRewards;
 		if(discountRates!=null){
-			copy.discountRates=new double[discountRates.length];
+			copy.discountRates=new String[discountRates.length];
 			for(int d=0; d<discountRates.length; d++){
 				copy.discountRates[d]=discountRates[d];
 			}

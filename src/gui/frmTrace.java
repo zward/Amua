@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -59,7 +60,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 
@@ -76,8 +79,10 @@ public class frmTrace {
 	DefaultXYDataset dataTrace;
 	XYSeriesCollection colSeries;
 	JFreeChart chartTrace;
+	Paint seriesPaints_Prev[], seriesPaints_Rewards[], seriesPaints_Vars[];
 	XYLineAndShapeRenderer renderer;
-	DefaultDrawingSupplier supplier;
+	
+	//DefaultDrawingSupplier supplier;
 	private JTable table;
 	JFileChooser fc;
 	ErrorLog errorLog;
@@ -174,6 +179,29 @@ public class frmTrace {
 				lblGroup.setVisible(true);
 			}
 			
+			//set default colours
+			//prev
+			int numStates=curTrace.stateNames.length;
+			seriesPaints_Prev=new Paint[numStates];
+			DefaultDrawingSupplier supplier_Prev = new DefaultDrawingSupplier();
+			for(int s=0; s<numStates; s++) {
+				seriesPaints_Prev[s]=supplier_Prev.getNextPaint();
+			}
+			//rewards
+			int numRewards=curTrace.numDim*2; //in case discounted
+			seriesPaints_Rewards=new Paint[numRewards];
+			DefaultDrawingSupplier supplier_Rewards = new DefaultDrawingSupplier();
+			for(int d=0; d<numRewards; d++){
+				seriesPaints_Rewards[d]=supplier_Rewards.getNextPaint();
+			}
+			//variables
+			int numVars=curTrace.numVariables;
+			seriesPaints_Vars=new Paint[numVars];
+			DefaultDrawingSupplier supplier_Vars = new DefaultDrawingSupplier();
+			for(int v=0; v<numVars; v++){
+				seriesPaints_Vars[v]=supplier_Vars.getNextPaint();
+			}
+			
 			ChartPanel panelChart = new ChartPanel(chartTrace,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
 			gbc_panelChart.insets = new Insets(0, 0, 0, 5);
@@ -182,6 +210,29 @@ public class frmTrace {
 			gbc_panelChart.gridy = 1;
 			frmTrace.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
+			
+			//pop-up menu
+			JPopupMenu popup = panelChart.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					Paint curPaints[]=null;
+					int type=comboPlot.getSelectedIndex();
+					if(type==0) {
+						curPaints=seriesPaints_Prev;
+					}
+					else if(type==1 || type==2) {
+						curPaints=seriesPaints_Rewards;
+					}
+					else if(type==3) {
+						curPaints=seriesPaints_Vars;
+					}
+					
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartTrace, dataTrace, curPaints);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
 			
 			JToolBar toolBar = new JToolBar();
 			toolBar.setFloatable(false);
@@ -315,7 +366,7 @@ public class frmTrace {
 	public void updateChart(int type){
 		XYPlot plot = chartTrace.getXYPlot();
 		renderer = new XYLineAndShapeRenderer(true,false);
-		supplier = new DefaultDrawingSupplier();
+		//supplier = new DefaultDrawingSupplier();
 		int numStates=curTrace.stateNames.length;
 		//Clear series
 		while(dataTrace.getSeriesCount()>0){
@@ -324,7 +375,7 @@ public class frmTrace {
 		
 		if(type==0){ //Prevalence
 			for(int s=0; s<numStates; s++){
-				renderer.setSeriesPaint(s, supplier.getNextPaint());
+				renderer.setSeriesPaint(s, seriesPaints_Prev[s]);
 				dataTrace.addSeries(curTrace.stateNames[s],getSeriesData(curTrace.cycles,curTrace.prev[s]));
 			}
 			plot.setRenderer(renderer);
@@ -333,12 +384,12 @@ public class frmTrace {
 		}
 		else if(type==1){ //Rewards - Cycle
 			for(int d=0; d<curTrace.numDim; d++){
-				renderer.setSeriesPaint(d, supplier.getNextPaint());
+				renderer.setSeriesPaint(d, seriesPaints_Rewards[d]);
 				dataTrace.addSeries(curTrace.dimNames[d],getSeriesData(curTrace.cycles,curTrace.cycleRewards[d]));
 			}
 			if(curTrace.discounted==true){
 				for(int d=0; d<curTrace.numDim; d++){
-					renderer.setSeriesPaint(curTrace.numDim+d, supplier.getNextPaint());
+					renderer.setSeriesPaint(curTrace.numDim+d, seriesPaints_Rewards[curTrace.numDim+d]);
 					dataTrace.addSeries(curTrace.dimNames[d]+" (Discounted)",getSeriesData(curTrace.cycles,curTrace.cycleRewardsDis[d]));
 				}
 			}
@@ -348,12 +399,12 @@ public class frmTrace {
 		}
 		else if(type==2){ //Rewards - Cumulative
 			for(int d=0; d<curTrace.numDim; d++){
-				renderer.setSeriesPaint(d, supplier.getNextPaint());
+				renderer.setSeriesPaint(d, seriesPaints_Rewards[d]);
 				dataTrace.addSeries(curTrace.dimNames[d],getSeriesData(curTrace.cycles,curTrace.cumRewards[d]));
 			}
 			if(curTrace.discounted==true){
 				for(int d=0; d<curTrace.numDim; d++){
-					renderer.setSeriesPaint(curTrace.numDim+d, supplier.getNextPaint());
+					renderer.setSeriesPaint(curTrace.numDim+d, seriesPaints_Rewards[curTrace.numDim+d]);
 					dataTrace.addSeries(curTrace.dimNames[d]+" (Discounted)",getSeriesData(curTrace.cycles,curTrace.cumRewardsDis[d]));
 				}
 			}
@@ -363,7 +414,7 @@ public class frmTrace {
 		}
 		else if(type==3){ //Variables - Cycle
 			for(int c=0; c<curTrace.numVariables; c++){
-				renderer.setSeriesPaint(c, supplier.getNextPaint());
+				renderer.setSeriesPaint(c, seriesPaints_Vars[c]);
 				dataTrace.addSeries(curTrace.varNames[c],getSeriesData(curTrace.cycles,curTrace.cycleVariables[c]));
 			}
 			plot.setRenderer(renderer);

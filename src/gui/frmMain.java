@@ -92,6 +92,7 @@ import filters.CSVFilter;
 import filters.GIFFilter;
 import filters.JPEGFilter;
 import filters.PNGFilter;
+import filters.TXTFilter;
 import main.Console;
 import main.Constraint;
 import main.ErrorLog;
@@ -418,41 +419,8 @@ public class frmMain {
 		mntmImport.setDisabledIcon(new ScaledIcon("/images/import",16,16,16,false));
 		mntmImport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					JFileChooser fc=null;
-					fc=new JFileChooser(curModel.filepath);
-					fc.setFileFilter(new AmuaModelFilter());
-					fc.setAcceptAllFileFilterUsed(false);
-
-					fc.setDialogTitle("Import Model Objects");
-
-					int returnVal = fc.showDialog(frmMain, "Import");
-					if (returnVal == JFileChooser.APPROVE_OPTION) {
-						File file = fc.getSelectedFile();
-						String path=file.getAbsolutePath();
-						if(path.equals(curModel.filepath)) {
-							JOptionPane.showMessageDialog(frmMain, "Please select a different model!");
-						}
-						else { //open donor model
-							frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-
-							JAXBContext context = JAXBContext.newInstance(AmuaModel.class);
-							Unmarshaller un = context.createUnmarshaller();
-							AmuaModel donorModel = (AmuaModel) un.unmarshal(new File(path));
-
-							frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-
-							frmImport window=new frmImport(curModel,donorModel);
-							window.frmImport.setVisible(true);
-						}
-					}
-
-				}catch(Exception e1){
-					frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					console.print("Error: "+e1.getMessage()); console.newLine();
-					errorLog.recordError(e1);
-				}
-
+				frmImport2 window=new frmImport2(curModel);
+				window.frmImport2.setVisible(true);
 			}
 		});
 		mnModel.add(mntmImport);
@@ -744,6 +712,36 @@ public class frmMain {
 			}
 		});
 		mnTools.add(mntmPlotSurface);
+		
+		JMenuItem mntmSaveConsole= new JMenuItem("Save Console");
+		mntmSaveConsole.setIcon(new ScaledIcon("/images/console",16,16,16,true));
+		mntmSaveConsole.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					JFileChooser fc=new JFileChooser(curModel.filepath);
+					fc.setAcceptAllFileFilterUsed(false);
+					fc.setFileFilter(new TXTFilter());
+					fc.setDialogTitle("Save Console");
+					fc.setApproveButtonText("Save");
+
+					int returnVal = fc.showSaveDialog(frmMain);
+					if (returnVal == JFileChooser.APPROVE_OPTION) {
+						File file = fc.getSelectedFile();
+						String path=file.getAbsolutePath();
+						path=path.replaceAll(".txt", "");
+						
+						console.export(path);
+						
+						JOptionPane.showMessageDialog(frmMain, "Console saved!");
+					}
+
+				} catch(Exception e1) {
+					e1.printStackTrace();
+					errorLog.recordError(e1);
+				}
+			}
+		});
+		mnTools.add(mntmSaveConsole);
 
 		JMenuItem mntmTestExpressions = new JMenuItem("Test Expressions");
 		mntmTestExpressions.addActionListener(new ActionListener() {
@@ -1733,7 +1731,7 @@ public class frmMain {
 
 		btnShowCost = new JButton();
 		btnShowCost.setEnabled(false);
-		btnShowCost.setToolTipText("Add/Remove Cost");
+		btnShowCost.setToolTipText("Add/Remove Cost (One-time Event)");
 		btnShowCost.setIcon(new ScaledIcon("/images/cost",24,24,24,true));
 		btnShowCost.setDisabledIcon(new ScaledIcon("/images/cost",24,24,24,false));
 		btnShowCost.addActionListener(new ActionListener() {

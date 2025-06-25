@@ -23,6 +23,7 @@ import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -50,8 +51,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -115,6 +118,9 @@ public class frmEVPI {
 	JTabbedPane tabbedPane;
 	DefaultXYDataset chartDataResults, chartDataParams;
 	JFreeChart chartResults, chartParams;
+	Paint seriesPaints_Strat[], seriesPaints_Params[];
+	int numSeries_Params;
+	
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboResults;
 	JComboBox<String> comboGroup;
@@ -190,10 +196,20 @@ public class frmEVPI {
 					boolean[] columnEditables = new boolean[] {false, false};
 					public boolean isCellEditable(int row, int column) {return columnEditables[column];}
 			};
+			
+			//get default series colors
+			int numStrat=myModel.getStrategies();
+			seriesPaints_Strat=new Paint[numStrat];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			for(int s=0; s<numStrat; s++) {
+				seriesPaints_Strat[s]=supplier.getNextPaint();
+			}
 
 			numParams=myModel.parameters.size();
 			paramNames=new String[numParams];
 			paramDims=new int[numParams];
+			DefaultDrawingSupplier supplierParams = new DefaultDrawingSupplier();
+			seriesPaints_Params=new Paint[numParams];
 			for(int i=0; i<numParams; i++){
 				modelParams.addRow(new Object[]{null});
 				Parameter curParam=myModel.parameters.get(i);
@@ -205,6 +221,7 @@ public class frmEVPI {
 				if(curParam.value.isMatrix()) {
 					paramDims[i]=curParam.value.nrow*curParam.value.ncol;
 				}
+				seriesPaints_Params[i]=supplierParams.getNextPaint();
 			}
 
 			JScrollPane scrollPaneParams = new JScrollPane();
@@ -427,6 +444,18 @@ public class frmEVPI {
 			gbc_panelChartResults.gridx = 0;
 			gbc_panelChartResults.gridy = 0;
 			panelResults.add(panelChartResults, gbc_panelChartResults);
+			
+			//pop-up menu
+			JPopupMenu popup = panelChartResults.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints_Strat);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
+
 
 			comboResults = new JComboBox<String>();
 			comboResults.addActionListener(new ActionListener() {
@@ -545,6 +574,17 @@ public class frmEVPI {
 			gbc_panelChartParams.gridy = 0;
 			panelParams.add(panelChartParams, gbc_panelChartParams);
 			
+			//pop-up menu
+			popup = panelChartParams.getPopupMenu();
+			JMenuItem mntmChangeColorParams = new JMenuItem("Change Series Colors...");
+			mntmChangeColorParams.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartParams, chartDataParams, seriesPaints_Params);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColorParams, 0);
+			
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				int numGroups=myModel.subgroupNames.size();
 				subgroupNames=new String[numGroups+1];
@@ -611,9 +651,9 @@ public class frmEVPI {
 									//Update param chart
 									XYPlot plotParams = chartParams.getXYPlot();
 									XYLineAndShapeRenderer rendererParams = new XYLineAndShapeRenderer(true,false);
-									DefaultDrawingSupplier supplierParams = new DefaultDrawingSupplier();
+									//DefaultDrawingSupplier supplierParams = new DefaultDrawingSupplier();
 									for(int v=0; v<numParams; v++){
-										rendererParams.setSeriesPaint(v, supplierParams.getNextPaint());
+										rendererParams.setSeriesPaint(v, seriesPaints_Params[v]);
 									}
 									plotParams.setRenderer(rendererParams);
 									updateParamChart();
@@ -770,9 +810,9 @@ public class frmEVPI {
 		}
 		XYPlot plotResults = chartResults.getXYPlot();
 		XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,false);
-		DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
+		//DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
 		for(int s=0; s<psaResults.numStrat; s++){
-			rendererResults.setSeriesPaint(s, supplierResults.getNextPaint());
+			rendererResults.setSeriesPaint(s, seriesPaints_Strat[s]);
 		}
 		plotResults.setRenderer(rendererResults);
 		
@@ -829,6 +869,18 @@ public class frmEVPI {
 		int selected=comboParams.getSelectedIndex();
 		while(chartDataParams.getSeriesCount()>0){
 			chartDataParams.removeSeries(chartDataParams.getSeriesKey(0));
+		}
+		
+		int numSeries=listParams.getSelectedIndices().length;
+		if(numSeries>0 && numSeries!=numSeries_Params) { //reset series colours
+			numSeries_Params=numSeries;
+			seriesPaints_Params=new Paint[numSeries];
+			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) chartParams.getXYPlot().getRenderer();
+			for(int s=0; s<numSeries; s++) {
+				seriesPaints_Params[s]=supplier.getNextPaint();
+				renderer.setSeriesPaint(s, seriesPaints_Params[s]);
+			}
 		}
 		
 		if(selected==0){ //Density

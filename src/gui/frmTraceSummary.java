@@ -64,7 +64,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 
@@ -73,6 +75,7 @@ import javax.swing.DefaultComboBoxModel;
  */
 public class frmTraceSummary {
 
+	frmTraceSummary frmThis;
 	public JFrame frmTraceSummary;
 	MarkovTraceSummary traces[];
 	MarkovTraceSummary curTrace;
@@ -80,8 +83,10 @@ public class frmTraceSummary {
 	JComboBox comboPlot, comboGroup;
 	XYSeriesCollection mean, bounds[];
 	JFreeChart chartTrace;
+	Paint seriesPaints_Prev[], seriesPaints_Rewards[], seriesPaints_Vars[];
 	XYLineAndShapeRenderer renderer;
-	DefaultDrawingSupplier supplier;
+	XYDifferenceRenderer rendererDiff[];
+	//DefaultDrawingSupplier supplier;
 	private JTable table;
 	JFileChooser fc;
 	ErrorLog errorLog;
@@ -90,6 +95,7 @@ public class frmTraceSummary {
 	 *  Default Constructor
 	 */
 	public frmTraceSummary(MarkovTraceSummary traces[], ErrorLog errorLog1, String groupNames[]) {
+		this.frmThis=this;
 		this.traces=traces;
 		this.errorLog=errorLog1;
 		curTrace=traces[0]; //overall
@@ -169,6 +175,29 @@ public class frmTraceSummary {
 				comboGroup.setVisible(true);
 			}
 			
+			//set default colours
+			//prev
+			int numStates=curTrace.stateNames.length;
+			seriesPaints_Prev=new Paint[numStates];
+			DefaultDrawingSupplier supplier_Prev = new DefaultDrawingSupplier();
+			for(int s=0; s<numStates; s++) {
+				seriesPaints_Prev[s]=supplier_Prev.getNextPaint();
+			}
+			//rewards
+			int numRewards=curTrace.numDim*2; //in case discounted
+			seriesPaints_Rewards=new Paint[numRewards];
+			DefaultDrawingSupplier supplier_Rewards = new DefaultDrawingSupplier();
+			for(int d=0; d<numRewards; d++){
+				seriesPaints_Rewards[d]=supplier_Rewards.getNextPaint();
+			}
+			//variables
+			int numVars=curTrace.numVariables;
+			seriesPaints_Vars=new Paint[numVars];
+			DefaultDrawingSupplier supplier_Vars = new DefaultDrawingSupplier();
+			for(int v=0; v<numVars; v++){
+				seriesPaints_Vars[v]=supplier_Vars.getNextPaint();
+			}
+			
 			
 			ChartPanel panelChart = new ChartPanel(chartTrace,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
@@ -178,6 +207,30 @@ public class frmTraceSummary {
 			gbc_panelChart.gridy = 1;
 			frmTraceSummary.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
+			
+			//pop-up menu
+			JPopupMenu popup = panelChart.getPopupMenu();
+			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			mntmChangeColor.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					Paint curPaints[]=null;
+					int type=comboPlot.getSelectedIndex();
+					if(type==0) {
+						curPaints=seriesPaints_Prev;
+					}
+					else if(type==1 || type==2) {
+						curPaints=seriesPaints_Rewards;
+					}
+					else if(type==3) {
+						curPaints=seriesPaints_Vars;
+					}
+					
+					frmChangeSeriesColors window=new frmChangeSeriesColors(frmThis, curPaints);
+					window.frmChangeSeriesColors.setVisible(true);
+				}
+			});
+			popup.insert(mntmChangeColor, 0);
+			
 			
 			JToolBar toolBar = new JToolBar();
 			toolBar.setFloatable(false);
@@ -266,20 +319,54 @@ public class frmTraceSummary {
 			btnExportAll.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
-						fc=new JFileChooser();
-						fc.setDialogTitle("Export All Traces");
-						fc.setApproveButtonText("Export");
-						fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-						fc.setFileFilter(new CSVFilter());
+						
+						int choice = JOptionPane.showOptionDialog(frmTraceSummary, "Do you want to compile all traces into one file, or create a separate .csv for each trace?", "Trace Format", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String []{"Compiled","Separate"}, "Compiled");
+						if(choice==0) { //compiled
+							fc=new JFileChooser();
+							fc.setDialogTitle("Export Compiled Traces");
+							fc.setApproveButtonText("Export");
+							fc.setFileFilter(new CSVFilter());
 
-						int returnVal = fc.showDialog(frmTraceSummary, "Export");
-						if (returnVal == JFileChooser.APPROVE_OPTION) {
-							File file = fc.getSelectedFile();
-							String filepath=file.getAbsolutePath()+File.separator;
-							
-							curTrace.writeAllTraces(filepath);
-							
-							JOptionPane.showMessageDialog(frmTraceSummary, "Exported!");
+							int returnVal = fc.showDialog(frmTraceSummary, "Export");
+							if (returnVal == JFileChooser.APPROVE_OPTION) {
+								File file = fc.getSelectedFile();
+								String filepath=file.getAbsolutePath();
+								filepath=filepath.replaceAll(".csv", "");
+								
+								FileWriter fstream = new FileWriter(filepath+".csv"); //Create new file
+								BufferedWriter out = new BufferedWriter(fstream);
+								
+								//Headers
+								out.write("trace,index,");
+								out.write(curTrace.allTraces[0].modelTraceRounded.getColumnName(0));
+								for(int i=1; i<curTrace.allTraces[0].modelTraceRounded.getColumnCount(); i++){
+									out.write(","+curTrace.allTraces[0].modelTraceRounded.getColumnName(i));
+								}
+								out.newLine();
+
+								curTrace.compileAllTraces(out);
+								
+								out.close();
+
+								JOptionPane.showMessageDialog(frmTraceSummary, "Exported!");
+							}
+						}
+						else { //separate
+							fc=new JFileChooser();
+							fc.setDialogTitle("Export Separate Traces");
+							fc.setApproveButtonText("Export");
+							fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+							fc.setFileFilter(new CSVFilter());
+
+							int returnVal = fc.showDialog(frmTraceSummary, "Export");
+							if (returnVal == JFileChooser.APPROVE_OPTION) {
+								File file = fc.getSelectedFile();
+								String filepath=file.getAbsolutePath()+File.separator;
+
+								curTrace.writeAllTraces(filepath);
+
+								JOptionPane.showMessageDialog(frmTraceSummary, "Exported!");
+							}
 						}
 
 					}catch(Exception er){
@@ -342,7 +429,7 @@ public class frmTraceSummary {
 		XYPlot plot = chartTrace.getXYPlot();
 		plot.setFixedLegendItems(null); //dynamic legend
 		renderer = new XYLineAndShapeRenderer(true,false);
-		supplier = new DefaultDrawingSupplier();
+		//supplier = new DefaultDrawingSupplier();
 				
 		//Clear series
 		mean.removeAllSeries();
@@ -354,7 +441,7 @@ public class frmTraceSummary {
 				
 		if(type==0){ //Prevalence
 			int numStates=curTrace.stateNames.length;
-			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numStates];
+			rendererDiff=new XYDifferenceRenderer[numStates];
 			bounds=new XYSeriesCollection[numStates];
 			for(int s=0; s<numStates; s++){
 				mean.addSeries(getSeries(curTrace.stateNames[s],curTrace.prev[s],0));
@@ -362,7 +449,7 @@ public class frmTraceSummary {
 				bounds[s].addSeries(getSeries(curTrace.stateNames[s],curTrace.prev[s],1)); //lb
 				bounds[s].addSeries(getSeries(curTrace.stateNames[s],curTrace.prev[s],2)); //ub
 				
-				Paint curPaint=supplier.getNextPaint();
+				Paint curPaint=seriesPaints_Prev[s];
 				renderer.setSeriesPaint(s, curPaint);
 				Color curColor=(Color) curPaint;
 				Color fill=new Color(curColor.getRed(),curColor.getGreen(),curColor.getBlue(),alpha);
@@ -388,7 +475,7 @@ public class frmTraceSummary {
 		else if(type==1){ //Rewards - Cycle
 			int numLines=curTrace.numDim;
 			if(curTrace.discounted){numLines*=2;}
-			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numLines];
+			rendererDiff=new XYDifferenceRenderer[numLines];
 			bounds=new XYSeriesCollection[numLines];
 			for(int d=0; d<curTrace.numDim; d++){
 				mean.addSeries(getSeries(curTrace.dimNames[d],curTrace.cycleRewards[d],0));
@@ -405,7 +492,7 @@ public class frmTraceSummary {
 				}
 			}
 			for(int d=0; d<numLines; d++){
-				Paint curPaint=supplier.getNextPaint();
+				Paint curPaint=seriesPaints_Rewards[d];
 				renderer.setSeriesPaint(d, curPaint);
 				Color curColor=(Color) curPaint;
 				Color fill=new Color(curColor.getRed(),curColor.getGreen(),curColor.getBlue(),alpha);
@@ -432,7 +519,7 @@ public class frmTraceSummary {
 		else if(type==2){ //Rewards - Cumulative
 			int numLines=curTrace.numDim;
 			if(curTrace.discounted){numLines*=2;}
-			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numLines];
+			rendererDiff=new XYDifferenceRenderer[numLines];
 			bounds=new XYSeriesCollection[numLines];
 			for(int d=0; d<curTrace.numDim; d++){
 				mean.addSeries(getSeries(curTrace.dimNames[d],curTrace.cumRewards[d],0));
@@ -449,7 +536,7 @@ public class frmTraceSummary {
 				}
 			}
 			for(int d=0; d<numLines; d++){
-				Paint curPaint=supplier.getNextPaint();
+				Paint curPaint=seriesPaints_Rewards[d];
 				renderer.setSeriesPaint(d, curPaint);
 				Color curColor=(Color) curPaint;
 				Color fill=new Color(curColor.getRed(),curColor.getGreen(),curColor.getBlue(),alpha);
@@ -474,7 +561,7 @@ public class frmTraceSummary {
 		}
 		else if(type==3) { //Variables
 			int numLines=curTrace.numVariables;
-			XYDifferenceRenderer rendererDiff[]=new XYDifferenceRenderer[numLines];
+			rendererDiff=new XYDifferenceRenderer[numLines];
 			bounds=new XYSeriesCollection[numLines];
 			for(int v=0; v<curTrace.numVariables; v++){
 				mean.addSeries(getSeries(curTrace.varNames[v],curTrace.cycleVars[v],0));
@@ -483,7 +570,7 @@ public class frmTraceSummary {
 				bounds[v].addSeries(getSeries(curTrace.varNames[v],curTrace.cycleVars[v],2)); //ub
 			}
 			for(int d=0; d<numLines; d++){
-				Paint curPaint=supplier.getNextPaint();
+				Paint curPaint=seriesPaints_Vars[d];
 				renderer.setSeriesPaint(d, curPaint);
 				Color curColor=(Color) curPaint;
 				Color fill=new Color(curColor.getRed(),curColor.getGreen(),curColor.getBlue(),alpha);

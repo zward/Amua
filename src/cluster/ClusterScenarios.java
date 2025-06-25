@@ -56,7 +56,7 @@ public class ClusterScenarios{
 
 	//markov
 	boolean origHalfCycleCorrection, origDiscountRewards;
-	double origDiscountRates[];
+	String origDiscountRates[];
 	int origDiscountStartCycle;
 	boolean origShowTrace;
 
@@ -100,7 +100,7 @@ public class ClusterScenarios{
 			if(myModel.type==1) {
 				origHalfCycleCorrection=myModel.markov.halfCycleCorrection;
 				origDiscountRewards=myModel.markov.discountRewards;
-				origDiscountRates=new double[numDim];
+				origDiscountRates=new String[numDim];
 				for(int d=0; d<numDim; d++) {
 					origDiscountRates[d]=myModel.markov.discountRates[d];
 				}
