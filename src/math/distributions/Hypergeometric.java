@@ -18,6 +18,9 @@
 
 package math.distributions;
 
+import java.text.MessageFormat;
+
+import lang.Language;
 import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
@@ -25,19 +28,19 @@ import math.NumericException;
 
 public final class Hypergeometric{
 	
-	public static Numeric pmf(Numeric params[]) throws NumericException{
+	public static Numeric pmf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
-			int k=params[0].getInt(), w=params[1].getInt(), b=params[2].getInt(), n=params[3].getInt();
-			if(w<=0){throw new NumericException("w should be >0","HGeom");}
-			if(b<=0){throw new NumericException("b should be >0","HGeom");}
-			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			int k=params[0].getInt(language), w=params[1].getInt(language), b=params[2].getInt(language), n=params[3].getInt(language);
+			if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+			if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 			double val=(MathUtils.choose(w,k)*MathUtils.choose(b,n-k))/(MathUtils.choose(w+b,n)*1.0);
 			return(new Numeric(val));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and w should be the same size","HGeom");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
-			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "w"),"HGeom",language);} //k and w should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "w", "b"),"HGeom",language);} //w and b should be the same size
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "n"),"HGeom",language);} //b and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -46,9 +49,9 @@ public final class Hypergeometric{
 					int w=(int)params[1].matrix[i][j];
 					int b=(int)params[2].matrix[i][j];
 					int n=(int)params[3].matrix[i][j];
-					if(w<=0){throw new NumericException("w should be >0","HGeom");}
-					if(b<=0){throw new NumericException("b should be >0","HGeom");}
-					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+					if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 					double val=(MathUtils.choose(w,k)*MathUtils.choose(b,n-k))/(MathUtils.choose(w+b,n)*1.0);
 					vals.matrix[i][j]=val;
 				}
@@ -57,12 +60,12 @@ public final class Hypergeometric{
 		}
 	}
 
-	public static Numeric cdf(Numeric params[]) throws NumericException{
+	public static Numeric cdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
-			int k=params[0].getInt(), w=params[1].getInt(), b=params[2].getInt(), n=params[3].getInt();
-			if(w<=0){throw new NumericException("w should be >0","HGeom");}
-			if(b<=0){throw new NumericException("b should be >0","HGeom");}
-			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			int k=params[0].getInt(language), w=params[1].getInt(language), b=params[2].getInt(language), n=params[3].getInt(language);
+			if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+			if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 			double val=0;
 			for(int i=0; i<=k; i++){
 				val+=(MathUtils.choose(w,i)*MathUtils.choose(b,n-i))/(MathUtils.choose(w+b,n)*1.0);
@@ -70,9 +73,9 @@ public final class Hypergeometric{
 			return(new Numeric(val));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and w should be the same size","HGeom");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
-			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "w"),"HGeom",language);} //k and w should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "w", "b"),"HGeom",language);} //w and b should be the same size
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "n"),"HGeom",language);} //b and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -81,9 +84,9 @@ public final class Hypergeometric{
 					int w=(int)params[1].matrix[i][j];
 					int b=(int)params[2].matrix[i][j];
 					int n=(int)params[3].matrix[i][j];
-					if(w<=0){throw new NumericException("w should be >0","HGeom");}
-					if(b<=0){throw new NumericException("b should be >0","HGeom");}
-					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+					if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 					double val=0;
 					for(int z=0; z<=k; z++){
 						val+=(MathUtils.choose(w,z)*MathUtils.choose(b,n-z))/(MathUtils.choose(w+b,n)*1.0);
@@ -95,13 +98,13 @@ public final class Hypergeometric{
 		}
 	}	
 	
-	public static Numeric quantile(Numeric params[]) throws NumericException{
+	public static Numeric quantile(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
-			double x=params[0].getProb();
-			int w=params[1].getInt(), b=params[2].getInt(), n=params[3].getInt();
-			if(w<=0){throw new NumericException("w should be >0","HGeom");}
-			if(b<=0){throw new NumericException("b should be >0","HGeom");}
-			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			double x=params[0].getProb(language);
+			int w=params[1].getInt(language), b=params[2].getInt(language), n=params[3].getInt(language);
+			if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+			if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 			int k=-1;
 			double CDF=0;
 			while(x>CDF){
@@ -112,20 +115,20 @@ public final class Hypergeometric{
 			return(new Numeric(k));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and w should be the same size","HGeom");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
-			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "w"),"HGeom",language);} //x and w should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "w", "b"),"HGeom",language);} //w and b should be the same size
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "n"),"HGeom",language);} //b and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double x=params[0].getMatrixProb(i, j);
+					double x=params[0].getMatrixProb(i, j, language);
 					int w=(int)params[1].matrix[i][j];
 					int b=(int)params[2].matrix[i][j];
 					int n=(int)params[3].matrix[i][j];
-					if(w<=0){throw new NumericException("w should be >0","HGeom");}
-					if(b<=0){throw new NumericException("b should be >0","HGeom");}
-					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+					if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 					int k=-1;
 					double CDF=0;
 					while(x>CDF){
@@ -140,17 +143,17 @@ public final class Hypergeometric{
 		}
 	}
 	
-	public static Numeric mean(Numeric params[]) throws NumericException{
+	public static Numeric mean(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			int w=params[0].getInt(), b=params[1].getInt(), n=params[2].getInt();
-			if(w<=0){throw new NumericException("w should be >0","HGeom");}
-			if(b<=0){throw new NumericException("b should be >0","HGeom");}
-			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			int w=params[0].getInt(language), b=params[1].getInt(language), n=params[2].getInt(language);
+			if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+			if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 			return(new Numeric((n*w)/((w+b)*1.0)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "w", "b"),"HGeom",language);} //w and b should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "n"),"HGeom",language);} //b and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -158,9 +161,9 @@ public final class Hypergeometric{
 					int w=(int)params[0].matrix[i][j];
 					int b=(int)params[1].matrix[i][j];
 					int n=(int)params[2].matrix[i][j];
-					if(w<=0){throw new NumericException("w should be >0","HGeom");}
-					if(b<=0){throw new NumericException("b should be >0","HGeom");}
-					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+					if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 					double val=(n*w)/((w+b)*1.0);
 					vals.matrix[i][j]=val;
 				}
@@ -169,13 +172,13 @@ public final class Hypergeometric{
 		}
 	}
 	
-	public static Numeric variance(Numeric params[]) throws NumericException{
+	public static Numeric variance(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			int w=params[0].getInt(), b=params[1].getInt(), n=params[2].getInt();
-			if(w<=0){throw new NumericException("w should be >0","HGeom");}
-			if(b<=0){throw new NumericException("b should be >0","HGeom");}
-			if(n<=0){throw new NumericException("n should be >0","HGeom");}
-			double mu=mean(params).getDouble();
+			int w=params[0].getInt(language), b=params[1].getInt(language), n=params[2].getInt(language);
+			if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+			if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
+			double mu=mean(params, language).getDouble(language);
 			double one=(w+b-n)/((w+b-1)*1.0);
 			double two=n*(mu/(n*1.0));
 			double three=1-mu/(n*1.0);
@@ -183,8 +186,8 @@ public final class Hypergeometric{
 			return(new Numeric(var));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "w", "b"),"HGeom",language);} //w and b should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "n"),"HGeom",language);} //b and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -192,10 +195,10 @@ public final class Hypergeometric{
 					int w=(int)params[0].matrix[i][j];
 					int b=(int)params[1].matrix[i][j];
 					int n=(int)params[2].matrix[i][j];
-					if(w<=0){throw new NumericException("w should be >0","HGeom");}
-					if(b<=0){throw new NumericException("b should be >0","HGeom");}
-					if(n<=0){throw new NumericException("n should be >0","HGeom");}
-					double mu=mean(params).getDouble();
+					if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+					if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
+					double mu=mean(params, language).getDouble(language);
 					double one=(w+b-n)/((w+b-1)*1.0);
 					double two=n*(mu/(n*1.0));
 					double three=1-mu/(n*1.0);
@@ -207,15 +210,15 @@ public final class Hypergeometric{
 		}
 	}
 	
-	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator, Language language) throws NumericException{
 		if(params.length!=3){
-			throw new NumericException("Incorrect number of parameters","HGeom");
+			throw new NumericException(language.message.getString("err.incorrect_num_params"),"HGeom",language); //Incorrect number of parameters
 		}
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			int w=params[0].getInt(), b=params[1].getInt(), n=params[2].getInt(), k=-1;
-			if(w<=0){throw new NumericException("w should be >0","HGeom");}
-			if(b<=0){throw new NumericException("b should be >0","HGeom");}
-			if(n<=0){throw new NumericException("n should be >0","HGeom");}
+			int w=params[0].getInt(language), b=params[1].getInt(language), n=params[2].getInt(language), k=-1;
+			if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+			if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 			double CDF=0;
 			double rand=generator.nextDouble();
 			while(rand>CDF){
@@ -225,8 +228,8 @@ public final class Hypergeometric{
 			return(new Numeric(k));
 		}
 		else{ //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("w and b should be the same size","HGeom");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and n should be the same size","HGeom");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "w", "b"),"HGeom",language);} //w and b should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "n"),"HGeom",language);} //b and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -234,9 +237,9 @@ public final class Hypergeometric{
 					int w=(int)params[0].matrix[i][j];
 					int b=(int)params[1].matrix[i][j];
 					int n=(int)params[2].matrix[i][j];
-					if(w<=0){throw new NumericException("w should be >0","HGeom");}
-					if(b<=0){throw new NumericException("b should be >0","HGeom");}
-					if(n<=0){throw new NumericException("n should be >0","HGeom");}
+					if(w<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "w"),"HGeom",language);} //w should be >0
+					if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"HGeom",language);} //b should be >0
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"HGeom",language);} //n should be >0
 					int k=-1;
 					double CDF=0;
 					double rand=generator.nextDouble();
@@ -251,22 +254,22 @@ public final class Hypergeometric{
 		}
 	}
 	
-	public static String description(){
-		String des="<html><b>Hypergeometric Distribution</b><br>";
-		des+="Used to model the number of successes in a fixed number of draws without replacement<br><br>";
-		des+="<i>Parameters</i><br>";
-		des+=MathUtils.consoleFont("w")+": Number of possible successes (Integer "+MathUtils.consoleFont(">0")+")<br>";
-		des+=MathUtils.consoleFont("b")+": Number of other possible outcomes (Integer "+MathUtils.consoleFont(">0")+")<br>";
-		des+=MathUtils.consoleFont("n")+": Number of draws (Integer "+MathUtils.consoleFont(">0")+")<br>";
-		des+="<br><i>Sample</i><br>";
-		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(w,b,n,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the the Hypergeometric distribution. Integer in "+MathUtils.consoleFont("{0,1,...,<i>min</i>(w,n)}")+"<br>";
-		des+="<br><i>Distribution Functions</i><br>";
-		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(k,w,b,n,<b><i>f</i></b>)")+": Returns the value of the Hypergeometric PMF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(k,w,b,n,<b><i>F</i></b>)")+": Returns the value of the Hypergeometric CDF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(x,w,b,n,<b><i>Q</i></b>)")+": Returns the quantile (inverse CDF) of the Hypergeometric distribution at "+MathUtils.consoleFont("x")+"<br>";
-		des+="<br><i>Moments</i><br>";
-		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(w,b,n,<b><i>E</i></b>)")+": Returns the mean of the Hypergeometric distribution<br>";
-		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(w,b,n,<b><i>V</i></b>)")+": Returns the variance of the Hypergeometric distribution<br>";
+	public static String description(Language language){
+		String des="<html><b>"+language.dist.getString("hgeom.name")+"</b><br>"; //Hypergeometric Distribution
+		des+=language.dist.getString("hgeom.desc")+"<br><br>"; //Used to model the number of successes in a fixed number of draws without replacement
+		des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
+		des+=MathUtils.consoleFont("w")+": "+language.dist.getString("hgeom.w")+"<br>"; //Number of possible successes (Integer >0)
+		des+=MathUtils.consoleFont("b")+": "+language.dist.getString("hgeom.b")+"<br>"; //Number of other possible outcomes (Integer >0)
+		des+=MathUtils.consoleFont("n")+": "+language.dist.getString("hgeom.n")+"<br>"; //Number of draws (Integer >0)
+		des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
+		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(w,b,n,<b><i>~</i></b>)")+": "+language.dist.getString("desc.sample")+". "+language.dist.getString("hgeom.support")+"<br>"; //Returns a random variable (mean in base case) from the the Hypergeometric distribution. Integer in {0,1,...,<i>min</i>(w,n)}
+		des+="<i><br>"+language.dist.getString("gen.distribution_functions")+"</i><br>"; //Distribution Functions
+		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(k,w,b,n,<b><i>f</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.pmf"), "k")+"<br>"; //Returns the value of the Hypergeometric PMF at k
+		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(k,w,b,n,<b><i>F</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.cdf"), "k")+"<br>"; //Returns the value of the Hypergeometric CDF at k
+		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(x,w,b,n,<b><i>Q</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.quantile"), "x")+"<br>"; //Returns the quantile (inverse CDF) of the Hypergeometric distribution at x
+		des+="<i><br>"+language.dist.getString("gen.moments")+"</i><br>"; //Moments
+		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(w,b,n,<b><i>E</i></b>)")+": "+language.dist.getString("desc.mean")+"<br>"; //Returns the mean of the Hypergeometric distribution
+		des+=MathUtils.consoleFont("<b>HGeom</b>","green")+MathUtils.consoleFont("(w,b,n,<b><i>V</i></b>)")+": "+language.dist.getString("desc.var")+"<br>"; //Returns the variance of the Hypergeometric distribution
 		des+="</html>";
 		return(des);
 	}

@@ -108,7 +108,7 @@ public class frmThreshOneWay {
 	private void initialize() {
 		try{
 			frmThreshOneWay = new JFrame();
-			frmThreshOneWay.setTitle("Amua - Threshold Analysis");
+			frmThreshOneWay.setTitle("Amua - "+myModel.language.base.getString("menu.threshold_analysis")); //Threshold Analysis
 			frmThreshOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmThreshOneWay.class.getResource("/images/threshold_128.png")));
 			frmThreshOneWay.setBounds(100, 100, 1000, 500);
 			frmThreshOneWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -135,7 +135,11 @@ public class frmThreshOneWay {
 
 			modelParams=new DefaultTableModel(
 					new Object[][] {,},
-					new String[] {"Parameter", "Expression","Min","Max"}) {
+					new String[] {
+							myModel.language.base.getString("object.parameter"), //Parameter
+							myModel.language.base.getString("object.expression"), //Expression
+							myModel.language.math.getString("sum.min"), //Min
+							myModel.language.math.getString("sum.max")}) { //Max
 				boolean[] columnEditables = new boolean[] {false, false,true,true};
 				public boolean isCellEditable(int row, int column) {return columnEditables[column];}
 			};
@@ -172,7 +176,7 @@ public class frmThreshOneWay {
 			gbc_panel_2.gridy = 1;
 			panel_1.add(panel_2, gbc_panel_2);
 
-			final JLabel lblOutcome = new JLabel("Outcome:");
+			final JLabel lblOutcome = new JLabel(myModel.language.analysis.getString("result.outcome")+":"); //Outcome
 			lblOutcome.setBounds(6, 73, 81, 16);
 			panel_2.add(lblOutcome);
 
@@ -190,10 +194,10 @@ public class frmThreshOneWay {
 					outcomes[d]=info.dimNames[d];
 				}
 				if(info.analysisType==1){ //CEA
-					outcomes[info.dimNames.length]="ICER ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("cea.icer")+" ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")"; //ICER
 				}
 				else if(info.analysisType==2){ //BCA
-					outcomes[info.dimNames.length]="NMB ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("bca.nmb")+" ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")"; //NMB
 				}
 			}
 			
@@ -201,12 +205,12 @@ public class frmThreshOneWay {
 			comboDimensions.setBounds(88, 68, 227, 26);
 			panel_2.add(comboDimensions);
 			
-			JButton btnRun = new JButton("Run");
+			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
 			btnRun.setBounds(345, 115, 90, 28);
 			panel_2.add(btnRun);
 
-			JLabel lblStrategy = new JLabel("Strategy 1:");
-			lblStrategy.setBounds(6, 13, 67, 16);
+			JLabel lblStrategy = new JLabel(myModel.language.analysis.getString("gen.strategy")+" 1:"); //Strategy 1
+			lblStrategy.setBounds(6, 13, 81, 16);
 			panel_2.add(lblStrategy);
 
 			final JComboBox<String> comboStrat1 = new JComboBox<String>(new DefaultComboBoxModel<String>(myModel.strategyNames));
@@ -214,8 +218,8 @@ public class frmThreshOneWay {
 			panel_2.add(comboStrat1);
 			if(myModel.strategyNames.length>0){comboStrat1.setSelectedIndex(0);}
 
-			JLabel lblStrategy_1 = new JLabel("Strategy 2:");
-			lblStrategy_1.setBounds(6, 43, 67, 16);
+			JLabel lblStrategy_1 = new JLabel(myModel.language.analysis.getString("gen.strategy")+" 2:"); //Strategy 2
+			lblStrategy_1.setBounds(6, 43, 81, 16);
 			panel_2.add(lblStrategy_1);
 
 			final JComboBox<String> comboStrat2 = new JComboBox<String>(new DefaultComboBoxModel<String>(myModel.strategyNames));
@@ -223,7 +227,7 @@ public class frmThreshOneWay {
 			panel_2.add(comboStrat2);
 			if(myModel.strategyNames.length>1){comboStrat2.setSelectedIndex(1);}
 
-			JLabel lblThreshold = new JLabel("Threshold:");
+			JLabel lblThreshold = new JLabel(myModel.language.analysis.getString("sens.threshold")+":"); //Threshold
 			lblThreshold.setFont(new Font("SansSerif", Font.BOLD, 12));
 			lblThreshold.setHorizontalAlignment(SwingConstants.CENTER);
 			lblThreshold.setBounds(327, 69, 117, 16);
@@ -236,8 +240,9 @@ public class frmThreshOneWay {
 			panel_2.add(textThresh);
 			textThresh.setColumns(10);
 			
-			JLabel lblIntervals = new JLabel("Intervals:");
-			lblIntervals.setBounds(338, 16, 55, 16);
+			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblIntervals.setBounds(318, 13, 74, 16);
 			panel_2.add(lblIntervals);
 			
 			textIntervals = new JTextField();
@@ -247,18 +252,19 @@ public class frmThreshOneWay {
 			panel_2.add(textIntervals);
 			textIntervals.setColumns(10);
 			
-			JLabel lblGroup = new JLabel("Group:");
+			JLabel lblGroup = new JLabel(myModel.language.analysis.getString("result.group")+":"); //Group
 			lblGroup.setEnabled(false);
-			lblGroup.setBounds(6, 103, 55, 16);
+			lblGroup.setBounds(6, 103, 81, 16);
 			panel_2.add(lblGroup);
 			
-			final JComboBox<String> comboGroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{"Overall"}));
+			final JComboBox<String> comboGroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{myModel.language.analysis.getString("result.overall")})); //Overall
 			comboGroup.setEnabled(false);
 			comboGroup.setBounds(88, 98, 227, 26);
 			panel_2.add(comboGroup);
 			
-			JLabel lblTolerance = new JLabel("Tolerance:");
-			lblTolerance.setBounds(327, 44, 66, 16);
+			JLabel lblTolerance = new JLabel(myModel.language.analysis.getString("sens.tolerance")+":"); //Tolerance
+			lblTolerance.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblTolerance.setBounds(318, 44, 74, 16);
 			panel_2.add(lblTolerance);
 			
 			textTolerance = new JTextField();
@@ -270,7 +276,7 @@ public class frmThreshOneWay {
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				int numGroups=myModel.subgroupNames.size();
 				String groups[]=new String[numGroups+1];
-				groups[0]="Overall";
+				groups[0]=myModel.language.analysis.getString("result.overall"); //Overall
 				for(int i=0; i<numGroups; i++){groups[i+1]=myModel.subgroupNames.get(i);}
 				comboGroup.setModel(new DefaultComboBoxModel(groups));
 				comboGroup.setEnabled(true);
@@ -279,7 +285,7 @@ public class frmThreshOneWay {
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmThreshOneWay, "Threshold analysis", "Running intervals...", 0, 100);
+					final ProgressMonitor progress=new ProgressMonitor(frmThreshOneWay, myModel.language.base.getString("menu.threshold_analysis"), myModel.language.message.getString("info.running")+"...", 0, 100); //Threshold analysis, Running
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
@@ -294,27 +300,27 @@ public class frmThreshOneWay {
 								try{
 									tol=Double.parseDouble(textTolerance.getText());
 								}catch(Exception err){
-									JOptionPane.showMessageDialog(frmThreshOneWay, "Invalid tolerance entered!");
+									JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.invalid_tolerance")); //Invalid tolerance entered!
 									proceed=false;
 								}
 								if(tol<=0){
-									JOptionPane.showMessageDialog(frmThreshOneWay, "Invalid tolerance entered!");
+									JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.invalid_tolerance")); //Invalid tolerance entered!
 									proceed=false;
 								}
 								
 								//Check model first
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
-									JOptionPane.showMessageDialog(frmThreshOneWay, "Errors in base case model!");
+									JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 									proceed=false;
 								}
 								else if(strat1==strat2){
-									JOptionPane.showMessageDialog(frmThreshOneWay, "Please select 2 different strategies!");
+									JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.select_two_diff_strategies")); //Please select 2 different strategies!
 									proceed=false;
 								}
 								
 								if(tableParams.getSelectedRow()==-1) {
-									JOptionPane.showMessageDialog(frmThreshOneWay, "Please select a parameter!");
+									JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.select_parameter")); //Please select a parameter!
 									proceed=false;
 									frmThreshOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 									btnRun.setEnabled(true);
@@ -326,11 +332,11 @@ public class frmThreshOneWay {
 									double min=0, max=0;
 									if(strMin==null) {
 										proceed=false;
-										JOptionPane.showMessageDialog(frmThreshOneWay, "Please enter a min value!");
+										JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.enter_min_value")); //Please enter a min value!
 									}
 									else if(strMax==null) {
 										proceed=false;
-										JOptionPane.showMessageDialog(frmThreshOneWay, "Please enter a max value!");
+										JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.enter_max_value")); //Please enter a max value!
 									}
 									if(proceed) {
 										strMin=strMin.replaceAll(",", ""); //Replace any commas
@@ -339,20 +345,20 @@ public class frmThreshOneWay {
 											min=Double.parseDouble(strMin);
 										} catch(Exception err) {
 											proceed=false;
-											JOptionPane.showMessageDialog(frmThreshOneWay, "Please enter a valid min!");
+											JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.valid_min")); //Please enter a valid min!
 										}
 										try {
 											max=Double.parseDouble(strMax);
 										} catch(Exception err) {
 											if(proceed) {
 												proceed=false;
-												JOptionPane.showMessageDialog(frmThreshOneWay, "Please enter a valid max!");
+												JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.valid_max")); //Please enter a valid max!
 											}
 										}
 									}
 									if(proceed && min>=max) {
 										proceed=false;
-										JOptionPane.showMessageDialog(frmThreshOneWay, "Please ensure max is greater min!");
+										JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.max_greater_min")); //Please ensure max is greater min!
 									}
 								}
 								
@@ -400,13 +406,13 @@ public class frmThreshOneWay {
 										error=true;
 										curParam.locked=false;
 										myModel.validateModelObjects();
-										JOptionPane.showMessageDialog(frmThreshOneWay, "Error: Min value");
+										JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.min_value")); //Error: Min value
 									}
 									if(errorsMax.size()>0){
 										error=true;
 										curParam.locked=false;
 										myModel.validateModelObjects();
-										JOptionPane.showMessageDialog(frmThreshOneWay, "Error: Max value");
+										JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("err.max_value")); //Error: Max value
 									}
 
 									if(error==false){
@@ -498,7 +504,7 @@ public class frmThreshOneWay {
 													}
 												}
 												if(cross==false) {
-													JOptionPane.showMessageDialog(frmThreshOneWay, "No intersection found in current range!");
+													JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("info.no_intersection_cur_range")); //No intersection found in current range!
 												}
 												else{ //Search neighbourhood for intersection
 													frmThreshOneWay.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -513,7 +519,7 @@ public class frmThreshOneWay {
 													progress.setMaximum(100);
 													while(minDist>tol && i<100){ //Binary search of neighbourhood until convergence
 														updateProgress(progress, i, 100, startTime);
-														progress.setNote("Distance: "+MathUtils.round(minDist, dec));
+														progress.setNote(myModel.language.analysis.getString("sens.distance")+": "+MathUtils.round(minDist, dec)); //Distance
 														
 														//Left
 														double valL=minVal-(step/2.0);
@@ -610,7 +616,7 @@ public class frmThreshOneWay {
 														intersection=minVal;
 													}
 													else{
-														JOptionPane.showMessageDialog(frmThreshOneWay, "No intersection found! Try increasing tolerance.");
+														JOptionPane.showMessageDialog(frmThreshOneWay, myModel.language.message.getString("info.no_intersection_increase_tol")); //No intersection found! Try increasing tolerance.
 													}
 													frmThreshOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 												}
@@ -620,9 +626,9 @@ public class frmThreshOneWay {
 											//Update chart
 											DimInfo info=myModel.dimInfo;
 											chart.getXYPlot().getDomainAxis().setLabel(curParam.name);
-											if(analysisType==0){chart.getXYPlot().getRangeAxis().setLabel("EV ("+info.dimSymbols[dim]+")");}
-											else if(analysisType==1){chart.getXYPlot().getRangeAxis().setLabel("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
-											else if(analysisType==2){chart.getXYPlot().getRangeAxis().setLabel("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
+											if(analysisType==0){chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("result.ev")+" ("+info.dimSymbols[dim]+")");} //EV
+											else if(analysisType==1){chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");} //ICER
+											else if(analysisType==2){chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");} //NMB
 											
 											if(chartData.getSeriesCount()>0){
 												for(int s=0; s<numStrat; s++){
@@ -707,10 +713,10 @@ public class frmThreshOneWay {
 			
 			//pop-up menu
 			JPopupMenu popup = panelChart.getPopupMenu();
-			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColor = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -733,7 +739,7 @@ public class frmThreshOneWay {
 		if(minutes.length()<2){minutes="0"+minutes;}
 		progress.setProgress(curProg);
 		if(curProg>0) {
-			progress.setNote("Time left: "+minutes+":"+seconds);
+			progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 		}
 	}
 }

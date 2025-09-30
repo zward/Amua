@@ -44,6 +44,10 @@ import math.Numeric;
 import java.awt.Toolkit;
 import javax.swing.JToolBar;
 import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 /**
  *
@@ -78,139 +82,202 @@ public class frmDefineConstraint {
 			frmDefineConstraint = new JDialog();
 			frmDefineConstraint.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineConstraint.class.getResource("/images/constraint_128.png")));
 			frmDefineConstraint.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmDefineConstraint.setTitle("Amua - Define Constraint");
+			frmDefineConstraint.setTitle("Amua - "+myModel.language.base.getString("title.define_constraint")); //Define Constraint
 			frmDefineConstraint.setResizable(false);
 			frmDefineConstraint.setBounds(100, 100, 650, 350);
 			frmDefineConstraint.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmDefineConstraint.getContentPane().setLayout(null);
-
-			JButton btnSave = new JButton("Save");
-			btnSave.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					boolean proceed=true;
-					String testName=textName.getText();
-					String testNotes=textNotes.getText();
-
-					if(proceed==true){
-						//Evaluate expression
-						String testExp=paneExpression.getText();
-						proceed=evaluate();
-					
-						if(proceed==true){
-							if(constNum==-1){
-								myModel.saveSnapshot("Add Constraint"); //Add to undo stack
-								constraint.name=testName;
-								constraint.expression=testExp;
-								constraint.notes=testNotes;
-								//constraint.value=testVal;
-								myModel.constraints.add(constraint);
-								myModel.addConstraint(constraint);
-							}
-							else{
-								boolean changed=false;
-								if(!constraint.name.matches(testName)){changed=true;}
-								if(!constraint.expression.matches(testExp)){changed=true;}
-								if(constraint.notes!=null && !constraint.notes.equals(testNotes)){changed=true;}
-								
-								if(changed){myModel.saveSnapshot("Edit Constraint");} //Add to undo stack
-								constraint.name=testName;
-								constraint.expression=testExp;
-								constraint.notes=testNotes;
-								//constraint.value=testVal;
-								myModel.editConstraint(constNum);
-							}
-							constraint.valid=true;
-							//myModel.validateParamsVars(); //Update all parameters/variables
-							//myModel.rescale(myModel.scale); //Re-validates textfields
-							
-							frmDefineConstraint.dispose();
-						}
-					}
-				}
-			});
-			btnSave.setBounds(436, 153, 90, 28);
-			frmDefineConstraint.getContentPane().add(btnSave);
-
-			JButton btnCancel = new JButton("Cancel");
-			btnCancel.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					frmDefineConstraint.dispose();
-				}
-			});
-			btnCancel.setBounds(535, 153, 90, 28);
-			frmDefineConstraint.getContentPane().add(btnCancel);
-
-			JLabel lblName = new JLabel("Name:");
-			lblName.setBounds(6, 13, 44, 16);
-			frmDefineConstraint.getContentPane().add(lblName);
-
-			textName = new JTextField();
-			textName.setBounds(55, 7, 296, 28);
-			frmDefineConstraint.getContentPane().add(textName);
-			textName.setColumns(10);
-
-			JLabel lblValue = new JLabel("Expected Value:");
-			lblValue.setBounds(6, 118, 101, 16);
-			frmDefineConstraint.getContentPane().add(lblValue);
 			
-			JLabel lblExpression = new JLabel("Expression:");
-			lblExpression.setBounds(35, 43, 71, 16);
-			frmDefineConstraint.getContentPane().add(lblExpression);
+			JPanel panel = new JPanel();
+			panel.setBounds(6, 6, 632, 306);
+			frmDefineConstraint.getContentPane().add(panel);
+			GridBagLayout gbl_panel = new GridBagLayout();
+			gbl_panel.columnWidths = new int[]{30, 19, 0, 242, 76, 92, 0};
+			gbl_panel.rowHeights = new int[]{0, 29, 69, 0, 70, 0, 0, 0};
+			gbl_panel.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
+			gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+			panel.setLayout(gbl_panel);
+			
+						JLabel lblName = new JLabel(myModel.language.base.getString("object.name")+":");
+						GridBagConstraints gbc_lblName = new GridBagConstraints();
+						gbc_lblName.gridwidth = 2;
+						gbc_lblName.anchor = GridBagConstraints.EAST;
+						gbc_lblName.insets = new Insets(0, 0, 5, 5);
+						gbc_lblName.gridx = 0;
+						gbc_lblName.gridy = 0;
+						panel.add(lblName, gbc_lblName);
+						
+									textName = new JTextField();
+									GridBagConstraints gbc_textName = new GridBagConstraints();
+									gbc_textName.fill = GridBagConstraints.HORIZONTAL;
+									gbc_textName.gridwidth = 2;
+									gbc_textName.insets = new Insets(0, 0, 5, 5);
+									gbc_textName.gridx = 2;
+									gbc_textName.gridy = 0;
+									panel.add(textName, gbc_textName);
+									textName.setColumns(10);
+									
+									JToolBar toolBar = new JToolBar();
+									GridBagConstraints gbc_toolBar = new GridBagConstraints();
+									gbc_toolBar.anchor = GridBagConstraints.SOUTHWEST;
+									//gbc_toolBar.insets = new Insets(0, 0, 5, 5);
+									gbc_toolBar.insets = new Insets(0, 0, 0, 0);
+									gbc_toolBar.gridx = 0;
+									gbc_toolBar.gridy = 1;
+									panel.add(toolBar, gbc_toolBar);
+									toolBar.setBorderPainted(false);
+									toolBar.setFloatable(false);
+									toolBar.setRollover(true);
+									
+									JButton btnFx = new JButton("");
+									btnFx.addActionListener(new ActionListener() {
+										public void actionPerformed(ActionEvent e) {
+											frmExpressionBuilder window=new frmExpressionBuilder(myModel,paneExpression,false);
+											window.frmExpressionBuilder.setVisible(true);
+										}
+									});
+									btnFx.setToolTipText(myModel.language.base.getString("button.build_expression")); //Build Expression
+									btnFx.setFocusPainted(false);
+									btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
+									toolBar.add(btnFx);
+									
+									JLabel lblExpression = new JLabel(myModel.language.base.getString("object.expression")+":");
+									GridBagConstraints gbc_lblExpression = new GridBagConstraints();
+									gbc_lblExpression.gridwidth = 2;
+									gbc_lblExpression.insets = new Insets(0, 0, 5, 5);
+									gbc_lblExpression.anchor = GridBagConstraints.SOUTHWEST;
+									gbc_lblExpression.gridx = 1;
+									gbc_lblExpression.gridy = 1;
+									panel.add(lblExpression, gbc_lblExpression);
+									
+												JScrollPane scrollPane = new JScrollPane();
+												GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+												gbc_scrollPane.fill = GridBagConstraints.BOTH;
+												gbc_scrollPane.gridwidth = 5;
+												gbc_scrollPane.insets = new Insets(0, 0, 5, 5);
+												gbc_scrollPane.gridx = 0;
+												gbc_scrollPane.gridy = 2;
+												panel.add(scrollPane, gbc_scrollPane);
+												
+															paneExpression=new StyledTextPane(myModel, myModel.language);
+															paneExpression.setFont(new Font("Consolas", Font.PLAIN,15));
+															scrollPane.setViewportView(paneExpression);
+															
+																		JButton btnEvaluate = new JButton(myModel.language.base.getString("button.evaluate")); //Evaluate
+																		GridBagConstraints gbc_btnEvaluate = new GridBagConstraints();
+																		gbc_btnEvaluate.insets = new Insets(0, 0, 5, 0);
+																		gbc_btnEvaluate.gridx = 5;
+																		gbc_btnEvaluate.gridy = 2;
+																		panel.add(btnEvaluate, gbc_btnEvaluate);
+																		
+																					JLabel lblValue = new JLabel(myModel.language.math.getString("sum.expected_value")+":");
+																					GridBagConstraints gbc_lblValue = new GridBagConstraints();
+																					gbc_lblValue.gridwidth = 3;
+																					gbc_lblValue.anchor = GridBagConstraints.SOUTHWEST;
+																					gbc_lblValue.insets = new Insets(0, 0, 5, 5);
+																					gbc_lblValue.gridx = 0;
+																					gbc_lblValue.gridy = 3;
+																					panel.add(lblValue, gbc_lblValue);
+																					
+																					JScrollPane scrollPaneValue = new JScrollPane();
+																					GridBagConstraints gbc_scrollPaneValue = new GridBagConstraints();
+																					gbc_scrollPaneValue.fill = GridBagConstraints.BOTH;
+																					gbc_scrollPaneValue.gridwidth = 4;
+																					gbc_scrollPaneValue.insets = new Insets(0, 0, 5, 5);
+																					gbc_scrollPaneValue.gridx = 0;
+																					gbc_scrollPaneValue.gridy = 4;
+																					panel.add(scrollPaneValue, gbc_scrollPaneValue);
+																					
+																					paneValue = new JTextPane();
+																					scrollPaneValue.setViewportView(paneValue);
+																					paneValue.setEditable(false);
+																					
+																								JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
+																								GridBagConstraints gbc_btnSave = new GridBagConstraints();
+																								gbc_btnSave.insets = new Insets(0, 0, 5, 5);
+																								gbc_btnSave.gridx = 4;
+																								gbc_btnSave.gridy = 4;
+																								panel.add(btnSave, gbc_btnSave);
+																								
+																											JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+																											GridBagConstraints gbc_btnCancel = new GridBagConstraints();
+																											gbc_btnCancel.insets = new Insets(0, 0, 5, 0);
+																											gbc_btnCancel.gridx = 5;
+																											gbc_btnCancel.gridy = 4;
+																											panel.add(btnCancel, gbc_btnCancel);
+																											
+																											JLabel lblNotes = new JLabel(myModel.language.base.getString("menu.notes")+":");
+																											GridBagConstraints gbc_lblNotes = new GridBagConstraints();
+																											gbc_lblNotes.gridwidth = 3;
+																											gbc_lblNotes.anchor = GridBagConstraints.SOUTHWEST;
+																											gbc_lblNotes.insets = new Insets(0, 0, 5, 5);
+																											gbc_lblNotes.gridx = 0;
+																											gbc_lblNotes.gridy = 5;
+																											panel.add(lblNotes, gbc_lblNotes);
+																											
+																											JScrollPane scrollPane_1 = new JScrollPane();
+																											GridBagConstraints gbc_scrollPane_1 = new GridBagConstraints();
+																											gbc_scrollPane_1.fill = GridBagConstraints.BOTH;
+																											gbc_scrollPane_1.gridwidth = 6;
+																											gbc_scrollPane_1.gridx = 0;
+																											gbc_scrollPane_1.gridy = 6;
+																											panel.add(scrollPane_1, gbc_scrollPane_1);
+																											
+																											textNotes = new JTextArea();
+																											scrollPane_1.setViewportView(textNotes);
+																											btnCancel.addActionListener(new ActionListener() {
+																												public void actionPerformed(ActionEvent e) {
+																													frmDefineConstraint.dispose();
+																												}
+																											});
+																								btnSave.addActionListener(new ActionListener() {
+																									public void actionPerformed(ActionEvent e) {
+																										boolean proceed=true;
+																										String testName=textName.getText();
+																										String testNotes=textNotes.getText();
 
-			JButton btnEvaluate = new JButton("Evaluate");
-			btnEvaluate.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					evaluate();
-				}
-			});
-			btnEvaluate.setBounds(548, 71, 90, 28);
-			frmDefineConstraint.getContentPane().add(btnEvaluate);
-
-			JScrollPane scrollPane = new JScrollPane();
-			scrollPane.setBounds(1, 61, 535, 50);
-			frmDefineConstraint.getContentPane().add(scrollPane);
-
-			paneExpression=new StyledTextPane(myModel);
-			paneExpression.setFont(new Font("Consolas", Font.PLAIN,15));
-			scrollPane.setViewportView(paneExpression);
-			
-			JLabel lblNotes = new JLabel("Notes:");
-			lblNotes.setBounds(6, 210, 55, 16);
-			frmDefineConstraint.getContentPane().add(lblNotes);
-			
-			JScrollPane scrollPane_1 = new JScrollPane();
-			scrollPane_1.setBounds(6, 226, 632, 83);
-			frmDefineConstraint.getContentPane().add(scrollPane_1);
-			
-			textNotes = new JTextArea();
-			scrollPane_1.setViewportView(textNotes);
-			
-			JScrollPane scrollPaneValue = new JScrollPane();
-			scrollPaneValue.setBounds(6, 139, 418, 59);
-			frmDefineConstraint.getContentPane().add(scrollPaneValue);
-			
-			paneValue = new JTextPane();
-			scrollPaneValue.setViewportView(paneValue);
-			paneValue.setEditable(false);
-			
-			JToolBar toolBar = new JToolBar();
-			toolBar.setBorderPainted(false);
-			toolBar.setFloatable(false);
-			toolBar.setRollover(true);
-			toolBar.setBounds(1, 40, 48, 24);
-			frmDefineConstraint.getContentPane().add(toolBar);
-			
-			JButton btnFx = new JButton("");
-			btnFx.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					frmExpressionBuilder window=new frmExpressionBuilder(myModel,paneExpression,false);
-					window.frmExpressionBuilder.setVisible(true);
-				}
-			});
-			btnFx.setToolTipText("Build Expression");
-			btnFx.setFocusPainted(false);
-			btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
-			toolBar.add(btnFx);
+																										if(proceed==true){
+																											//Evaluate expression
+																											String testExp=paneExpression.getText();
+																											proceed=evaluate();
+																										
+																											if(proceed==true){
+																												if(constNum==-1){
+																													myModel.saveSnapshot(myModel.language.base.getString("button.add_constraint")); //Add to undo stack (Add Constraint)
+																													constraint.name=testName;
+																													constraint.expression=testExp;
+																													constraint.notes=testNotes;
+																													//constraint.value=testVal;
+																													myModel.constraints.add(constraint);
+																													myModel.addConstraint(constraint);
+																												}
+																												else{
+																													boolean changed=false;
+																													if(!constraint.name.matches(testName)){changed=true;}
+																													if(!constraint.expression.matches(testExp)){changed=true;}
+																													if(constraint.notes!=null && !constraint.notes.equals(testNotes)){changed=true;}
+																													
+																													if(changed){myModel.saveSnapshot(myModel.language.base.getString("button.edit_constraint"));} //Add to undo stack (Edit Constraint)
+																													constraint.name=testName;
+																													constraint.expression=testExp;
+																													constraint.notes=testNotes;
+																													//constraint.value=testVal;
+																													myModel.editConstraint(constNum);
+																												}
+																												constraint.valid=true;
+																												//myModel.validateParamsVars(); //Update all parameters/variables
+																												//myModel.rescale(myModel.scale); //Re-validates textfields
+																												
+																												frmDefineConstraint.dispose();
+																											}
+																										}
+																									}
+																								});
+																		btnEvaluate.addActionListener(new ActionListener() {
+																			public void actionPerformed(ActionEvent e) {
+																				evaluate();
+																			}
+																		});
 			
 			paneExpression.addKeyListener(new KeyAdapter() {
 				@Override
@@ -238,7 +305,7 @@ public class frmDefineConstraint {
 			boolean update=true;
 
 			try{
-				testVal=Interpreter.evaluate(allExp[i], myModel,false);
+				testVal=Interpreter.evaluate(allExp[i], myModel,false,myModel.language);
 			}catch(Exception e1){
 				update=false;
 				paneValue.setText(e1.toString());
@@ -248,7 +315,7 @@ public class frmDefineConstraint {
 
 			if(testVal.isBoolean()==false){
 				update=false;
-				paneValue.setText("Error: Not a boolean expression: "+allExp[i]);
+				paneValue.setText(myModel.language.message.getString("err.not_boolean")+": "+allExp[i]); //Error: Not a boolean expression
 				//JOptionPane.showMessageDialog(frmDefineConstraint, "Not a boolean expression: "+allExp[i]);
 				valid=false;
 			}

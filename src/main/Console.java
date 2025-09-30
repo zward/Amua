@@ -33,6 +33,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 
 import base.AmuaModel;
+import lang.Language;
 import math.Interpreter;
 import math.Numeric;
 
@@ -45,18 +46,21 @@ public class Console{
 	int upPos=0;
 	int posClick;
 	boolean mouseDrag, clickEdit;
+	Language language;
 	
 	//Constructor
-	public Console(String version){
+	public Console(String version, Language language){
 		cmdHistory=new ArrayList<String>();
+		this.language=language;
 		
-		textConsole = new StyledTextPane(myModel);
+		textConsole = new StyledTextPane(myModel, language);
 		textConsole.setFont(new Font("Consolas", Font.PLAIN, 15));
 		//Start-up text
-		textConsole.setText("Amua version "+version+"\n");
-		print("Copyright \u00A9 2017-2025 Zachary J. Ward (https://github.com/zward/Amua)\n\n");
-		print("Amua is free software and is distributed in the hope that it will be useful, but comes with ABSOLUTELY NO WARRANTY.\n");
-		print("See Help -> About Amua for distribution details.\n");
+		textConsole.setText(language.base.getString("system.amua_version")+" "+version+"\n"); //Amua version
+		print(language.base.getString("gpl.copyright")+" \u00A9 2017-2025 Zachary J. Ward (https://github.com/zward/Amua)\n\n"); //Copyright
+		//Amua is free software and is distributed in the hope that it will be useful, but comes with ABSOLUTELY NO WARRANTY.\n
+		print(language.base.getString("gpl.gpl_console")+"\n");
+		print(language.base.getString("gpl.gpl_see_help")+"\n"); //See Help -> About Amua for distribution details.\n
 		
 		newLine();
 		
@@ -119,7 +123,7 @@ public class Console{
 						Document doc = textConsole.getDocument();
 						if(!cmd.isEmpty()){
 							cmdHistory.add(cmd);
-							Numeric result=Interpreter.evaluate(cmd, myModel,false);
+							Numeric result=Interpreter.evaluate(cmd, myModel,false,language);
 							doc.insertString(doc.getLength(), " \n: "+result.toString(), null);
 						}
 						doc.insertString(doc.getLength(), "\n> ", null);

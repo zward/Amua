@@ -27,6 +27,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.awt.event.ActionEvent;
@@ -81,6 +82,7 @@ import javax.swing.JFileChooser;
 import javax.swing.border.EtchedBorder;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -147,7 +149,7 @@ public class frmTornadoDiagram {
 	private void initialize() {
 		try{
 			frmTornadoDiagram = new JFrame();
-			frmTornadoDiagram.setTitle("Amua - Tornado Diagram");
+			frmTornadoDiagram.setTitle("Amua - "+myModel.language.base.getString("menu.tornado_diagram")); //Tornado Diagram
 			frmTornadoDiagram.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTornadoDiagram.class.getResource("/images/tornado_128.png")));
 			frmTornadoDiagram.setBounds(100, 100, 1000, 500);
 			frmTornadoDiagram.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -174,7 +176,11 @@ public class frmTornadoDiagram {
 
 			modelParams=new DefaultTableModel(
 					new Object[][] {,},
-					new String[] {"Parameter", "Expression","Low","High"}) {
+					new String[] {
+							myModel.language.base.getString("object.parameter"), //Parameter
+							myModel.language.base.getString("object.expression"), //Expression
+							myModel.language.analysis.getString("sens.low"), //Low
+							myModel.language.analysis.getString("sens.high")}) { //High
 				boolean[] columnEditables = new boolean[] {false, false,true,true};
 				public boolean isCellEditable(int row, int column) {return columnEditables[column];}
 			};
@@ -211,9 +217,10 @@ public class frmTornadoDiagram {
 			gbc_panel_2.gridy = 1;
 			panel_1.add(panel_2, gbc_panel_2);
 
-			lblOutcome = new JLabel("Outcome:");
+			lblOutcome = new JLabel(myModel.language.analysis.getString("result.outcome")+":"); //Outcome
+			lblOutcome.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblOutcome.setEnabled(false);
-			lblOutcome.setBounds(222, 51, 60, 16);
+			lblOutcome.setBounds(213, 51, 73, 16);
 			panel_2.add(lblOutcome);
 
 			DimInfo info=myModel.dimInfo;
@@ -230,10 +237,10 @@ public class frmTornadoDiagram {
 					outcomes[d]=info.dimNames[d];
 				}
 				if(info.analysisType==1){ //CEA
-					outcomes[info.dimNames.length]="ICER ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("cea.icer")+" ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")"; //ICER
 				}
 				else if(info.analysisType==2){ //BCA
-					outcomes[info.dimNames.length]="NMB ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("bca.nmb")+" ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")"; //NMB
 				}
 			}
 			
@@ -242,26 +249,26 @@ public class frmTornadoDiagram {
 			comboDimensions.setBounds(288, 46, 161, 26);
 			panel_2.add(comboDimensions);
 
-			JButton btnRun = new JButton("Run");
+			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
 			btnRun.setBounds(258, 6, 90, 28);
 			panel_2.add(btnRun);
 
-			lblStrategies = new JLabel("Strategies:");
+			lblStrategies = new JLabel(myModel.language.analysis.getString("gen.strategies")+":"); //Strategies
 			lblStrategies.setEnabled(false);
 			lblStrategies.setBounds(6, 12, 81, 16);
 			panel_2.add(lblStrategies);
 			
-			final JButton btnExport = new JButton("Export");
+			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try{
 						//Show save as dialog
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setAcceptAllFileFilterUsed(false);
-						fc.setFileFilter(new CSVFilter());
+						fc.setFileFilter(new CSVFilter(myModel.language));
 
-						fc.setDialogTitle("Export Graph Data");
-						fc.setApproveButtonText("Export");
+						fc.setDialogTitle(myModel.language.base.getString("title.export_graph_data")); //Export Graph Data
+						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
 
 						int returnVal = fc.showSaveDialog(frmTornadoDiagram);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -273,14 +280,14 @@ public class frmTornadoDiagram {
 							BufferedWriter out = new BufferedWriter(fstream);
 							//Headers
 							String outcome=chart.getCategoryPlot().getRangeAxis().getLabel();
-							out.write("Parameter");
+							out.write(myModel.language.base.getString("object.parameter")); //Parmaeter
 							for(int s=0; s<numStrategies; s++) {
 								out.write(","+myModel.strategyNames[s]+" "+outcome+" - Low");
 								out.write(","+myModel.strategyNames[s]+" "+outcome+" - High");
 							}
 							out.newLine();
 							//Baseline
-							out.write("[Baseline]");
+							out.write("["+myModel.language.analysis.getString("sens.baseline")+"]"); //Baseline
 							for(int s=0; s<numStrategies; s++) {
 								out.write(","+baseOutcomes[curGroup][s][curOutcome]);
 								out.write(","+baseOutcomes[curGroup][s][curOutcome]);
@@ -298,7 +305,7 @@ public class frmTornadoDiagram {
 							}
 							out.close();
 							
-							JOptionPane.showMessageDialog(frmTornadoDiagram, "Exported!");
+							JOptionPane.showMessageDialog(frmTornadoDiagram, myModel.language.message.getString("info.exported")); //Exported!
 						}
 
 
@@ -313,12 +320,13 @@ public class frmTornadoDiagram {
 			btnExport.setBounds(355, 6, 90, 28);
 			panel_2.add(btnExport);
 			
-			lblSubgroup = new JLabel("Subgroup:");
+			lblSubgroup = new JLabel(myModel.language.analysis.getString("result.subgroup")+":"); //Subgroup
+			lblSubgroup.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblSubgroup.setEnabled(false);
-			lblSubgroup.setBounds(222, 84, 60, 16);
+			lblSubgroup.setBounds(213, 84, 73, 16);
 			panel_2.add(lblSubgroup);
 			
-			comboSubgroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{"Overall"}));
+			comboSubgroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{myModel.language.analysis.getString("result.overall")})); //Overall
 			comboSubgroup.setEnabled(false);
 			comboSubgroup.setBounds(288, 79, 161, 26);
 			panel_2.add(comboSubgroup);
@@ -351,11 +359,11 @@ public class frmTornadoDiagram {
 				seriesPaints[1]=red;
 			}
 			
-			btnUpdatePlot = new JButton("Update Plot");
+			btnUpdatePlot = new JButton(myModel.language.base.getString("plot.update_plot")); //Update Plot
 			btnUpdatePlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(listStrategies.isSelectionEmpty()) {
-						JOptionPane.showMessageDialog(frmTornadoDiagram, "Please select at least one strategy!");
+						JOptionPane.showMessageDialog(frmTornadoDiagram, myModel.language.message.getString("err.select_one_strategy")); //Please select at least one strategy!
 					}
 					else {
 						int strats[]=listStrategies.getSelectedIndices();
@@ -410,7 +418,7 @@ public class frmTornadoDiagram {
 						for(int p=0; p<numParams; p++){
 							paramNamesChrt[p]=curResults.get(p).name;
 							if(isNumber(curResults.get(p).meanRange)==false) {
-								paramNamesChrt[p]+=" [Undefined]";
+								paramNamesChrt[p]+=" ["+myModel.language.math.getString("sum.undefined")+"]"; //Undefined
 							}
 							for(int s=0; s<numStrat; s++) {
 								starts[s][p]=curResults.get(p).minVal[s];
@@ -430,18 +438,19 @@ public class frmTornadoDiagram {
 						}
 						dataset.setSeriesKeys(seriesKeys);
 												
-						CategoryAxis xAxis = new CategoryAxis("Parameters");
+						CategoryAxis xAxis = new CategoryAxis(myModel.language.base.getString("object.parameters")); //Parameters
 						ValueAxis yAxis = new NumberAxis();
 						DimInfo info=myModel.dimInfo;
-						if(myModel.dimInfo.analysisType==0 || dim<(numOutcomes-1)) {yAxis.setLabel("EV ("+info.dimSymbols[dim]+")");}
+						if(myModel.dimInfo.analysisType==0 || dim<(numOutcomes-1)) {yAxis.setLabel(myModel.language.analysis.getString("result.ev")+" ("+info.dimSymbols[dim]+")");} //EV
 						else {
 							if(myModel.dimInfo.analysisType==1) { //CEA (ICERs)
-								yAxis.setLabel("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");
+								yAxis.setLabel(myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")"); //ICER
 								if(anyNaN) {
-									JOptionPane.showMessageDialog(frmTornadoDiagram, "Warning: One or more ICERs were undefined! Consider plotting NMB instead.");
+									//Warning: One or more ICERs were undefined! Consider plotting NMB instead.
+									JOptionPane.showMessageDialog(frmTornadoDiagram, myModel.language.message.getString("warn.icer_undefined"));
 								}
 							}
-							else if(myModel.dimInfo.analysisType==2){yAxis.setLabel("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
+							else if(myModel.dimInfo.analysisType==2){yAxis.setLabel(myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");} //NMB
 						}
 						if(globalMin==globalMax) { //ensure positive range length
 							globalMin-=0.01;
@@ -471,13 +480,13 @@ public class frmTornadoDiagram {
 					}
 				}
 			});
-			btnUpdatePlot.setBounds(288, 108, 109, 28);
+			btnUpdatePlot.setBounds(258, 108, 191, 28);
 			panel_2.add(btnUpdatePlot);
 			
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				int numSubgroups=myModel.subgroupNames.size();
 				String groups[]=new String[numSubgroups+1];
-				groups[0]="Overall";
+				groups[0]=myModel.language.analysis.getString("result.overall"); //Overall
 				for(int i=0; i<numSubgroups; i++){groups[i+1]=myModel.subgroupNames.get(i);}
 				comboSubgroup.setModel(new DefaultComboBoxModel(groups));
 				lblSubgroup.setEnabled(true);
@@ -486,7 +495,7 @@ public class frmTornadoDiagram {
 			
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmTornadoDiagram, "Tornado diagram", "Running", 0, 100);
+					final ProgressMonitor progress=new ProgressMonitor(frmTornadoDiagram, myModel.language.base.getString("menu.tornado_diagram"), myModel.language.message.getString("info.running"), 0, 100); //Tornado diagram, Running
 
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -495,7 +504,7 @@ public class frmTornadoDiagram {
 								btnExport.setEnabled(false);
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
-									JOptionPane.showMessageDialog(frmTornadoDiagram, "Errors in base case model!");
+									JOptionPane.showMessageDialog(frmTornadoDiagram, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 								}
 								else{
 									boolean proceed=true;
@@ -515,7 +524,9 @@ public class frmTornadoDiagram {
 												double max=Double.parseDouble(strMax);
 											} catch(Exception err) {
 												proceed=false;
-												JOptionPane.showMessageDialog(frmTornadoDiagram,"Invalid entry: "+paramName);
+												//Invalid entry: [name]
+												String msg = MessageFormat.format(myModel.language.message.getString("err.invalid_entry_name"), paramName);
+												JOptionPane.showMessageDialog(frmTornadoDiagram, msg);
 												p=tableParams.getRowCount();
 											}
 											numRuns+=2;
@@ -602,7 +613,7 @@ public class frmTornadoDiagram {
 												curParam.value=origValue;
 												curParam.locked=false;
 												myModel.validateModelObjects();
-												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramNames.get(p)+" - Min value");
+												JOptionPane.showMessageDialog(frmTornadoDiagram, myModel.language.message.getString("err.min_value")+": "+paramNames.get(p)); //Error: Min value
 												break;
 											}
 											else{
@@ -648,7 +659,7 @@ public class frmTornadoDiagram {
 												curParam.value=origValue;
 												curParam.locked=false;
 												myModel.validateModelObjects();
-												JOptionPane.showMessageDialog(frmTornadoDiagram, "Error: "+paramNames.get(p)+" - Max value");
+												JOptionPane.showMessageDialog(frmTornadoDiagram, myModel.language.message.getString("err.max_value")+": "+paramNames.get(p)); //Error: Max value
 												break;
 											}
 											else{
@@ -734,10 +745,10 @@ public class frmTornadoDiagram {
 			
 			//pop-up menu
 			JPopupMenu popup = panelChart.getPopupMenu();
-			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColor = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, dataset, seriesPaints, frmThis);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, dataset, seriesPaints, frmThis, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -762,7 +773,7 @@ public class frmTornadoDiagram {
 		if(minutes.length()<2){minutes="0"+minutes;}
 		progress.setProgress(curProg);
 		if(curProg>0) {
-			progress.setNote("Time left: "+minutes+":"+seconds);
+			progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 		}
 	}
 	

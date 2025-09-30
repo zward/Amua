@@ -30,6 +30,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
@@ -180,13 +181,13 @@ public class frmProperties {
 			frmProperties.setIconImage(Toolkit.getDefaultToolkit().getImage(frmProperties.class.getResource("/images/properties_128.png")));
 			frmProperties.getContentPane().setBackground(SystemColor.control);
 			frmProperties.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmProperties.setTitle("Amua - Properties");
+			frmProperties.setTitle("Amua - "+myModel.language.base.getString("menu.properties")); //Properties
 			frmProperties.setResizable(false);
 			frmProperties.setBounds(100, 100, 466, 332);
 			frmProperties.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmProperties.getContentPane().setLayout(null);
 
-			JButton btnOk = new JButton("OK");
+			JButton btnOk = new JButton(myModel.language.base.getString("button.ok")); //OK
 			btnOk.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(applyChanges()){
@@ -197,7 +198,7 @@ public class frmProperties {
 			btnOk.setBounds(262, 263, 90, 28);
 			frmProperties.getContentPane().add(btnOk);
 
-			JButton btnCancel = new JButton("Cancel");
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmProperties.dispose();
@@ -213,73 +214,73 @@ public class frmProperties {
 			//General ###############################################################################
 			
 			JPanel panelGeneral = new JPanel();
-			tabbedPane.addTab("General", null, panelGeneral, null);
+			tabbedPane.addTab(myModel.language.base.getString("title.general"), null, panelGeneral, null); //General
 			panelGeneral.setBackground(SystemColor.window);
 			panelGeneral.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 			panelGeneral.setLayout(null);
 
-			JLabel lblModelName = new JLabel("Model Name:");
-			lblModelName.setBounds(6, 8, 73, 16);
+			JLabel lblModelName = new JLabel(myModel.language.base.getString("meta.model_name")+":"); //Model Name
+			lblModelName.setBounds(6, 8, 115, 16);
 			panelGeneral.add(lblModelName);
 			
 			lblName = new JLabel("[Name]");
-			lblName.setBounds(120, 8, 325, 16);
+			lblName.setBounds(130, 8, 315, 16);
 			panelGeneral.add(lblName);
 			
-			JLabel lblAuthor = new JLabel("Created by:");
-			lblAuthor.setBounds(6, 56, 66, 16);
+			JLabel lblAuthor = new JLabel(myModel.language.base.getString("meta.created_by")+":"); //Created by
+			lblAuthor.setBounds(6, 56, 115, 16);
 			panelGeneral.add(lblAuthor);
 
 			lblDispAuthor = new JLabel("[Author]");
-			lblDispAuthor.setBounds(120, 56, 325, 16);
+			lblDispAuthor.setBounds(130, 56, 315, 16);
 			panelGeneral.add(lblDispAuthor);
 
-			JLabel lblCreated = new JLabel("Created:");
-			lblCreated.setBounds(6, 80, 55, 16);
+			JLabel lblCreated = new JLabel(myModel.language.base.getString("meta.created")+":"); //Created
+			lblCreated.setBounds(6, 80, 115, 16);
 			panelGeneral.add(lblCreated);
 
 			lblDispCreated = new JLabel("[Date created]");
-			lblDispCreated.setBounds(120, 80, 325, 16);
+			lblDispCreated.setBounds(130, 80, 315, 16);
 			panelGeneral.add(lblDispCreated);
 
-			JLabel lblVersionCreated = new JLabel("Version created:");
-			lblVersionCreated.setBounds(6, 104, 105, 16);
+			JLabel lblVersionCreated = new JLabel(myModel.language.base.getString("meta.version_created")+":"); //Version created
+			lblVersionCreated.setBounds(6, 104, 115, 16);
 			panelGeneral.add(lblVersionCreated);
 
-			JLabel lblModifiedBy = new JLabel("Modified by:");
-			lblModifiedBy.setBounds(6, 128, 73, 16);
+			JLabel lblModifiedBy = new JLabel(myModel.language.base.getString("meta.modified_by")+":"); //Modified by
+			lblModifiedBy.setBounds(6, 128, 115, 16);
 			panelGeneral.add(lblModifiedBy);
 
-			JLabel lblModelType = new JLabel("Model Type:");
-			lblModelType.setBounds(6, 32, 73, 16);
+			JLabel lblModelType = new JLabel(myModel.language.base.getString("meta.model_type")+":"); //Model Type
+			lblModelType.setBounds(6, 32, 105, 16);
 			panelGeneral.add(lblModelType);
 
-			JLabel lblModified = new JLabel("Modified:");
-			lblModified.setBounds(6, 152, 56, 16);
+			JLabel lblModified = new JLabel(myModel.language.base.getString("meta.modified")+":"); //Modified
+			lblModified.setBounds(6, 152, 115, 16);
 			panelGeneral.add(lblModified);
 
-			JLabel lblVersionModified = new JLabel("Version modified:");
-			lblVersionModified.setBounds(6, 176, 105, 16);
+			JLabel lblVersionModified = new JLabel(myModel.language.base.getString("meta.version_modified")+":"); //Version modified
+			lblVersionModified.setBounds(6, 176, 115, 16);
 			panelGeneral.add(lblVersionModified);
 
 			lblDispVCreated = new JLabel("[Version]");
-			lblDispVCreated.setBounds(120, 104, 325, 16);
+			lblDispVCreated.setBounds(130, 104, 315, 16);
 			panelGeneral.add(lblDispVCreated);
 
 			lblDispModifer = new JLabel("[Modifier]");
-			lblDispModifer.setBounds(120, 128, 325, 16);
+			lblDispModifer.setBounds(130, 128, 315, 16);
 			panelGeneral.add(lblDispModifer);
 
 			lblDispModified = new JLabel("[Date modified]");
-			lblDispModified.setBounds(120, 152, 325, 16);
+			lblDispModified.setBounds(130, 152, 315, 16);
 			panelGeneral.add(lblDispModified);
 
 			lblVModified = new JLabel("[Version]");
-			lblVModified.setBounds(120, 176, 325, 16);
+			lblVModified.setBounds(130, 176, 315, 16);
 			panelGeneral.add(lblVModified);
 
 			lblModel = new JLabel("[Model]");
-			lblModel.setBounds(120, 32, 325, 16);
+			lblModel.setBounds(130, 32, 315, 16);
 			panelGeneral.add(lblModel);
 
 			JSeparator separator = new JSeparator();
@@ -291,7 +292,7 @@ public class frmProperties {
 			panelGeneral.add(separator_1);
 
 			lblIcon = new JLabel("icon");
-			lblIcon.setBounds(100, 32, 16, 16);
+			lblIcon.setBounds(110, 32, 16, 16);
 			panelGeneral.add(lblIcon);
 			
 			//Analysis ###############################################################################
@@ -299,14 +300,17 @@ public class frmProperties {
 			JPanel panelAnalysis = new JPanel();
 			panelAnalysis.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 			panelAnalysis.setBackground(SystemColor.window);
-			tabbedPane.addTab("Analysis", null, panelAnalysis, null);
+			tabbedPane.addTab(myModel.language.analysis.getString("gen.analysis"), null, panelAnalysis, null); //Analysis
 			panelAnalysis.setLayout(null);
 
 			JScrollPane scrollPane = new JScrollPane();
 			scrollPane.setBounds(6, 6, 273, 84);
 			panelAnalysis.add(scrollPane);
 
-			modelDimensions=new DefaultTableModel(new Object[][] {}, new String[] {"Dimension", "Symbol", "Decimals"});
+			modelDimensions=new DefaultTableModel(new Object[][] {}, new String[] {
+					myModel.language.analysis.getString("gen.dimension"), //Dimension
+					myModel.language.analysis.getString("gen.symbol"), //Symbol
+					myModel.language.analysis.getString("gen.decimals")}); //Decimals
 			tableDimensions = new JTable();
 			tableDimensions.setRowSelectionAllowed(false);
 			tableDimensions.getTableHeader().setReorderingAllowed(false);
@@ -325,7 +329,7 @@ public class frmProperties {
 					}
 				}
 			});
-			btnAddDimension.setToolTipText("Add Dimension");
+			btnAddDimension.setToolTipText(myModel.language.base.getString("button.add_dimension")); //Add Dimension
 			btnAddDimension.setIcon(new ScaledIcon("/images/add",16,16,16,true));
 			btnAddDimension.setBounds(282, 11, 35, 28);
 			panelAnalysis.add(btnAddDimension);
@@ -345,13 +349,14 @@ public class frmProperties {
 				}
 			});
 			btnRemoveDimension.setBounds(282, 46, 35, 28);
-			btnRemoveDimension.setToolTipText("Remove Dimension");
+			btnRemoveDimension.setToolTipText(myModel.language.base.getString("button.remove_dimension")); //Remove Dimension
 			btnRemoveDimension.setIcon(new ScaledIcon("/images/remove",16,16,16,true));
 			btnRemoveDimension.setDisabledIcon(new ScaledIcon("/images/remove",16,16,16,false));
 			panelAnalysis.add(btnRemoveDimension);
 			
-			JLabel lblAnalysisType = new JLabel("Analysis type:");
-			lblAnalysisType.setBounds(6, 98, 85, 16);
+			JLabel lblAnalysisType = new JLabel(myModel.language.analysis.getString("gen.analysis_type")+":"); //Analysis type
+			lblAnalysisType.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblAnalysisType.setBounds(6, 98, 95, 16);
 			panelAnalysis.add(lblAnalysisType);
 			
 			comboAnalysis = new JComboBox<String>();
@@ -360,8 +365,12 @@ public class frmProperties {
 					setAnalysisType(comboAnalysis.getSelectedIndex());
 				}
 			});
-			comboAnalysis.setModel(new DefaultComboBoxModel(new String[] {"Expected Value (EV)", "Cost-Effectiveness Analysis (CEA)", "Benefit-Cost Analysis (BCA)", "Extended Cost-Effectiveness Analysis (ECEA)"}));
-			comboAnalysis.setBounds(92, 93, 282, 26);
+			comboAnalysis.setModel(new DefaultComboBoxModel(new String[] {
+					myModel.language.analysis.getString("gen.expected_value"), //Expected Value (EV)
+					myModel.language.analysis.getString("cea.cost_effectiveness_analysis"), //Cost-Effectiveness Analysis (CEA)
+					myModel.language.analysis.getString("bca.benefit_cost_analysis"), //Benefit-Cost Analysis (BCA)
+					myModel.language.analysis.getString("cea.extended_cea")})); //Extended Cost-Effectiveness Analysis (ECEA)
+			comboAnalysis.setBounds(103, 93, 282, 26);
 			panelAnalysis.add(comboAnalysis);
 			
 			JScrollPane scrollPane_2 = new JScrollPane();
@@ -370,8 +379,8 @@ public class frmProperties {
 			
 			modelAnalysis=new DefaultTableModel(
 					new Object[][] {
-						{"Objective", null},
-						{"Outcome", null},
+						{myModel.language.analysis.getString("gen.objective"), null}, //Objective
+						{myModel.language.analysis.getString("result.outcome"), null}, //Outcome
 					},
 					new String[] {
 						"", ""
@@ -397,7 +406,7 @@ public class frmProperties {
 			tableAnalysis.putClientProperty("terminateEditOnFocusLost", true);
 			scrollPane_2.setViewportView(tableAnalysis);
 			
-			JButton btnRefreshDim = new JButton("Refresh");
+			JButton btnRefreshDim = new JButton(myModel.language.base.getString("button.refresh")); //Refresh
 			btnRefreshDim.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					//Update dimensions
@@ -451,11 +460,12 @@ public class frmProperties {
 			
 			JPanel panelSimulation = new JPanel();
 			panelSimulation.setBackground(SystemColor.window);
-			tabbedPane.addTab("Simulation", null, panelSimulation, null);
+			tabbedPane.addTab(myModel.language.analysis.getString("sim.simulation"), null, panelSimulation, null); //Simulation
 			panelSimulation.setLayout(null);
 			
-			JLabel label = new JLabel("Simulation type:");
-			label.setBounds(6, 11, 92, 16);
+			JLabel label = new JLabel(myModel.language.analysis.getString("sim.simulation_type")+":"); //Simulation type
+			label.setHorizontalAlignment(SwingConstants.RIGHT);
+			label.setBounds(4, 11, 110, 16);
 			panelSimulation.add(label);
 			
 			comboSimType = new JComboBox();
@@ -463,14 +473,14 @@ public class frmProperties {
 				public void actionPerformed(ActionEvent arg0) {
 					int selected=comboSimType.getSelectedIndex();
 					if(selected==0){ //Cohort
-						lblCohortSize.setText("Cohort size:");
+						lblCohortSize.setText(myModel.language.analysis.getString("sim.cohort_size")+":"); //Cohort size
 						chckbxCRN.setEnabled(false);
 						textCRNSeed.setEnabled(false);
 						chckbxDisplayIndResults.setEnabled(false);
 						tabbedPane.setEnabledAt(4, false); //no subgroups
 					}
 					else if(selected==1){ //Monte Carlo
-						lblCohortSize.setText("# simulations:");
+						lblCohortSize.setText(myModel.language.analysis.getString("sim.num_simulations")+":"); //# simulations
 						chckbxCRN.setEnabled(true);
 						if(chckbxCRN.isSelected()){textCRNSeed.setEnabled(true);}
 						else{textCRNSeed.setEnabled(false);}
@@ -479,21 +489,23 @@ public class frmProperties {
 					}
 				}
 			});
-			comboSimType.setModel(new DefaultComboBoxModel(new String[] {"Cohort (Deterministic)", "Monte Carlo (Stochastic)"}));
-			comboSimType.setBounds(100, 6, 167, 26);
+			comboSimType.setModel(new DefaultComboBoxModel(new String[] {
+					myModel.language.analysis.getString("sim.cohort_deterministic"), //Cohort (Deterministic)
+					myModel.language.analysis.getString("sim.monte_carlo_stochastic")})); //Monte Carlo (Stochastic)
+			comboSimType.setBounds(115, 6, 181, 26);
 			panelSimulation.add(comboSimType);
 			
-			lblCohortSize = new JLabel("Cohort size:");
+			lblCohortSize = new JLabel(myModel.language.analysis.getString("sim.cohort_size")+":"); //Cohort size
 			lblCohortSize.setHorizontalAlignment(SwingConstants.RIGHT);
-			lblCohortSize.setBounds(6, 45, 92, 16);
+			lblCohortSize.setBounds(6, 45, 108, 16);
 			panelSimulation.add(lblCohortSize);
 			
 			textCohortSize = new JTextField();
 			textCohortSize.setColumns(10);
-			textCohortSize.setBounds(103, 39, 105, 28);
+			textCohortSize.setBounds(115, 39, 105, 28);
 			panelSimulation.add(textCohortSize);
 			
-			chckbxCRN = new JCheckBox("Seed RNG");
+			chckbxCRN = new JCheckBox(myModel.language.analysis.getString("sim.seed_rng")); //Seed RNG
 			chckbxCRN.setEnabled(false);
 			chckbxCRN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -501,37 +513,37 @@ public class frmProperties {
 					else{textCRNSeed.setEnabled(false);}
 				}
 			});
-			chckbxCRN.setBounds(15, 78, 92, 18);
+			chckbxCRN.setBounds(15, 78, 188, 18);
 			panelSimulation.add(chckbxCRN);
 			
-			JLabel lblSeed = new JLabel("Seed:");
-			lblSeed.setBounds(107, 80, 37, 16);
+			JLabel lblSeed = new JLabel(myModel.language.analysis.getString("sim.seed")+":"); //Seed
+			lblSeed.setBounds(204, 79, 43, 16);
 			panelSimulation.add(lblSeed);
 			
 			textCRNSeed = new JTextField();
 			textCRNSeed.setEnabled(false);
 			textCRNSeed.setText("999");
-			textCRNSeed.setBounds(142, 73, 66, 28);
+			textCRNSeed.setBounds(250, 73, 66, 28);
 			panelSimulation.add(textCRNSeed);
 			textCRNSeed.setColumns(10);
 			
-			JLabel lblstOrder = new JLabel("(1st-order uncertainty)");
-			lblstOrder.setHorizontalAlignment(SwingConstants.CENTER);
+			JLabel lblstOrder = new JLabel(myModel.language.analysis.getString("sim.1st_order_uncertainty")); //1st-order uncertainty
+			lblstOrder.setHorizontalAlignment(SwingConstants.LEFT);
 			lblstOrder.setFont(new Font("SansSerif", Font.PLAIN, 9));
-			lblstOrder.setBounds(269, 11, 98, 16);
+			lblstOrder.setBounds(298, 11, 144, 16);
 			panelSimulation.add(lblstOrder);
 			
-			chckbxDisplayIndResults = new JCheckBox("Display individual-level results");
+			chckbxDisplayIndResults = new JCheckBox(myModel.language.analysis.getString("result.display_ind_results")); //Display individual-level results
 			chckbxDisplayIndResults.setEnabled(false);
-			chckbxDisplayIndResults.setBounds(15, 105, 193, 18);
+			chckbxDisplayIndResults.setBounds(15, 107, 281, 18);
 			panelSimulation.add(chckbxDisplayIndResults);
 						
-			lblThreads = new JLabel("threads");
+			lblThreads = new JLabel(myModel.language.analysis.getString("sim.threads").toLowerCase(myModel.language.locale)); //threads
 			lblThreads.setEnabled(false);
-			lblThreads.setBounds(92, 159, 55, 16);
+			lblThreads.setBounds(92, 161, 55, 16);
 			panelSimulation.add(lblThreads);
 			
-			btnSetToMax = new JButton("Set to max");
+			btnSetToMax = new JButton(myModel.language.analysis.getString("sim.set_to_max")); //Set to max
 			btnSetToMax.setEnabled(false);
 			btnSetToMax.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -539,10 +551,10 @@ public class frmProperties {
 					textNumThreads.setText(threads+"");
 				}
 			});
-			btnSetToMax.setBounds(142, 153, 85, 28);
+			btnSetToMax.setBounds(142, 155, 144, 28);
 			panelSimulation.add(btnSetToMax);
 			
-			chckbxMultithread = new JCheckBox("Multi-thread simulation");
+			chckbxMultithread = new JCheckBox(myModel.language.analysis.getString("sim.multi_thread")); //Multi-thread simulation
 			chckbxMultithread.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(chckbxMultithread.isSelected()){
@@ -557,13 +569,13 @@ public class frmProperties {
 					}
 				}
 			});
-			chckbxMultithread.setBounds(15, 135, 158, 18);
+			chckbxMultithread.setBounds(15, 135, 281, 18);
 			panelSimulation.add(chckbxMultithread);
 			
 			textNumThreads = new JTextField();
 			textNumThreads.setEnabled(false);
 			textNumThreads.setText("1");
-			textNumThreads.setBounds(52, 153, 37, 28);
+			textNumThreads.setBounds(52, 155, 37, 28);
 			panelSimulation.add(textNumThreads);
 			textNumThreads.setColumns(10);
 			
@@ -574,35 +586,37 @@ public class frmProperties {
 			JPanel panelMarkov = new JPanel();
 			panelMarkov.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 			panelMarkov.setBackground(SystemColor.window);
-			tabbedPane.addTab("Markov", null, panelMarkov, null);
+			tabbedPane.addTab(myModel.language.base.getString("markov.markov"), null, panelMarkov, null); //Markov
 			tabbedPane.setEnabledAt(3, false);
 			panelMarkov.setLayout(null);
 			
-			JLabel lblMaxCycles = new JLabel("Max cycles:");
-			lblMaxCycles.setBounds(6, 23, 71, 16);
+			JLabel lblMaxCycles = new JLabel(myModel.language.analysis.getString("sim.max_cycles")+":"); //Max cycles
+			lblMaxCycles.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblMaxCycles.setBounds(6, 23, 104, 16);
 			panelMarkov.add(lblMaxCycles);
 			
 			textMarkovMaxCycles = new JTextField();
-			textMarkovMaxCycles.setBounds(72, 17, 71, 28);
+			textMarkovMaxCycles.setBounds(110, 17, 54, 28);
 			panelMarkov.add(textMarkovMaxCycles);
 			textMarkovMaxCycles.setColumns(10);
 			
-			chckbxHalfcycleCorrection = new JCheckBox("Half-cycle correction");
-			chckbxHalfcycleCorrection.setBounds(6, 57, 141, 18);
+			chckbxHalfcycleCorrection = new JCheckBox(myModel.language.analysis.getString("gen.half_cycle_correction")); //Half-cycle correction
+			chckbxHalfcycleCorrection.setBounds(6, 57, 195, 18);
 			panelMarkov.add(chckbxHalfcycleCorrection);
 			
-			lblDiscountStartCycle = new JLabel("Discount start cycle:");
+			lblDiscountStartCycle = new JLabel(myModel.language.analysis.getString("gen.discount_start_cycle")+":"); //Discount start cycle
+			lblDiscountStartCycle.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblDiscountStartCycle.setEnabled(false);
-			lblDiscountStartCycle.setBounds(251, 121, 116, 16);
+			lblDiscountStartCycle.setBounds(235, 121, 168, 16);
 			panelMarkov.add(lblDiscountStartCycle);
 			
 			textDiscountStartCycle = new JTextField();
 			textDiscountStartCycle.setEnabled(false);
-			textDiscountStartCycle.setBounds(361, 115, 57, 28);
+			textDiscountStartCycle.setBounds(404, 115, 38, 28);
 			panelMarkov.add(textDiscountStartCycle);
 			textDiscountStartCycle.setColumns(10);
 			
-			chckbxDiscount = new JCheckBox("Discount Rewards");
+			chckbxDiscount = new JCheckBox(myModel.language.analysis.getString("gen.discount_rewards")); //Discount Rewards
 			chckbxDiscount.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					if(chckbxDiscount.isSelected()){
@@ -621,16 +635,18 @@ public class frmProperties {
 					}
 				}
 			});
-			chckbxDiscount.setBounds(6, 85, 141, 18);
+			chckbxDiscount.setBounds(6, 85, 195, 18);
 			panelMarkov.add(chckbxDiscount);
 			
 			JScrollPane scrollPane_1 = new JScrollPane();
-			scrollPane_1.setBounds(6, 115, 233, 83);
+			scrollPane_1.setBounds(6, 115, 223, 83);
 			panelMarkov.add(scrollPane_1);
 			
 			modelDiscountRates=new DefaultTableModel(
 					new Object[][] {},
-					new String[] {"Dimension", "Discount Rate (%)"}
+					new String[] {
+							myModel.language.analysis.getString("gen.dimension"), //Dimension 
+							myModel.language.analysis.getString("gen.discount_rate")} //Discount Rate (%)
 				) {
 					boolean[] columnEditables = new boolean[] {false, true};
 					public boolean isCellEditable(int row, int column) {
@@ -645,32 +661,34 @@ public class frmProperties {
 			tableDiscountRates.putClientProperty("terminateEditOnFocusLost", true);
 			scrollPane_1.setViewportView(tableDiscountRates);
 			
-			JLabel lblStatePrevalenceDecimals = new JLabel("State Prevalence Decimals:");
-			lblStatePrevalenceDecimals.setBounds(228, 40, 158, 16);
+			JLabel lblStatePrevalenceDecimals = new JLabel(myModel.language.analysis.getString("gen.state_prev_decimals")+":"); //State Prevalence Decimals
+			lblStatePrevalenceDecimals.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblStatePrevalenceDecimals.setBounds(201, 70, 202, 16);
 			panelMarkov.add(lblStatePrevalenceDecimals);
 			
 			textMarkovStateDecimals = new JTextField();
-			textMarkovStateDecimals.setBounds(384, 34, 47, 28);
+			textMarkovStateDecimals.setBounds(405, 64, 37, 28);
 			panelMarkov.add(textMarkovStateDecimals);
 			textMarkovStateDecimals.setColumns(10);
 			
-			chckbxShowMarkovTrace = new JCheckBox("Show trace");
-			chckbxShowMarkovTrace.setBounds(228, 17, 104, 18);
+			chckbxShowMarkovTrace = new JCheckBox(myModel.language.analysis.getString("result.show_trace")); //Show trace
+			chckbxShowMarkovTrace.setBounds(274, 11, 168, 18);
 			panelMarkov.add(chckbxShowMarkovTrace);
 			
-			chckbxCompileTraces = new JCheckBox("Compile traces");
-			chckbxCompileTraces.setBounds(322, 17, 109, 18);
+			chckbxCompileTraces = new JCheckBox(myModel.language.analysis.getString("result.compile_traces")); //Compile traces
+			chckbxCompileTraces.setBounds(274, 38, 168, 18);
 			panelMarkov.add(chckbxCompileTraces);
 			
-			lblCyclesPerYear = new JLabel("Cycles per year:");
+			lblCyclesPerYear = new JLabel(myModel.language.analysis.getString("sim.cycles_per_year")+":"); //Cycles per year
+			lblCyclesPerYear.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblCyclesPerYear.setEnabled(false);
-			lblCyclesPerYear.setBounds(251, 148, 104, 16);
+			lblCyclesPerYear.setBounds(235, 148, 168, 16);
 			panelMarkov.add(lblCyclesPerYear);
 			
 			textCyclesPerYear = new JTextField();
 			textCyclesPerYear.setEnabled(false);
 			textCyclesPerYear.setColumns(10);
-			textCyclesPerYear.setBounds(361, 142, 57, 28);
+			textCyclesPerYear.setBounds(404, 142, 38, 28);
 			panelMarkov.add(textCyclesPerYear);
 			
 			
@@ -679,12 +697,12 @@ public class frmProperties {
 			JPanel panelSubgroups = new JPanel();
 			panelSubgroups.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 			panelSubgroups.setBackground(SystemColor.window);
-			tabbedPane.addTab("Subgroups", null, panelSubgroups, null);
+			tabbedPane.addTab(myModel.language.analysis.getString("result.subgroups"), null, panelSubgroups, null); //Subgroups
 			tabbedPane.setEnabledAt(4, false);
 			panelSubgroups.setLayout(null);
 			
-			chckbxSubgroups = new JCheckBox("Report subgroup-specific outcomes");
-			chckbxSubgroups.setBounds(6, 11, 241, 18);
+			chckbxSubgroups = new JCheckBox(myModel.language.analysis.getString("result.report_subgroup_outcomes")); //Report subgroup-specific outcomes
+			chckbxSubgroups.setBounds(6, 11, 326, 18);
 			panelSubgroups.add(chckbxSubgroups);
 			
 			JScrollPane scrollPaneSubgroups = new JScrollPane();
@@ -693,7 +711,9 @@ public class frmProperties {
 			
 			modelSubgroups=new DefaultTableModel(
 					new Object[][] {},
-					new String[] {"Subgroup", "Definition"}
+					new String[] {
+							myModel.language.analysis.getString("result.subgroup"), //Subgroup
+							myModel.language.base.getString("title.definition")} //Definition
 					) {
 				boolean[] columnEditables = new boolean[] {false, false};
 				public boolean isCellEditable(int row, int column) {
@@ -745,7 +765,7 @@ public class frmProperties {
 				}
 			});
 			btnAddSubgroup.setIcon(new ScaledIcon("/images/add",16,16,16,true));
-			btnAddSubgroup.setToolTipText("Add Subgroup");
+			btnAddSubgroup.setToolTipText(myModel.language.base.getString("button.add_subgroup")); //Add Subgroup
 			btnAddSubgroup.setBounds(335, 6, 35, 28);
 			panelSubgroups.add(btnAddSubgroup);
 			
@@ -760,7 +780,7 @@ public class frmProperties {
 			});
 			btnRemoveSubgroup.setIcon(new ScaledIcon("/images/remove",16,16,16,true));
 			btnRemoveSubgroup.setDisabledIcon(new ScaledIcon("/images/remove",16,16,16,false));
-			btnRemoveSubgroup.setToolTipText("Remove Subgroup");
+			btnRemoveSubgroup.setToolTipText(myModel.language.base.getString("button.remove_subgroup")); //Remove Subgroup
 			btnRemoveSubgroup.setBounds(407, 6, 35, 28);
 			panelSubgroups.add(btnRemoveSubgroup);
 			
@@ -774,7 +794,7 @@ public class frmProperties {
 				}
 			});
 			btnEditSubgroup.setIcon(new ScaledIcon("/images/edit",16,16,16,true));
-			btnEditSubgroup.setToolTipText("Edit Subgroup");
+			btnEditSubgroup.setToolTipText(myModel.language.base.getString("button.edit_subgroup")); //Edit Subgroup
 			btnEditSubgroup.setBounds(371, 6, 35, 28);
 			panelSubgroups.add(btnEditSubgroup);
 			
@@ -794,7 +814,8 @@ public class frmProperties {
 	}
 	
 	private void displayMetadata(Metadata meta){
-		String modelTypes[]={"Decision Tree","Markov Model"};
+		String modelTypes[]={myModel.language.base.getString("menu.decision_tree"),
+				myModel.language.base.getString("menu.markov_model")}; //Decision Tree, Markov Model
 		String icons[]={"/images/modelTree","/images/markovChain"};
 		lblName.setText(myModel.name);
 		lblModel.setText(modelTypes[myModel.type]);
@@ -923,11 +944,13 @@ public class frmProperties {
 			String curDecimal=(String) tableDimensions.getValueAt(i, 2);
 			if(curName==null){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, curName+"Please enter a valid dimension name!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("info.invalid_dim_name")); //Please enter a valid dimension name
 			}
 			else if(dimNames.contains(curName)){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, curName+" is already defined!");
+				//[name] is already defined!
+				String msg = MessageFormat.format(myModel.language.message.getString("err.already_defined"), curName);
+				JOptionPane.showMessageDialog(frmProperties, msg);
 			}
 			else{
 				dimNames.add(curName);
@@ -935,11 +958,13 @@ public class frmProperties {
 
 			if(curSymbol==null){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, curName+"Please enter a valid dimension symbol!");
+				JOptionPane.showMessageDialog(frmProperties, curName+": "+myModel.language.message.getString("info.invalid_dim_symbol")); //Please enter a valid dimension symbol!
 			}
 			else if(dimSymbols.contains(curSymbol)){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, curSymbol+ "is already defined!");
+				//[name] is already defined!
+				String msg = MessageFormat.format(myModel.language.message.getString("err.already_defined"), curSymbol);
+				JOptionPane.showMessageDialog(frmProperties, msg);
 			}
 			else{
 				dimSymbols.add(curSymbol);
@@ -947,7 +972,7 @@ public class frmProperties {
 
 			if(curDecimal==null){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, curName+"Please enter decimal places!");
+				JOptionPane.showMessageDialog(frmProperties, curName+": "+myModel.language.message.getString("err.enter_decimal_places")); //Please enter decimal places!
 			}
 			else{
 				//Try to convert to integer
@@ -956,12 +981,12 @@ public class frmProperties {
 					curDec=Integer.parseInt(curDecimal);
 				} catch(Exception er){
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid integer for decimal places!");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.enter_decimal_places")); //Please enter a valid integer for decimal places!
 				}
 				if(valid==true){ //Integer entered
 					if(curDec<0){
 						valid=false;
-						JOptionPane.showMessageDialog(frmProperties, "Please enter a valid integer!");
+						JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.enter_decimal_places")); //Please enter a valid integer for decimal places!
 					}
 					else{
 						decimals.add(curDec);
@@ -988,16 +1013,16 @@ public class frmProperties {
 			String strObj=(String) tableAnalysis.getValueAt(0, 1);
 			if(strObj==null){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please select an objective!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.select_objective")); //Please select an objective!
 			}
 			else{
-				if(strObj.matches("Maximize")){objective=0;}
+				if(strObj.matches(myModel.language.analysis.getString("gen.maximize"))){objective=0;} //Maximize
 				else{objective=1;}
 			}
 			String strDim=(String) tableAnalysis.getValueAt(1, 1);
 			if(strDim==null){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please select an outcome!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.select_outcome")); //Please select an outcome!
 			}
 			else{
 				objectiveDim=getDimIndex(strDim);
@@ -1006,21 +1031,21 @@ public class frmProperties {
 		else{ //CEA, BCA, or ECEA
 			if(numDimensions==1) {
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Only 1 outcome - please change analysis to Expected Value!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.only_one_outcome")); //Only 1 outcome - please change analysis to Expected Value!
 			}
 			
 			
 			String strCostDim=(String) tableAnalysis.getValueAt(0, 1);
 			if(strCostDim==null){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please select a Cost!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.select_cost")); //Please select a Cost!
 			}
 			else{costDim=getDimIndex(strCostDim);}
 			String strEffectDim=(String) tableAnalysis.getValueAt(1, 1);
 			if(strEffectDim==null){
 				valid=false;
-				if(analysisType==1 || analysisType==3){JOptionPane.showMessageDialog(frmProperties, "Please select an Effect!");} //CEA or ECEA
-				else if(analysisType==2){JOptionPane.showMessageDialog(frmProperties, "Please select a Benefit!");} //BCA
+				if(analysisType==1 || analysisType==3){JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.select_effect"));} //CEA or ECEA: Please select an Effect!
+				else if(analysisType==2){JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.select_benefit"));} //BCA: Please select a Benefit!
 			}
 			else{
 				effectDim=getDimIndex(strEffectDim);
@@ -1028,20 +1053,20 @@ public class frmProperties {
 			if(costDim==effectDim){
 				valid=false;
 				if(analysisType==1 || analysisType==3){ //CEA or ECEA
-					JOptionPane.showMessageDialog(frmProperties, "Cost and Effect must be different!");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.same_cost_effect")); //Cost and Effect must be different!
 				}
 				else if(analysisType==2){ //BCA
-					JOptionPane.showMessageDialog(frmProperties, "Cost and Benefit must be different!");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.same_cost_benefit")); //Cost and Benefit must be different!
 				}
 			}
 			//check effect objective
 			String strEffectObj=(String) tableAnalysis.getValueAt(2,1);
 			if(strEffectObj==null) {
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please select an Effect Objective!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.select_effect_objective")); //Please select an Effect Objective!
 			}
 			else{
-				if(strEffectObj.matches("Maximize")){objective=0;}
+				if(strEffectObj.matches(myModel.language.analysis.getString("gen.maximize"))){objective=0;} //Maximize
 				else{objective=1;}
 			}
 			
@@ -1049,13 +1074,13 @@ public class frmProperties {
 				baseStrategy=(String)tableAnalysis.getValueAt(3, 1);
 				if(baseStrategy==null || baseStrategy.isEmpty()){
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Please choose a baseline strategy!");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.choose_baseline")); //Please choose a baseline strategy!
 				}
 				else{
 					int baseIndex=myModel.getStrategyIndex(baseStrategy);
 					if(baseIndex==-1){
 						valid=false;
-						JOptionPane.showMessageDialog(frmProperties, "Baseline strategy not recognized!");
+						JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.baseline_not_recognized")); //Baseline strategy not recognized!
 					}
 				}
 			}
@@ -1064,20 +1089,20 @@ public class frmProperties {
 				WTP=Double.parseDouble(strWTP.replaceAll(",",""));
 			} catch(Exception er){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid willingness-to-pay!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_wtp")); //Please enter a valid willingness-to-pay!
 			}
 			if(analysisType==3){ //ECEA
 				String strExtendedDim=(String) tableAnalysis.getValueAt(5, 1);
 				if(strExtendedDim==null){
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Please select an Additional Dimension!");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.select_additional_dimension")); //Please select an Additional Dimension!
 				}
 				else{
 					extendedDim=getDimIndex(strExtendedDim);
 				}
 				if(extendedDim==costDim || extendedDim==effectDim){
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Additional Dimension must be different from Cost and Effect!");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.same_add_dim")); //Additional Dimension must be different from Cost and Effect!
 				}
 			}
 		}
@@ -1095,11 +1120,11 @@ public class frmProperties {
 				cohortSize=Integer.parseInt(text);
 				if(cohortSize<=0){
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_cohort_size")); //Please enter a valid Cohort Size!
 				}
 			} catch(Exception er){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid Cohort Size!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_cohort_size")); //Please enter a valid Cohort Size!
 			}
 		}
 		else if(simType==1){ //Monte Carlo
@@ -1108,11 +1133,11 @@ public class frmProperties {
 				cohortSize=Integer.parseInt(text);
 				if(cohortSize<=0){
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Monte Carlo simulations!");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_num_monte_carlo")); //Please enter a valid number of Monte Carlo simulations!
 				}
 			} catch(Exception er){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Monte Carlo simulations!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_num_monte_carlo")); //Please enter a valid number of Monte Carlo simulations!
 			}
 			
 			CRN=chckbxCRN.isSelected(); //CRN
@@ -1123,7 +1148,7 @@ public class frmProperties {
 					crnSeed=Integer.parseInt(text);
 				} catch(Exception er){
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid CRN seed!");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_crn_seed")); //Please enter a valid CRN seed!
 				}
 			}
 		}
@@ -1132,11 +1157,11 @@ public class frmProperties {
 				numThreads=Integer.parseInt(textNumThreads.getText());
 			} catch(Exception er){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of threads!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_num_threads")); //Please enter a valid number of threads!
 			}
 			if(numThreads<1){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of threads!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_num_threads")); //Please enter a valid number of threads!
 			}
 		}
 		
@@ -1152,11 +1177,11 @@ public class frmProperties {
 				maxCycles=Integer.parseInt(text);
 			} catch(Exception er){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of max cycles!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_num_max_cycles")); //Please enter a valid number of max cycles!
 			}
 			if(maxCycles<0){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of max cycles!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_num_max_cycles")); //Please enter a valid number of max cycles!
 			}
 			
 			showTrace=chckbxShowMarkovTrace.isSelected();
@@ -1168,11 +1193,11 @@ public class frmProperties {
 				statePrevDecimals=Integer.parseInt(text);
 			} catch(Exception er){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Markov State prevalence decimals!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_num_state_prev_decimals")); //Please enter a valid number of Markov State prevalence decimals!
 			}
 			if(statePrevDecimals<0){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of Markov State prevalence decimals!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_num_state_prev_decimals")); //Please enter a valid number of Markov State prevalence decimals!
 			}
 			
 			halfCycleCorrection=chckbxHalfcycleCorrection.isSelected();
@@ -1183,41 +1208,43 @@ public class frmProperties {
 					int test=Integer.parseInt(textDiscountStartCycle.getText());
 				} catch(Exception er){
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount start cycle ("+textDiscountStartCycle.getText()+")");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_discount_start")); //Please enter a valid discount start cycle
 				}
 				
 				try {
 					double test=Double.parseDouble(textCyclesPerYear.getText());
 					if(test<=0) {
 						valid=false;
-						JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of cycles per year ("+textDiscountStartCycle.getText()+")");
+						JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_cycles_year")); //Please enter a valid number of cycles per year!
 					}
 				} catch(Exception er) {
 					valid=false;
-					JOptionPane.showMessageDialog(frmProperties, "Please enter a valid number of cycles per year ("+textDiscountStartCycle.getText()+")");
+					JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_cycles_year")); //Please enter a valid number of cycles per year!
 				}
 				
 				for(int i=0; i<numDimensions; i++){
 					try{
 						String test=(String) tableDiscountRates.getValueAt(i, 1); 
-						Numeric testVal=Interpreter.evaluate(test, myModel,false);
+						Numeric testVal=Interpreter.evaluate(test, myModel,false,myModel.language);
 						if(!(testVal.isDouble() || testVal.isInteger()) ){ //not double or integer
 							valid=false;
-							JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount rate ("+tableDiscountRates.getValueAt(i, 0)+")");
+							JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_discount_rate")); //Please enter a valid discount rate 
 						}
 						//check range of discount value
 						double curVal=testVal.getValue();
 						if(curVal<0) {
-							JOptionPane.showMessageDialog(frmProperties, "Warning: Discount rate <0 ("+tableDiscountRates.getValueAt(i, 0)+")");
+							JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("warn.discount_rate_negative")); //Warning: Discount rate <0
 						}
 						else if(curVal>0 && curVal<0.5) {
-							JOptionPane.showMessageDialog(frmProperties, "Warning: Discount rates should be a percentage (%).  Current value is "+curVal+" ("+tableDiscountRates.getValueAt(i, 0)+")");
+							//Warning: Discount rates should be a percentage (%).  Current value is [val]
+							String msg = MessageFormat.format(myModel.language.message.getString("warn.discount_rate_percent"), curVal);
+							JOptionPane.showMessageDialog(frmProperties, msg);
 						}
 						
 						tempDiscountRates[i]=test;
 					} catch(Exception er){
 						valid=false;
-						JOptionPane.showMessageDialog(frmProperties, "Please enter a valid discount rate ("+tableDiscountRates.getValueAt(i, 0)+")");
+						JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.valid_discount_rate")); //Please enter a valid discount rate 
 					}
 				}
 			}
@@ -1227,7 +1254,7 @@ public class frmProperties {
 			//subgroups
 			if(chckbxSubgroups.isSelected() && subgroupNames.size()==0){
 				valid=false;
-				JOptionPane.showMessageDialog(frmProperties, "No subgroups are defined!");
+				JOptionPane.showMessageDialog(frmProperties, myModel.language.message.getString("err.no_subgroups_defined")); //No subgroups are defined!
 			}
 		}
 		
@@ -1235,7 +1262,7 @@ public class frmProperties {
 			frmProperties.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 			
 			//add to undo
-			myModel.saveSnapshot("Change Properties");
+			myModel.saveSnapshot(myModel.language.base.getString("title.change_properties")); //Change Properties
 			
 			//dimensions
 			myModel.dimInfo.dimNames=new String[numDimensions]; myModel.dimInfo.dimSymbols=new String[numDimensions];
@@ -1316,9 +1343,9 @@ public class frmProperties {
 		if(analysisType==0){ //EV
 			modelAnalysis.setRowCount(0);
 			modelAnalysis.addRow(new Object[]{"Objective",null}); tableAnalysis.enabled[0]=true;
-			if(tempDimInfo.objective==0) {tableAnalysis.setValueAt("Maximize", 0, 1);}
-			else {tableAnalysis.setValueAt("Minimize", 0, 1);}
-			modelAnalysis.addRow(new Object[]{"Outcome",null}); tableAnalysis.enabled[1]=true;
+			if(tempDimInfo.objective==0) {tableAnalysis.setValueAt(myModel.language.analysis.getString("gen.maximize"), 0, 1);} //Maximize
+			else {tableAnalysis.setValueAt(myModel.language.analysis.getString("gen.minimize"), 0, 1);} //Minimize
+			modelAnalysis.addRow(new Object[]{myModel.language.analysis.getString("result.outcome"),null}); tableAnalysis.enabled[1]=true; //Outcome
 			int dim=tempDimInfo.objectiveDim;
 			if(dim>=0 && dim<numDimensions) { //within bounds
 				tableAnalysis.setValueAt(tempDimInfo.dimNames[dim], 1, 1);
@@ -1327,7 +1354,7 @@ public class frmProperties {
 		else{ //CEA, BCA, or ECEA
 			modelAnalysis.setRowCount(0);
 			//row 0
-			modelAnalysis.addRow(new Object[]{"Cost",null}); tableAnalysis.enabled[0]=true;
+			modelAnalysis.addRow(new Object[]{myModel.language.analysis.getString("cea.cost"),null}); tableAnalysis.enabled[0]=true; //Cost
 			if(tempDimInfo.costDim!=-1) {
 				int dim=tempDimInfo.costDim;
 				if(dim>=0 && dim<numDimensions) { //within bounds
@@ -1335,7 +1362,7 @@ public class frmProperties {
 				}
 			}
 			//row 1
-			modelAnalysis.addRow(new Object[]{"Effect",null}); tableAnalysis.enabled[1]=true;
+			modelAnalysis.addRow(new Object[]{myModel.language.analysis.getString("cea.effect"),null}); tableAnalysis.enabled[1]=true; //Effect
 			if(tempDimInfo.effectDim!=-1) {
 				int dim=tempDimInfo.effectDim;
 				if(dim>=0 && dim<numDimensions) { //within bounds
@@ -1343,28 +1370,28 @@ public class frmProperties {
 				}
 			}
 			//row 2
-			modelAnalysis.addRow(new Object[]{"Effect Objective",null}); tableAnalysis.enabled[2]=true;
-			if(tempDimInfo.objective==0) {tableAnalysis.setValueAt("Maximize", 2, 1);}
-			else {tableAnalysis.setValueAt("Minimize", 2, 1);}
+			modelAnalysis.addRow(new Object[]{myModel.language.analysis.getString("cea.effect_objective"),null}); tableAnalysis.enabled[2]=true; //Effect Objective
+			if(tempDimInfo.objective==0) {tableAnalysis.setValueAt(myModel.language.analysis.getString("gen.maximize"), 2, 1);} //Maximize
+			else {tableAnalysis.setValueAt(myModel.language.analysis.getString("gen.minimize"), 2, 1);} //Minimize
 			//row 3
-			modelAnalysis.addRow(new Object[]{"Baseline Strategy",null}); tableAnalysis.enabled[3]=true;
+			modelAnalysis.addRow(new Object[]{myModel.language.analysis.getString("cea.baseline_strategy"),null}); tableAnalysis.enabled[3]=true; //Baseline Strategy
 			//row 4
-			modelAnalysis.addRow(new Object[]{"Willingness-to-pay (WTP)",null}); tableAnalysis.enabled[4]=true;
+			modelAnalysis.addRow(new Object[]{myModel.language.analysis.getString("cea.wtp"),null}); tableAnalysis.enabled[4]=true; //Willingness-to-pay (WTP)
 			tableAnalysis.setValueAt(tempDimInfo.WTP+"", 4, 1);
 			
 			if(analysisType==1){ //CEA
-				tableAnalysis.setValueAt("Effect", 1, 0);
+				tableAnalysis.setValueAt(myModel.language.analysis.getString("cea.effect"), 1, 0); //Effect
 				tableAnalysis.setValueAt(tempDimInfo.baseScenario,3,1);
 			}
 			else if(analysisType==2){ //BCA
-				tableAnalysis.setValueAt("Benefit", 1, 0);
+				tableAnalysis.setValueAt(myModel.language.analysis.getString("bca.benefit"), 1, 0); //Benefit
 				tableAnalysis.enabled[3]=false; //baseline strategy
 			}
 			else if(analysisType==3){ //ECEA
-				tableAnalysis.setValueAt("Effect", 1, 0);
+				tableAnalysis.setValueAt(myModel.language.analysis.getString("cea.effect"), 1, 0); //Effect
 				tableAnalysis.setValueAt(tempDimInfo.baseScenario,3,1);
 				//row 5
-				modelAnalysis.addRow(new Object[]{"Additional Dimension",null}); tableAnalysis.enabled[5]=true;
+				modelAnalysis.addRow(new Object[]{myModel.language.analysis.getString("cea.additional_dimension"),null}); tableAnalysis.enabled[5]=true; //Additional Dimension
 			}
 		}
 		
@@ -1405,7 +1432,9 @@ class analysisTable extends JTable{
 		if(analysisType==0){ //EV
 			if(column==1){
 				if(row==0){ //not editable
-					JComboBox<String> comboRule = new JComboBox<String>(new DefaultComboBoxModel(new String[]{"Maximize","Minimize"}));
+					JComboBox<String> comboRule = new JComboBox<String>(new DefaultComboBoxModel(new String[]{
+							myModel.language.analysis.getString("gen.maximize"), //Maximize
+							myModel.language.analysis.getString("gen.minimize")})); //Minimize
 					return(new DefaultCellEditor(comboRule));
 				}
 				else if(column==1){ //dimension
@@ -1421,7 +1450,9 @@ class analysisTable extends JTable{
 					return(new DefaultCellEditor(comboDim));
 				}
 				else if(row==2) { //Effect Objective
-					JComboBox<String> comboRule = new JComboBox<String>(new DefaultComboBoxModel(new String[]{"Maximize","Minimize"}));
+					JComboBox<String> comboRule = new JComboBox<String>(new DefaultComboBoxModel(new String[]{
+							myModel.language.analysis.getString("gen.maximize"), //Maximize
+							myModel.language.analysis.getString("gen.minimize")})); //Minimize
 					return(new DefaultCellEditor(comboRule));
 				}
 				else if(row==3){ //Baseline scenario

@@ -50,7 +50,7 @@ public class TreeCohort{
 		myModel.unlockVarsAll(0);
 		for(int c=0; c<numVars; c++){
 			variables[c].locked[0]=true;
-			variables[c].value[0]=Interpreter.evaluateTokens(variables[c].parsedTokens, 0, false);
+			variables[c].value[0]=Interpreter.evaluateTokens(variables[c].parsedTokens, 0, false, myModel.language);
 		}
 
 		root.totalDenom=myModel.cohortSize;
@@ -65,7 +65,7 @@ public class TreeCohort{
 		//Update costs
 		if(node.hasCost){
 			for(int c=0; c<numDim; c++){
-				node.curCosts[c]=Interpreter.evaluateTokens(node.curCostTokens[c], 0, false).getDouble();
+				node.curCosts[c]=Interpreter.evaluateTokens(node.curCostTokens[c], 0, false, myModel.language).getDouble(myModel.language);
 			}
 		}
 
@@ -85,7 +85,7 @@ public class TreeCohort{
 		//Update payoffs
 		if(node.type==2){ //terminal node
 			for(int c=0; c<numDim; c++){
-				node.curPayoffs[c]=Interpreter.evaluateTokens(node.curPayoffTokens[c], 0, false).getDouble();
+				node.curPayoffs[c]=Interpreter.evaluateTokens(node.curPayoffTokens[c], 0, false, myModel.language).getDouble(myModel.language);
 			}
 		}
 
@@ -102,18 +102,18 @@ public class TreeCohort{
 					indexCompProb=c;
 				}
 				else{ //Evaluate text
-					curChild.curProb[0]=Interpreter.evaluateTokens(curChild.curProbTokens, 0, false).getDouble();
+					curChild.curProb[0]=Interpreter.evaluateTokens(curChild.curProbTokens, 0, false, myModel.language).getDouble(myModel.language);
 					sumProb+=curChild.curProb[0];
 				}
 			}
 			if(indexCompProb==-1){
 				if(sumProb!=1.0){ //throw error
-					throw new Exception("Probability error: "+node.name+" (Prob="+sumProb+")");
+					throw new Exception(myModel.language.message.getString("err.prob_error")+": "+node.name+" ("+sumProb+")"); //Probability Error
 				}
 			}
 			else{
 				if(sumProb>1.0 || sumProb<0.0){ //throw error
-					throw new Exception("Probability error: "+node.name+" (Prob="+sumProb+")");
+					throw new Exception(myModel.language.message.getString("err.prob_error")+": "+node.name+" ("+sumProb+")"); //Probability Error
 				}
 				else{
 					TreeNode curChild=node.children[indexCompProb];

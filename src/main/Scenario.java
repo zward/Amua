@@ -145,7 +145,7 @@ public class Scenario{
 		//find assignment operator
 		int pos=curExpr.indexOf('=');
 		if(pos==-1){
-			throw new NumericException("No assignment operator (=) found in expression: '"+expression+"'","Scenario");
+			throw new NumericException(myModel.language.message.getString("err.no_assign_operator_found")+": '"+expression+"'","Scenario",myModel.language); //No assignment operator (=) found in expression
 		}
 		String strObj=curExpr.substring(0, pos);
 		int paramIndex=myModel.getParameterIndex(strObj);
@@ -153,7 +153,7 @@ public class Scenario{
 		int varIndex=myModel.getVariableIndex(strObj);
 		if(varIndex!=-1){objectTypes[updateIndex]=1;}
 		if(paramIndex==-1 && varIndex==-1){
-			throw new NumericException("Object not found: "+strObj,"Scenario");
+			throw new NumericException(myModel.language.message.getString("err.object_not_found")+": "+strObj,"Scenario",myModel.language); //Object not found
 		}
 		objectNames[updateIndex]=strObj;
 		
@@ -161,7 +161,7 @@ public class Scenario{
 		strUpdates[updateIndex]=curExpr.substring(pos+1);
 		
 		//validate expression
-		testVals[updateIndex]=Interpreter.evaluate(strUpdates[updateIndex], myModel, false);
+		testVals[updateIndex]=Interpreter.evaluate(strUpdates[updateIndex], myModel, false, myModel.language);
 		
 		if(paramIndex!=-1){ //check that expression is valid for parameters
 			
@@ -175,7 +175,7 @@ public class Scenario{
 				if(objectTypes[i]==0){ //parameter
 					int index=myModel.getParameterIndex(objectNames[i]);
 					if(index==-1){
-						throw new NumericException("Parameter not found: "+objectNames[i],"Scenario");
+						throw new NumericException(myModel.language.message.getString("err.param_not_found")+": "+objectNames[i],"Scenario",myModel.language); //Parameter not found
 					}
 					Parameter curParam=myModel.parameters.get(index);
 					curParam.expression=strUpdates[i];
@@ -183,7 +183,7 @@ public class Scenario{
 				else if(objectTypes[i]==1){ //variable
 					int index=myModel.getVariableIndex(objectNames[i]);
 					if(index==-1){
-						throw new NumericException("Variable not found: "+objectNames[i],"Scenario");
+						throw new NumericException(myModel.language.message.getString("err.var_not_found")+": "+objectNames[i],"Scenario",myModel.language); //Variable not found
 					}
 					Variable curVar=myModel.variables.get(index);
 					curVar.expression=strUpdates[i];
@@ -199,10 +199,10 @@ public class Scenario{
 				if(objectTypes[i]==0){ //parameter
 					int index=myModel.getParameterIndex(objectNames[i]);
 					if(index==-1){
-						throw new NumericException("Parameter not found: "+objectNames[i],"Scenario");
+						throw new NumericException(myModel.language.message.getString("err.param_not_found")+": "+objectNames[i],"Scenario",myModel.language); //Parameter not found
 					}
 					Parameter curParam=myModel.parameters.get(index);
-					curParam.value=Interpreter.evaluate(strUpdates[i], myModel, true);
+					curParam.value=Interpreter.evaluate(strUpdates[i], myModel, true, myModel.language);
 					curParam.locked=true;
 				}
 			}

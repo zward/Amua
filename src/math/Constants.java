@@ -19,6 +19,8 @@
 
 package math;
 
+import lang.Language;
+
 public final class Constants{
 	
 	public static boolean isConstant(String text){
@@ -45,13 +47,17 @@ public final class Constants{
 		return("<font face=\"Consolas\">"+str+"</font>");
 	}
 	
-	public static String getDescription(String text){
+	public static String getDescription(String text, Language language){
 		String des="";
 		switch(text){
-		case "e": return("<html><b>Euler's number ("+consoleFont("e")+")</b><br>"+consoleFont("2.718281828459045")+"<br>The double value that is closer than any other to "+consoleFont("e")+", the base of the natural logarithms</html>");
-		case "inf": return("<html><b>Infinity ("+consoleFont("∞")+")</b><br>A constant holding the positive infinity of type "+consoleFont("double")+"</html>");
-		case "pi": return("<html><b>Pi ("+consoleFont("π")+")</b><br>"+consoleFont("3.141592653589793")+"<br>The "+consoleFont("double")+" value that is closer than any other to "+consoleFont("π")+", the ratio of the circumference of a circle to its diameter</html>");
-		case "π": return("<html><b>Pi ("+consoleFont("π")+")</b><br>"+consoleFont("3.141592653589793")+"<br>The "+consoleFont("double")+" value that is closer than any other to "+consoleFont("π")+", the ratio of the circumference of a circle to its diameter</html>");
+		//case "e": return("<html><b>Euler's number ("+consoleFont("e")+")</b><br>"+consoleFont("2.718281828459045")+"<br>The "+consoleFont("double")+" value that is closer than any other to "+consoleFont("e")+", the base of the natural logarithm</html>");
+		//case "inf": return("<html><b>Infinity ("+consoleFont("∞")+")</b><br>A constant holding the positive infinity of type "+consoleFont("double")+"</html>");
+		//case "pi": return("<html><b>Pi ("+consoleFont("π")+")</b><br>"+consoleFont("3.141592653589793")+"<br>The "+consoleFont("double")+" value that is closer than any other to "+consoleFont("π")+", the ratio of the circumference of a circle to its diameter</html>");
+		//case "π": return("<html><b>Pi ("+consoleFont("π")+")</b><br>"+consoleFont("3.141592653589793")+"<br>The "+consoleFont("double")+" value that is closer than any other to "+consoleFont("π")+", the ratio of the circumference of a circle to its diameter</html>");
+		case "e": return("<html><b>"+language.math.getString("const.eulers_number")+" ("+consoleFont("e")+")</b><br>"+consoleFont("2.718281828459045")+"<br>"+language.math.getString("const.eulers_desc")+"</html>");
+		case "inf": return("<html><b>"+language.math.getString("const.inf")+" ("+consoleFont("∞")+")</b><br>"+language.math.getString("const.inf_desc")+"</html>");
+		case "pi": return("<html><b>Pi ("+consoleFont("π")+")</b><br>"+consoleFont("3.141592653589793")+"<br>"+language.math.getString("const.pi_desc")+"</html>");
+		case "π": return("<html><b>Pi ("+consoleFont("π")+")</b><br>"+consoleFont("3.141592653589793")+"<br>"+language.math.getString("const.pi_desc")+"</html>");
 		}
 		return(des); //fell through
 	}

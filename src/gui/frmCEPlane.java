@@ -119,7 +119,7 @@ public class frmCEPlane {
 	private void initialize() {
 		try{
 			frmCEPlane = new JFrame();
-			frmCEPlane.setTitle("Amua - "+myModel.name+" - C/E Plane");
+			frmCEPlane.setTitle("Amua - "+myModel.name+" - "+myModel.language.analysis.getString("cea.ce_plane")); //C/E Plane
 			frmCEPlane.setIconImage(Toolkit.getDefaultToolkit().getImage(frmCEPlane.class.getResource("/images/logo_128.png")));
 			frmCEPlane.setBounds(100, 100, 535, 550);
 			frmCEPlane.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -163,7 +163,7 @@ public class frmCEPlane {
 			gbc_toolBar.gridy = 0;
 			frmCEPlane.getContentPane().add(toolBar, gbc_toolBar);
 			
-			JButton btnFlipAxes = new JButton("Flip Axes");
+			JButton btnFlipAxes = new JButton(myModel.language.base.getString("plot.flip_axes")); //Flip Axes
 			btnFlipAxes.setIcon(new ScaledIcon("/images/flipAxes",16,16,16,true));
 			btnFlipAxes.setFocusable(false);
 			btnFlipAxes.addActionListener(new ActionListener() {
@@ -180,7 +180,7 @@ public class frmCEPlane {
 			});
 			toolBar.add(btnFlipAxes);
 			
-			comboRelative = new JComboBox(new DefaultComboBoxModel(new String[] {"Relative","Absolute"}));
+			comboRelative = new JComboBox(new DefaultComboBoxModel(new String[] {myModel.language.base.getString("plot.relative"),myModel.language.base.getString("plot.absolute")})); //Relative, Absolute
 			comboRelative.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateChart();
@@ -198,7 +198,7 @@ public class frmCEPlane {
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				numSubgroups=myModel.subgroupNames.size();
 				String groups[]=new String[numSubgroups+1];
-				groups[0]="Overall";
+				groups[0]=myModel.language.analysis.getString("result.overall"); //Overall
 				for(int g=0; g<numSubgroups; g++){
 					groups[g+1]=myModel.subgroupNames.get(g);
 				}
@@ -207,7 +207,7 @@ public class frmCEPlane {
 			}
 			toolBar.add(comboGroup);
 			
-			chckbxWTP = new JCheckBox("Plot WTP");
+			chckbxWTP = new JCheckBox(myModel.language.analysis.getString("cea.plot_wtp")); //Plot WTP
 			chckbxWTP.setSelected(true);
 			chckbxWTP.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
@@ -220,7 +220,7 @@ public class frmCEPlane {
 			separator.setOrientation(SwingConstants.VERTICAL);
 			toolBar.add(separator);
 			
-			lblLabelSize = new JLabel(" Label size:");
+			lblLabelSize = new JLabel(" "+myModel.language.base.getString("plot.label_size")+":"); //Label size
 			toolBar.add(lblLabelSize);
 			
 			textLblSize = new JTextField();
@@ -258,7 +258,7 @@ public class frmCEPlane {
 			separator_1.setOrientation(SwingConstants.VERTICAL);
 			toolBar.add(separator_1);
 			
-			lblMarkerSize = new JLabel(" Marker size:");
+			lblMarkerSize = new JLabel(" "+myModel.language.base.getString("plot.marker_size")+":"); //Marker size
 			toolBar.add(lblMarkerSize);
 			
 			textMarkerSize = new JTextField();
@@ -341,12 +341,12 @@ public class frmCEPlane {
 		int numNonviable=0;
 		for(int s=0; s<numStrat; s++) {
 			viable[s]=true; //default to viable
-			String note=(String) table[s][5];
+			String note=(String) table[s][6]; //get orig note
 			if(note==null || note.isEmpty()) {
 				viable[s]=true;
 			}
 			else {
-				if(note.contains("Base")) {
+				if(note.contains("Base")) { //Baseline
 					base=s;
 					viable[s]=true;
 				}

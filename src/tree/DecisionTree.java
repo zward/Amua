@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -122,7 +123,7 @@ public class DecisionTree{
 			//ensure each strategy has a name
 			root.children[j].highlightTextField(4,null); //Name
 			if(root.children[j].name==null || root.children[j].name.isEmpty()){
-				errors.add("Strategy has not been named!");
+				errors.add(myModel.language.message.getString("err.strategy_not_named")); //Strategy has not been named!
 				root.children[j].highlightTextField(4,Color.YELLOW); 
 			}
 		}
@@ -138,7 +139,7 @@ public class DecisionTree{
 			curNode.curVariableUpdates=null;
 
 			if(curNode.type==0 && myModel.simType==1){
-				errors.add("Node "+curNode.name+": Sequential decision nodes are not allowed in Monte Carlo simulations");
+				errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.seq_decision_nodes")); //Node: Sequential decision nodes are not allowed in Monte Carlo simulations
 			}
 			
 			if(curNode.parentType!=0){ //Validate probability
@@ -147,38 +148,38 @@ public class DecisionTree{
 				if(curNode.prob.matches("C") || curNode.prob.matches("c")){curNode.curProb[0]=-1;} //Complementary
 				else{ //Evaluate text
 					try{
-						curNode.curProbTokens=Interpreter.parse(curNode.prob, myModel);
-						curNode.curProb[0]=Interpreter.evaluateTokens(curNode.curProbTokens, 0, false).getDouble();
+						curNode.curProbTokens=Interpreter.parse(curNode.prob, myModel, myModel.language);
+						curNode.curProb[0]=Interpreter.evaluateTokens(curNode.curProbTokens, 0, false, myModel.language).getDouble(myModel.language);
 					}catch(Exception e){
 						validProbs=false;
 						curNode.highlightTextField(0, Color.YELLOW); //Prob
-						errors.add("Node "+curNode.name+": Probability Error ("+curNode.prob+")");
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.prob_error")+" ("+curNode.prob+")"); //Node, Probability Error
 					}
 					if(curNode.curProb[0]<0 || curNode.curProb[0]>1 || Double.isNaN(curNode.curProb[0])){
 						validProbs=false;
 						curNode.highlightTextField(0, Color.YELLOW); //Prob
-						errors.add("Node "+curNode.name+": Probability Error ("+curNode.prob+")");
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.prob_error")+" ("+curNode.prob+")"); //Node, Probability Error
 					}
 				}
 			}
 			if(curNode.type!=2){ //Not terminal, ensure it has children and validate cost
 				if(curNode.childIndices.size()==0){
-					errors.add("Node "+curNode.name+": Branches must end in a terminal node");
+					errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.branches_must_end_terminal")); //Node, Branches must end in a terminal node
 				}
 
 				curNode.highlightTextField(1,null); //Cost
 				for(int c=0; c<numDim; c++){
 					try{
-						curNode.curCostTokens[c]=Interpreter.parse(curNode.cost[c], myModel);
-						curNode.curCosts[c]=Interpreter.evaluateTokens(curNode.curCostTokens[c], 0, false).getDouble();
+						curNode.curCostTokens[c]=Interpreter.parse(curNode.cost[c], myModel, myModel.language);
+						curNode.curCosts[c]=Interpreter.evaluateTokens(curNode.curCostTokens[c], 0, false, myModel.language).getDouble(myModel.language);
 						
 						if(Double.isNaN(curNode.curCosts[c])){
 							curNode.highlightTextField(1, Color.YELLOW); //Cost
-							errors.add("Node "+curNode.name+": Cost Error ("+curNode.cost[c]+")");
+							errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.cost_error")+" ("+curNode.cost[c]+")"); //Node, Cost Error
 						}
 					}catch(Exception e){
 						curNode.highlightTextField(1, Color.YELLOW); //Cost
-						errors.add("Node "+curNode.name+": Cost Error ("+curNode.cost[c]+")");
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.cost_error")+" ("+curNode.cost[c]+")"); //Node, Cost Error
 					}
 				}
 			}
@@ -187,15 +188,15 @@ public class DecisionTree{
 				curNode.highlightTextField(2,null); //Payoff
 				for(int c=0; c<numDim; c++){
 					try{
-						curNode.curPayoffTokens[c]=Interpreter.parse(curNode.payoff[c],myModel);
-						curNode.curPayoffs[c]=Interpreter.evaluateTokens(curNode.curPayoffTokens[c], 0, false).getDouble();
+						curNode.curPayoffTokens[c]=Interpreter.parse(curNode.payoff[c], myModel, myModel.language);
+						curNode.curPayoffs[c]=Interpreter.evaluateTokens(curNode.curPayoffTokens[c], 0, false, myModel.language).getDouble(myModel.language);
 						if(Double.isNaN(curNode.curPayoffs[c])){
 							curNode.highlightTextField(2, Color.YELLOW); //Payoff
-							errors.add("Node "+curNode.name+": Payoff Error ("+curNode.payoff[c]+")");
+							errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.payoff_error")+" ("+curNode.payoff[c]+")"); //Node, Payoff Error
 						}
 					}catch(Exception e){
 						curNode.highlightTextField(2, Color.YELLOW); //Payoff
-						errors.add("Node "+curNode.name+": Payoff Error ("+curNode.payoff[c]+")");
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.payoff_error")+" ("+curNode.payoff[c]+")"); //Node, Payoff Error
 					}
 				}
 			}
@@ -204,7 +205,7 @@ public class DecisionTree{
 			if(curNode.hasVarUpdates){
 				if(curNode.varUpdates==null) {
 					curNode.highlightTextField(3, Color.YELLOW); //Variable updates
-					errors.add("Node "+curNode.name+": Variable Update is null!");
+					errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_null")); //Node, Variable Update is null!
 				}
 				else {
 					String updates[]=curNode.varUpdates.split(";");
@@ -213,14 +214,14 @@ public class DecisionTree{
 					for(int u=0; u<updates.length; u++){
 						try{
 							curNode.curVariableUpdates[u]=new VariableUpdate(updates[u],myModel);
-							double testVal=curNode.curVariableUpdates[u].testVal.getDouble();
+							double testVal=curNode.curVariableUpdates[u].testVal.getDouble(myModel.language);
 							if(Double.isNaN(testVal)){
 								curNode.highlightTextField(3, Color.YELLOW); //Variable updates
-								errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
+								errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" ("+updates[u]+")"); //Node, Variable Update Error
 							}
 						}catch(Exception e){
 							curNode.highlightTextField(3, Color.YELLOW); //Variable updates
-							errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
+							errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" ("+updates[u]+")"); //Node, Variable Update Error
 						}
 					}
 				}
@@ -251,7 +252,7 @@ public class DecisionTree{
 						}
 						if(numCompProb==0){
 							if(sumProb!=1.0){
-								errors.add("Node "+curNode.name+": Probabilities sum to "+sumProb+"!");
+								errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb)); //Node, Probabilities sum to [sumProb]!
 								for(int j=0; j<curNode.numChildren; j++){
 									TreeNode child=nodes.get(curNode.childIndices.get(j));
 									child.highlightTextField(0, Color.YELLOW); //Prob
@@ -260,7 +261,7 @@ public class DecisionTree{
 						}
 						else if(numCompProb==1){
 							if(sumProb<0 || sumProb>1){
-								errors.add("Node "+curNode.name+": Entered probabilities sum to "+sumProb+"!");
+								errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+MessageFormat.format(myModel.language.message.getString("err.entered_prob_sum"), sumProb)); //Node, Entered probabilities sum to "+sumProb+"!"
 								for(int j=0; j<curNode.numChildren; j++){
 									TreeNode child=nodes.get(curNode.childIndices.get(j));
 									if(child.curProb[0]!=-1){child.highlightTextField(0, Color.YELLOW);} //Entered prob
@@ -274,7 +275,7 @@ public class DecisionTree{
 							}
 						}
 						else{ //2+ comp probs
-							errors.add("Node "+curNode.name+": At most 1 probability can be complementary!");
+							errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.one_prob_complementary")); //Node, At most 1 probability can be complementary!
 							for(int j=0; j<curNode.numChildren; j++){
 								TreeNode child=nodes.get(curNode.childIndices.get(j));
 								if(child.curProb[0]==-1){child.highlightTextField(0, Color.YELLOW);} //Comp. prob
@@ -341,8 +342,8 @@ public class DecisionTree{
 		for(int d=0; d<numDimensions; d++){colTypes[d+1]=true;}
 		ConsoleTable curTable=new ConsoleTable(console,colTypes);
 		String headers[]=new String[numDimensions+1];
-		headers[0]="Strategy";
-		for(int d=0; d<numDimensions; d++){headers[d+1]="EV ("+dimInfo.dimSymbols[d]+")";}
+		headers[0]=myModel.language.analysis.getString("gen.strategy"); //Strategy
+		for(int d=0; d<numDimensions; d++){headers[d+1]=myModel.language.analysis.getString("result.ev")+" ("+dimInfo.dimSymbols[d]+")";} //EV
 		curTable.addRow(headers);
 		for(int i=0; i<numChildren; i++){ //strategy results
 			TreeNode child=root.children[i];
@@ -353,7 +354,7 @@ public class DecisionTree{
 			}
 			curTable.addRow(row);
 		}
-		console.print("\nEV Results:\n");
+		console.print("\n"+myModel.language.analysis.getString("result.ev_results")+":\n"); //EV Results
 		curTable.print();
 		
 		if(myModel.simType==1 && myModel.reportSubgroups){ //subgroups
@@ -371,7 +372,7 @@ public class DecisionTree{
 					}
 					groupTable.addRow(row);
 				}
-				console.print("\nSubgroup Results: "+report.subgroupNames[g]+" (n="+report.subgroupSizes[g]+")\n");
+				console.print("\n"+myModel.language.analysis.getString("result.subgroup_results")+": "+report.subgroupNames[g]+" (n="+report.subgroupSizes[g]+")\n"); //Subgroup Results
 				groupTable.print();
 			}
 		}
@@ -389,8 +390,8 @@ public class DecisionTree{
 		int numDimensions=root.numDimensions;
 		int numChildren=root.numChildren; //Root
 		//headers
-		out.write("Strategy");
-		for(int d=0; d<numDimensions; d++){out.write(",EV ("+dimInfo.dimSymbols[d]+")");}
+		out.write(myModel.language.analysis.getString("gen.strategy")); //Strategy
+		for(int d=0; d<numDimensions; d++){out.write(","+myModel.language.analysis.getString("result.ev")+" ("+dimInfo.dimSymbols[d]+")");} //EV
 		out.newLine();
 		//strategy results
 		for(int i=0; i<numChildren; i++){ //strategy results
@@ -406,10 +407,10 @@ public class DecisionTree{
 		if(myModel.simType==1 && myModel.reportSubgroups){ //subgroups
 			int numSubgroups=myModel.subgroupNames.size();
 			for(int g=0; g<numSubgroups; g++){
-				out.write("Subgroup Results:,"+report.subgroupNames[g]+",n=,"+report.subgroupSizes[g]+"\n"); out.newLine();
+				out.write(myModel.language.analysis.getString("result.subgroup_results")+":,"+report.subgroupNames[g]+",n=,"+report.subgroupSizes[g]+"\n"); out.newLine(); //Subgroup Results
 				//headers
-				out.write("Strategy");
-				for(int d=0; d<numDimensions; d++){out.write(",EV ("+dimInfo.dimSymbols[d]+")");}
+				out.write(myModel.language.analysis.getString("gen.strategy")); //Strategy
+				for(int d=0; d<numDimensions; d++){out.write(","+myModel.language.analysis.getString("result.ev")+" ("+dimInfo.dimSymbols[d]+")");}
 				out.newLine();
 				//strategy results
 				for(int i=0; i<numChildren; i++){ 
@@ -438,8 +439,8 @@ public class DecisionTree{
 				if(icer.matches("---")){
 					icer=(String)report.table[s][5];
 				}
-				if(report.dimInfo.analysisType==1){icer="ICER: "+icer;}
-				else if(report.dimInfo.analysisType==2){icer="NMB: "+icer;}
+				if(report.dimInfo.analysisType==1){icer=myModel.language.analysis.getString("cea.icer")+": "+icer;} //ICER
+				else if(report.dimInfo.analysisType==2){icer=myModel.language.analysis.getString("bca.nmb")+": "+icer;} //NMB
 				child.icer=icer;
 				child.textICER.setText(icer);
 				if(child.visible){

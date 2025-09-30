@@ -18,6 +18,9 @@
 
 package math.distributions;
 
+import java.text.MessageFormat;
+
+import lang.Language;
 import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
@@ -25,25 +28,25 @@ import math.NumericException;
 
 public final class NegativeBinomial{
 	
-	public static Numeric pmf(Numeric params[]) throws NumericException{
+	public static Numeric pmf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			int r=params[1].getInt();
-			double p=params[2].getProb();
-			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			int k=params[0].getInt(language);
+			int r=params[1].getInt(language);
+			double p=params[2].getProb(language);
+			if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 			return(new Numeric(MathUtils.choose(r+k-1,r-1)*Math.pow(p, r)*Math.pow(1-p, k)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and r should be the same size","NBin");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "r"),"NBin",language);} //k and r should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "r", "p"),"NBin",language);} //r and p should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int k=(int)params[0].matrix[i][j];
 					int r=(int)params[1].matrix[i][j];
-					double p=params[2].getMatrixProb(i, j);
-					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					double p=params[2].getMatrixProb(i, j, language);
+					if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 					vals.matrix[i][j]=MathUtils.choose(r+k-1,r-1)*Math.pow(p, r)*Math.pow(1-p, k);
 				}
 			}
@@ -51,12 +54,12 @@ public final class NegativeBinomial{
 		}
 	}
 
-	public static Numeric cdf(Numeric params[]) throws NumericException{
+	public static Numeric cdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			int r=params[1].getInt();
-			double p=params[2].getProb();
-			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			int k=params[0].getInt(language);
+			int r=params[1].getInt(language);
+			double p=params[2].getProb(language);
+			if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 			double val=0;
 			for(int n=0; n<=k; n++){
 				val+=(MathUtils.choose(r+n-1,r-1)*Math.pow(p, r)*Math.pow(1-p, n));
@@ -64,16 +67,16 @@ public final class NegativeBinomial{
 			return(new Numeric(val));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and r should be the same size","NBin");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "r"),"NBin",language);} //k and r should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "r", "p"),"NBin",language);} //r and p should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int k=(int)params[0].matrix[i][j];
 					int r=(int)params[1].matrix[i][j];
-					double p=params[2].getMatrixProb(i, j);
-					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					double p=params[2].getMatrixProb(i, j, language);
+					if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 					double val=0;
 					for(int n=0; n<=k; n++){
 						val+=(MathUtils.choose(r+n-1,r-1)*Math.pow(p, r)*Math.pow(1-p, n));
@@ -85,12 +88,12 @@ public final class NegativeBinomial{
 		}
 	}	
 	
-	public static Numeric quantile(Numeric params[]) throws NumericException{
+	public static Numeric quantile(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			double x=params[0].getProb();
-			int r=params[1].getInt();
-			double p=params[2].getProb();
-			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			double x=params[0].getProb(language);
+			int r=params[1].getInt(language);
+			double p=params[2].getProb(language);
+			if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 			if(x==1){return(new Numeric(Double.POSITIVE_INFINITY));}
 			int k=0;
 			double CDF=0;
@@ -101,16 +104,16 @@ public final class NegativeBinomial{
 			return(new Numeric(k));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and r should be the same size","NBin");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "r"),"NBin",language);} //x and r should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "r", "p"),"NBin",language);} //r and p should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double x=params[0].getMatrixProb(i, j);
+					double x=params[0].getMatrixProb(i, j, language);
 					int r=(int)params[1].matrix[i][j];
-					double p=params[2].getMatrixProb(i, j);
-					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					double p=params[2].getMatrixProb(i, j, language);
+					if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 					if(x==1) {vals.matrix[i][j]=Double.POSITIVE_INFINITY;}
 					else {
 						int k=0;
@@ -127,22 +130,22 @@ public final class NegativeBinomial{
 		}
 	}
 	
-	public static Numeric mean(Numeric params[]) throws NumericException{
+	public static Numeric mean(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int r=params[0].getInt();
-			double p=params[1].getProb();
-			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			int r=params[0].getInt(language);
+			double p=params[1].getProb(language);
+			if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 			return(new Numeric((r*(1-p))/p));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "r", "p"),"NBin",language);} //r and p should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int r=(int)params[0].matrix[i][j];
-					double p=params[1].getMatrixProb(i, j);
-					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					double p=params[1].getMatrixProb(i, j, language);
+					if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 					vals.matrix[i][j]=(r*(1-p))/p;
 				}
 			}
@@ -150,22 +153,22 @@ public final class NegativeBinomial{
 		}
 	}
 	
-	public static Numeric variance(Numeric params[]) throws NumericException{
+	public static Numeric variance(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int r=params[0].getInt();
-			double p=params[1].getProb();
-			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			int r=params[0].getInt(language);
+			double p=params[1].getProb(language);
+			if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 			return(new Numeric((r*(1-p))/(p*p)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "r", "p"),"NBin",language);} //r and p should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int r=(int)params[0].matrix[i][j];
-					double p=params[1].getMatrixProb(i, j);
-					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					double p=params[1].getMatrixProb(i, j, language);
+					if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 					vals.matrix[i][j]=(r*(1-p))/(p*p);
 				}
 			}
@@ -173,14 +176,14 @@ public final class NegativeBinomial{
 		}
 	}
 	
-	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator, Language language) throws NumericException{
 		if(params.length!=2){
-			throw new NumericException("Incorrect number parameters","NBin");
+			throw new NumericException(language.message.getString("err.incorrect_num_params"),"NBin",language); //Incorrect number parameters
 		}
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int r=params[0].getInt(), k=0;
-			double p=params[1].getProb(), CDF=0;
-			if(r<0){throw new NumericException("r should be ≥0","NBin");}
+			int r=params[0].getInt(language), k=0;
+			double p=params[1].getProb(language), CDF=0;
+			if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 			double rand=generator.nextDouble();
 			while(rand>CDF){
 				CDF+=MathUtils.choose(r+k-1,r-1)*Math.pow(p,r*1.0)*Math.pow(1-p, k*1.0);
@@ -189,14 +192,14 @@ public final class NegativeBinomial{
 			return(new Numeric(k));
 		}
 		else{ //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("r and p should be the same size","NBin");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "r", "p"),"NBin",language);} //r and p should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int r=(int)params[0].matrix[i][j];
-					double p=params[1].getMatrixProb(i, j);
-					if(r<0){throw new NumericException("r should be ≥0","NBin");}
+					double p=params[1].getMatrixProb(i, j, language);
+					if(r<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "r"),"NBin",language);} //r should be ≥0
 					int k=0;
 					double CDF=0;
 					double rand=generator.nextDouble();
@@ -211,21 +214,21 @@ public final class NegativeBinomial{
 		}
 	}
 	
-	public static String description(){
-		String des="<html><b>Negative Binomial Distribution</b><br>";
-		des+="Used to model the number of successes that occur among repeated trials before a specified number of failures happen<br><br>";
-		des+="<i>Parameters</i><br>";
-		des+=MathUtils.consoleFont("r")+": Number of failures until the trials are stopped (Integer "+MathUtils.consoleFont("≥0")+")<br>";
-		des+=MathUtils.consoleFont("p")+": Probability of success<br>";
-		des+="<br><i>Sample</i><br>";
-		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(r,p,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the Negative Binomial distribution. Integer in "+MathUtils.consoleFont("{0,1,...}")+"<br>";
-		des+="<br><i>Distribution Functions</i><br>";
-		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(k,r,p,<b><i>f</i></b>)")+": Returns the value of the Negative Binomial PMF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(k,r,p,<b><i>F</i></b>)")+": Returns the value of the Negative Binomial CDF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(x,r,p,<b><i>Q</i></b>)")+": Returns the quantile (inverse CDF) of the Negative Binomial distribution at "+MathUtils.consoleFont("x")+"<br>";
-		des+="<br><i>Moments</i><br>";
-		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(r,p,<b><i>E</i></b>)")+": Returns the mean of the Negative Binomial distribution<br>";
-		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(r,p,<b><i>V</i></b>)")+": Returns the variance of the Negative Binomial distribution<br>";
+	public static String description(Language language){
+		String des="<html><b>"+language.dist.getString("nbin.name")+"</b><br>"; //Negative Binomial Distribution
+		des+=language.dist.getString("nbin.desc")+"<br><br>"; //Used to model the number of successes that occur among repeated trials before a specified number of failures happen
+		des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
+		des+=MathUtils.consoleFont("r")+": "+language.dist.getString("nbin.r")+"<br>"; //Number of failures until the trials are stopped (Integer ≥0)
+		des+=MathUtils.consoleFont("p")+": "+language.dist.getString("desc.prob_success")+"<br>"; //Probability of success
+		des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
+		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(r,p,<b><i>~</i></b>)")+": "+language.dist.getString("desc.sample")+". "+language.dist.getString("geom.support")+"<br>"; //Returns a random variable (mean in base case) from the Negative Binomial distribution. Integer in {0,1,...} 
+		des+="<i><br>"+language.dist.getString("gen.distribution_functions")+"</i><br>"; //Distribution Functions
+		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(k,r,p,<b><i>f</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.pmf"), "k")+"<br>"; //Returns the value of the Negative Binomial PMF at k
+		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(k,r,p,<b><i>F</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.cdf"), "k")+"<br>"; //Returns the value of the Negative Binomial CDF at k
+		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(x,r,p,<b><i>Q</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.quantile"), "x")+"<br>"; //Returns the quantile (inverse CDF) of the Negative Binomial distribution at x
+		des+="<i><br>"+language.dist.getString("gen.moments")+"</i><br>"; //Moments
+		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(r,p,<b><i>E</i></b>)")+": "+language.dist.getString("desc.mean")+"<br>"; //Returns the mean of the Negative Binomial distribution
+		des+=MathUtils.consoleFont("<b>NBin</b>","green")+MathUtils.consoleFont("(r,p,<b><i>V</i></b>)")+": "+language.dist.getString("desc.var")+"<br>"; //Returns the variance of the Negative Binomial distribution
 		des+="</html>";
 		return(des);
 	}

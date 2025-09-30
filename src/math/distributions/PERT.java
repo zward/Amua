@@ -22,18 +22,21 @@ import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
 
+import java.text.MessageFormat;
+
 import org.apache.commons.math3.distribution.BetaDistribution;
 
+import lang.Language;
 import main.MersenneTwisterFast;
 
 public final class PERT{
 	
-	public static Numeric pdf(Numeric params[]) throws NumericException{
+	public static Numeric pdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
-			double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble(), c=params[3].getDouble();
-			if(c<=a){throw new NumericException("c should be >a","PERT");}
-			if(b<a){throw new NumericException("b should be ≥a","PERT");}
-			if(b>c){throw new NumericException("b should be ≤c","PERT");}
+			double x=params[0].getDouble(language), a=params[1].getDouble(language), b=params[2].getDouble(language), c=params[3].getDouble(language);
+			if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+			if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+			if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 			double u=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 			double a1=((u-a)*(2*b-a-c))/((b-u)*(c-a));
 			double a2=(a1*(c-u))/(u-a);
@@ -43,9 +46,9 @@ public final class PERT{
 			return(new Numeric(beta.density(x)/(c-a))); //rescaled to range
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and a should be the same size","PERT");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("a and b should be the same size","PERT");}
-			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and c should be the same size","PERT");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "a"),"PERT",language);} //x and a should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "a", "b"),"PERT",language);} //a and b should be the same size
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "c"),"PERT",language);} //b and c should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -54,9 +57,9 @@ public final class PERT{
 					double a=params[1].matrix[i][j];
 					double b=params[2].matrix[i][j];
 					double c=params[3].matrix[i][j];
-					if(c<=a){throw new NumericException("c should be >a","PERT");}
-					if(b<a){throw new NumericException("b should be ≥a","PERT");}
-					if(b>c){throw new NumericException("b should be ≤c","PERT");}
+					if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+					if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+					if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 					double u=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 					double a1=((u-a)*(2*b-a-c))/((b-u)*(c-a));
 					double a2=(a1*(c-u))/(u-a);
@@ -70,12 +73,12 @@ public final class PERT{
 		}
 	}
 
-	public static Numeric cdf(Numeric params[]) throws NumericException{
+	public static Numeric cdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
-			double x=params[0].getDouble(), a=params[1].getDouble(), b=params[2].getDouble(), c=params[3].getDouble();
-			if(c<=a){throw new NumericException("c should be >a","PERT");}
-			if(b<a){throw new NumericException("b should be ≥a","PERT");}
-			if(b>c){throw new NumericException("b should be ≤c","PERT");}
+			double x=params[0].getDouble(language), a=params[1].getDouble(language), b=params[2].getDouble(language), c=params[3].getDouble(language);
+			if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+			if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+			if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 			double u=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 			double a1=((u-a)*(2*b-a-c))/((b-u)*(c-a));
 			double a2=(a1*(c-u))/(u-a);
@@ -85,9 +88,9 @@ public final class PERT{
 			return(new Numeric(beta.cumulativeProbability(x)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and a should be the same size","PERT");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("a and b should be the same size","PERT");}
-			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and c should be the same size","PERT");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "a"),"PERT",language);} //x and a should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "a", "b"),"PERT",language);} //a and b should be the same size
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "c"),"PERT",language);} //b and c should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -96,9 +99,9 @@ public final class PERT{
 					double a=params[1].matrix[i][j];
 					double b=params[2].matrix[i][j];
 					double c=params[3].matrix[i][j];
-					if(c<=a){throw new NumericException("c should be >a","PERT");}
-					if(b<a){throw new NumericException("b should be ≥a","PERT");}
-					if(b>c){throw new NumericException("b should be ≤c","PERT");}
+					if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+					if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+					if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 					double u=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 					double a1=((u-a)*(2*b-a-c))/((b-u)*(c-a));
 					double a2=(a1*(c-u))/(u-a);
@@ -112,12 +115,12 @@ public final class PERT{
 		}
 	}	
 	
-	public static Numeric quantile(Numeric params[]) throws NumericException{
+	public static Numeric quantile(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false && params[3].isMatrix()==false) { //real number
-			double x=params[0].getProb(), a=params[1].getDouble(), b=params[2].getDouble(), c=params[3].getDouble();
-			if(c<=a){throw new NumericException("c should be >a","PERT");}
-			if(b<a){throw new NumericException("b should be ≥a","PERT");}
-			if(b>c){throw new NumericException("b should be ≤c","PERT");}
+			double x=params[0].getProb(language), a=params[1].getDouble(language), b=params[2].getDouble(language), c=params[3].getDouble(language);
+			if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+			if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+			if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 			double u=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 			double a1=((u-a)*(2*b-a-c))/((b-u)*(c-a));
 			double a2=(a1*(c-u))/(u-a);
@@ -126,20 +129,20 @@ public final class PERT{
 			return(new Numeric(beta.inverseCumulativeProbability(x)*(c-a)+a)); //rescaled to range
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and a should be the same size","PERT");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("a and b should be the same size","PERT");}
-			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException("b and c should be the same size","PERT");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "a"),"PERT",language);} //x and a should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "a", "b"),"PERT",language);} //a and b should be the same size
+			if(params[2].nrow!=params[3].nrow || params[2].ncol!=params[3].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "c"),"PERT",language);} //b and c should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double x=params[0].getMatrixProb(i, j);
+					double x=params[0].getMatrixProb(i, j, language);
 					double a=params[1].matrix[i][j];
 					double b=params[2].matrix[i][j];
 					double c=params[3].matrix[i][j];
-					if(c<=a){throw new NumericException("c should be >a","PERT");}
-					if(b<a){throw new NumericException("b should be ≥a","PERT");}
-					if(b>c){throw new NumericException("b should be ≤c","PERT");}
+					if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+					if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+					if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 					double u=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 					double a1=((u-a)*(2*b-a-c))/((b-u)*(c-a));
 					double a2=(a1*(c-u))/(u-a);
@@ -153,18 +156,18 @@ public final class PERT{
 		}
 	}
 	
-	public static Numeric mean(Numeric params[]) throws NumericException{
+	public static Numeric mean(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			double a=params[0].getDouble(), b=params[1].getDouble(), c=params[2].getDouble();
-			if(c<=a){throw new NumericException("c should be >a","PERT");}
-			if(b<a){throw new NumericException("b should be ≥a","PERT");}
-			if(b>c){throw new NumericException("b should be ≤c","PERT");}
+			double a=params[0].getDouble(language), b=params[1].getDouble(language), c=params[2].getDouble(language);
+			if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+			if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+			if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 			double mu=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 			return(new Numeric(mu));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("a and b should be the same size","PERT");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and c should be the same size","PERT");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "a", "b"),"PERT",language);} //a and b should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "c"),"PERT",language);} //b and c should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -172,9 +175,9 @@ public final class PERT{
 					double a=params[0].matrix[i][j];
 					double b=params[1].matrix[i][j];
 					double c=params[2].matrix[i][j];
-					if(c<=a){throw new NumericException("c should be >a","PERT");}
-					if(b<a){throw new NumericException("b should be ≥a","PERT");}
-					if(b>c){throw new NumericException("b should be ≤c","PERT");}
+					if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+					if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+					if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 					double mu=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 					vals.matrix[i][j]=mu;
 				}
@@ -183,19 +186,19 @@ public final class PERT{
 		}
 	}
 	
-	public static Numeric variance(Numeric params[]) throws NumericException{
+	public static Numeric variance(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			double a=params[0].getDouble(), b=params[1].getDouble(), c=params[2].getDouble();
-			if(c<=a){throw new NumericException("c should be >a","PERT");}
-			if(b<a){throw new NumericException("b should be ≥a","PERT");}
-			if(b>c){throw new NumericException("b should be ≤c","PERT");}
+			double a=params[0].getDouble(language), b=params[1].getDouble(language), c=params[2].getDouble(language);
+			if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+			if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+			if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 			double mu=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 			double var=((mu-a)*(c-mu))/7.0;
 			return(new Numeric(var));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("a and b should be the same size","PERT");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and c should be the same size","PERT");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "a", "b"),"PERT",language);} //a and b should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "c"),"PERT",language);} //b and c should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -203,9 +206,9 @@ public final class PERT{
 					double a=params[0].matrix[i][j];
 					double b=params[1].matrix[i][j];
 					double c=params[2].matrix[i][j];
-					if(c<=a){throw new NumericException("c should be >a","PERT");}
-					if(b<a){throw new NumericException("b should be ≥a","PERT");}
-					if(b>c){throw new NumericException("b should be ≤c","PERT");}
+					if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+					if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+					if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 					double mu=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 					double var=((mu-a)*(c-mu))/7.0;
 					vals.matrix[i][j]=var;
@@ -215,15 +218,15 @@ public final class PERT{
 		}
 	}
 
-	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator, Language language) throws NumericException{
 		if(params.length!=3){
-			throw new NumericException("Incorrect number of parameters","PERT");
+			throw new NumericException(language.message.getString("err.incorrect_num_params"),"PERT",language); //Incorrect number of parameters
 		}
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			double a=params[0].getDouble(), b=params[1].getDouble(), c=params[2].getDouble();
-			if(c<=a){throw new NumericException("c should be >a","PERT");}
-			if(b<a){throw new NumericException("b should be ≥a","PERT");}
-			if(b>c){throw new NumericException("b should be ≤c","PERT");}
+			double a=params[0].getDouble(language), b=params[1].getDouble(language), c=params[2].getDouble(language);
+			if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+			if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+			if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 			double u=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 			double a1=((u-a)*(2.0*b-a-c))/((b-u)*(c-a));
 			double a2=(a1*(c-u))/(u-a);
@@ -235,8 +238,8 @@ public final class PERT{
 			return(new Numeric(val));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("a and b should be the same size","PERT");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("b and c should be the same size","PERT");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "a", "b"),"PERT",language);} //a and b should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "b", "c"),"PERT",language);} //b and c should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -244,9 +247,9 @@ public final class PERT{
 					double a=params[0].matrix[i][j];
 					double b=params[1].matrix[i][j];
 					double c=params[2].matrix[i][j];
-					if(c<=a){throw new NumericException("c should be >a","PERT");}
-					if(b<a){throw new NumericException("b should be ≥a","PERT");}
-					if(b>c){throw new NumericException("b should be ≤c","PERT");}
+					if(c<=a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt_val"), "c","a"),"PERT", language);} //c should be >a
+					if(b<a){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte_val"), "b","a"),"PERT",language);} //b should be ≥a
+					if(b>c){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lte_val"), "b","c"),"PERT",language);} //b should be ≤c
 					double u=(a+(4.0*b)+c)/6.0; //Weighted mean, mode is worth 4x
 					double a1=((u-a)*(2.0*b-a-c))/((b-u)*(c-a));
 					double a2=(a1*(c-u))/(u-a);
@@ -262,22 +265,22 @@ public final class PERT{
 		}
 	}
 	
-	public static String description(){
-		String des="<html><b>PERT Distribution (Program Evaluation and Review Technique)</b><br>";
-		des+="The PERT method converts a Triangular distribution to a Beta-shaped distribution. It is often used in risk analysis to model subjective estimates<br><br>";
-		des+="<i>Parameters</i><br>";
-		des+=MathUtils.consoleFont("a")+": Minimum value, inclusive<br>";
-		des+=MathUtils.consoleFont("b")+": Mode (most likely value)<br>";
-		des+=MathUtils.consoleFont("c")+": Maximum value, exclusive<br>";
-		des+="<br><i>Sample</i><br>";
-		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(a,b,c,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the PERT distribution. Real number in "+MathUtils.consoleFont("[a,c)")+"<br>";
-		des+="<br><i>Distribution Functions</i><br>";
-		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(x,a,b,c,<b><i>f</i></b>)")+": Returns the value of the PERT PDF at "+MathUtils.consoleFont("x")+"<br>";
-		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(x,a,b,c,<b><i>F</i></b>)")+": Returns the value of the PERT CDF at "+MathUtils.consoleFont("x")+"<br>";
-		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(x,a,b,c,<b><i>Q</i></b>)")+": Returns the quantile (inverse CDF) of the PERT distribution at "+MathUtils.consoleFont("x")+"<br>";
-		des+="<i><br>Moments</i><br>";
-		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(a,b,c,<b><i>E</i></b>)")+": Returns the mean of the PERT distribution<br>";
-		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(a,b,c,<b><i>V</i></b>)")+": Returns the variance of the PERT distribution<br>";
+	public static String description(Language language){
+		String des="<html><b>"+language.dist.getString("pert.name")+"</b><br>"; //PERT Distribution (Program Evaluation and Review Technique)
+		des+=language.dist.getString("pert.desc")+"<br><br>"; //The PERT method converts a Triangular distribution to a Beta-shaped distribution. It is often used in risk analysis to model subjective estimates
+		des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
+		des+=MathUtils.consoleFont("a")+": "+language.dist.getString("pert.min")+"<br>"; //Minimum value, inclusive
+		des+=MathUtils.consoleFont("b")+": "+language.dist.getString("pert.mode")+"<br>"; //Mode (most likely value)
+		des+=MathUtils.consoleFont("c")+": "+language.dist.getString("pert.max")+"<br>"; //Maximum value, exclusive
+		des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
+		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(a,b,c,<b><i>~</i></b>)")+": "+language.dist.getString("desc.sample")+". "+language.dist.getString("pert.support")+"<br>"; //Returns a random variable (mean in base case) from the PERT distribution. Real number in [a,c)
+		des+="<i><br>"+language.dist.getString("gen.distribution_functions")+"</i><br>"; //Distribution Functions
+		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(x,a,b,c,<b><i>f</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.pdf"), "x")+"<br>"; //Returns the value of the PERT PDF at x
+		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(x,a,b,c,<b><i>F</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.cdf"), "x")+"<br>"; //Returns the value of the PERT CDF at x
+		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(x,a,b,c,<b><i>Q</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.quantile"), "x")+"<br>"; //Returns the quantile (inverse CDF) of the PERT distribution at x
+		des+="<i><br>"+language.dist.getString("gen.moments")+"</i><br>"; //Moments
+		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(a,b,c,<b><i>E</i></b>)")+": "+language.dist.getString("desc.mean")+"<br>"; //Returns the mean of the PERT distribution
+		des+=MathUtils.consoleFont("<b>PERT</b>","green")+MathUtils.consoleFont("(a,b,c,<b><i>V</i></b>)")+": "+language.dist.getString("desc.var")+"<br>"; //Returns the variance of the PERT distribution
 		des+="</html>";
 		return(des);
 	}

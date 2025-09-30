@@ -190,7 +190,7 @@ public class PythonModel{
 			else if(curText.charAt(0)=='['){ //new defined matrix or vector
 				int close=Interpreter.findRightBracket(curText,0);
 				String strMatrix=curText.substring(1,close);
-				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel).getNumeric()[0];
+				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel,myModel.language).getNumeric()[0];
 				//write out
 				if(matrix.nrow>1){exportText+=writeMatrix(matrix.matrix);}
 				else{exportText+=writeArray(matrix.matrix[0]);}
@@ -213,9 +213,9 @@ public class PythonModel{
 
 	private String initNumeric(String name, Numeric value) throws NumericException{
 		String init="";
-		if(value.isDouble()){init=name+"="+value.getDouble();}
-		else if(value.isInteger()){init=name+"="+value.getInt();}
-		else if(value.isBoolean()){init=name+"="+value.getBool();}
+		if(value.isDouble()){init=name+"="+value.getDouble(myModel.language);}
+		else if(value.isInteger()){init=name+"="+value.getInt(myModel.language);}
+		else if(value.isBoolean()){init=name+"="+value.getBool(myModel.language);}
 		else if(value.isMatrix()){
 			if(value.nrow>1){init=name+"="+writeMatrix(value.matrix);}
 			else{init=name+"="+writeArray(value.matrix[0]);}

@@ -18,6 +18,9 @@
 
 package math.distributions;
 
+import java.text.MessageFormat;
+
+import lang.Language;
 import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
@@ -25,10 +28,10 @@ import math.NumericException;
 
 public final class Geometric{
 	
-	public static Numeric pmf(Numeric params[]) throws NumericException{
+	public static Numeric pmf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			double p=params[1].getProb();
+			int k=params[0].getInt(language);
+			double p=params[1].getProb(language);
 			double val=0;
 			if(k<0) {val=0;} //outside support
 			else{val=Math.pow(1.0-p, k)*p;}
@@ -36,14 +39,14 @@ public final class Geometric{
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("k and p should be the same size","Geom");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "p"),"Geom",language); //k and p should be the same size
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int k=(int) params[0].matrix[i][j];
-					double p=params[1].getMatrixProb(i, j);
+					double p=params[1].getMatrixProb(i, j, language);
 					double val=0;
 					if(k<0) {val=0;} //outside support
 					else{val=Math.pow(1.0-p, k)*p;}
@@ -54,24 +57,24 @@ public final class Geometric{
 		}
 	}
 
-	public static Numeric cdf(Numeric params[]) throws NumericException{
+	public static Numeric cdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			double p=params[1].getProb();
+			int k=params[0].getInt(language);
+			double p=params[1].getProb(language);
 			double val=0;
 			for(int i=0; i<=k; i++){val+=Math.pow(1.0-p, i)*p;}
 			return(new Numeric(val));
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("k and p should be the same size","Geom");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "p"),"Geom",language); //k and p should be the same size
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int k=(int) params[0].matrix[i][j];
-					double p=params[1].getMatrixProb(i, j);
+					double p=params[1].getMatrixProb(i, j, language);
 					double val=0;
 					for(int z=0; z<=k; z++){val+=Math.pow(1.0-p, z)*p;}
 					vals.matrix[i][j]=val;
@@ -81,10 +84,10 @@ public final class Geometric{
 		}
 	}	
 	
-	public static Numeric quantile(Numeric params[]) throws NumericException{
+	public static Numeric quantile(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			double x=params[0].getProb();
-			double p=params[1].getProb();
+			double x=params[0].getProb(language);
+			double p=params[1].getProb(language);
 			if(x==1){return(new Numeric(Double.POSITIVE_INFINITY));}
 			double CDF=0;
 			int k=-1;
@@ -97,14 +100,14 @@ public final class Geometric{
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("x and p should be the same size","Geom");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "p"),"Geom",language); //x and p should be the same size
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double x=params[0].getMatrixProb(i, j);
-					double p=params[1].getMatrixProb(i, j);
+					double x=params[0].getMatrixProb(i, j, language);
+					double p=params[1].getMatrixProb(i, j, language);
 					if(x==1) {vals.matrix[i][j]=Double.POSITIVE_INFINITY;}
 					else {
 						double CDF=0;
@@ -122,9 +125,9 @@ public final class Geometric{
 		}
 	}
 	
-	public static Numeric mean(Numeric params[]) throws NumericException{
+	public static Numeric mean(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()) { //real number
-			double p=params[0].getProb();
+			double p=params[0].getProb(language);
 			return(new Numeric((1.0-p)/p));
 		}
 		else { //matrix
@@ -132,7 +135,7 @@ public final class Geometric{
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double p=params[0].getMatrixProb(i, j);
+					double p=params[0].getMatrixProb(i, j, language);
 					double val=(1.0-p)/p;
 					vals.matrix[i][j]=val;
 				}
@@ -141,9 +144,9 @@ public final class Geometric{
 		}
 	}
 	
-	public static Numeric variance(Numeric params[]) throws NumericException{
+	public static Numeric variance(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()) { //real number
-			double p=params[0].getProb();
+			double p=params[0].getProb(language);
 			return(new Numeric((1.0-p)/(p*p)));
 		}
 		else { //matrix
@@ -151,7 +154,7 @@ public final class Geometric{
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double p=params[0].getMatrixProb(i, j);
+					double p=params[0].getMatrixProb(i, j, language);
 					double val=(1.0-p)/(p*p);
 					vals.matrix[i][j]=val;
 				}
@@ -160,12 +163,12 @@ public final class Geometric{
 		}
 	}
 	
-	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator, Language language) throws NumericException{
 		if(params.length!=1){
-			throw new NumericException("Incorrect number of parameters","Geom");
+			throw new NumericException(language.message.getString("err.incorrect_num_params"),"Geom",language); //Incorrect number of parameters
 		}
 		if(params[0].isMatrix()) { //real number
-			double p=params[0].getProb(), CDF=0;
+			double p=params[0].getProb(language), CDF=0;
 			int k=-1;
 			double rand=generator.nextDouble();
 			while(rand>CDF){
@@ -179,7 +182,7 @@ public final class Geometric{
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double p=params[0].getMatrixProb(i, j);
+					double p=params[0].getMatrixProb(i, j, language);
 					double CDF=0;
 					int k=-1;
 					double rand=generator.nextDouble();
@@ -194,20 +197,20 @@ public final class Geometric{
 		}
 	}
 	
-	public static String description(){
-		String des="<html><b>Geometric Distribution</b><br>";
-		des+="Used to model the number of successes that occur before the first failure<br><br>";
-		des+="<i>Parameters</i><br>";
-		des+=MathUtils.consoleFont("p")+": Probability of success<br>";
-		des+="<br><i>Sample</i><br>";
-		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(p,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the Geometric distribution. Integer in "+MathUtils.consoleFont("{0,1,...}")+"<br>";
-		des+="<br><i>Distribution Functions</i><br>";
-		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(k,p,<b><i>f</i></b>)")+": Returns the value of the Geometric PMF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(k,p,<b><i>F</i></b>)")+": Returns the value of the Geometric CDF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(x,p,<b><i>Q</i></b>)")+": Returns the quantile (inverse CDF) of the Geometric distribution at "+MathUtils.consoleFont("x")+"<br>";
-		des+="<br><i>Moments</i><br>";
-		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(p,<b><i>E</i></b>)")+": Returns the mean of the Geometric distribution<br>";
-		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(p,<b><i>V</i></b>)")+": Returns the variance of the Geometric distribution<br>";
+	public static String description(Language language){
+		String des="<html><b>"+language.dist.getString("geom.name")+"</b><br>"; //Geometric Distribution
+		des+=language.dist.getString("geom.desc")+"<br><br>"; //Used to model the number of successes that occur before the first failure
+		des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
+		des+=MathUtils.consoleFont("p")+": "+language.dist.getString("desc.prob_success")+"<br>"; //Probability of success
+		des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
+		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(p,<b><i>~</i></b>)")+": "+language.dist.getString("desc.sample")+". "+language.dist.getString("geom.support")+"<br>"; //Returns a random variable (mean in base case) from the Geometric distribution. Integer in {0,1,...}
+		des+="<i><br>"+language.dist.getString("gen.distribution_functions")+"</i><br>"; //Distribution Functions
+		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(k,p,<b><i>f</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.pmf"), "k")+"<br>"; //Returns the value of the Geometric PMF at k
+		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(k,p,<b><i>F</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.cdf"), "k")+"<br>"; //Returns the value of the Geometric CDF at k
+		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(x,p,<b><i>Q</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.quantile"), "x")+"<br>"; //Returns the quantile (inverse CDF) of the Geometric distribution at x
+		des+="<i><br>"+language.dist.getString("gen.moments")+"</i><br>"; //Moments
+		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(p,<b><i>E</i></b>)")+": "+language.dist.getString("desc.mean")+"<br>"; //Returns the mean of the Geometric distribution
+		des+=MathUtils.consoleFont("<b>Geom</b>","green")+MathUtils.consoleFont("(p,<b><i>V</i></b>)")+": "+language.dist.getString("desc.var")+"<br>"; //Returns the variance of the Geometric distribution
 		des+="</html>";
 		return(des);
 	}

@@ -19,11 +19,14 @@
 
 package math;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.special.Gamma;
+
+import lang.Language;
 
 public final class Functions{
 
@@ -78,15 +81,15 @@ public final class Functions{
 		return(false); //fell through
 	}
 
-	public static Numeric evaluate(String fx, Numeric...args) throws NumericException{
+	public static Numeric evaluate(String fx, Language language, Numeric...args) throws NumericException{
 		switch(fx){
 		case "abs":{ //absolute value 
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","abs");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"abs",language);} //Function takes 1 argument
 			if(args[0].format==Format.INTEGER){
-				return(new Numeric(Math.abs(args[0].getInt())));
+				return(new Numeric(Math.abs(args[0].getInt(language))));
 			}
 			else if(args[0].format==Format.DOUBLE){
-				return(new Numeric(Math.abs(args[0].getDouble())));
+				return(new Numeric(Math.abs(args[0].getDouble(language))));
 			}
 			else if(args[0].format==Format.MATRIX){
 				double rMatrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -99,10 +102,10 @@ public final class Functions{
 			}
 		}
 		case "acos":{ //arccosine
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","acos");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"acos",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<-1 || x>1){throw new NumericException("x should be in [-1,1]","acos");}
+				double x=args[0].getDouble(language);
+				if(x<-1 || x>1){throw new NumericException(language.message.getString("err.x_should_be_in_11"),"acos",language);} //x should be in [-1,1]
 				return(new Numeric(Math.acos(x)));
 			}
 			else{
@@ -110,7 +113,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<-1 || x>1){throw new NumericException("x should be in [-1,1]","acos");}
+						if(x<-1 || x>1){throw new NumericException(language.message.getString("err.x_should_be_in_11"),"acos",language);} //x should be in [-1,1]
 						matrix[i][j]=Math.acos(x);
 					}
 				}
@@ -118,10 +121,10 @@ public final class Functions{
 			}
 		}
 		case "asin":{ //arcsine
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","asin");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"asin",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<-1 || x>1){throw new NumericException("x should be in [-1,1]","asin");}
+				double x=args[0].getDouble(language);
+				if(x<-1 || x>1){throw new NumericException(language.message.getString("err.x_should_be_in_11"),"asin",language);} //x should be in [-1,1]
 				return(new Numeric(Math.asin(x)));
 			}
 			else{
@@ -129,7 +132,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<-1 || x>1){throw new NumericException("x should be in [-1,1]","acos");}
+						if(x<-1 || x>1){throw new NumericException(language.message.getString("err.x_should_be_in_11"),"acos",language);} //x should be in [-1,1]
 						matrix[i][j]=Math.asin(x);
 					}
 				}
@@ -137,9 +140,9 @@ public final class Functions{
 			}
 		}
 		case "atan":{ //arctan
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","atan");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"atan",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.atan(args[0].getDouble())));
+				return(new Numeric(Math.atan(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -153,11 +156,11 @@ public final class Functions{
 			}
 		}
 		case "bound":{
-			if(args.length!=3){throw new NumericException("Function takes 3 arguments","bound");}
-			double a=args[1].getDouble(), b=args[2].getDouble();
-			if(a>=b){throw new NumericException("a should be <b","bound");}
+			if(args.length!=3){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_n_args"), 3),"bound",language);} //Function takes 3 arguments
+			double a=args[1].getDouble(language), b=args[2].getDouble(language);
+			if(a>=b){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_lt_val"), "a","b"),"bound",language);} //a should be <b
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
+				double x=args[0].getDouble(language);
 				if(x<a){x=a;} //min
 				if(x>b){x=b;} //max
 				return(new Numeric(x));
@@ -176,9 +179,9 @@ public final class Functions{
 			}
 		}
 		case "cbrt":{ //cube root
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","cbrt");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"cbrt",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.cbrt(args[0].getDouble())));
+				return(new Numeric(Math.cbrt(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -192,9 +195,9 @@ public final class Functions{
 			}
 		}
 		case "ceil":{ //ceiling
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","ceil");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"ceil",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric((int)Math.ceil(args[0].getDouble())));
+				return(new Numeric((int)Math.ceil(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -208,13 +211,13 @@ public final class Functions{
 			}
 		}
 		case "choose":{ //n choose k
-			if(args.length!=2){throw new NumericException("Function takes 2 arguments","choose");}
-			return(new Numeric(MathUtils.choose(args[0].getInt(), args[1].getInt()))); 
+			if(args.length!=2){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_n_args"), 2),"choose",language);} //Function takes 2 arguments
+			return(new Numeric(MathUtils.choose(args[0].getInt(language), args[1].getInt(language)))); 
 		}
 		case "cos":{ //cosine
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","cos");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"cos",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.cos(args[0].getDouble()))); 
+				return(new Numeric(Math.cos(args[0].getDouble(language)))); 
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -228,9 +231,9 @@ public final class Functions{
 			}
 		}
 		case "cosh":{ //hyperbolic cosine
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","cosh");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"cosh",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.cosh(args[0].getDouble())));
+				return(new Numeric(Math.cosh(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -244,9 +247,9 @@ public final class Functions{
 			}
 		}
 		case "erf":{ //error function
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","erf");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"erf",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Erf.erf(args[0].getDouble())));
+				return(new Numeric(Erf.erf(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -260,9 +263,9 @@ public final class Functions{
 			}
 		}
 		case "exp":{ //exp
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","exp");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"exp",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.exp(args[0].getDouble())));
+				return(new Numeric(Math.exp(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -276,15 +279,15 @@ public final class Functions{
 			}
 		}
 		case "fact": { //factorial
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","fact");}
-			int n=args[0].getInt();
-			if(n<0){throw new NumericException("n should be ≥0","fact");}
-			return(new Numeric(MathUtils.factorial(args[0].getInt()))); 
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"fact",language);} //Function takes 1 argument
+			int n=args[0].getInt(language);
+			if(n<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "n"),"fact",language);} //n should be ≥0
+			return(new Numeric(MathUtils.factorial(args[0].getInt(language)))); 
 		}
 		case "floor":{ //floor
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","floor");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"floor",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric((int)Math.floor(args[0].getDouble())));
+				return(new Numeric((int)Math.floor(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -298,10 +301,10 @@ public final class Functions{
 			}
 		}
 		case "gamma":{ //gamma
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","gamma");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"gamma",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<=0){throw new NumericException("x should be >0","gamma");}
+				double x=args[0].getDouble(language);
+				if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"gamma",language);} //x should be >0
 				return(new Numeric(Gamma.gamma(x))); 
 			}
 			else{
@@ -309,7 +312,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<=0){throw new NumericException("x should be >0","gamma");}
+						if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"gamma",language);} //x should be >0
 						matrix[i][j]=Gamma.gamma(x);
 					}
 				}
@@ -317,19 +320,19 @@ public final class Functions{
 			}
 		}
 		case "hypot":{ //hypotenuse
-			if(args.length!=2){throw new NumericException("Function takes 2 arguments","hypot");}
-			return(new Numeric(Math.hypot(args[0].getDouble(),args[1].getDouble()))); 
+			if(args.length!=2){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_n_args"), 2),"hypot",language);} //Function takes 2 arguments
+			return(new Numeric(Math.hypot(args[0].getDouble(language),args[1].getDouble(language)))); 
 		}
 		case "if":{
-			if(args.length!=3){throw new NumericException("Function takes 3 arguments","if");}
-			if(args[0].getBool()==true){return(args[1]);}
+			if(args.length!=3){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_n_args"), 3),"if",language);} //Function takes 3 arguments
+			if(args[0].getBool(language)==true){return(args[1]);}
 			else{return(args[2]);}
 		}
 		case "invErf":{ //inverse error function
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","invErf");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"invErf",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<-1 || x>1){throw new NumericException("x should be in [-1,1]","invErf");}
+				double x=args[0].getDouble(language);
+				if(x<-1 || x>1){throw new NumericException(language.message.getString("err.val_should_be_in_11"),"invErf",language);} //x should be in [-1,1]
 				return(new Numeric(Erf.erfInv(x))); 
 			}
 			else{
@@ -337,7 +340,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<-1 || x>1){throw new NumericException("x should be in [-1,1]","invErf");}
+						if(x<-1 || x>1){throw new NumericException(language.message.getString("err.val_should_be_in_11"),"invErf",language);} //x should be in [-1,1]
 						matrix[i][j]=Erf.erfInv(x);
 					}
 				}
@@ -345,18 +348,18 @@ public final class Functions{
 			}
 		}
 		case "log":{ //natural log
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","log");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"log",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<=0){throw new NumericException("x should be >0","log");}
-				return(new Numeric(Math.log(args[0].getDouble()))); 
+				double x=args[0].getDouble(language);
+				if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"log",language);} //x should be >0"
+				return(new Numeric(Math.log(args[0].getDouble(language)))); 
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<=0){throw new NumericException("x should be >0","log");}
+						if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"log",language);} //x should be >0"
 						matrix[i][j]=Math.log(x);
 					}
 				}
@@ -364,23 +367,23 @@ public final class Functions{
 			}
 		}
 		case "logb": { //log base b
-			if(args.length!=2){throw new NumericException("Function takes 2 arguments","logb");}
+			if(args.length!=2){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_n_args"), 2),"logb",language);} //Function takes 2 arguments
 			if(args[0].format!=Format.MATRIX){ //real number
-				double x=args[0].getDouble();
-				if(x<=0){throw new NumericException("x should be >0","logb");}
-				double b=args[1].getDouble();
-				if(b<=0){throw new NumericException("b should be >0","logb");}
+				double x=args[0].getDouble(language);
+				if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"logb",language);} //x should be >0
+				double b=args[1].getDouble(language);
+				if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"logb",language);} //b should be >0
 				double result=Math.log(x)/Math.log(b);
 				return(new Numeric(result)); 
 			}
 			else{ //matrix
-				double b=args[1].getDouble();
-				if(b<=0){throw new NumericException("b should be >0","logb");}
+				double b=args[1].getDouble(language);
+				if(b<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "b"),"logb",language);} //b should be >0
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<=0){throw new NumericException("x should be >0","logb");}
+						if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"logb",language);} //x should be >0
 						matrix[i][j]=Math.log(x)/Math.log(b);
 					}
 				}
@@ -389,10 +392,10 @@ public final class Functions{
 		}
 		
 		case "logGamma":{ //log gamma
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","logGamma");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"logGamma",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<=0){throw new NumericException("x should be >0","logGamma");}
+				double x=args[0].getDouble(language);
+				if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"logGamma",language);} //x should be >0
 				return(new Numeric(Gamma.logGamma(x))); 
 			}
 			else{
@@ -400,7 +403,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<=0){throw new NumericException("x should be >0","logGamma");}
+						if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"logGamma",language);} //x should be >0
 						matrix[i][j]=Gamma.logGamma(x);
 					}
 				}
@@ -408,10 +411,10 @@ public final class Functions{
 			}
 		}
 		case "log10":{ //log base 10
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","log10");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"log10",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<=0){throw new NumericException("x should be >0","log10");}
+				double x=args[0].getDouble(language);
+				if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"log10",language);} //x should be >0
 				return(new Numeric(Math.log10(x)));
 			}
 			else{
@@ -419,7 +422,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<=0){throw new NumericException("x should be >0","log10");}
+						if(x<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "x"),"log10",language);} //x should be >0
 						matrix[i][j]=Math.log10(x);
 					}
 				}
@@ -427,10 +430,10 @@ public final class Functions{
 			}
 		}
 		case "logit":{ //logit
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","logit");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"logit",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<0 || x>1){throw new NumericException("p should be in [0,1]","logit");}
+				double x=args[0].getDouble(language);
+				if(x<0 || x>1){throw new NumericException(language.message.getString("err.val_should_be_in_01"),"logit",language);} //p should be in [0,1]
 				return(new Numeric(Math.log(x/(1.0-x))));
 			}
 			else{
@@ -438,7 +441,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<0 || x>1){throw new NumericException("p should be in [0,1]","logit");}
+						if(x<0 || x>1){throw new NumericException(language.message.getString("err.val_should_be_in_01"),"logit",language);} //p should be in [0,1]
 						matrix[i][j]=Math.log(x/(1.0-x));
 					}
 				}
@@ -446,9 +449,9 @@ public final class Functions{
 			}
 		}
 		case "logistic":{ //logistic
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","logistic");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"logistic",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
+				double x=args[0].getDouble(language);
 				return(new Numeric(1.0/(1+Math.exp(-x))));
 			}
 			else{
@@ -463,31 +466,31 @@ public final class Functions{
 			}
 		}
 		case "max":{ //max(a,b)
-			if(args.length!=2){throw new NumericException("Function takes 2 arguments","max");}
+			if(args.length!=2){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_n_args"), 2),"max",language);} //Function takes 2 arguments
 			if(args[0].isInteger() && args[1].isInteger()){ //preserve integer type
-				return(new Numeric(Math.max(args[0].getInt(), args[1].getInt())));
+				return(new Numeric(Math.max(args[0].getInt(language), args[1].getInt(language))));
 			}
 			else{ //at least 1 double
-				return(new Numeric(Math.max(args[0].getDouble(), args[1].getDouble())));
+				return(new Numeric(Math.max(args[0].getDouble(language), args[1].getDouble(language))));
 			}
 		}
 		case "min":{ //min(a,b)
-			if(args.length!=2){throw new NumericException("Function takes 2 arguments","min");}
+			if(args.length!=2){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_n_args"), 2),"min",language);} //Function takes 2 arguments
 			if(args[0].isInteger() && args[1].isInteger()){ //preserve integer type
-				return(new Numeric(Math.min(args[0].getInt(), args[1].getInt())));
+				return(new Numeric(Math.min(args[0].getInt(language), args[1].getInt(language))));
 			}
 			else{ //at least 1 double
-				return(new Numeric(Math.min(args[0].getDouble(), args[1].getDouble())));
+				return(new Numeric(Math.min(args[0].getDouble(language), args[1].getDouble(language))));
 			}
 		}
 		case "probRescale":{ //prob to prob
-			if(args.length!=3){throw new NumericException("Function takes 3 arguments","probRescale");}
-			double t1=args[1].getDouble();
-			double t2=args[2].getDouble();
-			if(t1<=0){throw new NumericException("Original time interval should be >0","prob");}
-			if(t2<=0){throw new NumericException("New time interval should be >0","prob");}
+			if(args.length!=3){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_n_args"), 3),"probRescale",language);} //Function takes 3 arguments
+			double t1=args[1].getDouble(language);
+			double t2=args[2].getDouble(language);
+			if(t1<=0){throw new NumericException(language.message.getString("err.time_orig_pos"),"prob",language);} //Original time interval should be >0
+			if(t2<=0){throw new NumericException(language.message.getString("err.time_new_pos"),"prob",language);} //New time interval should be >0
 			if(args[0].format!=Format.MATRIX){
-				double p=args[0].getProb();
+				double p=args[0].getProb(language);
 				double r0=-Math.log(1-p); //prob to rate
 				double r1=r0/t1; //rate per t1
 				double r2=r1*t2; //rate per t2
@@ -499,7 +502,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double p=args[0].matrix[i][j];
-						if(p<0 || p>1){throw new NumericException("Invalid probability ("+p+")","probRescale");}
+						if(p<0 || p>1){throw new NumericException(language.message.getString("err.invalid_prob")+" ("+p+")","probRescale",language);} //Invalid probability
 						double r0=-Math.log(1-p); //prob to rate
 						double r1=r0/t1; //rate per t1
 						double r2=r1*t2; //rate per t2
@@ -511,16 +514,16 @@ public final class Functions{
 			}
 		}
 		case "probToRate":{ //prob to rate
-			if(args.length!=1 && args.length!=3){throw new NumericException("Function takes 1 or 3 arguments","probToRate");}
+			if(args.length!=1 && args.length!=3){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_one_two_args"), 1, 3),"probToRate",language);} //Function takes 1 or 3 arguments
 			double tProb=1.0, tRate=1.0;
 			if(args.length==3){
-				tProb=args[1].getDouble();
-				tRate=args[2].getDouble();
-				if(tRate<=0){throw new NumericException("Rate time interval should be >0","prob");}
-				if(tProb<=0){throw new NumericException("Probability time interval should be >0","prob");}
+				tProb=args[1].getDouble(language);
+				tRate=args[2].getDouble(language);
+				if(tRate<=0){throw new NumericException(language.message.getString("err.rate_time_pos"),"prob",language);} //Rate time interval should be >0
+				if(tProb<=0){throw new NumericException(language.message.getString("err.prob_time_pos"),"prob",language);} //Probability time interval should be >0
 			}
 			if(args[0].format!=Format.MATRIX){
-				double p=args[0].getProb();
+				double p=args[0].getProb(language);
 				double r0=-Math.log(1-p); //prob to rate
 				double r1=r0/tProb; //rate per t1
 				double r2=r1*tRate; //rate per t2
@@ -531,7 +534,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double p=args[0].matrix[i][j];
-						if(p<0 || p>1){throw new NumericException("Invalid probability ("+p+")","probToRate");}
+						if(p<0 || p>1){throw new NumericException(language.message.getString("err.invalid_prob")+" ("+p+")","probToRate",language);} //Invalid probability
 						double r0=-Math.log(1-p); //prob to rate
 						double r1=r0/tProb; //rate per t1
 						double r2=r1*tRate; //rate per t2
@@ -542,10 +545,10 @@ public final class Functions{
 			}
 		}
 		case "probit":{ //probit
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","probit");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"probit",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<0 || x>1){throw new NumericException("p should be in [0,1]","probit");}
+				double x=args[0].getDouble(language);
+				if(x<0 || x>1){throw new NumericException(language.message.getString("err.val_should_be_in_01"),"probit",language);} //p should be in [0,1]
 				return(new Numeric(Math.sqrt(2)*Erf.erfInv(2*x-1)));
 			}
 			else{
@@ -553,7 +556,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<0 || x>1){throw new NumericException("p should be in [0,1]","probit");}
+						if(x<0 || x>1){throw new NumericException(language.message.getString("err.val_should_be_in_01"),"probit",language);} //p should be in [0,1]
 						matrix[i][j]=Math.sqrt(2)*Erf.erfInv(2*x-1);
 					}
 				}
@@ -561,17 +564,17 @@ public final class Functions{
 			}
 		}
 		case "rateToProb":{ //rate to prob
-			if(args.length!=1 && args.length!=3){throw new NumericException("Function takes 1 or 3 arguments","rateToProb");}
+			if(args.length!=1 && args.length!=3){throw new NumericException(MessageFormat.format(language.message.getString("err.fx_one_two_args"), 1, 3),"rateToProb",language);} //Function takes 1 or 3 arguments
 			double tRate=1.0, tProb=1.0;
 			if(args.length==3){
-				tRate=args[1].getDouble();
-				tProb=args[2].getDouble();
-				if(tRate<=0){throw new NumericException("Rate time interval should be >0","prob");}
-				if(tProb<=0){throw new NumericException("Probability time interval should be >0","prob");}
+				tRate=args[1].getDouble(language);
+				tProb=args[2].getDouble(language);
+				if(tRate<=0){throw new NumericException(language.message.getString("err.rate_time_pos"),"prob",language);} //Rate time interval should be >0
+				if(tProb<=0){throw new NumericException(language.message.getString("err.prob_time_pos"),"prob",language);} //Probability time interval should be >0
 			}
 			if(args[0].format!=Format.MATRIX){
-				double r=args[0].getDouble();
-				if(r<0){throw new NumericException("Rate should be ≥0","rateToProb");}
+				double r=args[0].getDouble(language);
+				if(r<0){throw new NumericException(language.message.getString("err.rate_pos"),"rateToProb",language);} //Rate should be ≥0
 				double r1=r/tRate; //rate per t1
 				double r2=r1*tProb; //rate per t2
 				double p=1-Math.exp(-r2);
@@ -582,7 +585,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double r=args[0].matrix[i][j];
-						if(r<0){throw new NumericException("Rate should be ≥0","rateToProb");}
+						if(r<0){throw new NumericException(language.message.getString("err.rate_pos"),"rateToProb",language);} //Rate should be ≥0
 						double r1=r/tRate; //rate per t1
 						double r2=r1*tProb; //rate per t2
 						double p=1-Math.exp(-r2);
@@ -595,7 +598,7 @@ public final class Functions{
 		case "round":{
 			if(args.length==1){ //round to integer
 				if(args[0].format!=Format.MATRIX){
-					return(new Numeric((int)Math.round(args[0].getDouble())));
+					return(new Numeric((int)Math.round(args[0].getDouble(language))));
 				}
 				else{
 					double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -609,11 +612,11 @@ public final class Functions{
 				}
 			}
 			else if(args.length==2){
-				int n=args[1].getInt();
-				if(n<0){throw new NumericException("Number of decimal places should be ≥0","round");}
-				double digits=Math.pow(10, args[1].getInt());
+				int n=args[1].getInt(language);
+				if(n<0){throw new NumericException(language.message.getString("err.num_decimal_pos"),"round",language);} //Number of decimal places should be ≥0
+				double digits=Math.pow(10, args[1].getInt(language));
 				if(args[0].format!=Format.MATRIX){
-					return(new Numeric(Math.round(args[0].getDouble()*digits)/digits));
+					return(new Numeric(Math.round(args[0].getDouble(language)*digits)/digits));
 				}
 				else{
 					double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -626,12 +629,12 @@ public final class Functions{
 					return(new Numeric(matrix));
 				}
 			}
-			else{throw new NumericException("Function takes 1 or 2 arguments","round");}
+			else{throw new NumericException(MessageFormat.format(language.message.getString("err.fx_one_two_args"), 1, 2),"round",language);} //Function takes 1 or 2 arguments
 		}
 		case "sin":{ //sin
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","sin");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"sin",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.sin(args[0].getDouble()))); 
+				return(new Numeric(Math.sin(args[0].getDouble(language)))); 
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -645,9 +648,9 @@ public final class Functions{
 			}
 		}
 		case "sinh":{ //hyperbolic sin
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","sinh");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"sinh",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.sinh(args[0].getDouble())));
+				return(new Numeric(Math.sinh(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -661,10 +664,10 @@ public final class Functions{
 			}
 		}
 		case "sqrt":{ //square root
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","sqrt");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"sqrt",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				double x=args[0].getDouble();
-				if(x<0){throw new NumericException("x should be ≥0","sqrt");}
+				double x=args[0].getDouble(language);
+				if(x<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "x"),"sqrt",language);} //x should be ≥0"
 				return(new Numeric(Math.sqrt(x)));
 			}
 			else{
@@ -672,7 +675,7 @@ public final class Functions{
 				for(int i=0; i<args[0].nrow; i++){
 					for(int j=0; j<args[0].ncol; j++){
 						double x=args[0].matrix[i][j];
-						if(x<0){throw new NumericException("x should be ≥0","sqrt");}
+						if(x<0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte0"), "x"),"sqrt",language);} //x should be ≥0"
 						matrix[i][j]=Math.sqrt(x);
 					}
 				}
@@ -680,9 +683,9 @@ public final class Functions{
 			}
 		}
 		case "tan":{ //tan
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","tan");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"tan",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.tan(args[0].getDouble())));
+				return(new Numeric(Math.tan(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -696,9 +699,9 @@ public final class Functions{
 			}
 		}
 		case "tanh":{ //hyperbolic tan
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","tanh");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"tanh",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.tanh(args[0].getDouble())));
+				return(new Numeric(Math.tanh(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -712,9 +715,9 @@ public final class Functions{
 			}
 		}
 		case "signum":{ //signum
-			if(args.length!=1){throw new NumericException("Function takes 1 argument","signum");}
+			if(args.length!=1){throw new NumericException(language.message.getString("err.fx_one_arg"),"signum",language);} //Function takes 1 argument
 			if(args[0].format!=Format.MATRIX){
-				return(new Numeric(Math.signum(args[0].getDouble())));
+				return(new Numeric(Math.signum(args[0].getDouble(language))));
 			}
 			else{
 				double matrix[][]=new double[args[0].nrow][args[0].ncol];
@@ -731,12 +734,12 @@ public final class Functions{
 		//Summary functions
 		case "mean":{
 			int numArgs=args.length;
-			if(numArgs==0){throw new NumericException("Function takes at least 1 argument","mean");}
+			if(numArgs==0){throw new NumericException(language.message.getString("err.fx_gte1_arg"),"mean",language);} //Function takes at least 1 argument
 			double sum=0;
 			int count=0;
 			for(int i=0; i<numArgs; i++){
 				if(args[i].format!=Format.MATRIX){
-					sum+=args[i].getDouble();
+					sum+=args[i].getDouble(language);
 					count++;
 				}
 				else{
@@ -753,11 +756,11 @@ public final class Functions{
 		}
 		case "product":{
 			int numArgs=args.length;
-			if(numArgs==0){throw new NumericException("Function takes at least 1 argument","product");}
+			if(numArgs==0){throw new NumericException(language.message.getString("err.fx_gte1_arg"),"product",language);} //Function takes at least 1 argument
 			double prod=1;
 			for(int i=0; i<numArgs; i++){
 				if(args[i].format!=Format.MATRIX){
-					prod*=args[i].getDouble();
+					prod*=args[i].getDouble(language);
 				}
 				else{
 					for(int r=0; r<args[i].nrow; r++){
@@ -771,27 +774,27 @@ public final class Functions{
 		}
 		case "quantile":{
 			int numArgs=args.length;
-			if(numArgs<2){throw new NumericException("Function takes at least 2 arguments","quantile");}
+			if(numArgs<2){throw new NumericException(language.message.getString("err.fx_gte2_args"),"quantile",language);} //Function takes at least 2 arguments
 			//Get quantiles to evaluate
 			double q[];
 			if(args[0].format!=Format.MATRIX){
 				q=new double[1];
-				q[0]=args[0].getDouble();
-				if(q[0]<0 || q[0]>1){throw new NumericException("q should be in [0,1] but was "+q[0],"quantile");}
+				q[0]=args[0].getDouble(language);
+				if(q[0]<0 || q[0]>1){throw new NumericException(MessageFormat.format(language.message.getString("err.should_be_in_01_but"), "q", q[0]),"quantile",language);} //[val1] should be in [0,1] but was [val2]
 			}
 			else{
-				if(args[0].nrow!=1){throw new NumericException("q should be a row vector","quantile");}
+				if(args[0].nrow!=1){throw new NumericException(MessageFormat.format(language.message.getString("err.should_be_row_vector"), "q"),"quantile",language);} //q should be a row vector
 				q=new double[args[0].ncol];
 				for(int i=0; i<q.length; i++){
 					q[i]=args[0].matrix[0][i];
-					if(q[i]<0 || q[i]>1){throw new NumericException("q["+i+"] should be in [0,1] but was "+q[i],"quantile");}
+					if(q[i]<0 || q[i]>1){throw new NumericException(MessageFormat.format(language.message.getString("err.should_be_in_01_but"), "q["+i+"]", q[i]),"quantile",language);} //q["+i+"] should be in [0,1] but was "+q[i],"quantile
 				}
 			}
 			//Evaluate quantiles
 			ArrayList<Double> x=new ArrayList<Double>();
 			for(int i=1; i<numArgs; i++){
 				if(args[i].format!=Format.MATRIX){
-					x.add(args[i].getDouble());
+					x.add(args[i].getDouble(language));
 				}
 				else{
 					for(int r=0; r<args[i].nrow; r++){
@@ -813,18 +816,18 @@ public final class Functions{
 		}
 		case "sd":{
 			int numArgs=args.length;
-			if(numArgs==0){throw new NumericException("Function takes at least 1 argument","sd");}
-			double var=MathUtils.var(args);
+			if(numArgs==0){throw new NumericException(language.message.getString("err.fx_gte1_arg"),"sd",language);} //Function takes at least 1 argument
+			double var=MathUtils.var(language, args);
 			double sd=Math.sqrt(var);
 			return(new Numeric(sd));
 		}
 		case "sum":{
 			int numArgs=args.length;
-			if(numArgs==0){throw new NumericException("Function takes at least 1 argument","sum");}
+			if(numArgs==0){throw new NumericException(language.message.getString("err.fx_gte1_arg"),"sum",language);} //Function takes at least 1 argument
 			double sum=0;
 			for(int i=0; i<numArgs; i++){
 				if(args[i].format!=Format.MATRIX){
-					sum+=args[i].getDouble();
+					sum+=args[i].getDouble(language);
 				}
 				else{
 					for(int r=0; r<args[i].nrow; r++){
@@ -838,8 +841,8 @@ public final class Functions{
 		}
 		case "var":{
 			int numArgs=args.length;
-			if(numArgs==0){throw new NumericException("Function takes at least 1 argument","var");}
-			double var=MathUtils.var(args);
+			if(numArgs==0){throw new NumericException(language.message.getString("err.fx_gte1_arg"),"var",language);} //Function takes at least 1 argument
+			double var=MathUtils.var(language, args);
 			return(new Numeric(var));
 		}
 		
@@ -847,333 +850,333 @@ public final class Functions{
 		return(new Numeric(Double.NaN)); //fell through
 	}
 
-	public static String getDescription(String fx){
+	public static String getDescription(String fx, Language language){
 		String des="";
 		switch(fx){
 		case "abs": 
-			des="<html><b>Absolute Value</b><br>";
-			des+=MathUtils.consoleFont("<b>abs</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the absolute value of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.abs_name")+"</b><br>"; //Absolute Value
+			des+=MathUtils.consoleFont("<b>abs</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.abs_desc")+"<br>"; //Returns the absolute value of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "acos": 
-			des="<html><b>Arccosine</b><br>";
-			des+=MathUtils.consoleFont("<b>acos</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the arccosine of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix) in "+MathUtils.consoleFont("[-1,1]")+"<br>";
+			des="<html><b>"+language.math.getString("fx.acos_name")+"</b><br>"; //Arccosine
+			des+=MathUtils.consoleFont("<b>acos</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.acos_desc")+"<br>"; //Returns the arccosine of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat_11")+"<br>"; //Real number (or matrix) in [-1,1]
 			des+="</html>";
 			return(des);
 		case "asin": 
-			des="<html><b>Arcsine</b><br>";
-			des+=MathUtils.consoleFont("<b>asin</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the arcsine of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix) in "+MathUtils.consoleFont("[-1,1]")+"<br>";
+			des="<html><b>"+language.math.getString("fx.asin_name")+"</b><br>"; //Arcsine
+			des+=MathUtils.consoleFont("<b>asin</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.asin_desc")+"<br>"; //Returns the arcsine of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat_11")+"<br>"; //Real number (or matrix) in [-1,1]
 			des+="</html>";
 			return(des);
 		case "atan": 
-			des="<html><b>Arctangent</b><br>";
-			des+=MathUtils.consoleFont("<b>atan</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the arctangent of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.atan_name")+"</b><br>"; //Arctangent
+			des+=MathUtils.consoleFont("<b>atan</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.atan_desc")+"<br>"; //Returns the arctangent of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "bound": 
-			des="<html><b>Bounded Value</b><br>";
-			des+=MathUtils.consoleFont("<b>bound</b>","#800000")+MathUtils.consoleFont("(x,a,b)")+": Bounds "+MathUtils.consoleFont("x")+" to be in "+MathUtils.consoleFont("[a,b]")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
-			des+=MathUtils.consoleFont("a")+": Lower bound (inclusive), real number<br>";
-			des+=MathUtils.consoleFont("b")+": Upper bound (inclusive), real number<br>";
+			des="<html><b>"+language.math.getString("fx.bound_name")+"</b><br>"; //Bounded Value
+			des+=MathUtils.consoleFont("<b>bound</b>","#800000")+MathUtils.consoleFont("(x,a,b)")+": "+language.math.getString("fx.bound_desc")+"<br>"; //Bounds x to be in [a,b]
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
+			des+=MathUtils.consoleFont("a")+": "+language.math.getString("fx.lb_incl_real")+"<br>"; //Lower bound (inclusive), real number
+			des+=MathUtils.consoleFont("b")+": "+language.math.getString("fx.ub_incl_real")+"<br>"; //Upper bound (inclusive), real number
 			des+="</html>";
 			return(des);
 		case "cbrt": 
-			des="<html><b>Cube Root</b><br>";
-			des+=MathUtils.consoleFont("<b>cbrt</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the cube root of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.cbrt_name")+"</b><br>"; //Cube Root
+			des+=MathUtils.consoleFont("<b>cbrt</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.cbrt_desc")+"<br>"; //Returns the cube root of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "ceil": 
-			des="<html><b>Ceiling</b><br>";
-			des+=MathUtils.consoleFont("<b>ceil</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the nearest integer above "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.ceil_name")+"</b><br>"; //Ceiling
+			des+=MathUtils.consoleFont("<b>ceil</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.ceil_desc")+"<br>"; //Returns the nearest integer above x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "choose": 
-			des="<html><b>Binomial Coefficient</b><br>";
-			des+=MathUtils.consoleFont("<b>choose</b>","#800000")+MathUtils.consoleFont("(n,k)")+": Returns the Binomial coefficient ("+MathUtils.consoleFont("n")+" choose "+MathUtils.consoleFont("k")+")<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("n")+": Integer<br>";
-			des+=MathUtils.consoleFont("k")+": Integer<br>";
+			des="<html><b>"+language.math.getString("fx.choose_name")+"</b><br>"; //Binomial Coefficient
+			des+=MathUtils.consoleFont("<b>choose</b>","#800000")+MathUtils.consoleFont("(n,k)")+": "+language.math.getString("fx.choose_desc")+"<br>"; //Returns the Binomial coefficient (n choose k)
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("n")+": "+language.math.getString("fx.integer")+"<br>"; //Integer
+			des+=MathUtils.consoleFont("k")+": "+language.math.getString("fx.integer")+"<br>"; //Integer
 			des+="</html>";
 			return(des);
 		case "cos": 
-			des="<html><b>Cosine</b><br>";
-			des+=MathUtils.consoleFont("<b>cos</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the cosine of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.cos_name")+"</b><br>"; //Cosine
+			des+=MathUtils.consoleFont("<b>cos</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.cos_desc")+"<br>"; //Returns the cosine of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "cosh": 
-			des="<html><b>Hyperbolic Cosine</b><br>";
-			des+=MathUtils.consoleFont("<b>cosh</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the hyperbolic cosine of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.cosh_name")+"</b><br>"; //Hyperbolic Cosine
+			des+=MathUtils.consoleFont("<b>cosh</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.cosh_desc")+"<br>"; //Returns the hyperbolic cosine of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "erf": 
-			des="<html><b>Error Function</b><br>";
-			des+=MathUtils.consoleFont("<b>erf</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the error function evaluated at "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.erf_name")+"</b><br>"; //Error Function
+			des+=MathUtils.consoleFont("<b>erf</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.erf_desc")+"<br>"; //Returns the error function evaluated at x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "exp": 
-			des="<html><b>Exponential Function</b><br>";
-			des+=MathUtils.consoleFont("<b>exp</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns Euler's number "+MathUtils.consoleFont("e")+" raised to the power of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.exp_name")+"</b><br>"; //Exponential Function
+			des+=MathUtils.consoleFont("<b>exp</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.exp_desc")+"<br>"; //Returns Euler's number e raised to the power of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "fact": 
-			des="<html><b>Factorial</b><br>";
-			des+=MathUtils.consoleFont("<b>fact</b>","#800000")+MathUtils.consoleFont("(n)")+": Returns "+MathUtils.consoleFont("n!")+" (the factorial of "+MathUtils.consoleFont("n")+")<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("n")+": Integer "+MathUtils.consoleFont("≥0")+"<br>";
+			des="<html><b>"+language.math.getString("fx.fact_name")+"</b><br>"; //Factorial
+			des+=MathUtils.consoleFont("<b>fact</b>","#800000")+MathUtils.consoleFont("(n)")+": "+language.math.getString("fx.fact_desc")+"<br>"; //Returns n! (the factorial of n)
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("n")+": "+language.math.getString("fx.integer_gte0")+"<br>"; //Integer ≥0
 			des+="</html>";
 			return(des);
 		case "floor": 
-			des="<html><b>Floor</b><br>";
-			des+=MathUtils.consoleFont("<b>floor</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the nearest integer below "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.floor_name")+"</b><br>"; //Floor
+			des+=MathUtils.consoleFont("<b>floor</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.floor_desc")+"<br>"; //Returns the nearest integer below x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "gamma": 
-			des="<html><b>Gamma Function</b><br>";
-			des+=MathUtils.consoleFont("<b>gamma</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the gamma function evaluated at "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)"+MathUtils.consoleFont(">0")+"<br>";
+			des="<html><b>"+language.math.getString("fx.gamma_name")+"</b><br>"; //Gamma Function
+			des+=MathUtils.consoleFont("<b>gamma</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.gamma_desc")+"<br>"; //Returns the gamma function evaluated at x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat_gt0")+"<br>"; //Real number (or matrix) >0
 			des+="</html>";
 			return(des);
 		case "hypot": 
-			des="<html><b>Hypotenuse</b><br>";
-			des+=MathUtils.consoleFont("<b>hypot</b>","#800000")+MathUtils.consoleFont("(x,y)")+": Returns "+MathUtils.consoleFont("sqrt(x^2+y^2)")+" without intermediate overflow or underflow<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number <br>";
-			des+=MathUtils.consoleFont("y")+": Real number <br>";
+			des="<html><b>"+language.math.getString("fx.hypot_name")+"</b><br>"; //Hypotenuse
+			des+=MathUtils.consoleFont("<b>hypot</b>","#800000")+MathUtils.consoleFont("(x,y)")+": "+language.math.getString("fx.hypot_desc")+"<br>"; //Returns sqrt(x^2+y^2) without intermediate overflow or underflow
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num")+"<br>"; //Real number
+			des+=MathUtils.consoleFont("y")+": "+language.math.getString("fx.real_num")+"<br>"; //Real number
 			des+="</html>";
 			return(des);
 		case "if": 
-			des="<html><b>If Function</b><br>";
-			des+=MathUtils.consoleFont("<b>if</b>","#800000")+MathUtils.consoleFont("(<i>expr</i>,a,b)")+": Returns "+MathUtils.consoleFont("a")+" if the expression is "+MathUtils.consoleFont("true")+" and "+MathUtils.consoleFont("b")+" if it is "+MathUtils.consoleFont("false")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("<i>expr</i>")+": Boolean expression to evaluate<br>";
-			des+=MathUtils.consoleFont("a")+": Object returned if "+MathUtils.consoleFont("true")+"<br>";
-			des+=MathUtils.consoleFont("b")+": Object returned if "+MathUtils.consoleFont("false")+"<br>";
+			des="<html><b>"+language.math.getString("fx.if_name")+"</b><br>"; //If Function
+			des+=MathUtils.consoleFont("<b>if</b>","#800000")+MathUtils.consoleFont("(<i>expr</i>,a,b)")+": "+language.math.getString("fx.if_desc")+"<br>"; //Returns a if the expression is true and b if it is false
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("<i>expr</i>")+": "+language.math.getString("fx.bool_expr_eval")+"<br>"; //Boolean expression to evaluate
+			des+=MathUtils.consoleFont("a")+": "+language.math.getString("fx.obj_return_true")+"<br>"; //Object returned if true
+			des+=MathUtils.consoleFont("b")+": "+language.math.getString("fx.obj_return_false")+"<br>"; //Object returned if false
 			des+="</html>";
 			return(des);
 		case "invErf": 
-			des="<html><b>Inverse Error Function</b><br>";
-			des+=MathUtils.consoleFont("<b>invErf</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the inverse error function evaluated at "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix) in "+MathUtils.consoleFont("[-1,1]")+"<br>";
+			des="<html><b>"+language.math.getString("fx.invErf_name")+"</b><br>"; //Inverse Error Function
+			des+=MathUtils.consoleFont("<b>invErf</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.invErf_desc")+"<br>"; //Returns the inverse error function evaluated at x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat_11")+"<br>"; //Real number (or matrix) in [-1,1]
 			des+="</html>";
 			return(des);
 		case "log": 
-			des="<html><b>Natural Log</b><br>";
-			des+=MathUtils.consoleFont("<b>log</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the natural logarithm (base "+MathUtils.consoleFont("e")+") of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
+			des="<html><b>"+language.math.getString("fx.log_name")+"</b><br>"; //Natural Log
+			des+=MathUtils.consoleFont("<b>log</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.log_desc")+"<br>"; //Returns the natural logarithm (base e of x)
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
 			des+=MathUtils.consoleFont("x")+": Real number (or matrix) "+MathUtils.consoleFont(">0")+"<br>";
 			des+="</html>";
 			return(des);
 		case "logb": 
-			des="<html><b>Base-b Log</b><br>";
-			des+=MathUtils.consoleFont("<b>log</b>","#800000")+MathUtils.consoleFont("(x,b)")+": Returns the base-b logarithm of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
+			des="<html><b>"+language.math.getString("fx.logb_name")+"</b><br>"; //Base-b Log
+			des+=MathUtils.consoleFont("<b>logb</b>","#800000")+MathUtils.consoleFont("(x,b)")+": "+language.math.getString("fx.logb_desc")+"<br>"; //Returns the base-b logarithm of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
 			des+=MathUtils.consoleFont("x")+": Real number (or matrix) "+MathUtils.consoleFont(">0")+"<br>";
 			des+=MathUtils.consoleFont("b")+": Real number "+MathUtils.consoleFont(">0")+"<br>";
 			des+="</html>";
 			return(des);
 		case "logGamma": 
-			des="<html><b>Log-Gamma Function</b><br>";
-			des+=MathUtils.consoleFont("<b>logGamma</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the log-Gamma function evaluated at "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix) "+MathUtils.consoleFont(">0")+"<br>";
+			des="<html><b>"+language.math.getString("fx.logGamma_name")+"</b><br>"; //Log-Gamma Function
+			des+=MathUtils.consoleFont("<b>logGamma</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.logGamma_desc")+"<br>"; //Returns the log-Gamma function evaluated at x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat_gt0")+"<br>"; //Real number (or matrix) >0
 			des+="</html>";
 			return(des);
 		case "log10": 
-			des="<html><b>Base-10 Log</b><br>";
-			des+=MathUtils.consoleFont("<b>log10</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the base-"+MathUtils.consoleFont("10")+" logarithm of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix) "+MathUtils.consoleFont(">0")+"<br>";
+			des="<html><b>"+language.math.getString("fx.log10_name")+"</b><br>"; //Base-10 Log
+			des+=MathUtils.consoleFont("<b>log10</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.log10_desc")+"<br>"; //Returns the base-10 logarithm of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat_gt0")+"<br>"; //Real number (or matrix) >0
 			des+="</html>";
 			return(des);
 		case "logit": 
-			des="<html><b>Logit Function</b><br>";
-			des+=MathUtils.consoleFont("<b>logit</b>","#800000")+MathUtils.consoleFont("(p)")+": Returns the log odds of probability "+MathUtils.consoleFont("p")+": i.e. "+MathUtils.consoleFont("log(p/(1-p))")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("p")+": Probability (or matrix) in "+MathUtils.consoleFont("[0,1]")+"<br>";
+			des="<html><b>"+language.math.getString("fx.logit_name")+"</b><br>"; //Logit Function
+			des+=MathUtils.consoleFont("<b>logit</b>","#800000")+MathUtils.consoleFont("(p)")+": "+language.math.getString("fx.logit_desc")+"<br>"; //Returns the log odds of probability p: i.e. log(p/(1-p))
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("p")+": "+language.math.getString("fx.prob_mat_01")+"<br>"; //Probability (or matrix) in [0,1]
 			des+="</html>";
 			return(des);
 		case "logistic": 
-			des="<html><b>Logistic Function</b><br>";
-			des+=MathUtils.consoleFont("<b>logistic</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the standard logistic transformation: "+MathUtils.consoleFont("1/(1+exp(-x))")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix) <br>";
+			des="<html><b>"+language.math.getString("fx.logistic_name")+"</b><br>"; //Logistic Function
+			des+=MathUtils.consoleFont("<b>logistic</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.logistic_desc")+"<br>"; //Returns the standard logistic transformation: 1/(1+exp(-x))
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "max": 
-			des="<html><b>Maximum</b><br>";
-			des+=MathUtils.consoleFont("<b>max</b>","#800000")+MathUtils.consoleFont("(a,b)")+": Returns the maximum of "+MathUtils.consoleFont("a")+" and "+MathUtils.consoleFont("b")+"<br>";
-			des+="<br><i>Arguments</i><br>";
+			des="<html><b>"+language.math.getString("sum.maximum")+"</b><br>"; //Maximum
+			des+=MathUtils.consoleFont("<b>max</b>","#800000")+MathUtils.consoleFont("(a,b)")+": "+language.math.getString("fx.max_desc")+"<br>"; //Returns the maximum of a and b
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
 			des+=MathUtils.consoleFont("a")+": Real number <br>";
 			des+=MathUtils.consoleFont("b")+": Real number <br>";
 			des+="</html>";
 			return(des);
 		case "min": 
-			des="<html><b>Minimum</b><br>";
-			des+=MathUtils.consoleFont("<b>min</b>","#800000")+MathUtils.consoleFont("(a,b)")+": Returns the minimum of "+MathUtils.consoleFont("a")+" and "+MathUtils.consoleFont("b")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("a")+": Real number <br>";
-			des+=MathUtils.consoleFont("b")+": Real number <br>";
+			des="<html><b>"+language.math.getString("sum.minimum")+"</b><br>"; //Minimum
+			des+=MathUtils.consoleFont("<b>min</b>","#800000")+MathUtils.consoleFont("(a,b)")+": "+language.math.getString("fx.min_desc")+"<br>"; //Returns the minimum of a and b
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("a")+": "+language.math.getString("fx.real_num")+"<br>"; //Real number
+			des+=MathUtils.consoleFont("b")+": "+language.math.getString("fx.real_num")+"<br>"; //Real number
 			des+="</html>";
 			return(des);
 		case "probRescale": 
-			des="<html><b>Probability Rescale</b><br>";
-			des+=MathUtils.consoleFont("<b>probRescale</b>","#800000")+MathUtils.consoleFont("(p,t1,t2)")+": Rescales a probability "+MathUtils.consoleFont("p")+" from time interval "+MathUtils.consoleFont("t1")+" to a new time interval "+MathUtils.consoleFont("t2")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("p")+": Probability (or matrix) in "+MathUtils.consoleFont("[0,1]")+"<br>";
-			des+=MathUtils.consoleFont("t1")+": Original time interval "+MathUtils.consoleFont(">0")+"<br>";
-			des+=MathUtils.consoleFont("t2")+": New time interval "+MathUtils.consoleFont(">0")+"<br>";
+			des="<html><b>"+language.math.getString("fx.probRescale_name")+"</b><br>"; //Probability Rescale
+			des+=MathUtils.consoleFont("<b>probRescale</b>","#800000")+MathUtils.consoleFont("(p,t1,t2)")+": "+language.math.getString("fx.probRescale_desc")+"<br>"; //Rescales a probability p from time interval t1 to a new time interval t2
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("p")+": "+language.math.getString("fx.prob_mat_01")+"<br>"; //Probability (or matrix) in [0,1]
+			des+=MathUtils.consoleFont("t1")+": "+language.math.getString("fx.time_orig")+"<br>"; //Original time interval >0
+			des+=MathUtils.consoleFont("t2")+": "+language.math.getString("fx.time_new")+"<br>"; //New time interval >0
 			des+="</html>";
 			return(des);
 		case "probToRate": 
-			des="<html><b>Probability to Rate</b><br>";
-			des+="<i>Functions</i><br>";
-			des+=MathUtils.consoleFont("<b>probToRate</b>","#800000")+MathUtils.consoleFont("(p)")+": Converts a probability "+MathUtils.consoleFont("p")+" to a rate for a fixed time interval<br>";
-			des+=MathUtils.consoleFont("<b>probToRate</b>","#800000")+MathUtils.consoleFont("(p,t1,t2)")+": Converts a probability "+MathUtils.consoleFont("p")+" per time interval "+MathUtils.consoleFont("t1")+" to a rate per time interval "+MathUtils.consoleFont("t2")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("p")+": Probability (or matrix) in "+MathUtils.consoleFont("[0,1]")+"<br>";
-			des+=MathUtils.consoleFont("t1")+": Probability time interval "+MathUtils.consoleFont(">0")+" (optional)<br>";
-			des+=MathUtils.consoleFont("t2")+": Rate time interval "+MathUtils.consoleFont(">0")+" (optional)<br>";
+			des="<html><b>"+language.math.getString("fx.probToRate_name")+"</b><br>"; //Probability to Rate
+			des+="<br><i>"+language.math.getString("fx.functions")+"</i><br>"; //Functions
+			des+=MathUtils.consoleFont("<b>probToRate</b>","#800000")+MathUtils.consoleFont("(p)")+": "+language.math.getString("fx.probToRate_desc")+"<br>"; //Converts a probability p to a rate for a fixed time interval
+			des+=MathUtils.consoleFont("<b>probToRate</b>","#800000")+MathUtils.consoleFont("(p,t1,t2)")+": "+language.math.getString("fx.probToRate_desc2")+"<br>"; //Converts a probability p per time interval t1 to a rate per time interval t2
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("p")+": "+language.math.getString("fx.prob_mat_01")+"<br>"; //Probability (or matrix) in [0,1]
+			des+=MathUtils.consoleFont("t1")+": "+language.math.getString("fx.prob_time_opt")+"<br>"; //Probability time interval >0 (optional)
+			des+=MathUtils.consoleFont("t2")+": "+language.math.getString("fx.rate_time_opt")+"<br>"; //Rate time interval >0 (optional)
 			des+="</html>";
 			return(des);
 		case "probit": 
-			des="<html><b>Probit Function</b><br>";
-			des+=MathUtils.consoleFont("<b>probit</b>","#800000")+MathUtils.consoleFont("(p)")+": Returns the inverse of the standard normal CDF for probability "+MathUtils.consoleFont("p")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("p")+": Probability (or matrix) in "+MathUtils.consoleFont("[0,1]")+"<br>";
+			des="<html><b>"+language.math.getString("fx.probit_name")+"</b><br>"; //Probit Function
+			des+=MathUtils.consoleFont("<b>probit</b>","#800000")+MathUtils.consoleFont("(p)")+": "+language.math.getString("fx.probit_desc")+"<br>"; //Returns the inverse of the standard normal CDF for probability p
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("p")+": "+language.math.getString("fx.prob_mat_01")+"<br>"; //Probability (or matrix) in [0,1]
 			des+="</html>";
 			return(des);
 		case "rateToProb": 
-			des="<html><b>Rate to Probability</b><br>";
-			des+="<i>Functions</i><br>";
-			des+=MathUtils.consoleFont("<b>rateToProb</b>","#800000")+MathUtils.consoleFont("(r)")+": Converts a rate "+MathUtils.consoleFont("r")+" to a probability for a fixed time interval<br>";
-			des+=MathUtils.consoleFont("<b>rateToProb</b>","#800000")+MathUtils.consoleFont("(r,t1,t2)")+": Converts a rate "+MathUtils.consoleFont("r")+" per time interval "+MathUtils.consoleFont("t1")+" to a probability per time interval "+MathUtils.consoleFont("t2")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("r")+": Rate (or matrix) "+MathUtils.consoleFont("≥0")+"<br>";
-			des+=MathUtils.consoleFont("t1")+": Rate time interval "+MathUtils.consoleFont(">0")+" (optional)<br>";
-			des+=MathUtils.consoleFont("t2")+": Probability time interval "+MathUtils.consoleFont(">0")+" (optional)<br>";
+			des="<html><b>"+language.math.getString("fx.rateToProb_name")+"</b><br>"; //Rate to Probability
+			des+="<br><i>"+language.math.getString("fx.functions")+"</i><br>"; //Functions
+			des+=MathUtils.consoleFont("<b>rateToProb</b>","#800000")+MathUtils.consoleFont("(r)")+": "+language.math.getString("fx.rateToProb_desc")+"<br>"; //Converts a rate r to a probability for a fixed time interval
+			des+=MathUtils.consoleFont("<b>rateToProb</b>","#800000")+MathUtils.consoleFont("(r,t1,t2)")+": "+language.math.getString("fx.rateToProb_desc2")+"<br>"; //Converts a rate r per time interval t1 to a probability per time interval t2
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("r")+": "+language.math.getString("fx.rate_mat_gte0")+"<br>"; //Rate (or matrix) ≥0
+			des+=MathUtils.consoleFont("t1")+": "+language.math.getString("fx.rate_time_opt")+"<br>"; //Rate time interval >0 (optional)
+			des+=MathUtils.consoleFont("t2")+": "+language.math.getString("fx.prob_time_opt")+"<br>"; //Probability time interval >0 (optional)
 			des+="</html>";
 			return(des);
 		case "round": 
-			des="<html><b>Round</b><br>";
-			des+="<i>Functions</i><br>";
-			des+=MathUtils.consoleFont("<b>round</b>","#800000")+MathUtils.consoleFont("(x)")+": Rounds "+MathUtils.consoleFont("x")+" to the nearest integer<br>";
-			des+=MathUtils.consoleFont("<b>round</b>","#800000")+MathUtils.consoleFont("(x,n)")+": Rounds "+MathUtils.consoleFont("x")+" to "+MathUtils.consoleFont("n")+" decimal places<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
-			des+=MathUtils.consoleFont("n")+": Number of digits (Integer "+MathUtils.consoleFont("≥0")+") (optional)<br>";
+			des="<html><b>"+language.math.getString("fx.round_name")+"</b><br>"; //Round
+			des+="<br><i>"+language.math.getString("fx.functions")+"</i><br>"; //Functions
+			des+=MathUtils.consoleFont("<b>round</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.round_desc")+"<br>"; //Rounds x to the nearest integer
+			des+=MathUtils.consoleFont("<b>round</b>","#800000")+MathUtils.consoleFont("(x,n)")+": "+language.math.getString("fx.round_desc2")+"<br>"; //Rounds x to n decimal places
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
+			des+=MathUtils.consoleFont("n")+": "+language.math.getString("fx.num_digits_opt")+"<br>"; //Number of digits (Integer ≥0) (optional)
 			des+="</html>";
 			return(des);
 		case "sin": 
-			des="<html><b>Sine</b><br>";
-			des+=MathUtils.consoleFont("<b>sin</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the sine of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.sin_name")+"</b><br>"; //Sine
+			des+=MathUtils.consoleFont("<b>sin</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.sin_desc")+"<br>"; //Returns the sine of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "sinh": 
-			des="<html><b>Hyperbolic Sine</b><br>";
-			des+=MathUtils.consoleFont("<b>sinh</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the hyperbolic sine of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.sinh_name")+"</b><br>"; //Hyperbolic Sine
+			des+=MathUtils.consoleFont("<b>sinh</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.sinh_desc")+"<br>"; //Returns the hyperbolic sine of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "sqrt": 
-			des="<html><b>Square Root</b><br>";
-			des+=MathUtils.consoleFont("<b>sqrt</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the square root of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix) ≥0<br>";
+			des="<html><b>"+language.math.getString("fx.sqrt_name")+"</b><br>"; //Square Root
+			des+=MathUtils.consoleFont("<b>sqrt</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.sqrt_desc")+"<br>"; //Returns the square root of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat_gte0")+"<br>"; //Real number (or matrix) ≥0
 			des+="</html>";
 			return(des);			
 		case "tan": 
-			des="<html><b>Tangent</b><br>";
-			des+=MathUtils.consoleFont("<b>tan</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the tangent of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.tan_name")+"</b><br>"; //Tangent
+			des+=MathUtils.consoleFont("<b>tan</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.tan_desc")+"<br>"; //Returns the tangent of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "tanh": 
-			des="<html><b>Hyperbolic Tangent</b><br>";
-			des+=MathUtils.consoleFont("<b>tanh</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the hyperbolic tangent of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.tanh_name")+"</b><br>"; //Hyperbolic Tangent
+			des+=MathUtils.consoleFont("<b>tanh</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.tanh_desc")+"<br>"; //Returns the hyperbolic tangent of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "signum": 
-			des="<html><b>Signum Function</b><br>";
-			des+=MathUtils.consoleFont("<b>signum</b>","#800000")+MathUtils.consoleFont("(x)")+": Returns the sign of "+MathUtils.consoleFont("x")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix)<br>";
+			des="<html><b>"+language.math.getString("fx.signum_name")+"</b><br>"; //Signum Function
+			des+=MathUtils.consoleFont("<b>signum</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.signum_desc")+"<br>"; //Returns the sign of x
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		
 		//Summary functions
 		case "mean":
-			des="<html><b>Mean</b><br>";
-			des+=MathUtils.consoleFont("<b>mean</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": Returns the mean of "+MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": Real numbers (or matrices)<br>";
+			des="<html><b>"+language.math.getString("sum.mean")+"</b><br>"; //Mean
+			des+=MathUtils.consoleFont("<b>mean</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": "+language.math.getString("fx.mean_desc")+"<br>"; //Returns the mean of x1,x2,...,xn
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": "+language.math.getString("fx.real_nums_mats")+"<br>"; //Real numbers (or matrices)
 			des+="</html>";
 			return(des);
 		case "product":
-			des="<html><b>Product</b><br>";
-			des+=MathUtils.consoleFont("<b>product</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": Returns the product of "+MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": Real numbers (or matrices)<br>";
+			des="<html><b>"+language.math.getString("fx.product_name")+"</b><br>"; //Product
+			des+=MathUtils.consoleFont("<b>product</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": "+language.math.getString("fx.product_desc")+"<br>"; //Returns the product of x1,x2,...,xn
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": "+language.math.getString("fx.real_nums_mats")+"<br>"; //Real numbers (or matrices)
 			des+="</html>";
 			return(des);
 		case "quantile":
-			des="<html><b>Quantile</b><br>";
-			des+=MathUtils.consoleFont("<b>quantile</b>","#800000")+MathUtils.consoleFont("(q,x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": Returns the quantile(s) "+MathUtils.consoleFont("q")+" of "+MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("q")+": Quantile(s) to evaluate. Real number (or row vector of real numbers) in "+MathUtils.consoleFont("[0,1]")+"<br>";
-			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": Real numbers (or matrices)<br>";
+			des="<html><b>"+language.base.getString("plot.quantile")+"</b><br>"; //Quantile
+			des+=MathUtils.consoleFont("<b>quantile</b>","#800000")+MathUtils.consoleFont("(q,x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": "+language.math.getString("fx.quantile_desc")+"<br>"; //Returns the quantile(s) q of x1,x2,...,xn
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("q")+": "+language.math.getString("fx.quant_eval")+"<br>"; //Quantile(s) to evaluate. Real number (or row vector of real numbers) in [0,1]
+			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": "+language.math.getString("fx.real_nums_mats")+"<br>"; //Real numbers (or matrices)
 			des+="</html>";
 			return(des);
 		case "sd":
-			des="<html><b>Standard Deviation</b><br>";
-			des+=MathUtils.consoleFont("<b>sd</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": Returns the standard deviation of "+MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": Real numbers (or matrices)<br>";
+			des="<html><b>"+language.math.getString("fx.sd_name")+"</b><br>"; //Standard Deviation
+			des+=MathUtils.consoleFont("<b>sd</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": "+language.math.getString("fx.sd_desc")+"<br>"; //Returns the standard deviation of x1,x2,...,xn
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": "+language.math.getString("fx.real_nums_mats")+"<br>"; //Real numbers (or matrices)
 			des+="</html>";
 			return(des);
 		case "sum":
-			des="<html><b>Sum</b><br>";
-			des+=MathUtils.consoleFont("<b>sum</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": Returns the sum of "+MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": Real numbers (or matrices)<br>";
+			des="<html><b>"+language.math.getString("fx.sum_name")+"</b><br>"; //Sum
+			des+=MathUtils.consoleFont("<b>sum</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": "+language.math.getString("fx.sum_desc")+"<br>"; //Returns the sum of x1,x2,...,xn
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": "+language.math.getString("fx.real_nums_mats")+"<br>"; //Real numbers (or matrices)
 			des+="</html>";
 			return(des);
 		case "var":
-			des="<html><b>Variance</b><br>";
-			des+=MathUtils.consoleFont("<b>var</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": Returns the variance of "+MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+"<br>";
-			des+="<br><i>Arguments</i><br>";
-			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": Real numbers (or matrices)<br>";
+			des="<html><b>"+language.math.getString("fx.var_name")+"</b><br>"; //Variance
+			des+=MathUtils.consoleFont("<b>var</b>","#800000")+MathUtils.consoleFont("(x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>)")+": "+language.math.getString("fx.var_desc")+"<br>"; //Returns the variance of x1,x2,…,xn
+			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+			des+=MathUtils.consoleFont("x<sub>1</sub>,x<sub>2</sub>,...,x<sub>n</sub>")+": "+language.math.getString("fx.real_nums_mats")+"<br>"; //Real numbers (or matrices)
 			des+="</html>";
 			return(des);
 		

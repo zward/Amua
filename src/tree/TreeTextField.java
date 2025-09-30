@@ -53,7 +53,7 @@ public class TreeTextField extends ModelTextField{
 		
 	private void updateProbHistory(){
 		if(!node.tempProb.matches("0") && !node.tempProb.equals(checkProb)){ //Prob was changed
-			myModel.saveSnapshot("Edit Probability");//Add to undo stack
+			myModel.saveSnapshot(myModel.language.base.getString("title.edit_probability"));//Add to undo stack (Edit Probability)
 		}
 		node.prob=checkProb; //Update current value
 	}
@@ -64,7 +64,7 @@ public class TreeTextField extends ModelTextField{
 			if(!node.tempCost[i].equals(checkCosts[i])){changed=true;}
 		}
 		if(changed==true){ //At least one cost was changed
-			myModel.saveSnapshot("Edit Cost");//Add to undo stack
+			myModel.saveSnapshot(myModel.language.base.getString("title.edit_cost"));//Add to undo stack (Edit Cost)
 		}
 		node.cost=checkCosts; //Update current values
 	}
@@ -89,14 +89,14 @@ public class TreeTextField extends ModelTextField{
 			if(!node.tempPayoff[i].equals(checkPayoffs[i])){changed=true;}
 		}
 		if(changed==true){ //At least one payoff was changed
-			myModel.saveSnapshot("Edit Payoff");//Add to undo stack
+			myModel.saveSnapshot(myModel.language.base.getString("title.edit_payoff")); //Add to undo stack (Edit Payoff)
 		}
 		node.payoff=checkPayoffs; //Update current values
 	}
 	
 	private void updateVarUpdateHistory(){
 		if(node.tempVarUpdates!=null && !node.tempVarUpdates.equals(checkVarUpdates)){ //Counters changed
-			panel.saveSnapshot("Edit Counter Updates"); //add to undo stack
+			panel.saveSnapshot(myModel.language.base.getString("title.edit_var_updates")); //Add to undo stack (Edit Variable Updates)
 		}
 		//Update current value
 		node.varUpdates=checkVarUpdates;

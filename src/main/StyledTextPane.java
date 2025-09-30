@@ -39,6 +39,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import base.AmuaModel;
+import lang.Language;
 import math.Constants;
 import math.Distributions;
 import math.Functions;
@@ -50,11 +51,13 @@ public class StyledTextPane extends JTextPane{
 	public AmuaModel myModel;
 	private int defaultDismiss; //for tooltips
 	private int startStyle=0; //index to begin restyle
+	private Language language;
 	
 	//Constructor
-	public StyledTextPane(AmuaModel myModel){
+	public StyledTextPane(AmuaModel myModel, Language language){
 		pane=this;
 		this.myModel=myModel;
+		this.language=language;
 		this.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0), "none"); //Disable enter key in text pane
 		this.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB,0), "none");
 		this.getDocument().addDocumentListener(new DocumentListener(){
@@ -216,10 +219,10 @@ public class StyledTextPane extends JTextPane{
 				if(myModel!=null && myModel.isParameter(word)){tip=myModel.getParamDescription(word);}
 				else if(myModel!=null && myModel.isVariable(word)){tip=myModel.getVarDescription(word);}
 				else if(myModel!=null && myModel.isTable(word)){tip=myModel.getTableDescription(word);}
-				else if(Constants.isConstant(word)){tip=Constants.getDescription(word);}
-				else if(Functions.isFunction(word)){tip=Functions.getDescription(word);}
-				else if(MatrixFunctions.isFunction(word)){tip=MatrixFunctions.getDescription(word);}
-				else if(Distributions.isDistribution(word)){tip=Distributions.getDescription(word);}
+				else if(Constants.isConstant(word)){tip=Constants.getDescription(word, language);}
+				else if(Functions.isFunction(word)){tip=Functions.getDescription(word, language);}
+				else if(MatrixFunctions.isFunction(word)){tip=MatrixFunctions.getDescription(word, language);}
+				else if(Distributions.isDistribution(word)){tip=Distributions.getDescription(word, language);}
 			}
 		}
 		return(tip);

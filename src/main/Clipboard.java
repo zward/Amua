@@ -163,9 +163,9 @@ public class Clipboard{
 		}
 		
 		String warn="";
-		if(numDim_Target>numDim_Source) {warn="Padded model dimensions";}
-		else if(numDim_Target<numDim_Source) {warn="Truncated model dimensions";}
-		else {warn="Re-ordered model dimensions";}
+		if(numDim_Target>numDim_Source) {warn=target.language.message.getString("warn.padded_model_dim");} //Padded model dimensions
+		else if(numDim_Target<numDim_Source) {warn=target.language.message.getString("warn.truncated_model_dim");} //Truncated model dimensions
+		else {warn=target.language.message.getString("warn.reordered_model_dim");} //Re-ordered model dimensions
 		return(warn);
 	}
 	

@@ -119,7 +119,7 @@ public class frmSensOneWay {
 	private void initialize() {
 		try{
 			frmSensOneWay = new JFrame();
-			frmSensOneWay.setTitle("Amua - One-way Sensitivity Analysis");
+			frmSensOneWay.setTitle("Amua - "+myModel.language.analysis.getString("sens.one_way_sens_analysis")); //One-way Sensitivity Analysis
 			frmSensOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensOneWay.class.getResource("/images/oneWay_128.png")));
 			frmSensOneWay.setBounds(100, 100, 1000, 499);
 			frmSensOneWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -144,10 +144,10 @@ public class frmSensOneWay {
 					outcomes[d]=dimInfo.dimNames[d];
 				}
 				if(dimInfo.analysisType==1){ //CEA
-					outcomes[dimInfo.dimNames.length]="ICER ("+dimInfo.dimNames[dimInfo.costDim]+"/"+dimInfo.dimNames[dimInfo.effectDim]+")";
+					outcomes[dimInfo.dimNames.length]=myModel.language.analysis.getString("cea.icer")+" ("+dimInfo.dimNames[dimInfo.costDim]+"/"+dimInfo.dimNames[dimInfo.effectDim]+")"; //ICER
 				}
 				else if(dimInfo.analysisType==2){ //BCA
-					outcomes[dimInfo.dimNames.length]="NMB ("+dimInfo.dimNames[dimInfo.effectDim]+"-"+dimInfo.dimNames[dimInfo.costDim]+")";
+					outcomes[dimInfo.dimNames.length]=myModel.language.analysis.getString("bca.nmb")+" ("+dimInfo.dimNames[dimInfo.effectDim]+"-"+dimInfo.dimNames[dimInfo.costDim]+")"; //NMB
 				}
 			}
 			
@@ -183,7 +183,11 @@ public class frmSensOneWay {
 
 			modelParams=new DefaultTableModel(
 					new Object[][] {,},
-					new String[] {"Parameter", "Expression","Min","Max"}) {
+					new String[] {
+							myModel.language.base.getString("object.parameter"), //Parameter
+							myModel.language.base.getString("object.expression"), //Expression
+							myModel.language.math.getString("sum.min"), //Min
+							myModel.language.math.getString("sum.max")}) { //Max
 				boolean[] columnEditables = new boolean[] {false, false,true,true};
 				public boolean isCellEditable(int row, int column) {return columnEditables[column];}
 			};
@@ -220,11 +224,11 @@ public class frmSensOneWay {
 			gbc_panel_2.gridy = 1;
 			panel_1.add(panel_2, gbc_panel_2);
 
-			JButton btnRun = new JButton("Run");
+			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
 			btnRun.setBounds(184, 5, 90, 28);
 			panel_2.add(btnRun);
 
-			final JButton btnExport = new JButton("Export");
+			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -232,10 +236,10 @@ public class frmSensOneWay {
 						//Show save as dialog
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setAcceptAllFileFilterUsed(false);
-						fc.setFileFilter(new CSVFilter());
+						fc.setFileFilter(new CSVFilter(myModel.language));
 
-						fc.setDialogTitle("Export Graph Data");
-						fc.setApproveButtonText("Export");
+						fc.setDialogTitle(myModel.language.base.getString("title.export_graph_data")); //Export Graph Data
+						fc.setApproveButtonText(myModel.language.base.getString("menu.run")); //Export
 
 						int returnVal = fc.showSaveDialog(frmSensOneWay);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -256,8 +260,8 @@ public class frmSensOneWay {
 								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
 							}
 							if(analysisType>0){ //CEA or BCA
-								if(analysisType==1){out.write(",ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
-								else if(analysisType==2){out.write(",NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
+								if(analysisType==1){out.write(","+myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");} //ICER
+								else if(analysisType==2){out.write(","+myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");} //NMB
 								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
 							}
 							out.newLine();
@@ -319,7 +323,7 @@ public class frmSensOneWay {
 							}
 							out.close();
 
-							JOptionPane.showMessageDialog(frmSensOneWay, "Exported!");
+							JOptionPane.showMessageDialog(frmSensOneWay, myModel.language.message.getString("info.exported")); //Exported
 						}
 
 
@@ -333,21 +337,22 @@ public class frmSensOneWay {
 			btnExport.setBounds(359, 5, 90, 28);
 			panel_2.add(btnExport);
 			
-			JLabel lblIntervals = new JLabel("Intervals:");
-			lblIntervals.setBounds(6, 11, 55, 16);
+			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblIntervals.setBounds(6, 11, 65, 16);
 			panel_2.add(lblIntervals);
 			
 			textIntervals = new JTextField();
 			textIntervals.setHorizontalAlignment(SwingConstants.CENTER);
 			textIntervals.setText("10");
-			textIntervals.setBounds(62, 5, 55, 28);
+			textIntervals.setBounds(72, 5, 55, 28);
 			panel_2.add(textIntervals);
 			textIntervals.setColumns(10);
 
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmSensOneWay, "One-way sensitivity", "Running", 0, 100);
+					final ProgressMonitor progress=new ProgressMonitor(frmSensOneWay, myModel.language.analysis.getString("sens.one_way_sens_analysis"), myModel.language.message.getString("info.running"), 0, 100); //One-way sensitivity analysis, Running
 					
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -360,11 +365,11 @@ public class frmSensOneWay {
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
 									proceed=false;
-									JOptionPane.showMessageDialog(frmSensOneWay, "Errors in base case model!");
+									JOptionPane.showMessageDialog(frmSensOneWay, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 								}
 								else if(tableParams.getSelectedRow()==-1) {
 									proceed=false;
-									JOptionPane.showMessageDialog(frmSensOneWay, "Please select a parameter!");
+									JOptionPane.showMessageDialog(frmSensOneWay, myModel.language.message.getString("err.select_parameter")); //Please select a parameter!
 								}
 								else {
 									int row=tableParams.getSelectedRow();
@@ -372,11 +377,11 @@ public class frmSensOneWay {
 									String strMax=(String)tableParams.getValueAt(row, 3);
 									if(strMin==null || strMin.isEmpty()) {
 										proceed=false;
-										JOptionPane.showMessageDialog(frmSensOneWay, "Error: Min value missing!");
+										JOptionPane.showMessageDialog(frmSensOneWay, myModel.language.message.getString("err.min_value_missing")); //Error: Min value missing!
 									}
 									else if(strMax==null || strMax.isEmpty()) {
 										proceed=false;
-										JOptionPane.showMessageDialog(frmSensOneWay, "Error: Max value missing!");
+										JOptionPane.showMessageDialog(frmSensOneWay, myModel.language.message.getString("err.max_value_missing")); //Error: Max value missing!
 									}
 								}
 								if(proceed==false) {
@@ -411,13 +416,13 @@ public class frmSensOneWay {
 										error=true;
 										curParam.locked=false;
 										myModel.validateModelObjects();
-										JOptionPane.showMessageDialog(frmSensOneWay, "Error: Min value");
+										JOptionPane.showMessageDialog(frmSensOneWay, myModel.language.message.getString("err.min_value")); //Error: Min Value
 									}
 									if(errorsMax.size()>0){
 										error=true;
 										curParam.locked=false;
 										myModel.validateModelObjects();
-										JOptionPane.showMessageDialog(frmSensOneWay, "Error: Max value");
+										JOptionPane.showMessageDialog(frmSensOneWay, myModel.language.message.getString("err.max_value")); //Error: Max value
 									}
 
 									if(error==false){
@@ -464,7 +469,7 @@ public class frmSensOneWay {
 											if(minutes.length()<2){minutes="0"+minutes;}
 											progress.setProgress(i);
 											if(i>0) {
-												progress.setNote("Time left: "+minutes+":"+seconds);
+												progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 											}
 											
 											double curVal=min+(step*i);
@@ -631,10 +636,10 @@ public class frmSensOneWay {
 			
 			//pop-up menu
 			JPopupMenu popup = panelChart.getPopupMenu();
-			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColor = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -664,9 +669,9 @@ public class frmSensOneWay {
 		
 		//Update chart
 		chart.getXYPlot().getDomainAxis().setLabel(curParam.name);
-		if(analysisType==0){chart.getXYPlot().getRangeAxis().setLabel("EV ("+info.dimSymbols[dim]+")");}
-		else if(analysisType==1){chart.getXYPlot().getRangeAxis().setLabel("ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
-		else if(analysisType==2){chart.getXYPlot().getRangeAxis().setLabel("NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
+		if(analysisType==0){chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("result.ev")+" ("+info.dimSymbols[dim]+")");} //EV
+		else if(analysisType==1){chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");} //ICER
+		else if(analysisType==2){chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");} //NMB
 		
 		if(chartData.getSeriesCount()>0){
 			for(int s=0; s<numStrat; s++){

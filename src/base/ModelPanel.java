@@ -80,7 +80,7 @@ public class ModelPanel extends JPanel{
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		this.setBackground(Color.WHITE);
 		
-		paneFormula=new StyledTextPane(myModel);
+		paneFormula=new StyledTextPane(myModel, myModel.language);
 		paneFormula.setEditable(false);
 		paneFormula.setFont(new Font("Consolas", Font.PLAIN,15));
 		

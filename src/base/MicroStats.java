@@ -81,7 +81,17 @@ public class MicroStats{
 		
 		//outcomes
 		ConsoleTable table1=new ConsoleTable(console,colTypes);
-		String headers[]=new String[]{"Outcome","Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
+		//String headers[]=new String[]{"Outcome","Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
+		String headers[]=new String[8]; 
+		headers[0]=myModel.language.analysis.getString("result.outcome"); //Outcome
+		headers[1]=myModel.language.math.getString("sum.mean"); //Mean
+		headers[2]=myModel.language.math.getString("sum.sd"); //SD
+		headers[3]=myModel.language.math.getString("sum.min"); //Min
+		headers[4]=myModel.language.math.getString("sum.q1_25"); //Q1 (25%)
+		headers[5]=myModel.language.math.getString("sum.median"); //Median
+		headers[6]=myModel.language.math.getString("sum.q3_75"); //Q3 (75%)
+		headers[7]=myModel.language.math.getString("sum.max"); //Max
+		
 		table1.addRow(headers);
 		int maxDec=0;
 		for(int d=0; d<numDim; d++){
@@ -104,7 +114,16 @@ public class MicroStats{
 		//variables
 		if(numVars>0){
 			ConsoleTable table2=new ConsoleTable(console,colTypes);
-			headers=new String[]{"Variable","Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
+			//headers=new String[]{"Variable","Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
+			headers=new String[8]; 
+			headers[0]=myModel.language.base.getString("object.variable"); //Variable
+			headers[1]=myModel.language.math.getString("sum.mean"); //Mean
+			headers[2]=myModel.language.math.getString("sum.sd"); //SD
+			headers[3]=myModel.language.math.getString("sum.min"); //Min
+			headers[4]=myModel.language.math.getString("sum.q1_25"); //Q1 (25%)
+			headers[5]=myModel.language.math.getString("sum.median"); //Median
+			headers[6]=myModel.language.math.getString("sum.q3_75"); //Q3 (75%)
+			headers[7]=myModel.language.math.getString("sum.max"); //Max
 			table2.addRow(headers);
 			for(int v=0; v<numVars; v++){
 				String row[]=new String[]{myModel.variables.get(v).name,
@@ -129,7 +148,17 @@ public class MicroStats{
 		FileWriter fstream = new FileWriter(filepath); //Create new file
 		BufferedWriter out = new BufferedWriter(fstream);
 
-		out.write("Outcome,Mean,SD,Min,Q1 (25%),Median,Q3 (75%),Max"); out.newLine();
+		//out.write("Outcome,Mean,SD,Min,Q1 (25%),Median,Q3 (75%),Max"); out.newLine();
+		out.write(myModel.language.analysis.getString("result.outcome")+","); //Outcome
+		out.write(myModel.language.math.getString("sum.mean")+","); //Mean
+		out.write(myModel.language.math.getString("sum.sd")+","); //SD
+		out.write(myModel.language.math.getString("sum.min")+","); //Min
+		out.write(myModel.language.math.getString("sum.q1_25")+","); //Q1 (25%)
+		out.write(myModel.language.math.getString("sum.median")+","); //Median
+		out.write(myModel.language.math.getString("sum.q3_75")+","); //Q3 (75%)
+		out.write(myModel.language.math.getString("sum.max")+""); //Max
+		out.newLine();
+		
 		for(int d=0; d<numDim; d++){
 			out.write(dimInfo.dimNames[d]+",");
 			out.write(outcomesMean[d]+",");
@@ -144,7 +173,17 @@ public class MicroStats{
 		out.newLine();
 		
 		if(numVars>0){
-			out.write("Variable,Mean,SD,Min,Q1 (25%),Median,Q3 (75%),Max"); out.newLine();
+			//out.write("Variable,Mean,SD,Min,Q1 (25%),Median,Q3 (75%),Max"); out.newLine();
+			out.write(myModel.language.base.getString("object.variable")+","); //Variable
+			out.write(myModel.language.math.getString("sum.mean")+","); //Mean
+			out.write(myModel.language.math.getString("sum.sd")+","); //SD
+			out.write(myModel.language.math.getString("sum.min")+","); //Min
+			out.write(myModel.language.math.getString("sum.q1_25")+","); //Q1 (25%)
+			out.write(myModel.language.math.getString("sum.median")+","); //Median
+			out.write(myModel.language.math.getString("sum.q3_75")+","); //Q3 (75%)
+			out.write(myModel.language.math.getString("sum.max")+""); //Max
+			out.newLine();
+			
 			for(int v=0; v<numVars; v++){
 				out.write(myModel.variables.get(v).name+",");
 				out.write(varsMean[v]+",");

@@ -127,11 +127,11 @@ public class CppMarkovMonteCarlo{
 			out.write("	double discountRates["+numDimensions+"]={");
 			if(myModel.markov.discountRewards){
 				for(int d=0; d<numDimensions-1; d++){
-					Numeric curVal=Interpreter.evaluate(myModel.markov.discountRates[d], myModel, false);
+					Numeric curVal=Interpreter.evaluate(myModel.markov.discountRates[d], myModel, false, myModel.language);
 					double discountRate=curVal.getValue()/100.0;
 					out.write(discountRate+",");
 				}
-				Numeric curVal=Interpreter.evaluate(myModel.markov.discountRates[numDimensions-1], myModel, false);
+				Numeric curVal=Interpreter.evaluate(myModel.markov.discountRates[numDimensions-1], myModel, false, myModel.language);
 				double discountRate=curVal.getValue()/100.0;
 				out.write(discountRate+"};"); out.newLine();
 			}

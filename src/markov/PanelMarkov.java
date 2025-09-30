@@ -28,6 +28,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -92,7 +93,7 @@ public class PanelMarkov extends ModelPanel{
 				if(!e.isTemporary()){
 					if(prevNode!=null){
 						if(tempNotes!=null && !tempNotes.equals(prevNode.tempNotes)){ //Notes were changed
-							saveSnapshot("Edit Notes");
+							saveSnapshot(myModel.language.base.getString("title.edit_notes")); //Edit Notes
 						}
 						prevNode.notes=tempNotes;
 						notesFocus=false;
@@ -106,7 +107,7 @@ public class PanelMarkov extends ModelPanel{
 		
 		
 		
-		modelProperties=new DefaultTableModel(new Object[][] {}, new String[] {"Name", "Value"}) 
+		modelProperties=new DefaultTableModel(new Object[][] {}, new String[] {myModel.language.base.getString("object.name"), myModel.language.analysis.getString("result.value")}) //Name, Value
 		{boolean[] columnEditables = new boolean[] {false, true};
 		public boolean isCellEditable(int row, int column) {
 			return columnEditables[column];
@@ -250,50 +251,50 @@ public class PanelMarkov extends ModelPanel{
 		//Pop-up menu
 		popup = new JPopupMenu();
 
-		mnAdd = new JMenu("Add");
+		mnAdd = new JMenu(myModel.language.base.getString("button.add")); //Add
 		popup.add(mnAdd);
 
-		mntmDecision = new JMenuItem("Decision Node");
+		mntmDecision = new JMenuItem(myModel.language.base.getString("node.decision")); //Decision Node
 		mntmDecision.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(0);}});
 		mntmDecision.setIcon(new ScaledIcon("/images/decisionNode",16,16,16,true));
 		mntmDecision.setDisabledIcon(new ScaledIcon("/images/decisionNode",16,16,16,false));
 		mnAdd.add(mntmDecision);
 
-		mntmMarkovChain = new JMenuItem("Markov Chain");
+		mntmMarkovChain = new JMenuItem(myModel.language.base.getString("node.markov_chain")); //Markov Chain
 		mntmMarkovChain.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(1);}});
 		mntmMarkovChain.setIcon(new ScaledIcon("/images/markovChain",16,16,16,true));
 		mntmMarkovChain.setDisabledIcon(new ScaledIcon("/images/markovChain",16,16,16,false));
 		mnAdd.add(mntmMarkovChain);
 
-		mntmMarkovState = new JMenuItem("Markov State");
+		mntmMarkovState = new JMenuItem(myModel.language.base.getString("node.markov_state")); //Markov State
 		mntmMarkovState.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(2);}});
 		mntmMarkovState.setIcon(new ScaledIcon("/images/markovState",16,16,16,true));
 		mntmMarkovState.setDisabledIcon(new ScaledIcon("/images/markovState",16,16,16,false));
 		mnAdd.add(mntmMarkovState);
 
-		mntmChance = new JMenuItem("Chance Node");
+		mntmChance = new JMenuItem(myModel.language.base.getString("node.chance")); //Chance Node
 		mntmChance.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(3);}});
 		mntmChance.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
 		mntmChance.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 		mnAdd.add(mntmChance);
 
-		mntmTransition = new JMenuItem("State Transition");
+		mntmTransition = new JMenuItem(myModel.language.base.getString("node.state_transition")); //State Transition
 		mntmTransition.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(4);}});
 		mntmTransition.setIcon(new ScaledIcon("/images/stateTransition",16,16,16,true));
 		mntmTransition.setDisabledIcon(new ScaledIcon("/images/stateTransition",16,16,16,false));
 		mnAdd.add(mntmTransition);
 
-		mntmChangeType= new JMenuItem("Change Node Type");
+		mntmChangeType= new JMenuItem(myModel.language.base.getString("button.change_node_type")); //Change Node Type
 		mntmChangeType.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {changeNodeType();}});
 		popup.add(mntmChangeType);
 
-		mntmUpdateVariable = new JMenuItem("Add/Remove Variable Updates");
+		mntmUpdateVariable = new JMenuItem(myModel.language.base.getString("button.add_remove_var_updates")); //Add/Remove Variable Updates
 		mntmUpdateVariable.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveVarUpdates();}});
 		mntmUpdateVariable.setIcon(new ScaledIcon("/images/updateVariable",16,16,16,true));
 		mntmUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",16,16,16,false));
 		popup.add(mntmUpdateVariable);
 		
-		mntmShowCost= new JMenuItem("Add/Remove Cost (One-time Event)");
+		mntmShowCost= new JMenuItem(myModel.language.base.getString("button.add_remove_cost")); //Add/Remove Cost (One-time Event)
 		mntmShowCost.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveCost();}});
 		mntmShowCost.setIcon(new ScaledIcon("/images/cost",16,16,16,true));
 		mntmShowCost.setDisabledIcon(new ScaledIcon("/images/cost",16,16,16,false));
@@ -301,19 +302,19 @@ public class PanelMarkov extends ModelPanel{
 
 		popup.addSeparator();
 
-		final JMenuItem mntmCut = new JMenuItem("Cut");
+		final JMenuItem mntmCut = new JMenuItem(myModel.language.base.getString("menu.cut")); //Cut
 		mntmCut.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {cutSubtree();}});
 		mntmCut.setIcon(new ScaledIcon("/images/cut",16,16,16,true));
 		mntmCut.setDisabledIcon(new ScaledIcon("/images/cut",16,16,16,false));
 		popup.add(mntmCut);
 
-		final JMenuItem mntmCopy = new JMenuItem("Copy");
+		final JMenuItem mntmCopy = new JMenuItem(myModel.language.base.getString("menu.copy")); //Copy
 		mntmCopy.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {copySubtree();}});
 		mntmCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
 		mntmCopy.setDisabledIcon(new ScaledIcon("/images/copy",16,16,16,false));
 		popup.add(mntmCopy);
 
-		mntmPaste = new JMenuItem("Paste");
+		mntmPaste = new JMenuItem(myModel.language.base.getString("menu.paste")); //Paste
 		mntmPaste.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {pasteSubtree();}});
 		mntmPaste.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
 		mntmPaste.setDisabledIcon(new ScaledIcon("/images/paste",16,16,16,false));
@@ -321,13 +322,13 @@ public class PanelMarkov extends ModelPanel{
 		popup.add(mntmPaste);
 
 		popup.addSeparator();
-		mntmDelete= new JMenuItem("Delete");
+		mntmDelete= new JMenuItem(myModel.language.base.getString("button.delete")); //Delete
 		mntmDelete.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {deleteNode(true);}});
 		mntmDelete.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
 		mntmDelete.setDisabledIcon(new ScaledIcon("/images/delete",16,16,16,false));
 		popup.add(mntmDelete);
 
-		mntmCollapse=new JMenuItem("Collapse Branch");
+		mntmCollapse=new JMenuItem(myModel.language.base.getString("button.collapse_branch")); //Collapse Branch
 		mntmCollapse.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {collapseBranch();}});
 		popup.add(mntmCollapse);
 
@@ -471,14 +472,14 @@ public class PanelMarkov extends ModelPanel{
 			
 			//run model labels
 			if(curNode.type==1){ //Markov chain
-				mainForm.mntmRunModel.setText("Run Markov Chain");
-				mainForm.btnCheckModel.setToolTipText("Check Markov Chain");
-				mainForm.btnRunModel.setToolTipText("Run Markov Chain");
+				mainForm.mntmRunModel.setText(myModel.language.base.getString("menu.run_markov_chain")); //Run Markov Chain
+				mainForm.btnCheckModel.setToolTipText(myModel.language.base.getString("menu.check_markov_chain")); //Check Markov Chain
+				mainForm.btnRunModel.setToolTipText(myModel.language.base.getString("menu.run_markov_chain")); //Run Markov Chain
 			}
 			else{ //not Markov chain
-				mainForm.mntmRunModel.setText("Run Model");
-				mainForm.btnCheckModel.setToolTipText("Check Model");
-				mainForm.btnRunModel.setToolTipText("Run Model");
+				mainForm.mntmRunModel.setText(myModel.language.base.getString("menu.run_model")); //Run Model
+				mainForm.btnCheckModel.setToolTipText(myModel.language.base.getString("button.check_model")); //Check Model
+				mainForm.btnRunModel.setToolTipText(myModel.language.base.getString("menu.run_model")); //Run Model
 			}
 			
 		}
@@ -497,9 +498,9 @@ public class PanelMarkov extends ModelPanel{
 			mainForm.btnCollapse.setEnabled(false);
 			mainForm.mntmCut.setEnabled(false);
 			mainForm.mntmCopy.setEnabled(false);
-			mainForm.mntmRunModel.setText("Run Model");
-			mainForm.btnCheckModel.setToolTipText("Check Model");
-			mainForm.btnRunModel.setToolTipText("Run Model");
+			mainForm.mntmRunModel.setText(myModel.language.base.getString("menu.run_model")); //Run Model
+			mainForm.btnCheckModel.setToolTipText(myModel.language.base.getString("button.check_model")); //Check Model
+			mainForm.btnRunModel.setToolTipText(myModel.language.base.getString("menu.run_model")); //Run Model
 		}
 
 		repaint();
@@ -576,11 +577,11 @@ public class PanelMarkov extends ModelPanel{
 		if(curNode!=null){
 			//Check to see if it is a parent
 			if(curNode.childIndices.size()>0){
-				if(allowUndo){saveSnapshot("Delete Subtree");}
+				if(allowUndo){saveSnapshot(myModel.language.base.getString("title.delete_subtree"));} //Delete Subtree
 				removeSubtree(curNode);
 			}
 			else{
-				if(allowUndo){saveSnapshot("Delete Node");}
+				if(allowUndo){saveSnapshot(myModel.language.base.getString("title.delete_node"));} //Delete Node
 
 				int curIndex=tree.nodes.indexOf(curNode);
 				//Remove node
@@ -640,7 +641,7 @@ public class PanelMarkov extends ModelPanel{
 	public void changeNodeType(){
 		if(curNode!=null){
 			if(curNode.type==3){ //Chance->Transition
-				saveSnapshot("Change Node Type");
+				saveSnapshot(myModel.language.base.getString("button.change_node_type")); //Change Node Type
 				curNode.type=4;
 				curNode.displayTransition();
 				this.add(curNode.comboTransition);
@@ -648,7 +649,7 @@ public class PanelMarkov extends ModelPanel{
 				selectNode(curNode.xPos,curNode.yPos);
 			}
 			else if(curNode.type==4){ //Transition->Chance
-				saveSnapshot("Change Node Type");
+				saveSnapshot(myModel.language.base.getString("button.change_node_type")); //Change Node Type
 				curNode.type=3;
 				this.remove(curNode.comboTransition);
 				curNode.comboTransition=null;
@@ -662,16 +663,16 @@ public class PanelMarkov extends ModelPanel{
 
 	public void addRemoveVarUpdates(){
 		if(curNode!=null && curNode.chain!=null){ //in chain
-			if(curNode.hasVarUpdates){saveSnapshot("Remove Variable Updates");}
-			else{saveSnapshot("Add Variable Updates");}
+			if(curNode.hasVarUpdates){saveSnapshot(myModel.language.base.getString("title.remove_var_updates"));} //Remove Variable Updates
+			else{saveSnapshot(myModel.language.base.getString("title.add_var_updates"));} //Add Variable Updates
 			curNode.addRemoveVarUpdates();
 		}
 	}
 	
 	public void addRemoveCost(){
 		if(curNode!=null && curNode.type!=2 && curNode.level!=0){ //not state
-			if(curNode.hasCost){saveSnapshot("Remove Cost");}
-			else{saveSnapshot("Add Cost");}
+			if(curNode.hasCost){saveSnapshot(myModel.language.base.getString("title.remove_cost"));} //Remove Cost
+			else{saveSnapshot(myModel.language.base.getString("title.add_cost"));} //Add Cost
 			curNode.addRemoveCost();
 		}
 	}
@@ -689,7 +690,7 @@ public class PanelMarkov extends ModelPanel{
 
 	public void cutSubtree(){
 		if(curNode!=null){
-			saveSnapshot("Cut");
+			saveSnapshot(myModel.language.base.getString("menu.cut")); //Cut
 			mainForm.clipboard.clear();
 			mainForm.clipboard.copyModel=myModel;
 			mainForm.clipboard.copyMarkov=tree.copySubtree(curNode);
@@ -705,16 +706,16 @@ public class PanelMarkov extends ModelPanel{
 			//Check if nodes are compatible
 			boolean compatible=mainForm.clipboard.isCompatible(myModel);
 			if(compatible==false){
-				JOptionPane.showMessageDialog(this, "Cannot paste here: Incompatible nodes!");
+				JOptionPane.showMessageDialog(this, myModel.language.message.getString("err.cant_paste_incompatible_nodes")); //Cannot paste here: Incompatible nodes!
 			}
 			else{ //Paste
 				//check dimensions
 				if(mainForm.clipboard.compareDimensions(myModel)==false) {
 					String warn=mainForm.clipboard.coerceDimensions(myModel);
-					JOptionPane.showMessageDialog(this, "Warning: "+warn);
+					JOptionPane.showMessageDialog(this, myModel.language.message.getString("warning")+": "+warn); //Warning
 				}
 				
-				saveSnapshot("Paste");
+				saveSnapshot(myModel.language.base.getString("menu.paste")); //Paste
 				this.setVisible(false); //Don't paint anything until updated
 
 				//Paste
@@ -949,7 +950,7 @@ public class PanelMarkov extends ModelPanel{
 			xOffset=0; yOffset=0;
 			int numChildren=curNode.childIndices.size();
 			if(numChildren>2){
-				saveSnapshot("Vertical Spacing");
+				saveSnapshot(myModel.language.base.getString("button.vertical_spacing")); //Vertical Spacing
 				MarkovNode curChild=tree.nodes.get(curNode.childIndices.get(0));
 				int curY=curChild.yPos, minY=curY, maxY=curY;
 				ArrayList<Integer> listY=new ArrayList<Integer>();
@@ -989,12 +990,14 @@ public class PanelMarkov extends ModelPanel{
 		//console.setText("");
 		ArrayList<String> errors=tree.parseTree();
 		if(errors.size()==0){
-			if(console!=null){console.print("Model checked!\n"); console.newLine();}
+			if(console!=null){console.print(myModel.language.message.getString("info.model_checked")+"\n"); console.newLine();} //Model checked!
 			return(true);
 		}
 		else{
 			if(console!=null){
-				console.print(errors.size()+" errors:\n");
+				//[#] errors
+				String msg = MessageFormat.format(myModel.language.message.getString("err.num_errors"), errors.size());
+				console.print(msg+":\n");
 				for(int i=0; i<errors.size(); i++){console.print(errors.get(i)+"\n");}
 				console.newLine();
 			}
@@ -1007,12 +1010,16 @@ public class PanelMarkov extends ModelPanel{
 		//console.setText("");
 		ArrayList<String> errors=tree.parseChain(chainRoot);
 		if(errors.size()==0){
-			if(console!=null){console.print("Markov Chain "+chainRoot.name+" checked!\n"); console.newLine();}
+			//Markov chain [name] checked!
+			String msg = MessageFormat.format(myModel.language.message.getString("info.markov_chain_checked"), chainRoot.name);
+			if(console!=null){console.print(msg+"\n"); console.newLine();} 
 			return(true);
 		}
 		else{
 			if(console!=null){
-				console.print(errors.size()+" errors:\n");
+				//[#] errors
+				String msg = MessageFormat.format(myModel.language.message.getString("err.num_errors"), errors.size());
+				console.print(msg+":\n");
 				for(int i=0; i<errors.size(); i++){console.print(errors.get(i)+"\n");}
 				console.newLine();
 			}
@@ -1095,20 +1102,20 @@ public class PanelMarkov extends ModelPanel{
 		mntmChance.setEnabled(false);
 		mntmTransition.setEnabled(false);
 		mntmChangeType.setEnabled(false);
-		mntmChangeType.setText("Change Node Type");
+		mntmChangeType.setText(myModel.language.base.getString("button.change_node_type")); //Change Node Type
 		mntmChangeType.setIcon(null);
 		
 		//variable updates
-		if(curNode.hasVarUpdates){mntmUpdateVariable.setText("Remove Variable Updates");}
-		else{mntmUpdateVariable.setText("Add Variable Updates");}
+		if(curNode.hasVarUpdates){mntmUpdateVariable.setText(myModel.language.base.getString("title.remove_var_updates"));} //Remove Variable Updates
+		else{mntmUpdateVariable.setText(myModel.language.base.getString("title.add_var_updates"));} //Add Variable Updates
 		mntmUpdateVariable.setEnabled(false);
 		if(curNode.chain!=null){ //in chain, can update variable
 			mntmUpdateVariable.setEnabled(true);
 		}
 
 		//cost
-		if(curNode.hasCost){mntmShowCost.setText("Remove Cost (One-time Event)");}
-		else{mntmShowCost.setText("Add Cost (One-time Event)");}
+		if(curNode.hasCost){mntmShowCost.setText(myModel.language.base.getString("button.remove_cost"));} //Remove Cost (One-time Event)
+		else{mntmShowCost.setText(myModel.language.base.getString("button.add_cost"));} //Add Cost (One-time Event)
 		if(curNode.level==0 || curNode.type==2){mntmShowCost.setEnabled(false);}
 		else{mntmShowCost.setEnabled(true);}
 	
@@ -1134,7 +1141,7 @@ public class PanelMarkov extends ModelPanel{
 					mntmTransition.setEnabled(true);
 					if(curNode.childIndices.size()==0){ //no children
 						mntmChangeType.setEnabled(true);
-						mntmChangeType.setText("Change to State Transition");
+						mntmChangeType.setText(myModel.language.base.getString("button.change_to_transition")); //Change to State Transition
 						mntmChangeType.setIcon(new ScaledIcon("/images/stateTransition",16,16,16,true));
 						mntmChangeType.setDisabledIcon(new ScaledIcon("/images/stateTransition",16,16,16,false));
 					}
@@ -1147,7 +1154,7 @@ public class PanelMarkov extends ModelPanel{
 			else if(curNode.type==4){ //transition
 				mnAdd.setEnabled(false);
 				mntmChangeType.setEnabled(true);
-				mntmChangeType.setText("Change to Chance Node");
+				mntmChangeType.setText(myModel.language.base.getString("button.change_to_chance")); //Change to Chance Node
 				mntmChangeType.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
 				mntmChangeType.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 				mntmPaste.setEnabled(false);
@@ -1157,10 +1164,10 @@ public class PanelMarkov extends ModelPanel{
 		if(curNode.childIndices.size()>0){
 			mntmCollapse.setEnabled(true);
 			if(curNode.collapsed){
-				mntmCollapse.setText("Expand branch");
+				mntmCollapse.setText(myModel.language.base.getString("button.expand_branch")); //Expand branch
 				mnAdd.setEnabled(false);
 			}
-			else{mntmCollapse.setText("Collapse branch");}
+			else{mntmCollapse.setText(myModel.language.base.getString("button.collapse_branch"));} //Collapse branch
 		}
 		else{
 			mntmCollapse.setEnabled(false);
@@ -1297,13 +1304,13 @@ public class PanelMarkov extends ModelPanel{
 	public void refreshPropertiesTable(){
 		modelProperties.setRowCount(0);
 		if(curNode.type==1){ //Markov chain
-			modelProperties.addRow(new Object[]{"Markov Chain Name",curNode.name});
-			modelProperties.addRow(new Object[]{"Termination Condition",curNode.terminationCondition});
+			modelProperties.addRow(new Object[]{myModel.language.base.getString("markov.chain_name"),curNode.name}); //Markov Chain Name
+			modelProperties.addRow(new Object[]{myModel.language.base.getString("markov.termination_condition"),curNode.terminationCondition}); //Termination Condition
 		}
 		if(curNode.type==2){ //Markov state
-			modelProperties.addRow(new Object[]{"Markov State Name",curNode.name});
-			modelProperties.addRow(new Object[]{"Initial Probability",curNode.prob});
-			modelProperties.addRow(new Object[]{"Cycle Rewards",""});
+			modelProperties.addRow(new Object[]{myModel.language.base.getString("markov.state_name"),curNode.name}); //Markov State Name
+			modelProperties.addRow(new Object[]{myModel.language.base.getString("markov.init_prob"),curNode.prob}); //Initial Probability
+			modelProperties.addRow(new Object[]{myModel.language.base.getString("markov.cycle_rewards"),""}); //Cycle Rewards
 			for(int d=0; d<curNode.numDimensions; d++){
 				modelProperties.addRow(new Object[]{myModel.dimInfo.dimNames[d],curNode.rewards[d]});
 			}

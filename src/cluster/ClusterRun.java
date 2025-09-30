@@ -234,7 +234,7 @@ public class ClusterRun{
 				out.write("Willingness-to-pay (WTP),"+myModel.dimInfo.WTP); out.newLine();
 			}
 			else if(myModel.dimInfo.analysisType==3) {
-				out.write("Analysis type,Extended Cost-Effectiveness Analysis (CEA)"); out.newLine();
+				out.write("Analysis type,Extended Cost-Effectiveness Analysis (ECEA)"); out.newLine();
 				out.write("Cost,"+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]); out.newLine();
 				out.write("Effect,"+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]); out.newLine();
 				out.write("Baseline Strategy,"+myModel.dimInfo.baseScenario); out.newLine();
@@ -270,7 +270,7 @@ public class ClusterRun{
 				out.write("Half-cycle correction,"+myModel.markov.halfCycleCorrection); out.newLine();
 				out.write("Discount rewards,"+myModel.markov.discountRewards); out.newLine();
 				if(myModel.markov.discountRewards) {
-					out.write("Dimension,Discount Rate(%)"); out.newLine();
+					out.write("Dimension,Discount Rate (%)"); out.newLine();
 					for(int d=0; d<numDim; d++) {
 						out.write(myModel.dimInfo.dimNames[d]+",");
 						out.write(myModel.markov.discountRates[d]+"");

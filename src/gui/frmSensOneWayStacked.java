@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 
@@ -160,9 +161,9 @@ public class frmSensOneWayStacked {
 	private void initialize() {
 		try{
 			frmSensOneWayStacked = new JFrame();
-			frmSensOneWayStacked.setTitle("Amua - Stacked One-way Sensitivity Analyses");
+			frmSensOneWayStacked.setTitle("Amua - "+myModel.language.analysis.getString("sens.stacked_one_way")); //Stacked One-way Sensitivity Analyses
 			frmSensOneWayStacked.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensOneWayStacked.class.getResource("/images/oneWayStacked_128.png")));
-			frmSensOneWayStacked.setBounds(100, 100, 1020, 499);
+			frmSensOneWayStacked.setBounds(100, 100, 1070, 499);
 			frmSensOneWayStacked.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.columnWidths = new int[]{460, 180, 180, 0, 0, 0, 0};
@@ -185,15 +186,17 @@ public class frmSensOneWayStacked {
 					outcomes[d]=dimInfo.dimNames[d];
 				}
 				if(dimInfo.analysisType==1){ //CEA
-					outcomes[dimInfo.dimNames.length]="ICER ("+dimInfo.dimNames[dimInfo.costDim]+"/"+dimInfo.dimNames[dimInfo.effectDim]+")";
+					outcomes[dimInfo.dimNames.length]=myModel.language.analysis.getString("cea.icer")+" ("+dimInfo.dimNames[dimInfo.costDim]+"/"+dimInfo.dimNames[dimInfo.effectDim]+")"; //ICER
 				}
 				else if(dimInfo.analysisType==2){ //BCA
-					outcomes[dimInfo.dimNames.length]="NMB ("+dimInfo.dimNames[dimInfo.effectDim]+"-"+dimInfo.dimNames[dimInfo.costDim]+")";
+					outcomes[dimInfo.dimNames.length]=myModel.language.analysis.getString("bca.nmb")+" ("+dimInfo.dimNames[dimInfo.effectDim]+"-"+dimInfo.dimNames[dimInfo.costDim]+")"; //NMB
 				}
 			}
 
 
-			comboChartType = new JComboBox<String>(new DefaultComboBoxModel<String>(new String[] {"Parameter Values","Outcomes"}));
+			comboChartType = new JComboBox<String>(new DefaultComboBoxModel<String>(new String[] {
+					myModel.language.analysis.getString("calib.parameter_values"), //Parameter Values
+					myModel.language.analysis.getString("result.outcomes")})); //Outcomes
 			comboChartType.setEnabled(false);
 			comboChartType.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -224,7 +227,11 @@ public class frmSensOneWayStacked {
 
 			modelParams=new DefaultTableModel(
 					new Object[][] {,},
-					new String[] {"Parameter", "Expression","Min","Max"}) {
+					new String[] {
+							myModel.language.base.getString("object.parameter"), //Parameter 
+							myModel.language.base.getString("object.expression"), //Expression
+							myModel.language.math.getString("sum.min"), //Min
+							myModel.language.math.getString("sum.max")}) { //Max
 				boolean[] columnEditables = new boolean[] {false, false,true,true};
 				public boolean isCellEditable(int row, int column) {return columnEditables[column];}
 			};
@@ -262,11 +269,11 @@ public class frmSensOneWayStacked {
 			gbc_panel_2.gridy = 1;
 			panel_1.add(panel_2, gbc_panel_2);
 
-			JButton btnRun = new JButton("Run");
+			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
 			btnRun.setBounds(184, 5, 90, 28);
 			panel_2.add(btnRun);
 
-			final JButton btnExport = new JButton("Export");
+			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -274,19 +281,19 @@ public class frmSensOneWayStacked {
 						//Show save as dialog
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setAcceptAllFileFilterUsed(false);
-						fc.setFileFilter(new CSVFilter());
+						fc.setFileFilter(new CSVFilter(myModel.language));
 
 						int group=0; //overall
 						if(numSubgroups>0){
 							group=comboGroup.getSelectedIndex();
 						}
 						if(group==0) {
-							fc.setDialogTitle("Export Data");
+							fc.setDialogTitle(myModel.language.base.getString("title.export_data")); //Export Data
 						}
 						else {
-							fc.setDialogTitle("Export Subgroup Data");
+							fc.setDialogTitle(myModel.language.base.getString("title.export_subgroup_data")); //Export Subgroup Data
 						}
-						fc.setApproveButtonText("Export");
+						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
 
 						int returnVal = fc.showSaveDialog(frmSensOneWayStacked);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -303,16 +310,16 @@ public class frmSensOneWayStacked {
 							int numOutcomes=numDim;
 							int analysisType=info.analysisType;
 							if(analysisType>0) {numOutcomes++;}
-							out.write("Parameter,Value");
+							out.write(myModel.language.base.getString("object.parameter")+","+myModel.language.analysis.getString("result.value")); //Parameter Value
 							for(int s=0; s<numStrat; s++) {
 								for(int d=0; d<numDim; d++) { //EVs
 									out.write(","+myModel.strategyNames[s]+" "+info.dimNames[d]);
 								}
 								if(analysisType==1) {
-									out.write(","+myModel.strategyNames[s]+" ICER");
+									out.write(","+myModel.strategyNames[s]+" "+myModel.language.analysis.getString("cea.icer")); //ICER
 								}
 								else if(analysisType==2) {
-									out.write(","+myModel.strategyNames[s]+" NMB");
+									out.write(","+myModel.strategyNames[s]+" "+myModel.language.analysis.getString("bca.nmb")); //NMB
 								}
 							}
 							out.newLine();
@@ -356,7 +363,7 @@ public class frmSensOneWayStacked {
 								
 							out.close();
 
-							JOptionPane.showMessageDialog(frmSensOneWayStacked, "Exported!");
+							JOptionPane.showMessageDialog(frmSensOneWayStacked, myModel.language.message.getString("info.exported")); //Exported!
 						}
 
 
@@ -367,24 +374,25 @@ public class frmSensOneWayStacked {
 					}
 				}
 			});
-			btnExport.setBounds(359, 5, 90, 28);
+			btnExport.setBounds(350, 5, 90, 28);
 			panel_2.add(btnExport);
 
-			JLabel lblIntervals = new JLabel("Intervals:");
-			lblIntervals.setBounds(6, 11, 55, 16);
+			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblIntervals.setBounds(6, 11, 65, 16);
 			panel_2.add(lblIntervals);
 
 			textIntervals = new JTextField();
 			textIntervals.setHorizontalAlignment(SwingConstants.CENTER);
 			textIntervals.setText("10");
-			textIntervals.setBounds(62, 5, 55, 28);
+			textIntervals.setBounds(72, 5, 55, 28);
 			panel_2.add(textIntervals);
 			textIntervals.setColumns(10);
 
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmSensOneWayStacked, "Stacked one-way sensitivity", "Running", 0, 100);
+					final ProgressMonitor progress=new ProgressMonitor(frmSensOneWayStacked, myModel.language.analysis.getString("sens.stacked_one_way"), myModel.language.message.getString("info.running"), 0, 100); //Stacked One-way Sensitivity Analyses, Running
 
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -393,7 +401,7 @@ public class frmSensOneWayStacked {
 								//Check model first
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
-									JOptionPane.showMessageDialog(frmSensOneWayStacked, "Errors in base case model!");
+									JOptionPane.showMessageDialog(frmSensOneWayStacked, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 									
 								}
 								else{
@@ -487,7 +495,9 @@ public class frmSensOneWayStacked {
 												double max=Double.parseDouble(strMax);
 											} catch(Exception err) {
 												proceed=false;
-												JOptionPane.showMessageDialog(frmSensOneWayStacked,"Invalid entry: "+paramName);
+												//Invalid entry: [name]
+												String msg = MessageFormat.format(myModel.language.message.getString("err.invalid_entry_name"), paramName);
+												JOptionPane.showMessageDialog(frmSensOneWayStacked, msg);
 												p=tableParams.getRowCount();
 											}
 										}
@@ -546,13 +556,13 @@ public class frmSensOneWayStacked {
 												error=true;
 												curParam.locked=false;
 												myModel.validateModelObjects();
-												JOptionPane.showMessageDialog(frmSensOneWayStacked, "Error: Min value");
+												JOptionPane.showMessageDialog(frmSensOneWayStacked, myModel.language.message.getString("err.min_value")); //Error: Min value"
 											}
 											if(errorsMax.size()>0){
 												error=true;
 												curParam.locked=false;
 												myModel.validateModelObjects();
-												JOptionPane.showMessageDialog(frmSensOneWayStacked, "Error: Max value");
+												JOptionPane.showMessageDialog(frmSensOneWayStacked, myModel.language.message.getString("err.max_value")); //Error: Max value
 											}
 
 											if(error==false){
@@ -572,7 +582,7 @@ public class frmSensOneWayStacked {
 													if(seconds.length()<2){seconds="0"+seconds;}
 													if(minutes.length()<2){minutes="0"+minutes;}
 													progress.setProgress(curProg);
-													progress.setNote("Time left: "+minutes+":"+seconds);
+													progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 													
 													
 													double curVal=min+(step*i);
@@ -694,7 +704,7 @@ public class frmSensOneWayStacked {
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				numSubgroups=myModel.subgroupNames.size();
 				String groups[]=new String[numSubgroups+1];
-				groups[0]="Overall";
+				groups[0]=myModel.language.analysis.getString("result.overall"); //Overall
 				for(int g=0; g<numSubgroups; g++){
 					groups[g+1]=myModel.subgroupNames.get(g);
 				}
@@ -710,7 +720,7 @@ public class frmSensOneWayStacked {
 			gbc_comboGroup.gridy = 0;
 			frmSensOneWayStacked.getContentPane().add(comboGroup, gbc_comboGroup);
 			
-			lblParameterLabels = new JLabel("Parameter Labels:");
+			lblParameterLabels = new JLabel(myModel.language.base.getString("plot.parameter_labels")+":"); //Parameter Labels
 			GridBagConstraints gbc_lblParameterLabels = new GridBagConstraints();
 			gbc_lblParameterLabels.insets = new Insets(0, 0, 5, 5);
 			gbc_lblParameterLabels.anchor = GridBagConstraints.EAST;
@@ -719,7 +729,10 @@ public class frmSensOneWayStacked {
 			frmSensOneWayStacked.getContentPane().add(lblParameterLabels, gbc_lblParameterLabels);
 			
 			comboParamVals = new JComboBox();
-			comboParamVals.setModel(new DefaultComboBoxModel(new String[] {"None", "Range", "All"}));
+			comboParamVals.setModel(new DefaultComboBoxModel(new String[] {
+					myModel.language.base.getString("plot.none"), //None
+					myModel.language.math.getString("sum.range"), //Range
+					myModel.language.base.getString("node.all")})); //All
 			comboParamVals.setSelectedIndex(1);
 			comboParamVals.setEnabled(false);
 			comboParamVals.addActionListener(new ActionListener() {
@@ -753,10 +766,10 @@ public class frmSensOneWayStacked {
 			
 			//pop-up menu
 			JPopupMenu popup = panelChart.getPopupMenu();
-			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColor = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, dataset, seriesPaints);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, dataset, seriesPaints, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -1016,7 +1029,7 @@ public class frmSensOneWayStacked {
 	    SymbolAxis xAxis = new SymbolAxis("", paramNames);
 	    ValueAxis yAxis = new NumberAxis();
 	    if(chartType==0) {
-	    	yAxis.setLabel("Parameter Value");
+	    	yAxis.setLabel(myModel.language.analysis.getString("calib.parameter_value")); //Parameter Value
 	    	yAxis.setTickLabelsVisible(false);
 	    }
 	    else if(chartType==1) {
@@ -1026,10 +1039,10 @@ public class frmSensOneWayStacked {
 	    		yAxis.setLabel(dimInfo.dimNames[dimInfo.objectiveDim]);
 	    	}
 	    	else if(dimInfo.analysisType==1) { //CEA
-	    		yAxis.setLabel("ICER ("+dimInfo.dimNames[dimInfo.costDim]+"/"+dimInfo.dimNames[dimInfo.effectDim]+")");
+	    		yAxis.setLabel(myModel.language.analysis.getString("cea.icer")+" ("+dimInfo.dimNames[dimInfo.costDim]+"/"+dimInfo.dimNames[dimInfo.effectDim]+")"); //ICER
 	    	}
 	    	else if(dimInfo.analysisType==2) { //BCA
-	    		yAxis.setLabel("NMB ("+dimInfo.dimNames[dimInfo.effectDim]+"-"+dimInfo.dimNames[dimInfo.costDim]+")");
+	    		yAxis.setLabel(myModel.language.analysis.getString("bca.nmb")+" ("+dimInfo.dimNames[dimInfo.effectDim]+"-"+dimInfo.dimNames[dimInfo.costDim]+")"); //NMB
 	    	}
 	    }
 	    
@@ -1139,7 +1152,7 @@ public class frmSensOneWayStacked {
 		plot.setBackgroundPaint(new Color(1,1,1,1));
 		plot.getDomainAxis().setInverted(true);
 		
-		TextTitle legendText = new TextTitle("Best Strategy");
+		TextTitle legendText = new TextTitle(myModel.language.analysis.getString("sens.best_strategy")); //Best Strategy
 		legendText.setPosition(RectangleEdge.BOTTOM);
 		chart.addSubtitle(legendText);
 				

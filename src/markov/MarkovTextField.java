@@ -50,8 +50,8 @@ public class MarkovTextField extends ModelTextField{
 		this.setForeground(Color.BLACK);
 		boolean valid=true;
 		if(checkTermination.length()==0){ //No entry, set to default
-			checkTermination="[termination]";
-			this.setText("[termination]");
+			checkTermination="["+myModel.language.base.getString("markov.termination")+"]"; //termination
+			this.setText(checkTermination);
 			valid=false;
 		}
 		/*else{ //Validate expression
@@ -111,7 +111,7 @@ public class MarkovTextField extends ModelTextField{
 			
 	private void updateProbHistory(){
 		if(!node.tempProb.matches("0") && !node.tempProb.equals(checkProb)){ //Prob was changed
-			panel.saveSnapshot("Edit Probability");//Add to undo stack
+			panel.saveSnapshot(myModel.language.base.getString("title.edit_probability")); //Add to undo stack (Edit Probability)
 		}
 		//Update current value
 		node.prob=checkProb;
@@ -123,14 +123,14 @@ public class MarkovTextField extends ModelTextField{
 			if(!node.tempCost[i].equals(checkCosts[i])){changed=true;}
 		}
 		if(changed==true){ //At least one cost was changed
-			panel.saveSnapshot("Edit Cost");//Add to undo stack
+			panel.saveSnapshot(myModel.language.base.getString("title.edit_cost")); //Add to undo stack (Edit Cost)
 		}
 		node.cost=checkCosts; //Update current values
 	}
 	
 	private void updateTerminationHistory(){
 		if(!node.tempTermination.equals(checkTermination)){ //Condition was changed
-			panel.saveSnapshot("Edit Termination");//Add to undo stack
+			panel.saveSnapshot(myModel.language.base.getString("title.edit_termination_condition")); //Add to undo stack (Edit Termination Condition)
 		}
 		//Update current value
 		node.terminationCondition=checkTermination;
@@ -142,14 +142,14 @@ public class MarkovTextField extends ModelTextField{
 			if(!node.tempRewards[i].equals(checkRewards[i])){changed=true;}
 		}
 		if(changed==true){ //At least one cost was changed
-			panel.saveSnapshot("Edit Rewards");//Add to undo stack
+			panel.saveSnapshot(myModel.language.base.getString("title.edit_rewards")); //Add to undo stack (Edit Rewards)
 		}
 		node.rewards=checkRewards; //Update current values
 	}
 	
 	private void updateVarUpdatesHistory(){
 		if(node.tempVarUpdates!=null && !node.tempVarUpdates.equals(checkVarUpdates)){ //Var updates changed
-			panel.saveSnapshot("Edit Variable Updates"); //add to undo stack
+			panel.saveSnapshot(myModel.language.base.getString("title.edit_var_updates")); //add to undo stack (Edit Variable Updates)
 		}
 		//Update current value
 		node.varUpdates=checkVarUpdates;
@@ -157,7 +157,7 @@ public class MarkovTextField extends ModelTextField{
 	
 	private void updateVarUpdatesHistoryT0(){
 		if(node.tempVarUpdatesT0!=null && !node.tempVarUpdatesT0.equals(checkVarUpdatesT0)){ //Var updates changed
-			panel.saveSnapshot("Edit Variable Updates"); //add to undo stack
+			panel.saveSnapshot(myModel.language.base.getString("title.edit_var_updates")); //add to undo stack (Edit Variable Updates)
 		}
 		//Update current value
 		node.varUpdatesT0=checkVarUpdatesT0;

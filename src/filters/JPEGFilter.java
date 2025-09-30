@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class JPEGFilter extends javax.swing.filechooser.FileFilter {
+	Language language;
+	
+	public JPEGFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
     public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".jpeg");
     }
     
     public String getDescription() {
-        return "JPEG File Interchange Format";
+        return language.base.getString("file.jpeg"); //JPEG File Interchange Format
     }
 }

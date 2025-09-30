@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class PyFilter extends javax.swing.filechooser.FileFilter {
+	Language language;
+	
+	public PyFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
     public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".py");
     }
     
     public String getDescription() {
-        return "Python source files";
+        return language.base.getString("file.py"); //Python source files
     }
 }

@@ -53,12 +53,12 @@ public class VariableUpdate{
 			if(isOperator(curExpr.charAt(pos))){endWord=true;}
 		}
 		if(endWord==false){
-			throw new NumericException("No operator found in expression: '"+expression+"'","VariableUpdate");
+			throw new NumericException(myModel.language.message.getString("err.no_operator_found")+": '"+expression+"'","VariableUpdate",myModel.language); //No operator found in expression
 		}
 		String strVar=curExpr.substring(0, pos);
 		int varIndex=myModel.getVariableIndex(strVar);
 		if(varIndex==-1){
-			throw new NumericException("Variable not found: "+strVar,"VariableUpdate");
+			throw new NumericException(myModel.language.message.getString("err.var_not_found")+": "+strVar,"VariableUpdate",myModel.language); //Variable not found
 		}
 		variable=myModel.variables.get(varIndex);
 		
@@ -78,11 +78,11 @@ public class VariableUpdate{
 			else if(assignOperator.equals("*=")){operation=5;}
 			else if(assignOperator.equals("/=")){operation=6;}
 			else{ //unrecognized
-				throw new NumericException("Invalid operator: "+assignOperator,"VariableUpdate");
+				throw new NumericException(myModel.language.message.getString("err.invalid_operator")+": "+assignOperator,"VariableUpdate",myModel.language); //Invalid operator
 			}
 			if(operation==1 || operation==2){// ++ or --
 				if(len>pos+2){
-					throw new NumericException("Invalid expression: "+expression,"VariableUpdate");
+					throw new NumericException(myModel.language.message.getString("err.invalid_expression")+": "+expression,"VariableUpdate",myModel.language); //Invalid expression
 				}
 				exprUpdate="0";
 			}
@@ -91,8 +91,8 @@ public class VariableUpdate{
 			}
 		}
 		//validate expression
-		exprTokens=Interpreter.parse(exprUpdate, myModel);
-		testVal=Interpreter.evaluateTokens(exprTokens, 0, false);
+		exprTokens=Interpreter.parse(exprUpdate, myModel,myModel.language);
+		testVal=Interpreter.evaluateTokens(exprTokens, 0, false, myModel.language);
 	}
 			
 	private static boolean isOperator(char ch){ //operators: =, +, -, *, /
@@ -104,39 +104,39 @@ public class VariableUpdate{
 		variable.unlockDependents(curThread);
 		Numeric value=variable.value[curThread];
 		if(operation==1){ //++
-			if(value.isInteger()){value.setInt(value.getInt()+1);}
-			else{value.setDouble(value.getDouble()+1);}
+			if(value.isInteger()){value.setInt(value.getInt(myModel.language)+1);}
+			else{value.setDouble(value.getDouble(myModel.language)+1);}
 		} 
 		else if(operation==2){ //--
-			if(value.isInteger()){value.setInt(value.getInt()-1);}
-			else{value.setDouble(value.getDouble()-1);}
+			if(value.isInteger()){value.setInt(value.getInt(myModel.language)-1);}
+			else{value.setDouble(value.getDouble(myModel.language)-1);}
 		} 
 		else{
-			Numeric eval=Interpreter.evaluateTokens(exprTokens, curThread,sample);
+			Numeric eval=Interpreter.evaluateTokens(exprTokens, curThread,sample, myModel.language);
 			if(operation==0){
-				if(eval.isInteger()){value.setInt(eval.getInt());}
-				else{value.setDouble(eval.getDouble());}
+				if(eval.isInteger()){value.setInt(eval.getInt(myModel.language));}
+				else{value.setDouble(eval.getDouble(myModel.language));}
 			}
 			else{
 				if(operation<6){ //not division
 					if(value.isInteger() && eval.isInteger()){ //preseve integer type
-						int curVal=value.getInt();
-						if(operation==3){curVal+=eval.getInt();}
-						else if(operation==4){curVal-=eval.getInt();}
-						else if(operation==5){curVal*=eval.getInt();}
+						int curVal=value.getInt(myModel.language);
+						if(operation==3){curVal+=eval.getInt(myModel.language);}
+						else if(operation==4){curVal-=eval.getInt(myModel.language);}
+						else if(operation==5){curVal*=eval.getInt(myModel.language);}
 						value.setInt(curVal);
 					}
 					else{ //treat all as double
-						double curVal=value.getDouble();
-						if(operation==3){curVal+=eval.getDouble();}
-						else if(operation==4){curVal-=eval.getDouble();}
-						else if(operation==5){curVal*=eval.getDouble();}
+						double curVal=value.getDouble(myModel.language);
+						if(operation==3){curVal+=eval.getDouble(myModel.language);}
+						else if(operation==4){curVal-=eval.getDouble(myModel.language);}
+						else if(operation==5){curVal*=eval.getDouble(myModel.language);}
 						value.setDouble(curVal);
 					}
 				}
 				else if(operation==6){ //division, treat all as double
-					double curVal=value.getDouble();
-					curVal/=eval.getDouble();
+					double curVal=value.getDouble(myModel.language);
+					curVal/=eval.getDouble(myModel.language);
 					value.setDouble(curVal);
 				}
 			}

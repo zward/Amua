@@ -39,6 +39,8 @@ import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import lang.Language;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
@@ -50,6 +52,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 /**
  *
@@ -86,69 +91,82 @@ public class frmChangeSeriesColors {
 	DefaultTableModel modelSeries;
 	private JTable tableSeries;
 	
-	public frmChangeSeriesColors(JFreeChart chart, DefaultXYDataset chartData, Paint seriesPaints[]){
+	Language language;
+	
+	/**
+	 * @wbp.parser.constructor 
+	 */
+	public frmChangeSeriesColors(JFreeChart chart, DefaultXYDataset chartData, Paint seriesPaints[], Language language){
 		this.chart=chart;
 		this.chartData_XY=chartData;
 		this.seriesPaints=seriesPaints;
 		this.type=0;
+		this.language=language;
 		initialize();
 	}
 	
-	public frmChangeSeriesColors(JFreeChart chart, DefaultIntervalCategoryDataset chartData, Paint seriesPaints[], frmTornadoDiagram frmPlot){
+	public frmChangeSeriesColors(JFreeChart chart, DefaultIntervalCategoryDataset chartData, Paint seriesPaints[], frmTornadoDiagram frmPlot, Language language){
 		this.frmPlot_Tornado=frmPlot;
 		this.chart=chart;
 		this.chartData_Interval=chartData;
 		this.seriesPaints=seriesPaints;
 		this.type=1;
+		this.language=language;
 		initialize();
 	}
 	
-	public frmChangeSeriesColors(JFreeChart chart, XYIntervalSeriesCollection chartData, Paint seriesPaints[]){
+	public frmChangeSeriesColors(JFreeChart chart, XYIntervalSeriesCollection chartData, Paint seriesPaints[], Language language){
 		this.chart=chart;
 		this.chartData_XYSeries=chartData;
 		this.seriesPaints=seriesPaints;
 		this.type=2;
+		this.language=language;
 		initialize();
 	}
 	
-	public frmChangeSeriesColors(JFreeChart chart, DefaultXYDataset chartData, Paint seriesPaints[], frmSensTwoWay frmPlot){
+	public frmChangeSeriesColors(JFreeChart chart, DefaultXYDataset chartData, Paint seriesPaints[], frmSensTwoWay frmPlot, Language language){
 		this.chart=chart;
 		this.chartData_XY=chartData;
 		this.seriesPaints=seriesPaints;
 		frmPlot_TwoWay=frmPlot;
 		this.type=3;
+		this.language=language;
 		initialize();
 	}
 	
-	public frmChangeSeriesColors(JFreeChart chart, DefaultXYDataset chartData, Paint seriesPaints[], frmPSA frmPlot){
+	public frmChangeSeriesColors(JFreeChart chart, DefaultXYDataset chartData, Paint seriesPaints[], frmPSA frmPlot, Language language){
 		this.chart=chart;
 		this.chartData_XY=chartData;
 		this.seriesPaints=seriesPaints;
 		frmPlot_PSA=frmPlot;
 		this.type=4;
+		this.language=language;
 		initialize();
 	}
 	
-	public frmChangeSeriesColors(JFreeChart chart, DefaultXYDataset chartData, Paint seriesPaints[], frmBatch frmPlot){
+	public frmChangeSeriesColors(JFreeChart chart, DefaultXYDataset chartData, Paint seriesPaints[], frmBatch frmPlot, Language language){
 		this.chart=chart;
 		this.chartData_XY=chartData;
 		this.seriesPaints=seriesPaints;
 		frmPlot_Batch=frmPlot;
 		this.type=5;
+		this.language=language;
 		initialize();
 	}
 	
-	public frmChangeSeriesColors(frmTraceSummary frmPlot, Paint seriesPaints[]) {
+	public frmChangeSeriesColors(frmTraceSummary frmPlot, Paint seriesPaints[], Language language) {
 		this.frmPlot_TraceSummary=frmPlot;
 		this.seriesPaints=seriesPaints;
 		this.type=6;
+		this.language=language;
 		initialize();
 	}
 	
-	public frmChangeSeriesColors(frmTraceSummaryMulti frmPlot, Paint seriesPaints[]) {
+	public frmChangeSeriesColors(frmTraceSummaryMulti frmPlot, Paint seriesPaints[], Language language) {
 		this.frmPlot_TraceSummaryMulti=frmPlot;
 		this.seriesPaints=seriesPaints;
 		this.type=7;
+		this.language=language;
 		initialize();
 	}
 	
@@ -159,24 +177,24 @@ public class frmChangeSeriesColors {
 	private void initialize() {
 		try{
 			frmChangeSeriesColors = new JDialog();
-			//frmChangeSeriesColors.setIconImage(Toolkit.getDefaultToolkit().getImage(frmChangeSeriesColors.class.getResource("/images/import_128.png")));
 			frmChangeSeriesColors.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmChangeSeriesColors.setTitle("Amua - Change Series Colors");
+			frmChangeSeriesColors.setTitle("Amua - "+language.base.getString("plot.change_series_colors")); //Change Series Colors
 			frmChangeSeriesColors.setResizable(false);
 			frmChangeSeriesColors.setBounds(100, 100, 316, 356);
 			frmChangeSeriesColors.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-			frmChangeSeriesColors.getContentPane().setLayout(null);
-			
-			JScrollPane scrollPane = new JScrollPane();
-			scrollPane.setBounds(12, 13, 286, 261);
-			frmChangeSeriesColors.getContentPane().add(scrollPane);
+			GridBagLayout gridBagLayout = new GridBagLayout();
+			gridBagLayout.columnWidths = new int[]{120, 20, 90, 0};
+			gridBagLayout.rowHeights = new int[]{261, 28, 0};
+			gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
+			gridBagLayout.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+			frmChangeSeriesColors.getContentPane().setLayout(gridBagLayout);
 			
 			modelSeries=new DefaultTableModel(
 					new Object[][] {
 						{null, null},
 					},
 					new String[] {
-						"Series", "Color"
+						language.base.getString("plot.series"), language.base.getString("plot.color") //Series, Color
 					}
 				) {
 					boolean[] columnEditables = new boolean[] {
@@ -238,6 +256,15 @@ public class frmChangeSeriesColors {
 				}
 			}
 			
+			JScrollPane scrollPane = new JScrollPane();
+			GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+			gbc_scrollPane.fill = GridBagConstraints.BOTH;
+			gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
+			gbc_scrollPane.gridwidth = 3;
+			gbc_scrollPane.gridx = 0;
+			gbc_scrollPane.gridy = 0;
+			frmChangeSeriesColors.getContentPane().add(scrollPane, gbc_scrollPane);
+			
 			tableSeries = new JTable();
 			tableSeries.addMouseListener(new MouseAdapter() {
 				@Override
@@ -255,24 +282,33 @@ public class frmChangeSeriesColors {
 			scrollPane.setViewportView(tableSeries);
 			
 			
-			JButton btnCancel = new JButton("Close");
+			JButton btnCancel = new JButton(language.base.getString("button.close")); //Close
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmChangeSeriesColors.dispose();
 				}
 			});
-			btnCancel.setBounds(208, 286, 90, 28);
-			frmChangeSeriesColors.getContentPane().add(btnCancel);
 			
 		
-			JButton btnSelectColor = new JButton("Select Color");
+			JButton btnSelectColor = new JButton(language.base.getString("plot.select_color")); //Select Color
 			btnSelectColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					selectColor();
 				}
 			});
-			btnSelectColor.setBounds(12, 286, 105, 28);
-			frmChangeSeriesColors.getContentPane().add(btnSelectColor);
+			GridBagConstraints gbc_btnSelectColor = new GridBagConstraints();
+			gbc_btnSelectColor.anchor = GridBagConstraints.NORTH;
+			gbc_btnSelectColor.fill = GridBagConstraints.HORIZONTAL;
+			gbc_btnSelectColor.insets = new Insets(0, 0, 0, 5);
+			gbc_btnSelectColor.gridx = 0;
+			gbc_btnSelectColor.gridy = 1;
+			frmChangeSeriesColors.getContentPane().add(btnSelectColor, gbc_btnSelectColor);
+			GridBagConstraints gbc_btnCancel = new GridBagConstraints();
+			gbc_btnCancel.anchor = GridBagConstraints.NORTH;
+			gbc_btnCancel.fill = GridBagConstraints.HORIZONTAL;
+			gbc_btnCancel.gridx = 2;
+			gbc_btnCancel.gridy = 1;
+			frmChangeSeriesColors.getContentPane().add(btnCancel, gbc_btnCancel);
 			
 			
 						
@@ -289,7 +325,7 @@ public class frmChangeSeriesColors {
 				Color initColor = (Color) renderer.getSeriesPaint(selected);
 				Color c = JColorChooser.showDialog(
 						frmChangeSeriesColors,
-						"Choose color for series: " + chartData_XY.getSeriesKey(selected),
+						language.base.getString("plot.choose_color_series")+": " + chartData_XY.getSeriesKey(selected), //Choose color for series
 						initColor == null ? Color.BLACK : initColor
 						);
 				if (c != null) {
@@ -303,7 +339,7 @@ public class frmChangeSeriesColors {
 				Color initColor = (Color) renderer.getSeriesPaint(selected);
 				Color c = JColorChooser.showDialog(
 						frmChangeSeriesColors,
-						"Choose color for series: " + chartData_Interval.getSeriesKey(selected),
+						language.base.getString("plot.choose_color_series")+": " + chartData_Interval.getSeriesKey(selected), //Choose color for series
 						initColor == null ? Color.BLACK : initColor
 						);
 				if (c != null) {
@@ -318,7 +354,7 @@ public class frmChangeSeriesColors {
 				Color initColor = (Color) renderer.getSeriesPaint(selected);
 				Color c = JColorChooser.showDialog(
 						frmChangeSeriesColors,
-						"Choose color for series: " + chartData_XYSeries.getSeriesKey(selected),
+						language.base.getString("plot.choose_color_series")+": " + chartData_XYSeries.getSeriesKey(selected), //Choose color for series
 						initColor == null ? Color.BLACK : initColor
 						);
 				if (c != null) {
@@ -332,7 +368,7 @@ public class frmChangeSeriesColors {
 				Color initColor = (Color) renderer.getSeriesPaint(selected);
 				Color c = JColorChooser.showDialog(
 						frmChangeSeriesColors,
-						"Choose color for series: " + chartData_XY.getSeriesKey(selected),
+						language.base.getString("plot.choose_color_series")+": " + chartData_XY.getSeriesKey(selected), //Choose color for series
 						initColor == null ? Color.BLACK : initColor
 						);
 				if (c != null) {
@@ -347,7 +383,7 @@ public class frmChangeSeriesColors {
 				Color initColor = (Color) renderer.getSeriesPaint(selected);
 				Color c = JColorChooser.showDialog(
 						frmChangeSeriesColors,
-						"Choose color for series: " + chartData_XY.getSeriesKey(selected),
+						language.base.getString("plot.choose_color_series")+": " + chartData_XY.getSeriesKey(selected), //Choose color for series
 						initColor == null ? Color.BLACK : initColor
 						);
 				if (c != null) {
@@ -362,7 +398,7 @@ public class frmChangeSeriesColors {
 				Color initColor = (Color) renderer.getSeriesPaint(selected);
 				Color c = JColorChooser.showDialog(
 						frmChangeSeriesColors,
-						"Choose color for series: " + chartData_XY.getSeriesKey(selected),
+						language.base.getString("plot.choose_color_series")+": " + chartData_XY.getSeriesKey(selected), //Choose color for series
 						initColor == null ? Color.BLACK : initColor
 						);
 				if (c != null) {
@@ -377,7 +413,7 @@ public class frmChangeSeriesColors {
 				Color initColor = (Color) renderer.getSeriesPaint(selected);
 				Color c = JColorChooser.showDialog(
 						frmChangeSeriesColors,
-						"Choose color for series: " + frmPlot_TraceSummary.mean.getSeriesKey(selected),
+						language.base.getString("plot.choose_color_series")+": " + frmPlot_TraceSummary.mean.getSeriesKey(selected), //Choose color for series
 						initColor == null ? Color.BLACK : initColor
 						);
 				if (c != null) {
@@ -393,7 +429,7 @@ public class frmChangeSeriesColors {
 				Color initColor = (Color) renderer.getSeriesPaint(selected);
 				Color c = JColorChooser.showDialog(
 						frmChangeSeriesColors,
-						"Choose color for series: " + frmPlot_TraceSummaryMulti.mean.getSeriesKey(selected),
+						language.base.getString("plot.choose_color_series")+": " + frmPlot_TraceSummaryMulti.mean.getSeriesKey(selected), //Choose color for series
 						initColor == null ? Color.BLACK : initColor
 						);
 				if (c != null) {

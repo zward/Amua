@@ -43,6 +43,7 @@ import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import filters.CSVFilter;
+import lang.Language;
 import main.ErrorLog;
 import main.ScaledIcon;
 import markov.MarkovTrace;
@@ -65,6 +66,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -87,10 +89,12 @@ public class frmTrace {
 	JFileChooser fc;
 	ErrorLog errorLog;
 	
+	Language language;
+	
 	/**
 	 *  Default Constructor
 	 */
-	public frmTrace(MarkovTrace traceOverall, ErrorLog errorLog1, MarkovTrace traceGroup[], String subgroupNames[]) {
+	public frmTrace(MarkovTrace traceOverall, ErrorLog errorLog1, MarkovTrace traceGroup[], String subgroupNames[], Language language) {
 		this.traceOverall=traceOverall;
 		this.errorLog=errorLog1;
 		this.traceGroup=traceGroup;
@@ -99,6 +103,7 @@ public class frmTrace {
 			numSubgroups=traceGroup.length;
 			this.subgroupNames=subgroupNames;
 		}
+		this.language=language;
 		initialize();
 	}
 
@@ -108,7 +113,7 @@ public class frmTrace {
 	private void initialize() {
 		try{
 			frmTrace = new JFrame();
-			frmTrace.setTitle("Amua - Markov Trace: "+traceOverall.traceName);
+			frmTrace.setTitle("Amua - "+language.base.getString("markov.markov_trace")+": "+traceOverall.traceName); //Markov Trace
 			frmTrace.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTrace.class.getResource("/images/logo_128.png")));
 			frmTrace.setBounds(100, 100, 1000, 600);
 			frmTrace.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -122,7 +127,8 @@ public class frmTrace {
 			dataTrace = new DefaultXYDataset();
 			colSeries=new XYSeriesCollection();
 			
-			chartTrace = ChartFactory.createScatterPlot(null, "t", "Prev(t)", dataTrace, PlotOrientation.VERTICAL, true, false, false);
+			chartTrace = ChartFactory.createScatterPlot(null, "t", language.analysis.getString("result.prev_t"), //Prev(t) 
+					dataTrace, PlotOrientation.VERTICAL, true, false, false); 
 			chartTrace.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 			
 			JPanel panel = new JPanel();
@@ -134,8 +140,9 @@ public class frmTrace {
 			gbc_panel.gridy = 0;
 			frmTrace.getContentPane().add(panel, gbc_panel);
 			
-			JLabel lblNewLabel = new JLabel("Plot:");
-			lblNewLabel.setBounds(6, 6, 55, 16);
+			JLabel lblNewLabel = new JLabel(language.base.getString("button.plot")+":"); //Plot
+			lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblNewLabel.setBounds(5, 6, 62, 16);
 			panel.add(lblNewLabel);
 			
 			comboPlot = new JComboBox();
@@ -144,16 +151,24 @@ public class frmTrace {
 					updateChart(comboPlot.getSelectedIndex());
 				}
 			});
-			comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)"}));
+			comboPlot.setModel(new DefaultComboBoxModel(new String[] {
+					language.analysis.getString("result.state_prevalence"), //State Prevalence
+					language.analysis.getString("result.rewards_cycle"), //Rewards (Cycle)
+					language.analysis.getString("result.rewards_cum")})); //Rewards (Cum.)
 			if(traceOverall.numVariables>0){
-				comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)","Variables (Cycle)"}));
+				comboPlot.setModel(new DefaultComboBoxModel(new String[] {
+						language.analysis.getString("result.state_prevalence"), //State Prevalence 
+						language.analysis.getString("result.rewards_cycle"), //Rewards (Cycle)
+						language.analysis.getString("result.rewards_cum"), //Rewards (Cum.)
+						language.analysis.getString("result.variables_cycle")})); //Variable (Cycle)
 			}
-			comboPlot.setBounds(41, 1, 157, 26);
+			comboPlot.setBounds(69, 1, 157, 26);
 			panel.add(comboPlot);
 			
-			JLabel lblGroup = new JLabel("Group:");
+			JLabel lblGroup = new JLabel(language.analysis.getString("result.group")+":"); //Group
+			lblGroup.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblGroup.setVisible(false);
-			lblGroup.setBounds(213, 6, 55, 16);
+			lblGroup.setBounds(252, 6, 73, 16);
 			panel.add(lblGroup);
 			
 			comboGroup = new JComboBox();
@@ -167,12 +182,12 @@ public class frmTrace {
 				}
 			});
 			comboGroup.setVisible(false);
-			comboGroup.setBounds(257, 1, 165, 26);
+			comboGroup.setBounds(326, 1, 165, 26);
 			panel.add(comboGroup);
 			
 			if(numSubgroups>0){
 				String names[]=new String[numSubgroups+1];
-				names[0]="Overall";
+				names[0]=language.analysis.getString("result.overall"); //Overall
 				for(int g=0; g<numSubgroups; g++){names[g+1]=subgroupNames[g];}
 				comboGroup.setModel(new DefaultComboBoxModel(names));
 				comboGroup.setVisible(true);
@@ -213,7 +228,7 @@ public class frmTrace {
 			
 			//pop-up menu
 			JPopupMenu popup = panelChart.getPopupMenu();
-			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColor = new JMenuItem(language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					Paint curPaints[]=null;
@@ -228,7 +243,7 @@ public class frmTrace {
 						curPaints=seriesPaints_Vars;
 					}
 					
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chartTrace, dataTrace, curPaints);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartTrace, dataTrace, curPaints, language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -244,14 +259,14 @@ public class frmTrace {
 			gbc_toolBar.gridy = 0;
 			frmTrace.getContentPane().add(toolBar, gbc_toolBar);
 			
-			JButton btnExport = new JButton("Export");
+			JButton btnExport = new JButton(language.base.getString("menu.export")); //Export
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
 						fc=new JFileChooser();
-						fc.setDialogTitle("Export Trace");
-						fc.setApproveButtonText("Export");
-						fc.setFileFilter(new CSVFilter());
+						fc.setDialogTitle(language.base.getString("title.export_trace")); //Export Trace
+						fc.setApproveButtonText(language.base.getString("menu.export")); //Export
+						fc.setFileFilter(new CSVFilter(language));
 
 						int returnVal = fc.showOpenDialog(frmTrace);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -278,7 +293,7 @@ public class frmTrace {
 							
 							out.close();
 							
-							JOptionPane.showMessageDialog(frmTrace, "Exported!");
+							JOptionPane.showMessageDialog(frmTrace, language.message.getString("info.exported")); //Exported!
 						}
 
 					}catch(Exception er){
@@ -288,10 +303,10 @@ public class frmTrace {
 				}
 			});
 			btnExport.setIcon(new ScaledIcon("/images/export",16,16,16,true));
-			btnExport.setToolTipText("Export");
+			btnExport.setToolTipText(language.base.getString("menu.export")); //Export
 			toolBar.add(btnExport);
 			
-			JButton btnCopy = new JButton("Copy");
+			JButton btnCopy = new JButton(language.base.getString("menu.copy")); //Copy
 			btnCopy.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int numCol=curTrace.modelTraceRounded.getColumnCount();
@@ -314,7 +329,7 @@ public class frmTrace {
 				}
 			});
 			btnCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
-			btnCopy.setToolTipText("Copy");
+			btnCopy.setToolTipText(language.base.getString("menu.copy")); //Copy
 			toolBar.add(btnCopy);
 			
 			JScrollPane scrollPane = new JScrollPane();
@@ -380,7 +395,7 @@ public class frmTrace {
 			}
 			plot.setRenderer(renderer);
 			plot.setDataset(dataTrace);
-			plot.getRangeAxis().setLabel("Prev(t)");
+			plot.getRangeAxis().setLabel(language.analysis.getString("result.prev_t")); //Prev(t)
 		}
 		else if(type==1){ //Rewards - Cycle
 			for(int d=0; d<curTrace.numDim; d++){
@@ -390,12 +405,13 @@ public class frmTrace {
 			if(curTrace.discounted==true){
 				for(int d=0; d<curTrace.numDim; d++){
 					renderer.setSeriesPaint(curTrace.numDim+d, seriesPaints_Rewards[curTrace.numDim+d]);
-					dataTrace.addSeries(curTrace.dimNames[d]+" (Discounted)",getSeriesData(curTrace.cycles,curTrace.cycleRewardsDis[d]));
+					dataTrace.addSeries(curTrace.dimNames[d]+" ("+language.analysis.getString("result.discounted")+")", //Discounted
+							getSeriesData(curTrace.cycles,curTrace.cycleRewardsDis[d]));
 				}
 			}
 			plot.setRenderer(renderer);
 			plot.setDataset(dataTrace);
-			plot.getRangeAxis().setLabel("Rewards(t)");
+			plot.getRangeAxis().setLabel(language.analysis.getString("result.rewards_t")); //Rewards(t)
 		}
 		else if(type==2){ //Rewards - Cumulative
 			for(int d=0; d<curTrace.numDim; d++){
@@ -405,12 +421,13 @@ public class frmTrace {
 			if(curTrace.discounted==true){
 				for(int d=0; d<curTrace.numDim; d++){
 					renderer.setSeriesPaint(curTrace.numDim+d, seriesPaints_Rewards[curTrace.numDim+d]);
-					dataTrace.addSeries(curTrace.dimNames[d]+" (Discounted)",getSeriesData(curTrace.cycles,curTrace.cumRewardsDis[d]));
+					dataTrace.addSeries(curTrace.dimNames[d]+" ("+language.analysis.getString("result.discounted")+")", //Discounted
+							getSeriesData(curTrace.cycles,curTrace.cumRewardsDis[d]));
 				}
 			}
 			plot.setRenderer(renderer);
 			plot.setDataset(dataTrace);
-			plot.getRangeAxis().setLabel("Cum. Rewards(t)");
+			plot.getRangeAxis().setLabel(language.analysis.getString("result.cum_rewards_t")); //Cum. Rewards(t)
 		}
 		else if(type==3){ //Variables - Cycle
 			for(int c=0; c<curTrace.numVariables; c++){
@@ -419,7 +436,7 @@ public class frmTrace {
 			}
 			plot.setRenderer(renderer);
 			plot.setDataset(dataTrace);
-			plot.getRangeAxis().setLabel("Variables(t)");
+			plot.getRangeAxis().setLabel(language.analysis.getString("result.variables_t")); //Variables(t)
 		}
 	}
 	

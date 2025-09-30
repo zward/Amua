@@ -71,7 +71,7 @@ public class CEAHelper{
 		
 		//Make table
 		int stratIndices[]=new int[numStrat];
-		Object table[][]=new Object[numStrat][6];
+		Object table[][]=new Object[numStrat][7];
 		for(int s=0; s<numStrat; s++){  //add other strategies in order by cost
 			int curStrat=(int) costTable[s][0];
 			stratIndices[curStrat]=s;
@@ -79,7 +79,8 @@ public class CEAHelper{
 			table[s][1]=myModel.strategyNames[curStrat];
 			table[s][2]=costs[curStrat];
 			table[s][3]=effects[curStrat];
-			table[s][5]="";
+			table[s][5]=""; //Display note (locale)
+			table[s][6]=""; //Orig note
 		}
 		
 		//Calc ICERs
@@ -99,7 +100,8 @@ public class CEAHelper{
 				double cost1=(double) table[s][2]; double effect1=(double) table[s][3]*objSign;
 				if(cost1<baseCost && effect1>=baseEffect){
 					table[s][4]=Double.NaN;
-					table[s][5]="Cost Saving";
+					table[s][5]=myModel.language.analysis.getString("cea.cost_saving"); //Cost Saving
+					table[s][6]="Cost Saving";
 					anyCostSaving=true;
 				}
 			}
@@ -108,7 +110,8 @@ public class CEAHelper{
 			int baseIndex=stratIndices[baseline];
 			viable.remove(baseIndex);
 			table[baseIndex][4]=Double.NaN;
-			table[baseIndex][5]="Strongly Dominated";
+			table[baseIndex][5]=myModel.language.analysis.getString("cea.strongly_dominated"); //Strongly Dominated
+			table[baseIndex][6]="Strongly Dominated";
 		}
 				
 		//CEA algorithm
@@ -126,26 +129,30 @@ public class CEAHelper{
 				if(incEffect<0){ //smaller effect
 					repeat=true;
 					table[index1][4]=Double.NaN;
-					table[index1][5]="Strongly Dominated";
+					table[index1][5]=myModel.language.analysis.getString("cea.strongly_dominated"); //Strongly Dominated
+					table[index1][6]="Strongly Dominated";
 					viable.remove(v);
 				}
 				else if(incEffect==0){
 					if(incCost>0){ //Same effect, greater cost
 						repeat=true;
 						table[index1][4]=Double.NaN;
-						table[index1][5]="Strongly Dominated";
+						table[index1][5]=myModel.language.analysis.getString("cea.strongly_dominated"); //Strongly Dominated
+						table[index1][6]="Strongly Dominated";
 						viable.remove(v);
 					}
 					else if(incCost==0){ //Same effect, same cost - set to previous ICER
 						table[index1][4]=table[index0][4];
-						table[index1][5]="Indifferent";
+						table[index1][5]=myModel.language.analysis.getString("cea.indifferent"); //Indifferent
+						table[index1][6]="Indifferent";
 					}
 				}
 				else{ //Increasing effect: Calculate ICER
 					if(incCost==0){ //Greater effect, same cost
 						repeat=true;
 						table[index0][4]=Double.NaN;
-						table[index0][5]="Strongly Dominated";
+						table[index0][5]=myModel.language.analysis.getString("cea.strongly_dominated"); //Strongly Dominated
+						table[index0][6]="Strongly Dominated";
 						table[index1][4]=0.0; //set dominating ICER to 0 for now
 						viable.remove(v-1);
 					}
@@ -154,7 +161,8 @@ public class CEAHelper{
 						if(icer<curMaxICER){ //Non-increasing
 							repeat=true;
 							table[index0][4]=Double.NaN;
-							table[index0][5]="Weakly Dominated";
+							table[index0][5]=myModel.language.analysis.getString("cea.weakly_dominated"); //Weakly Dominated
+							table[index0][6]="Weakly Dominated";
 							viable.remove(v-1);
 						}
 						else{
@@ -173,8 +181,14 @@ public class CEAHelper{
 			int curStrat=(int) costTable[s][0];
 			if(curStrat==baseline){
 				String curNote=(String) table[s][5];
-				if(curNote==null || curNote.isEmpty()){table[s][5]="Baseline";}
-				else{table[s][5]+=" (Baseline)";}
+				if(curNote==null || curNote.isEmpty()){
+					table[s][5]=myModel.language.analysis.getString("sens.baseline");  //Baseline
+					table[s][6]="Baseline";
+				}
+				else{
+					table[s][5]+=" ("+myModel.language.analysis.getString("sens.baseline")+")"; //(Baseline)
+					table[s][6]+="(Baseline)";
+				} 
 			}
 			if(table[s][4]==null) {table[s][4]=Double.NaN;} //replace nulls with NaNs
 		}

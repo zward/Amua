@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class RFilter extends javax.swing.filechooser.FileFilter {
+	Language language;
+	
+	public RFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
     public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".r");
     }
     
     public String getDescription() {
-        return "R files";
+        return language.base.getString("file.r"); //R files
     }
 }

@@ -20,6 +20,7 @@
 package math;
 
 import base.AmuaModel;
+import lang.Language;
 import main.Parameter;
 import main.Table;
 import main.Variable;
@@ -44,6 +45,7 @@ public class TokenOLD{
 	Variable curVar;
 	Table curMatrix;
 	int curThread;
+	Language language;
 	
 	public TokenOLD(Numeric numeric){
 		this.numeric=numeric;
@@ -55,6 +57,7 @@ public class TokenOLD{
 		this.word=word;
 		this.type=type;
 		this.curThread=curThread;
+		this.language=myModel.language;
 		if(this.type==Type.OPERATOR){
 			precedence=Operators.getPrecedence(word);
 			leftAssociative=true;
@@ -86,7 +89,7 @@ public class TokenOLD{
 						tokenType=1;
 						curParam=myModel.parameters.get(index);
 						if(curParam.locked==false){
-							curParam.value=InterpreterOLD.evaluate(curParam.expression,myModel,sample, curThread);
+							curParam.value=InterpreterOLD.evaluate(curParam.expression,myModel,sample, curThread, language);
 							if(sample){curParam.locked=true;}
 						}
 						numeric=curParam.value.copy();
@@ -96,7 +99,7 @@ public class TokenOLD{
 						tokenType=2;
 						curVar=myModel.variables.get(index);
 						if(curVar.value[curThread]==null){ //not initialized
-							curVar.value[curThread]=InterpreterOLD.evaluate(curVar.expression, myModel, sample, curThread);
+							curVar.value[curThread]=InterpreterOLD.evaluate(curVar.expression, myModel, sample, curThread, language);
 						}
 						numeric=curVar.value[curThread].copy();
 					}
@@ -114,7 +117,7 @@ public class TokenOLD{
 					}
 					else{ //not understood, throw error
 						//try evaluate
-						throw new NumericException(word+" not recognized","Token");
+						throw new NumericException(word+" not recognized","Token",language);
 					}
 					if(negate){
 						numeric.negate();

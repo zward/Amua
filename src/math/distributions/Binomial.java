@@ -18,6 +18,9 @@
 
 package math.distributions;
 
+import java.text.MessageFormat;
+
+import lang.Language;
 import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
@@ -25,20 +28,20 @@ import math.NumericException;
 
 public final class Binomial{
 	
-	public static Numeric pmf(Numeric params[]) throws NumericException{
+	public static Numeric pmf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			int n=params[1].getInt();
-			double p=params[2].getProb();
-			if(n<=0){throw new NumericException("n should be >0","Bin");}
+			int k=params[0].getInt(language);
+			int n=params[1].getInt(language);
+			double p=params[2].getProb(language);
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 			return(new Numeric(MathUtils.bin(k,n,p)));
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("k and n should be the same size","Bin");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "n"),"Bin", language); //k and n should be the same size
 			}
 			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {
-				throw new NumericException("n and p should be the same size","Bin");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "n", "p"),"Bin", language); //n and p should be the same size
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
@@ -46,8 +49,8 @@ public final class Binomial{
 				for(int j=0; j<ncol; j++) {
 					int k=(int) params[0].matrix[i][j];
 					int n=(int) params[1].matrix[i][j];
-					double p=params[2].getMatrixProb(i, j);
-					if(n<=0){throw new NumericException("n should be >0","Bin");}
+					double p=params[2].getMatrixProb(i, j, language);
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 					vals.matrix[i][j]=MathUtils.bin(k, n, p);
 				}
 			}
@@ -55,22 +58,22 @@ public final class Binomial{
 		}
 	}
 
-	public static Numeric cdf(Numeric params[]) throws NumericException{
+	public static Numeric cdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			int n=params[1].getInt();
-			double p=params[2].getProb();
-			if(n<=0){throw new NumericException("n should be >0","Bin");}
+			int k=params[0].getInt(language);
+			int n=params[1].getInt(language);
+			double p=params[2].getProb(language);
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 			double val=0;
 			for(int i=0; i<=k; i++){val+=MathUtils.bin(i,n,p);}
 			return(new Numeric(val));
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("k and n should be the same size","Bin");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "n"),"Bin", language); //k and n should be the same size
 			}
 			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {
-				throw new NumericException("n and p should be the same size","Bin");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "n", "p"),"Bin", language); //n and p should be the same size
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
@@ -78,8 +81,8 @@ public final class Binomial{
 				for(int j=0; j<ncol; j++) {
 					int k=(int) params[0].matrix[i][j];
 					int n=(int) params[1].matrix[i][j];
-					double p=params[2].getMatrixProb(i, j);
-					if(n<=0){throw new NumericException("n should be >0","Bin");}
+					double p=params[2].getMatrixProb(i, j, language);
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 					double val=0;
 					for(int z=0; z<=k; z++){val+=MathUtils.bin(z,n,p);}
 					vals.matrix[i][j]=val;
@@ -89,12 +92,12 @@ public final class Binomial{
 		}
 	}
 	
-	public static Numeric quantile(Numeric params[]) throws NumericException{
+	public static Numeric quantile(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			double x=params[0].getProb(), CDF=0;
-			int n=params[1].getInt();
-			double p=params[2].getProb();
-			if(n<=0){throw new NumericException("n should be >0","Bin");}
+			double x=params[0].getProb(language), CDF=0;
+			int n=params[1].getInt(language);
+			double p=params[2].getProb(language);
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 			int k=-1;
 			while(x>CDF){
 				CDF+=MathUtils.bin(k+1,n,p);
@@ -105,19 +108,19 @@ public final class Binomial{
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("x and n should be the same size","Bin");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "n"),"Bin", language); //x and n should be the same size
 			}
 			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {
-				throw new NumericException("n and p should be the same size","Bin");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "n", "p"),"Bin", language); //n and p should be the same size
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double x=params[0].getMatrixProb(i, j);
+					double x=params[0].getMatrixProb(i, j, language);
 					int n=(int) params[1].matrix[i][j];
-					double p=params[2].getMatrixProb(i, j);
-					if(n<=0){throw new NumericException("n should be >0","Bin");}
+					double p=params[2].getMatrixProb(i, j, language);
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 					int k=-1;
 					double CDF=0;
 					while(x>CDF){
@@ -132,24 +135,24 @@ public final class Binomial{
 		}
 	}
 	
-	public static Numeric mean(Numeric params[]) throws NumericException{
+	public static Numeric mean(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int n=params[0].getInt();
-			double p=params[1].getProb();
-			if(n<=0){throw new NumericException("n should be >0","Bin");}
+			int n=params[0].getInt(language);
+			double p=params[1].getProb(language);
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 			return(new Numeric(n*p));
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("n and p should be the same size","Bin");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "n", "p"),"Bin", language); //n and p should be the same size
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int n=(int) params[0].matrix[i][j];
-					double p=params[1].getMatrixProb(i, j);
-					if(n<=0){throw new NumericException("n should be >0","Bin");}
+					double p=params[1].getMatrixProb(i, j, language);
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 					vals.matrix[i][j]=n*p;
 				}
 			}
@@ -157,24 +160,24 @@ public final class Binomial{
 		}
 	}
 	
-	public static Numeric variance(Numeric params[]) throws NumericException{
+	public static Numeric variance(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int n=params[0].getInt();
-			double p=params[1].getProb();
-			if(n<=0){throw new NumericException("n should be >0","Bin");}
+			int n=params[0].getInt(language);
+			double p=params[1].getProb(language);
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 			return(new Numeric(n*p*(1-p)));
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("n and p should be the same size","Bin");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "n", "p"),"Bin", language); //n and p should be the same size
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int n=(int) params[0].matrix[i][j];
-					double p=params[1].getMatrixProb(i, j);
-					if(n<=0){throw new NumericException("n should be >0","Bin");}
+					double p=params[1].getMatrixProb(i, j, language);
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 					vals.matrix[i][j]=n*p*(1-p);
 				}
 			}
@@ -182,12 +185,12 @@ public final class Binomial{
 		}
 	}
 	
-	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
-		if(params.length!=2){throw new NumericException("Incorrect number of parameters","Bin");}
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator, Language language) throws NumericException{
+		if(params.length!=2){throw new NumericException(language.message.getString("err.incorrect_num_params"), "Bin", language);} //Incorrect number of parameters
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int n=params[0].getInt(), k=-1;
-			double p=params[1].getProb(), CDF=0;
-			if(n<=0){throw new NumericException("n should be >0","Bin");}
+			int n=params[0].getInt(language), k=-1;
+			double p=params[1].getProb(language), CDF=0;
+			if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 			double rand=generator.nextDouble();
 			while(rand>CDF){
 				CDF+=MathUtils.bin(k+1,n,p);
@@ -197,15 +200,15 @@ public final class Binomial{
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("n and p should be the same size","Bin");
+				throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "n", "p"),"Bin", language); //n and p should be the same size
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int n=(int) params[0].matrix[i][j], k=-1;
-					double p=params[1].getMatrixProb(i, j);
-					if(n<=0){throw new NumericException("n should be >0","Bin");}
+					double p=params[1].getMatrixProb(i, j, language);
+					if(n<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "n"),"Bin",language);} //n should be >0
 					double CDF=0, rand=generator.nextDouble();
 					while(rand>CDF){
 						CDF+=MathUtils.bin(k+1,n,p);
@@ -218,21 +221,21 @@ public final class Binomial{
 		}
 	}
 	
-	public static String description(){
-		String des="<html><b>Binomial Distribution</b><br>";
-		des+="Used to model the number of successes that occur in a fixed number of repeated trials<br><br>";
-		des+="<i>Parameters</i><br>";
-		des+=MathUtils.consoleFont("n")+": Number of trials (Integer "+MathUtils.consoleFont(">0")+")<br>";
-		des+=MathUtils.consoleFont("p")+": Probability of success<br>";
-		des+="<i><br>Sample</i><br>";
-		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(n,p,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the Binomial distribution. Integer in "+MathUtils.consoleFont("{0,1,...,n}")+"<br>";
-		des+="<i><br>Distribution Functions</i><br>";
-		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(k,n,p,<b><i>f</i></b>)")+": Returns the value of the Binomial PMF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(k,n,p,<b><i>F</i></b>)")+": Returns the value of the Binomial CDF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(x,n,p,<b><i>Q</i></b>)")+": Returns the quantile (inverse CDF) of the Binomial distribution at "+MathUtils.consoleFont("x")+"<br>";
-		des+="<i><br>Moments</i><br>";
-		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(n,p,<b><i>E</i></b>)")+": Returns the mean of the Binomial distribution<br>";
-		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(n,p,<b><i>V</i></b>)")+": Returns the variance of the Binomial distribution<br>";
+	public static String description(Language language){
+		String des="<html><b>"+language.dist.getString("bin.name")+"</b><br>"; //Binomial Distribution
+		des+=language.dist.getString("bin.desc")+"<br><br>"; //Used to model the number of successes that occur in a fixed number of repeated trials
+		des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
+		des+=MathUtils.consoleFont("n")+": "+language.dist.getString("gen.num_trials")+"<br>"; //Number of trials (Integer >0)
+		des+=MathUtils.consoleFont("p")+": "+language.dist.getString("desc.prob_success")+"<br>"; //Probability of success
+		des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
+		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(n,p,<b><i>~</i></b>)")+": "+language.dist.getString("desc.sample")+". "+language.dist.getString("bin.support")+"<br>"; //Returns a random variable (mean in base case) from the Binomial distribution. Integer in {0,1,…,n}
+		des+="<i><br>"+language.dist.getString("gen.distribution_functions")+"</i><br>"; //Distribution Functions
+		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(k,n,p,<b><i>f</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.pmf"), "k")+"<br>"; //Returns the value of the Binomial PMF at k
+		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(k,n,p,<b><i>F</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.cdf"), "k")+"<br>"; //Returns the value of the Binomial CDF at k
+		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(x,n,p,<b><i>Q</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.quantile"), "x")+"<br>"; //Returns the quantile (inverse CDF) of the Binomial distribution at x
+		des+="<i><br>"+language.dist.getString("gen.moments")+"</i><br>"; //Moments
+		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(n,p,<b><i>E</i></b>)")+": "+language.dist.getString("desc.mean")+"<br>"; //Returns the mean of the Binomial distribution
+		des+=MathUtils.consoleFont("<b>Bin</b>","green")+MathUtils.consoleFont("(n,p,<b><i>V</i></b>)")+": "+language.dist.getString("desc.var")+"<br>"; //Returns the variance of the Binomial distribution
 		des+="</html>";
 		return(des);
 	}

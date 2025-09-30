@@ -337,7 +337,7 @@ public class TreeNode extends ModelNode{
 	}
 
 	private void displayName(){
-		textName=new JTextField("Name");
+		textName=new JTextField(myModel.language.base.getString("object.name")); //Name
 		if(name!=null){textName.setText(name);}
 		textName.setBorder(null);
 		textName.setHorizontalAlignment(JTextField.CENTER);
@@ -353,7 +353,7 @@ public class TreeNode extends ModelNode{
 			public void focusLost(FocusEvent e){
 				if (!e.isTemporary()) {
 					if(tempName!=null && !tempName.equals(textName.getText())){ //Text was changed
-						myModel.saveSnapshot("Edit Name");//Add to undo stack
+						myModel.saveSnapshot(myModel.language.base.getString("title.edit_name")); //Add to undo stack (Edit Name)
 					}
 					name=textName.getText();
 					textName.setBorder(null);

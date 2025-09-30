@@ -17,11 +17,14 @@
  */
 
 package math;
+
+import lang.Language;
+
 public class NumericException extends Exception{
 	String message;
 
-	public NumericException(String message,String function) {
-		this.message="Error in "+function+": "+message;
+	public NumericException(String message,String function, Language language) {
+		this.message=language.message.getString("err.error_in")+" "+function+": "+message; //Error in
 	}
 	public String toString(){ 
 		return(message);

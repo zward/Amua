@@ -144,7 +144,7 @@ public class RunReportSummary{
 	}
 
 	public void write(String filepath) throws IOException{
-		if(type==0){treeReportSummary.write(filepath+"_TreeReportSummary.csv");}
+		if(type==0){treeReportSummary.write(filepath+"_TreeReportSummary.csv", myModel.language);}
 		else if(type==1){
 			for(int i=0; i<markovTraceSummary.length; i++){
 				markovTraceSummary[i].write(filepath);

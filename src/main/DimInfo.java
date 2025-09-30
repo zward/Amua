@@ -19,6 +19,9 @@
 package main;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
+import lang.Language;
 
 @XmlRootElement(name="DimInfo")
 public class DimInfo{
@@ -35,15 +38,25 @@ public class DimInfo{
 	@XmlElement public String baseScenario; //baseline strategy
 	@XmlElement public int extendedDim;
 	
+	@XmlTransient
+	public Language language;
+	
 	//Constructor
-	public DimInfo(){
-		dimNames=new String[]{"Cost"};
+	public DimInfo() { //no-argument constructor for XML
+		dimNames=new String[]{"Cost"}; //Default
+		dimSymbols=new String[]{"$"};
+		decimals=new int[]{4};
+	}
+	
+	public DimInfo(Language language){
+		this.language=language;
+		dimNames=new String[]{language.analysis.getString("cea.cost")}; //Cost
 		dimSymbols=new String[]{"$"};
 		decimals=new int[]{4};
 	}
 	
 	public DimInfo copy(){
-		DimInfo copy=new DimInfo();
+		DimInfo copy=new DimInfo(language);
 		int numDim=dimNames.length;
 		copy.dimNames=new String[numDim];
 		copy.dimSymbols=new String[numDim];
@@ -79,10 +92,10 @@ public class DimInfo{
 				outcomes[d]=dimNames[d];
 			}
 			if(analysisType==1){ //CEA
-				outcomes[dimNames.length]="ICER ("+dimNames[costDim]+"/"+dimNames[effectDim]+")";
+				outcomes[dimNames.length]=language.analysis.getString("cea.icer")+" ("+dimNames[costDim]+"/"+dimNames[effectDim]+")"; //ICER
 			}
 			else if(analysisType==2){ //BCA
-				outcomes[dimNames.length]="NMB ("+dimNames[effectDim]+"-"+dimNames[costDim]+")";
+				outcomes[dimNames.length]=language.analysis.getString("bca.nmb")+" ("+dimNames[effectDim]+"-"+dimNames[costDim]+")"; //NMB
 			}
 		}
 		return(outcomes);

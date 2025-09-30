@@ -31,7 +31,7 @@ public class TableCellDisplay extends JScrollPane implements TableCellRenderer{
 	StyledTextPane textPane;
 
 	public TableCellDisplay(AmuaModel myModel) {
-		textPane = new StyledTextPane(myModel);
+		textPane = new StyledTextPane(myModel, myModel.language);
 		getViewport().add(textPane);
 		setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 	}

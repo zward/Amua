@@ -72,36 +72,44 @@ public class MarkovTraceSummary{
 		varNames=traces[0].varNames;
 		//Build Model headers
 		modelTraceRaw=new DefaultTableModel(); modelTraceRounded=new DefaultTableModel();
-		modelTraceRaw.addColumn("Cycle"); modelTraceRounded.addColumn("Cycle");
+		modelTraceRaw.addColumn(myModel.language.base.getString("markov.cycle")); modelTraceRounded.addColumn(myModel.language.base.getString("markov.cycle")); //Cycle
 		for(int s=0; s<numStates; s++){
-			modelTraceRaw.addColumn(stateNames[s]+"_Mean"); modelTraceRaw.addColumn(stateNames[s]+"_LB"); modelTraceRaw.addColumn(stateNames[s]+"_UB");
-			modelTraceRounded.addColumn(stateNames[s]+"_Mean"); modelTraceRounded.addColumn(stateNames[s]+"_LB"); modelTraceRounded.addColumn(stateNames[s]+"_UB");
+			modelTraceRaw.addColumn(stateNames[s]+"_"+myModel.language.math.getString("sum.mean")); modelTraceRounded.addColumn(stateNames[s]+"_"+myModel.language.math.getString("sum.mean")); //Mean
+			modelTraceRaw.addColumn(stateNames[s]+"_"+myModel.language.math.getString("sum.lb")); modelTraceRounded.addColumn(stateNames[s]+"_"+myModel.language.math.getString("sum.lb")); //LB
+			modelTraceRaw.addColumn(stateNames[s]+"_"+myModel.language.math.getString("sum.ub")); modelTraceRounded.addColumn(stateNames[s]+"_"+myModel.language.math.getString("sum.ub")); //UB
+			
 		}
 		for(int d=0; d<numDim; d++){
-			modelTraceRaw.addColumn("Cycle_Mean_"+dimSymbols[d]); modelTraceRaw.addColumn("Cycle_LB_"+dimSymbols[d]); modelTraceRaw.addColumn("Cycle_UB_"+dimSymbols[d]);
-			modelTraceRounded.addColumn("Cycle_Mean_"+dimSymbols[d]); modelTraceRounded.addColumn("Cycle_LB_"+dimSymbols[d]); modelTraceRounded.addColumn("Cycle_UB_"+dimSymbols[d]);
+			modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cycle_mean")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cycle_mean")+"_"+dimSymbols[d]); //Cycle_Mean
+			modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cycle_lb")+"_"+dimSymbols[d]);  modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cycle_lb")+"_"+dimSymbols[d]); //Cycle_LB
+			modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cycle_ub")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cycle_ub")+"_"+dimSymbols[d]); //Cycle_UB
 		}
 		for(int d=0; d<numDim; d++){
-			modelTraceRaw.addColumn("Cum_Mean_"+dimSymbols[d]); modelTraceRaw.addColumn("Cum_LB_"+dimSymbols[d]); modelTraceRaw.addColumn("Cum_UB_"+dimSymbols[d]);
-			modelTraceRounded.addColumn("Cum_Mean_"+dimSymbols[d]); modelTraceRounded.addColumn("Cum_LB_"+dimSymbols[d]); modelTraceRounded.addColumn("Cum_UB_"+dimSymbols[d]);
+			modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cum_mean")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cum_mean")+"_"+dimSymbols[d]); //Cum_Mean
+			modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cum_lb")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cum_lb")+"_"+dimSymbols[d]); //Cum_LB
+			modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cum_ub")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cum_ub")+"_"+dimSymbols[d]); //Cum_UB
 		}
 		//discounted
 		if(discounted){
 			for(int d=0; d<numDim; d++){
-				modelTraceRaw.addColumn("Cycle_Dis_Mean_"+dimSymbols[d]); modelTraceRaw.addColumn("Cycle_Dis_LB_"+dimSymbols[d]); modelTraceRaw.addColumn("Cycle_Dis_UB_"+dimSymbols[d]);
-				modelTraceRounded.addColumn("Cycle_Dis_Mean_"+dimSymbols[d]); modelTraceRounded.addColumn("Cycle_Dis_LB_"+dimSymbols[d]); modelTraceRounded.addColumn("Cycle_Dis_UB_"+dimSymbols[d]);
+				modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cycle_dis_mean")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cycle_dis_mean")+"_"+dimSymbols[d]); //Cycle_Dis_Mean
+				modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cycle_dis_lb")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cycle_dis_lb")+"_"+dimSymbols[d]); //Cycle_Dis_LB
+				modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cycle_dis_ub")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cycle_dis_ub")+"_"+dimSymbols[d]); //Cycle_Dis_UB
 			}
 			for(int d=0; d<numDim; d++){
-				modelTraceRaw.addColumn("Cum_Dis_Mean_"+dimSymbols[d]); modelTraceRaw.addColumn("Cum_Dis_LB_"+dimSymbols[d]); modelTraceRaw.addColumn("Cum_Dis_UB_"+dimSymbols[d]);
-				modelTraceRounded.addColumn("Cum_Dis_Mean_"+dimSymbols[d]); modelTraceRounded.addColumn("Cum_Dis_LB_"+dimSymbols[d]); modelTraceRounded.addColumn("Cum_Dis_UB_"+dimSymbols[d]);
+				modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cum_dis_mean")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cum_dis_mean")+"_"+dimSymbols[d]);
+				modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cum_dis_lb")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cum_dis_lb")+"_"+dimSymbols[d]);
+				modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cum_dis_ub")+"_"+dimSymbols[d]); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cum_dis_ub")+"_"+dimSymbols[d]);
 			}
 		}
 		//variables
 		for(int v=0; v<numVariables; v++) {
-			modelTraceRaw.addColumn(traces[0].varNames[v]+"_Mean"); modelTraceRaw.addColumn(traces[0].varNames[v]+"_LB"); modelTraceRaw.addColumn(traces[0].varNames[v]+"_UB");
-			modelTraceRounded.addColumn(traces[0].varNames[v]+"_Mean"); modelTraceRounded.addColumn(traces[0].varNames[v]+"_LB"); modelTraceRounded.addColumn(traces[0].varNames[v]+"_UB");
+			modelTraceRaw.addColumn(traces[0].varNames[v]+"_"+myModel.language.math.getString("sum.mean")); modelTraceRounded.addColumn(traces[0].varNames[v]+"_"+myModel.language.math.getString("sum.mean")); //Mean
+			modelTraceRaw.addColumn(traces[0].varNames[v]+"_"+myModel.language.math.getString("sum.lb")); modelTraceRounded.addColumn(traces[0].varNames[v]+"_"+myModel.language.math.getString("sum.lb")); //LB
+			modelTraceRaw.addColumn(traces[0].varNames[v]+"_"+myModel.language.math.getString("sum.ub")); modelTraceRounded.addColumn(traces[0].varNames[v]+"_"+myModel.language.math.getString("sum.ub")); //UB
+			
 		}
-		modelTraceRaw.addColumn("Num_Sims"); modelTraceRounded.addColumn("Num_Sims");
+		modelTraceRaw.addColumn(myModel.language.analysis.getString("result.num_sims")); modelTraceRounded.addColumn(myModel.language.analysis.getString("result.num_sims")); //Num_Sims
 		
 		//get max cycles
 		maxCyclesLocal=new int[numTraces];

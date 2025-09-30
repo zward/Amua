@@ -85,7 +85,7 @@ public class frmBatch {
 	DefaultXYDataset chartDataResults, chartDataScatter;
 	JFreeChart chartResults, chartScatter;
 	Paint seriesPaints[];
-	
+
 	JComboBox<String> comboDimensions;
 	JComboBox<String> comboResults;
 	JComboBox<String> comboGroup;
@@ -105,7 +105,7 @@ public class frmBatch {
 	String outcome;
 
 	RunReport reports[];
-	
+
 	public frmBatch(AmuaModel myModel){
 		this.frmThis=this;
 		this.myModel=myModel;
@@ -119,7 +119,7 @@ public class frmBatch {
 	private void initialize() {
 		try{
 			frmBatch = new JFrame();
-			frmBatch.setTitle("Amua - Batch Runs (1st-order uncertainty)");
+			frmBatch.setTitle("Amua - "+myModel.language.base.getString("title.batch_runs")); //Batch Runs (1st-order uncertainty)
 			frmBatch.setIconImage(Toolkit.getDefaultToolkit().getImage(frmBatch.class.getResource("/images/runBatch_128.png")));
 			frmBatch.setBounds(100, 100, 1000, 600);
 			frmBatch.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -144,10 +144,10 @@ public class frmBatch {
 					outcomes[d]=info.dimNames[d];
 				}
 				if(info.analysisType==1){ //CEA
-					outcomes[info.dimNames.length]="ICER ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("cea.icer")+" ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")"; //ICER
 				}
 				else if(info.analysisType==2){ //BCA
-					outcomes[info.dimNames.length]="NMB ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("bca.nmb")+" ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")"; //NMB
 				}
 			}
 
@@ -159,23 +159,24 @@ public class frmBatch {
 			frmBatch.getContentPane().add(tabbedPane, gbc_tabbedPane);
 
 			JPanel panelResults = new JPanel();
-			tabbedPane.addTab("Results", null, panelResults, null);
+			tabbedPane.addTab(myModel.language.analysis.getString("result.results"), null, panelResults, null); //Results
 			GridBagLayout gbl_panelResults = new GridBagLayout();
-			gbl_panelResults.columnWidths = new int[]{264, 371, 0, 0};
-			gbl_panelResults.rowHeights = new int[]{0, 73, 0};
-			gbl_panelResults.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
-			gbl_panelResults.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+			gbl_panelResults.columnWidths = new int[]{86, 50, 110, 207, 162, 0, 0};
+			gbl_panelResults.rowHeights = new int[]{0, 0, 0, 0};
+			gbl_panelResults.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gbl_panelResults.rowWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
 			panelResults.setLayout(gbl_panelResults);
 
 			chartDataResults = new DefaultXYDataset();
-			chartResults = ChartFactory.createScatterPlot(null, "Value", "Density", chartDataResults, PlotOrientation.VERTICAL, true, false, false);
+			chartResults = ChartFactory.createScatterPlot(null, myModel.language.analysis.getString("result.value"), myModel.language.base.getString("plot.density"), 
+					chartDataResults, PlotOrientation.VERTICAL, true, false, false); //Value, Density
 			chartResults.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 			//Draw axes
 			ValueMarker marker = new ValueMarker(0);  // position is the value on the axis
 			marker.setPaint(Color.black);
 			chartResults.getXYPlot().addDomainMarker(marker);
 			chartResults.getXYPlot().addRangeMarker(marker);
-			
+
 			numStrat=myModel.getStrategies();
 			seriesPaints=new Paint[numStrat];
 			DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
@@ -185,69 +186,68 @@ public class frmBatch {
 
 			ChartPanel panelChartResults = new ChartPanel(chartResults,false);
 			GridBagConstraints gbc_panelChartResults = new GridBagConstraints();
-			gbc_panelChartResults.gridwidth = 3;
+			gbc_panelChartResults.gridwidth = 6;
 			gbc_panelChartResults.insets = new Insets(0, 0, 5, 0);
 			gbc_panelChartResults.fill = GridBagConstraints.BOTH;
 			gbc_panelChartResults.gridx = 0;
 			gbc_panelChartResults.gridy = 0;
 			panelResults.add(panelChartResults, gbc_panelChartResults);
-			
+
 			//pop-up menu
 			JPopupMenu popup = panelChartResults.getPopupMenu();
-			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColor = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints, frmThis);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints, frmThis, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
 
-			JPanel panel = new JPanel();
-			panel.setLayout(null);
-			GridBagConstraints gbc_panel = new GridBagConstraints();
-			gbc_panel.gridwidth = 2;
-			gbc_panel.insets = new Insets(0, 0, 0, 5);
-			gbc_panel.fill = GridBagConstraints.BOTH;
-			gbc_panel.gridx = 0;
-			gbc_panel.gridy = 1;
-			panelResults.add(panel, gbc_panel);
-
-			JLabel lblIterations = new JLabel("# Iterations:");
-			lblIterations.setBounds(10, 45, 64, 16);
-			panel.add(lblIterations);
-
-			textIterations = new JTextField();
-			textIterations.setBounds(78, 39, 69, 28);
-			panel.add(textIterations);
-			textIterations.setHorizontalAlignment(SwingConstants.CENTER);
-			textIterations.setText("1000");
-			textIterations.setColumns(10);
-
-			JButton btnRun = new JButton("Run");
-			btnRun.setBounds(167, 39, 90, 28);
-			panel.add(btnRun);
-
-			final JButton btnExport = new JButton("Export");
-			btnExport.setBounds(294, 39, 90, 28);
-			panel.add(btnExport);
-			btnExport.setEnabled(false);
-
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
-			comboDimensions.setBounds(6, 0, 257, 26);
-			panel.add(comboDimensions);
+			GridBagConstraints gbc_comboDimensions = new GridBagConstraints();
+			gbc_comboDimensions.gridwidth = 3;
+			gbc_comboDimensions.fill = GridBagConstraints.HORIZONTAL;
+			gbc_comboDimensions.insets = new Insets(0, 0, 5, 5);
+			gbc_comboDimensions.gridx = 0;
+			gbc_comboDimensions.gridy = 1;
+			panelResults.add(comboDimensions, gbc_comboDimensions);
+
+			comboDimensions.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					updateResultsChart();
+				}
+			});
+			
+			String plotTypes[]=new String[5];
+			plotTypes[0]=myModel.language.base.getString("plot.density"); //Density
+			plotTypes[1]=myModel.language.base.getString("plot.histogram"); //Histogram
+			plotTypes[2]=myModel.language.base.getString("plot.cumulative_distribution"); //Cumulative Distribution
+			plotTypes[3]=myModel.language.base.getString("plot.quantiles"); //Quantiles
+			plotTypes[4]=myModel.language.base.getString("plot.iteration"); //Iteration
 
 			comboResults = new JComboBox<String>();
-			comboResults.setBounds(281, 0, 158, 26);
-			panel.add(comboResults);
+			GridBagConstraints gbc_comboResults = new GridBagConstraints();
+			gbc_comboResults.fill = GridBagConstraints.HORIZONTAL;
+			gbc_comboResults.insets = new Insets(0, 0, 5, 5);
+			gbc_comboResults.gridx = 3;
+			gbc_comboResults.gridy = 1;
+			panelResults.add(comboResults, gbc_comboResults);
 			comboResults.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateResultsChart();
 				}
 			});
-			comboResults.setModel(new DefaultComboBoxModel<String>(new String[] {"Density","Histogram","Cumulative Distribution","Quantiles","Iteration"}));
-			
+			comboResults.setModel(new DefaultComboBoxModel<String>(plotTypes));
+
+
 			comboGroup = new JComboBox<String>();
+			GridBagConstraints gbc_comboGroup = new GridBagConstraints();
+			gbc_comboGroup.fill = GridBagConstraints.HORIZONTAL;
+			gbc_comboGroup.insets = new Insets(0, 0, 5, 5);
+			gbc_comboGroup.gridx = 4;
+			gbc_comboGroup.gridy = 1;
+			panelResults.add(comboGroup, gbc_comboGroup);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateResultsChart();
@@ -255,161 +255,38 @@ public class frmBatch {
 				}
 			});
 			comboGroup.setVisible(false);
-			comboGroup.setBounds(458, 0, 170, 26);
-			panel.add(comboGroup);
+
+			JLabel lblIterations = new JLabel(myModel.language.analysis.getString("sim.num_iterations")+":");
+			GridBagConstraints gbc_lblIterations = new GridBagConstraints();
+			gbc_lblIterations.anchor = GridBagConstraints.EAST;
+			gbc_lblIterations.insets = new Insets(0, 0, 0, 5);
+			gbc_lblIterations.gridx = 0;
+			gbc_lblIterations.gridy = 2;
+			panelResults.add(lblIterations, gbc_lblIterations);
+
+			textIterations = new JTextField();
+			GridBagConstraints gbc_textIterations = new GridBagConstraints();
+			gbc_textIterations.insets = new Insets(0, 0, 0, 5);
+			gbc_textIterations.gridx = 1;
+			gbc_textIterations.gridy = 2;
+			panelResults.add(textIterations, gbc_textIterations);
+			textIterations.setHorizontalAlignment(SwingConstants.CENTER);
+			textIterations.setText("1000");
+			textIterations.setColumns(5);
+
+			JButton btnRun = new JButton(myModel.language.base.getString("menu.run"));
+			GridBagConstraints gbc_btnRun = new GridBagConstraints();
+			gbc_btnRun.insets = new Insets(0, 0, 0, 5);
+			gbc_btnRun.gridx = 2;
+			gbc_btnRun.gridy = 2;
+			panelResults.add(btnRun, gbc_btnRun);
 			
-			if(myModel.simType==1 && myModel.reportSubgroups){
-				numSubgroups=myModel.subgroupNames.size();
-				subgroupNames=new String[numSubgroups+1];
-				subgroupNames[0]="Overall";
-				for(int i=0; i<numSubgroups; i++){
-					subgroupNames[i+1]=myModel.subgroupNames.get(i);
-				}
-				comboGroup.setModel(new DefaultComboBoxModel(subgroupNames));
-				comboGroup.setVisible(true);
-			}
 			
-			comboDimensions.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					updateResultsChart();
-				}
-			});
-			btnExport.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					try{
-						//Show save as dialog
-						JFileChooser fc=new JFileChooser(myModel.filepath);
-						fc.setAcceptAllFileFilterUsed(false);
-						fc.setFileFilter(new CSVFilter());
-
-						fc.setDialogTitle("Export Batch Results");
-						fc.setApproveButtonText("Export");
-
-						int returnVal = fc.showSaveDialog(frmBatch);
-						if (returnVal == JFileChooser.APPROVE_OPTION) {
-							
-							File file = fc.getSelectedFile();
-							String path=file.getAbsolutePath();
-							path=path.replaceAll(".csv", "");
-							//Open file for writing
-							FileWriter fstream = new FileWriter(path+".csv"); //Create new file
-							BufferedWriter out = new BufferedWriter(fstream);
-
-							//Headers
-							DimInfo info=myModel.dimInfo;
-							int numDim=info.dimNames.length;
-							int analysisType=info.analysisType;
-							int numStrat=myModel.strategyNames.length;
-							int group=0; //overall
-							if(comboGroup.isVisible()){group=comboGroup.getSelectedIndex();}
-							
-							out.write("Iteration");
-							for(int d=0; d<numDim; d++){ //EVs
-								out.write(","+info.dimNames[d]);
-								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
-							}
-							if(analysisType>0){ //CEA or BCA
-								if(analysisType==1){out.write(",ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
-								else if(analysisType==2){out.write(",NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
-								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
-							}
-							out.newLine();
-
-							//Results
-							int numPoints=dataResultsIter[group][0][0][0].length;
-							for(int i=0; i<numPoints; i++){
-								out.write((i+1)+""); //Iteration
-								//Outcomes
-								for(int d=0; d<numDim; d++){ //EVs
-									out.write(",");
-									for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][d][s][1][i]);}
-								}
-								if(analysisType>0){
-									out.write(",");
-									if(analysisType==1){ //CEA
-										for(int s=0; s<numStrat; s++){
-											double icer=dataResultsIter[group][numDim][s][1][i];
-											if(!Double.isNaN(icer)){out.write(","+icer);} //valid ICER
-											else{out.write(","+CEAnotes[group][s][i]);} //invalid ICER
-										}
-									}
-									else if(analysisType==2){ //BCA
-										for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][numDim][s][1][i]);}
-									}
-								}
-
-								out.newLine();
-							}
-							out.close();
-
-							
-							//Individual results
-							if(myModel.simType==1 && myModel.displayIndResults==true){
-								FileWriter fstream2 = new FileWriter(path+"_IndResults.csv"); //Create new file
-								BufferedWriter out2 = new BufferedWriter(fstream2);
-								
-								int numVars=myModel.variables.size();
-								
-								//Headers
-								String est[]=new String[]{"Mean","SD","Min","Q1","Median","Q3","Max"};
-								
-								out2.write("Iteration,Strategy");
-								for(int d=0; d<numDim; d++){
-									for(int j=0; j<7; j++){
-										out2.write(","+myModel.dimInfo.dimNames[d]+"_"+est[j]);
-									}
-								}
-								for(int v=0; v<numVars; v++){
-									for(int j=0; j<7; j++){
-										out2.write(","+myModel.variables.get(v).name+"_"+est[j]);
-									}
-								}
-								out2.newLine();
-								
-								for(int r=0; r<reports.length; r++){
-									for(int s=0; s<numStrat; s++){
-										out2.write(r+","+myModel.strategyNames[s]); 
-										MicroStats curStats=reports[r].microStats.get(s);
-										for(int d=0; d<numDim; d++){
-											out2.write(","+curStats.outcomesMean[d]);
-											out2.write(","+curStats.outcomesSD[d]);
-											out2.write(","+curStats.outcomesMin[d]);
-											out2.write(","+curStats.outcomesQ1[d]);
-											out2.write(","+curStats.outcomesMed[d]);
-											out2.write(","+curStats.outcomesQ3[d]);
-											out2.write(","+curStats.outcomesMax[d]);
-										}
-										for(int v=0; v<numVars; v++){
-											out2.write(","+curStats.varsMean[v]);
-											out2.write(","+curStats.varsSD[v]);
-											out2.write(","+curStats.varsMin[v]);
-											out2.write(","+curStats.varsQ1[v]);
-											out2.write(","+curStats.varsMed[v]);
-											out2.write(","+curStats.varsQ3[v]);
-											out2.write(","+curStats.varsMax[v]);
-										}
-										out2.newLine();
-									}
-								}
-							
-								out2.close();
-							}
-							
-							JOptionPane.showMessageDialog(frmBatch, "Exported!");
-						}
-
-
-					}catch(Exception ex){
-						ex.printStackTrace();
-						JOptionPane.showMessageDialog(frmBatch, ex.getMessage());
-						myModel.errorLog.recordError(ex);
-					}
-				}
-			});
+			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export"));
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmBatch, "Batch Runs", "Running", 0, 100);
+					final ProgressMonitor progress=new ProgressMonitor(frmBatch, myModel.language.base.getString("menu.batch_runs"), myModel.language.message.getString("info.running"), 0, 100); //Batch Runs, Running
 
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -420,7 +297,7 @@ public class frmBatch {
 								ArrayList<String> errorsBase=myModel.parseModel();
 
 								if(errorsBase.size()>0){
-									JOptionPane.showMessageDialog(frmBatch, "Errors in base case model!");
+									JOptionPane.showMessageDialog(frmBatch, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 								}
 								else{
 									boolean cancelled=false;
@@ -442,15 +319,15 @@ public class frmBatch {
 									dataScatterRel=new double[numSubgroups+1][numStrat][2][numIterations];
 
 									reports=new RunReport[numIterations];
-								
+
 									myModel.evaluateParameters(); //get parameters
-									
+
 									boolean origShowTrace = true;
 									if(myModel.type==1){
 										origShowTrace=myModel.markov.showTrace;
 										myModel.markov.showTrace=false; //don't show individual trace
 									}
-									
+
 									long startTime=System.currentTimeMillis();
 
 									for(int n=0; n<numIterations; n++){
@@ -464,11 +341,11 @@ public class frmBatch {
 										if(seconds.length()<2){seconds="0"+seconds;}
 										if(minutes.length()<2){minutes="0"+minutes;}
 										progress.setProgress(n+1);
-										progress.setNote("Time left: "+minutes+":"+seconds);
+										progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 
 										//Run model
 										reports[n]=myModel.runModel(null, false);
-										
+
 
 										//Get EVs
 										for(int d=0; d<numDim; d++){
@@ -557,7 +434,7 @@ public class frmBatch {
 									if(myModel.type==1){
 										myModel.markov.showTrace=origShowTrace; //reset
 									}
-																		
+
 									if(cancelled==false){
 										double meanResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];
 										double lbResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];
@@ -622,13 +499,13 @@ public class frmBatch {
 													for(int g=0; g<numSubgroups; g++){
 														traceSummaries[g+1]=new MarkovTraceSummary(curTraces[g+1]);
 													}
-													frmTraceSummary showSummary=new frmTraceSummary(traceSummaries,myModel.errorLog,subgroupNames);
+													frmTraceSummary showSummary=new frmTraceSummary(traceSummaries,myModel.errorLog,subgroupNames,myModel.language);
 													showSummary.frmTraceSummary.setVisible(true);
 												}
 											}
 											else {
 												RunReportSummary reportSummary=new RunReportSummary(reports);
-												frmTraceSummaryMulti window=new frmTraceSummaryMulti(reportSummary,myModel.errorLog);
+												frmTraceSummaryMulti window=new frmTraceSummaryMulti(reportSummary,myModel.errorLog,myModel.language);
 												window.frmTraceSummaryMulti.setVisible(true);
 											}
 										}
@@ -636,17 +513,23 @@ public class frmBatch {
 										//Print results summary to console
 										Console console=myModel.mainForm.console;
 										myModel.printSimInfo(console);
-										console.print("Batch Iterations:\t"+numIterations+"\n\n");
+										console.print(myModel.language.analysis.getString("sim.batch_iterations")+":\t"+numIterations+"\n\n"); //Batch Iterations
 										boolean colTypes[]=new boolean[]{false,false,true,true,true}; //is column number (true), or text (false)
 										ConsoleTable curTable=new ConsoleTable(console,colTypes);
-										String headers[]=new String[]{"Strategy","Outcome","Mean","95% LB","95% UB"};
+										//String headers[]=new String[]{"Strategy","Outcome","Mean","95% LB","95% UB"};
+										String headers[]=new String[5];
+										headers[0]=myModel.language.analysis.getString("gen.strategy"); //Strategy
+										headers[1]=myModel.language.analysis.getString("result.outcome"); //Outcome
+										headers[2]=myModel.language.math.getString("sum.mean"); //Mean
+										headers[3]=myModel.language.math.getString("sum.95_lb"); //95% LB
+										headers[4]=myModel.language.math.getString("sum.95_ub"); //95% UB
 										curTable.addRow(headers);
 										//strategy results
 										for(int s=0; s<numStrat; s++){
 											String stratName=myModel.strategyNames[s];
 											for(int d=0; d<numDim; d++){
 												String dimName=myModel.dimInfo.dimNames[d];
-												if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" (Dis)";}
+												if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" "+myModel.language.analysis.getString("result.dis");} //(Dis)
 												double mean=MathUtils.round(meanResults[0][d][s],myModel.dimInfo.decimals[d]);
 												double lb=MathUtils.round(lbResults[0][d][s],myModel.dimInfo.decimals[d]);
 												double ub=MathUtils.round(ubResults[0][d][s],myModel.dimInfo.decimals[d]);
@@ -655,17 +538,18 @@ public class frmBatch {
 											}
 										}
 										curTable.print();
-										
+
 										//subgroups
 										for(int g=0; g<numSubgroups; g++){
-											console.print("\nSubgroup Results: "+reports[0].subgroupNames[g]+"\n");
+											String curLbl=myModel.language.analysis.getString("result.subgroup_results");
+											console.print("\n"+curLbl+": "+reports[0].subgroupNames[g]+"\n"); //Subgroup Results
 											curTable=new ConsoleTable(console,colTypes);
 											curTable.addRow(headers);
 											for(int s=0; s<numStrat; s++){
 												String stratName=myModel.strategyNames[s];
 												for(int d=0; d<numDim; d++){
 													String dimName=myModel.dimInfo.dimNames[d];
-													if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" (Dis)";}
+													if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" "+myModel.language.analysis.getString("result.dis");} //(Dis)
 													double mean=MathUtils.round(meanResults[g+1][d][s],myModel.dimInfo.decimals[d]);
 													double lb=MathUtils.round(lbResults[g+1][d][s],myModel.dimInfo.decimals[d]);
 													double ub=MathUtils.round(ubResults[g+1][d][s],myModel.dimInfo.decimals[d]);
@@ -675,19 +559,20 @@ public class frmBatch {
 											}
 											curTable.print();
 										}
-										
+
 										if(myModel.simType==1 && myModel.displayIndResults==true){
-											console.print("\nIndividual-level Results:\n");
+											console.print("\n"+myModel.language.analysis.getString("result.individual_level_results")+":\n"); //Individual-level Results
 											RunReportSummary summary=new RunReportSummary(reports);
 											for(int s=0; s<numStrat; s++){
-												console.print("Strategy: "+myModel.strategyNames[s]+"\n");
+												console.print(myModel.language.analysis.getString("gen.strategy")+": "+myModel.strategyNames[s]+"\n"); //Strategy
 												summary.microStatsSummary[s].printSummary(console);
 											}
 											//subgroups
 											for(int g=0; g<numSubgroups; g++){
-												console.print("\nSubgroup Results: "+summary.subgroupNames[g]+"\n");
+												String curLbl=myModel.language.analysis.getString("result.subgroup_results");
+												console.print("\n"+curLbl+": "+summary.subgroupNames[g]+"\n"); //Subgroup Results
 												for(int s=0; s<numStrat; s++){
-													console.print("Strategy: "+myModel.strategyNames[s]+"\n");
+													console.print(myModel.language.analysis.getString("gen.strategy")+": "+myModel.strategyNames[s]+"\n"); //Strategy
 													summary.microStatsSummaryGroup[g][s].printSummary(console);
 												}
 											}
@@ -711,8 +596,169 @@ public class frmBatch {
 				}
 			});
 
+			
+			GridBagConstraints gbc_btnExport = new GridBagConstraints();
+			gbc_btnExport.insets = new Insets(0, 0, 0, 5);
+			gbc_btnExport.gridx = 3;
+			gbc_btnExport.gridy = 2;
+			panelResults.add(btnExport, gbc_btnExport);
+			btnExport.setEnabled(false);
+			btnExport.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try{
+						//Show save as dialog
+						JFileChooser fc=new JFileChooser(myModel.filepath);
+						fc.setAcceptAllFileFilterUsed(false);
+						fc.setFileFilter(new CSVFilter(myModel.language));
+
+						fc.setDialogTitle(myModel.language.base.getString("title.export_batch_results")); //Export Batch Results
+						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
+
+						int returnVal = fc.showSaveDialog(frmBatch);
+						if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+							File file = fc.getSelectedFile();
+							String path=file.getAbsolutePath();
+							path=path.replaceAll(".csv", "");
+							//Open file for writing
+							FileWriter fstream = new FileWriter(path+".csv"); //Create new file
+							BufferedWriter out = new BufferedWriter(fstream);
+
+							//Headers
+							DimInfo info=myModel.dimInfo;
+							int numDim=info.dimNames.length;
+							int analysisType=info.analysisType;
+							int numStrat=myModel.strategyNames.length;
+							int group=0; //overall
+							if(comboGroup.isVisible()){group=comboGroup.getSelectedIndex();}
+
+							out.write(myModel.language.base.getString("plot.iteration")); //Iteration
+							for(int d=0; d<numDim; d++){ //EVs
+								out.write(","+info.dimNames[d]);
+								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
+							}
+							if(analysisType>0){ //CEA or BCA
+								if(analysisType==1){out.write(","+myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");} //ICER
+								else if(analysisType==2){out.write(","+myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");} //NMB
+								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
+							}
+							out.newLine();
+
+							//Results
+							int numPoints=dataResultsIter[group][0][0][0].length;
+							for(int i=0; i<numPoints; i++){
+								out.write((i+1)+""); //Iteration
+								//Outcomes
+								for(int d=0; d<numDim; d++){ //EVs
+									out.write(",");
+									for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][d][s][1][i]);}
+								}
+								if(analysisType>0){
+									out.write(",");
+									if(analysisType==1){ //CEA
+										for(int s=0; s<numStrat; s++){
+											double icer=dataResultsIter[group][numDim][s][1][i];
+											if(!Double.isNaN(icer)){out.write(","+icer);} //valid ICER
+											else{out.write(","+CEAnotes[group][s][i]);} //invalid ICER
+										}
+									}
+									else if(analysisType==2){ //BCA
+										for(int s=0; s<numStrat; s++){out.write(","+dataResultsIter[group][numDim][s][1][i]);}
+									}
+								}
+
+								out.newLine();
+							}
+							out.close();
+
+
+							//Individual results
+							if(myModel.simType==1 && myModel.displayIndResults==true){
+								FileWriter fstream2 = new FileWriter(path+"_"+myModel.language.analysis.getString("result.IndResults")+".csv"); //Create new file (IndResults)
+								BufferedWriter out2 = new BufferedWriter(fstream2);
+
+								int numVars=myModel.variables.size();
+
+								//Headers
+								//String est[]=new String[]{"Mean","SD","Min","Q1","Median","Q3","Max"};
+								String est[]=new String[7];
+								est[0]=myModel.language.math.getString("sum.mean"); //Mean
+								est[1]=myModel.language.math.getString("sum.SD"); //SD
+								est[2]=myModel.language.math.getString("sum.min"); //Min
+								est[3]=myModel.language.math.getString("sum.q1"); //Q1
+								est[4]=myModel.language.math.getString("sum.median"); //Median
+								est[5]=myModel.language.math.getString("sum.q3"); //Q3
+								est[6]=myModel.language.math.getString("sum.max"); //Max								
+
+								out2.write(myModel.language.base.getString("plot.iteration")+","+myModel.language.analysis.getString("gen.strategy")); //Iteration, Strategy
+								for(int d=0; d<numDim; d++){
+									for(int j=0; j<7; j++){
+										out2.write(","+myModel.dimInfo.dimNames[d]+"_"+est[j]);
+									}
+								}
+								for(int v=0; v<numVars; v++){
+									for(int j=0; j<7; j++){
+										out2.write(","+myModel.variables.get(v).name+"_"+est[j]);
+									}
+								}
+								out2.newLine();
+
+								for(int r=0; r<reports.length; r++){
+									for(int s=0; s<numStrat; s++){
+										out2.write(r+","+myModel.strategyNames[s]); 
+										MicroStats curStats=reports[r].microStats.get(s);
+										for(int d=0; d<numDim; d++){
+											out2.write(","+curStats.outcomesMean[d]);
+											out2.write(","+curStats.outcomesSD[d]);
+											out2.write(","+curStats.outcomesMin[d]);
+											out2.write(","+curStats.outcomesQ1[d]);
+											out2.write(","+curStats.outcomesMed[d]);
+											out2.write(","+curStats.outcomesQ3[d]);
+											out2.write(","+curStats.outcomesMax[d]);
+										}
+										for(int v=0; v<numVars; v++){
+											out2.write(","+curStats.varsMean[v]);
+											out2.write(","+curStats.varsSD[v]);
+											out2.write(","+curStats.varsMin[v]);
+											out2.write(","+curStats.varsQ1[v]);
+											out2.write(","+curStats.varsMed[v]);
+											out2.write(","+curStats.varsQ3[v]);
+											out2.write(","+curStats.varsMax[v]);
+										}
+										out2.newLine();
+									}
+								}
+
+								out2.close();
+							}
+
+							JOptionPane.showMessageDialog(frmBatch, myModel.language.message.getString("info.exported")); //Exported!
+						}
+
+
+					}catch(Exception ex){
+						ex.printStackTrace();
+						JOptionPane.showMessageDialog(frmBatch, ex.getMessage());
+						myModel.errorLog.recordError(ex);
+					}
+				}
+			});
+			//comboResults.setModel(new DefaultComboBoxModel<String>(new String[] {"Density","Histogram","Cumulative Distribution","Quantiles","Iteration"}));
+			
+
+			if(myModel.simType==1 && myModel.reportSubgroups){
+				numSubgroups=myModel.subgroupNames.size();
+				subgroupNames=new String[numSubgroups+1];
+				subgroupNames[0]=myModel.language.analysis.getString("result.overall"); //Overall
+				for(int i=0; i<numSubgroups; i++){
+					subgroupNames[i+1]=myModel.subgroupNames.get(i);
+				}
+				comboGroup.setModel(new DefaultComboBoxModel(subgroupNames));
+				comboGroup.setVisible(true);
+			}
+
 			JPanel panelScatter = new JPanel();
-			tabbedPane.addTab("Scatter", null, panelScatter, null); 
+			tabbedPane.addTab(myModel.language.base.getString("plot.scatter"), null, panelScatter, null); //Scatter
 			tabbedPane.setEnabledAt(1, false);
 
 			chartDataScatter = new DefaultXYDataset();
@@ -735,7 +781,11 @@ public class frmBatch {
 					updateScatter();
 				}
 			});
-			comboScatterType.setModel(new DefaultComboBoxModel(new String[] {"Absolute Magnitude", "Relative to Baseline"}));
+			//comboScatterType.setModel(new DefaultComboBoxModel(new String[] {"Absolute Magnitude", "Relative to Baseline"}));
+			String plotType[]=new String[2];
+			plotType[0]=myModel.language.base.getString("plot.absolute_magnitude"); //Absolute Magnitude
+			plotType[1]=myModel.language.base.getString("plot.relative_baseline"); //Relative to Baseline
+
 			GridBagConstraints gbc_comboScatterType = new GridBagConstraints();
 			gbc_comboScatterType.fill = GridBagConstraints.HORIZONTAL;
 			gbc_comboScatterType.insets = new Insets(0, 0, 5, 5);
@@ -751,13 +801,13 @@ public class frmBatch {
 			gbc_panelChartScatter.gridy = 1;
 			panelScatter.add(panelChartScatter, gbc_panelChartScatter);
 			panelChartScatter.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-			
+
 			//pop-up menu
 			popup = panelChartScatter.getPopupMenu();
-			JMenuItem mntmChangeColorScatter = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColorScatter = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColorScatter.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chartScatter, chartDataScatter, seriesPaints, frmThis);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartScatter, chartDataScatter, seriesPaints, frmThis, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -778,13 +828,13 @@ public class frmBatch {
 				analysisType=myModel.dimInfo.analysisType;
 			}
 		}
-		if(analysisType==0){outcome="EV ("+info.dimSymbols[dim]+")";}
-		else if(analysisType==1){outcome="ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")";}
-		else if(analysisType==2){outcome="NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")";}
-		
+		if(analysisType==0){outcome=myModel.language.analysis.getString("result.ev")+" ("+info.dimSymbols[dim]+")";} //EV
+		else if(analysisType==1){outcome=myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")";} //ICER
+		else if(analysisType==2){outcome=myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")";} //NMB
+
 		int group=0; //overall
 		if(comboGroup.isVisible()){group=comboGroup.getSelectedIndex();}
-		
+
 		if(chartDataResults.getSeriesCount()>0){
 			for(int s=0; s<numStrat; s++){
 				chartDataResults.removeSeries(myModel.strategyNames[s]);
@@ -805,39 +855,39 @@ public class frmBatch {
 		}
 
 		if(selected==0){ //Density
-			chartResults.getXYPlot().getDomainAxis().setLabel("Value");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Density");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("plot.density")); //Density
 			for(int s=0; s<numStrat; s++){
 				double kde[][]=KernelSmooth.density(dataResultsIter[group][dim][s][1], 100);
 				chartDataResults.addSeries(myModel.strategyNames[s],kde);
 			}
 		}
 		else if(selected==1){ //Histogram
-			chartResults.getXYPlot().getDomainAxis().setLabel("Value");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Frequency");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("plot.frequency")); //Frequency
 			for(int s=0; s<numStrat; s++){
 				double kde[][]=KernelSmooth.histogram(dataResultsIter[group][dim][s][1], 100, 10);
 				chartDataResults.addSeries(myModel.strategyNames[s],kde);
 			}
 		}
 		else if(selected==2){ //CDF
-			chartResults.getXYPlot().getDomainAxis().setLabel("Value");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Cumulative Distribution");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("plot.cumulative_distribution")); //Cumulative Distribution
 			for(int s=0; s<numStrat; s++){
 				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsCumDens[group][dim][s]);
 			}
 
 		}
 		else if(selected==3){ //Quantile
-			chartResults.getXYPlot().getDomainAxis().setLabel("Quantile");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Value");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.base.getString("plot.quantile")); //Quantile
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
 			for(int s=0; s<numStrat; s++){
 				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsVal[group][dim][s]);
 			}
 		}
 		else if(selected==4){ //Iteration
-			chartResults.getXYPlot().getDomainAxis().setLabel("Iteration");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Value");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.base.getString("plot.iteration")); //Iteration
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
 			for(int s=0; s<numStrat; s++){
 				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsIter[group][dim][s]);
 			}
@@ -869,12 +919,12 @@ public class frmBatch {
 			}
 		}
 	}
-	
+
 	public void updateStratSeriesColor(int s) {
 		//results
 		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) chartResults.getXYPlot().getRenderer();
 		renderer.setSeriesPaint(s, seriesPaints[s]);
-		
+
 		//scatter
 		renderer = (XYLineAndShapeRenderer) chartScatter.getXYPlot().getRenderer();
 		renderer.setSeriesPaint(s, seriesPaints[s]);
@@ -885,7 +935,7 @@ public class frmBatch {
 		int b=(int) (curCol.getBlue()*0.6);
 		Color newCol=new Color(r, g, b);
 		renderer.setSeriesPaint(numStrat+s, newCol);
-		*/
-		
+		 */
+
 	}
 }

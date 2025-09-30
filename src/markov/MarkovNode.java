@@ -115,7 +115,7 @@ public class MarkovNode extends ModelNode{
 			width*=1.5;
 			height*=1.5;
 			stateNames=new ArrayList<String>();
-			terminationCondition="[termination]";
+			terminationCondition="["+myModel.language.base.getString("markov.termination")+"]"; //termination
 		}
 		else if(type==2){ //Markov state
 			width*=4; //inherits width 1.5 and height 1.5 from parent Markov chain
@@ -123,11 +123,11 @@ public class MarkovNode extends ModelNode{
 			rewards=new String[numDimensions]; Arrays.fill(rewards,"0");
 			//initialize state name
 			if(name==null){
-				String testName="State 1";
+				String testName=myModel.language.base.getString("markov.state")+" 1"; //State
 				int num=1;
 				while(chain.stateNames.contains(testName)){
 					num++;
-					testName="State "+num;
+					testName=myModel.language.base.getString("markov.state")+" "+num; //State
 				}
 				name=testName;
 				chain.stateNames.add(name);
@@ -534,7 +534,7 @@ public class MarkovNode extends ModelNode{
 	}
 
 	private void displayName(){
-		textName=new JTextField("Name");
+		textName=new JTextField(myModel.language.base.getString("object.name")); //Name
 		if(name!=null){textName.setText(name);}
 		textName.setBorder(null);
 		textName.setHorizontalAlignment(JTextField.CENTER);
@@ -574,7 +574,7 @@ public class MarkovNode extends ModelNode{
 	public void updateTermination(String checkCondition){
 		if(!checkCondition.equals(terminationCondition)){ //condition was changed
 			if(tempTermination!=null){
-				panel.saveSnapshot("Edit Termination Condition");//Add to undo stack
+				panel.saveSnapshot(myModel.language.base.getString("title.edit_termination_condition")); //Add to undo stack (Edit Termination Condition)
 			}
 			terminationCondition=checkCondition;
 			textTermination.setText(terminationCondition);
@@ -589,7 +589,7 @@ public class MarkovNode extends ModelNode{
 		if(tempName==null){ //first edit
 			if(type==2){ //Validate state name
 				if(chain.stateNames.contains(checkName)){ //duplicate name
-					JOptionPane.showMessageDialog(panel, "Duplicate state name!");
+					JOptionPane.showMessageDialog(panel, myModel.language.message.getString("err.duplicate_state_name")); //Duplicate state name!
 					name=tempName;
 				}
 				else{ //unique
@@ -605,11 +605,11 @@ public class MarkovNode extends ModelNode{
 			if(type==2){ //Validate state name
 				textName.setForeground(Color.BLACK);
 				if(chain.stateNames.contains(checkName)){ //duplicate name
-					JOptionPane.showMessageDialog(panel, "Duplicate state name!");
+					JOptionPane.showMessageDialog(panel, myModel.language.message.getString("err.duplicate_state_name")); //Duplicate state name!
 					name=tempName;
 				}
 				else{ //unique
-					panel.saveSnapshot("Edit Name");//Add to undo stack
+					panel.saveSnapshot(myModel.language.base.getString("title.edit_name")); //Add to undo stack (Edit Name)
 					int prevIndex=chain.stateNames.indexOf(tempName);
 					if(prevIndex!=-1){chain.stateNames.remove(prevIndex);} //remove previous name
 					chain.stateNames.add(checkName);
@@ -617,7 +617,7 @@ public class MarkovNode extends ModelNode{
 				}
 			}
 			else{ //not State, update name
-				panel.saveSnapshot("Edit Name");//Add to undo stack
+				panel.saveSnapshot(myModel.language.base.getString("title.edit_name")); //Add to undo stack (Edit Name)
 				name=checkName;
 			}
 		}
@@ -953,7 +953,7 @@ public class MarkovNode extends ModelNode{
 				if (!e.isTemporary()) { //Validate
 					transition=(String)comboTransition.getSelectedItem();
 					if(tempTransition!=null && !tempTransition.equals(transition)){ //Combo was changed
-						panel.saveSnapshot("Edit Transition");//Add to undo stack
+						panel.saveSnapshot(myModel.language.base.getString("title.edit_transition")); //Add to undo stack (Edit Transition)
 					}
 					comboTransition.setBorder(null);
 				}
@@ -1031,6 +1031,7 @@ public class MarkovNode extends ModelNode{
 		node.terminationCondition=terminationCondition;
 		if(type==1){ //chain
 			node.expectedValues=new double[numDimensions];
+			node.expectedValuesDis=new double[numDimensions];
 		}
 		for(int i=0; i<numDimensions; i++){
 			node.cost[i]=cost[i];

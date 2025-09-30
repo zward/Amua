@@ -171,7 +171,7 @@ public class JavaModel{
 			else if(curText.charAt(0)=='['){ //matrix
 				int close=Interpreter.findRightBracket(curText,0);
 				String strMatrix=curText.substring(1,close);
-				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel).getNumeric()[0];
+				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel,myModel.language).getNumeric()[0];
 				//write out
 				if(matrix.nrow>1){exportText+="new double[][]"+writeMatrix(matrix.matrix);}
 				else{exportText+="new double[]"+writeArray(matrix.matrix[0]);}
@@ -203,9 +203,9 @@ public class JavaModel{
 
 	private String initNumeric(String name, Numeric value) throws NumericException{
 		String init="";
-		if(value.isDouble()){init="		double "+name+"="+value.getDouble()+";";}
-		else if(value.isInteger()){init="		double "+name+"="+value.getInt()+";";} //initialize as double anyways
-		else if(value.isBoolean()){init="		boolean "+name+"="+value.getBool()+";";}
+		if(value.isDouble()){init="		double "+name+"="+value.getDouble(myModel.language)+";";}
+		else if(value.isInteger()){init="		double "+name+"="+value.getInt(myModel.language)+";";} //initialize as double anyways
+		else if(value.isBoolean()){init="		boolean "+name+"="+value.getBool(myModel.language)+";";}
 		else if(value.isMatrix()){init="		double[][] "+name+"="+writeMatrix(value.matrix)+";";}
 		return(init);
 	}

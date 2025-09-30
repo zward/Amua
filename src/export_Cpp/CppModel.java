@@ -171,7 +171,7 @@ public class CppModel{
 			else if(curText.charAt(0)=='['){ //anonymous matrix
 				int close=Interpreter.findRightBracket(curText,0);
 				String strMatrix=curText.substring(1,close);
-				Numeric matrix=Interpreter.parseMatrix(strMatrix,myModel).getNumeric()[0];
+				Numeric matrix=Interpreter.parseMatrix(strMatrix, myModel, myModel.language).getNumeric()[0];
 				//write out
 				if(matrix.nrow==1){exportText+=writeArray(matrix.matrix[0]);} //row vector
 				else{
@@ -212,9 +212,9 @@ public class CppModel{
 
 	private String initNumeric(String name, Numeric value) throws NumericException{
 		String init="";
-		if(value.isDouble()){init="	double "+name+"="+value.getDouble()+";";}
-		else if(value.isInteger()){init="	double "+name+"="+value.getInt()+";";} //initialize as double anyways
-		else if(value.isBoolean()){init="	bool "+name+"="+value.getBool()+";";}
+		if(value.isDouble()){init="	double "+name+"="+value.getDouble(myModel.language)+";";}
+		else if(value.isInteger()){init="	double "+name+"="+value.getInt(myModel.language)+";";} //initialize as double anyways
+		else if(value.isBoolean()){init="	bool "+name+"="+value.getBool(myModel.language)+";";}
 		else if(value.isMatrix()){
 			if(value.nrow==1){init="	double* "+name+"="+writeArray(value.matrix[0])+";";} //row vector
 			else{

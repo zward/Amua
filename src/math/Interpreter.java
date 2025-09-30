@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 import base.AmuaModel;
+import lang.Language;
 import main.Parameter;
 import main.Table;
 import main.Variable;
@@ -30,23 +31,23 @@ import math.Distributions;
 public final class Interpreter{
 
 	//Single-thread, defaults to thread 0
-	public static Numeric evaluate(String expression, AmuaModel myModel, boolean sample) throws Exception{
-		return(evaluate(expression,myModel,sample,0,1));
+	public static Numeric evaluate(String expression, AmuaModel myModel, boolean sample, Language language) throws Exception{
+		return(evaluate(expression,myModel,sample,0,1,language));
 	}
 	
 	//Thread-specific
-	public static Numeric evaluate(String expression,AmuaModel myModel,boolean sample,int curThread, int numThreads) throws Exception{
-		Token tokens[]=parse(expression,myModel);
-		Numeric result=evaluateTokens(tokens,curThread,sample);
+	public static Numeric evaluate(String expression,AmuaModel myModel,boolean sample,int curThread, int numThreads, Language language) throws Exception{
+		Token tokens[]=parse(expression, myModel, language);
+		Numeric result=evaluateTokens(tokens,curThread,sample,language);
 		return(result);
 	}
 	
 	/**
 	 * Parse expression into array of Tokens
 	 */
-	public static Token[] parse(String expression,AmuaModel myModel) throws Exception{
-		ArrayList<Token> tokens=tokenize(expression,myModel);
-		Token[] output=shuntTokens(tokens);
+	public static Token[] parse(String expression, AmuaModel myModel, Language language) throws Exception{
+		ArrayList<Token> tokens=tokenize(expression, myModel, language);
+		Token[] output=shuntTokens(tokens, language);
 		return(output);
 	}
 	
@@ -55,7 +56,7 @@ public final class Interpreter{
 	 * @return
 	 * @throws NumericException 
 	 */
-	public static Numeric evaluateTokens(Token tokens[], int curThread, boolean sample) throws NumericException, Exception{
+	public static Numeric evaluateTokens(Token tokens[], int curThread, boolean sample, Language language) throws NumericException, Exception{
 		int numTokens=tokens.length;
 		Stack<Numeric> operands=new Stack<Numeric>();
 		for(int i=0; i<numTokens; i++){
@@ -64,7 +65,7 @@ public final class Interpreter{
 				String operator=curToken.word;
 				Numeric operand_2=operands.pop();
 				Numeric operand_1=operands.pop();
-				Numeric result=Operators.evaluate(operator,operand_1,operand_2);
+				Numeric result=Operators.evaluate(operator,operand_1,operand_2,language);
 				operands.push(result);
 			}
 			else{ //operand
@@ -118,28 +119,28 @@ public final class Interpreter{
 		return(rows);
 	}
 	
-	private static Token[][] parseArgs(String strArgs, AmuaModel myModel) throws Exception{
+	private static Token[][] parseArgs(String strArgs, AmuaModel myModel, Language language) throws Exception{
 		String args[]=splitArgs(strArgs);
 		Token argsToken[][]=new Token[args.length][];
 		for(int i=0; i<args.length; i++){
-			argsToken[i]=parse(args[i],myModel);
+			argsToken[i]=parse(args[i], myModel, language);
 		}
 		return(argsToken);
 	}
 	
-	public static Token parseMatrix(String strMatrix, AmuaModel myModel) throws Exception{
+	public static Token parseMatrix(String strMatrix, AmuaModel myModel, Language language) throws Exception{
 		//Get dimensions
 		String rows[];
 		if(strMatrix.contains("[")){rows=splitRows(strMatrix);}
 		else{rows=new String[]{strMatrix};}
-		Token matrix=new Token(strMatrix,Type.NUMERIC,myModel,false);
+		Token matrix=new Token(strMatrix,Type.NUMERIC,myModel,false,language);
 		matrix.objectType=ObjectType.MATRIX_DYNAMIC;
 		matrix.nrow=rows.length;
 		matrix.ncol=rows[0].split(",").length;
 		matrix.matrixTokens=new Token[matrix.nrow][matrix.ncol][];
 		for(int i=0; i<matrix.nrow; i++){
 			String curRow=rows[i];
-			Token row[][]=parseArgs(curRow,myModel);
+			Token row[][]=parseArgs(curRow,myModel,language);
 			if(row.length!=matrix.ncol){
 				//throw error
 				return(null);
@@ -185,7 +186,7 @@ public final class Interpreter{
 		return(index);
 	}
 	
-	private static ArrayList<Token> tokenize(String expression,AmuaModel myModel) throws Exception{
+	private static ArrayList<Token> tokenize(String expression, AmuaModel myModel, Language language) throws Exception{
 		ArrayList<Token> tokens=new ArrayList<Token>();
 		String curExpr=expression.replace(" ",""); //remove whitespace
 		curExpr=curExpr.replace('−', '-'); //convert long dashes to short dashes
@@ -206,9 +207,9 @@ public final class Interpreter{
 						if(Functions.isFunction(word)){ //Function
 							int close=findRightParen(curExpr,pos);
 							String args=curExpr.substring(pos+1,close);
-							Token tokenFx=new Token(word,Type.NUMERIC,myModel,false);
+							Token tokenFx=new Token(word,Type.NUMERIC,myModel,false,language);
 							tokenFx.objectType=ObjectType.FUNCTION;
-							tokenFx.args=parseArgs(args,myModel);
+							tokenFx.args=parseArgs(args,myModel,language);
 							tokenFx.negate=negate;
 							tokens.add(tokenFx);
 														
@@ -220,9 +221,9 @@ public final class Interpreter{
 						else if(MatrixFunctions.isFunction(word)){ //Matrix Function
 							int close=findRightParen(curExpr,pos);
 							String args=curExpr.substring(pos+1,close);
-							Token tokenFx=new Token(word,Type.NUMERIC,myModel,false);
+							Token tokenFx=new Token(word,Type.NUMERIC,myModel,false,language);
 							tokenFx.objectType=ObjectType.MATRIX_FUNCTION;
-							tokenFx.args=parseArgs(args,myModel);
+							tokenFx.args=parseArgs(args,myModel,language);
 							tokenFx.negate=negate;
 							tokens.add(tokenFx);
 							
@@ -242,14 +243,14 @@ public final class Interpreter{
 							else if(params[numParams-1].equals("Q")){df=2; numParams--;}
 							else if(params[numParams-1].equals("E")){df=3; numParams--;}
 							else if(params[numParams-1].equals("V")){df=4; numParams--;}
-							else{throw new NumericException("Invalid parameter \""+params[numParams-1]+"\"",word);}
+							else{throw new NumericException(language.message.getString("err.invalid_param")+" \""+params[numParams-1]+"\"",word,language);} //Invalid parameter
 							
-							Token tokenDist=new Token(word,Type.NUMERIC,myModel,false);
+							Token tokenDist=new Token(word,Type.NUMERIC,myModel,false,language);
 							tokenDist.objectType=ObjectType.DISTRIBUTION;
 							tokenDist.distFx=df;
 							String args=params[0];
 							for(int i=1; i<numParams; i++){args+=","+params[i];}
-							tokenDist.args=parseArgs(args,myModel);
+							tokenDist.args=parseArgs(args,myModel,language);
 							tokenDist.negate=negate;
 							tokens.add(tokenDist);
 							
@@ -301,9 +302,9 @@ public final class Interpreter{
 								else if(params[numParams-1].equals("Q")){df=2;}
 								else if(params[numParams-1].equals("E")){df=3;}
 								else if(params[numParams-1].equals("V")){df=4;}
-								else{throw new NumericException("Invalid parameter \""+params[numParams-1]+"\"",word);}
+								else{throw new NumericException(language.message.getString("err.invalid_param")+" \""+params[numParams-1]+"\"",word,language);} //Invalid parameter
 								
-								Token tokenDist=new Token(word,Type.NUMERIC,myModel,false);
+								Token tokenDist=new Token(word,Type.NUMERIC,myModel,false,language);
 								tokenDist.objectType=ObjectType.TABLE_DISTRIBUTION;
 								tokenDist.curTable=curTable;
 								tokenDist.distFx=df;
@@ -337,8 +338,8 @@ public final class Interpreter{
 							}
 						}
 						else{
-							tokens.add(new Token(word,Type.NUMERIC,myModel,true));
-							tokens.add(new Token("(",Type.PAREN_LEFT,myModel,true));
+							tokens.add(new Token(word,Type.NUMERIC,myModel,true,language));
+							tokens.add(new Token("(",Type.PAREN_LEFT,myModel,true,language));
 						}
 						endWord=true;
 						if(off<curExpr.length()-1){curExpr=curExpr.substring(pos+off);}
@@ -346,7 +347,7 @@ public final class Interpreter{
 						
 					}
 					else{
-						tokens.add(new Token("(",Type.PAREN_LEFT,myModel,true));
+						tokens.add(new Token("(",Type.PAREN_LEFT,myModel,true,language));
 						endWord=true;
 						curExpr=curExpr.substring(pos+1);
 					}
@@ -368,13 +369,13 @@ public final class Interpreter{
 								int close=findRightBracket(curExpr,pos);
 								String args[]=splitArgs(curExpr.substring(pos+1,close));
 								
-								Token tokenLookup=new Token(word,Type.NUMERIC,myModel,false);
+								Token tokenLookup=new Token(word,Type.NUMERIC,myModel,false,language);
 								tokenLookup.objectType=ObjectType.TABLE_LOOKUP;
 								tokenLookup.curTable=curTable;
 								tokenLookup.strArgs=args;
 								//tokenize index
 								tokenLookup.args=new Token[1][];
-								tokenLookup.args[0]=parse(args[0],myModel);
+								tokenLookup.args[0]=parse(args[0], myModel, language);
 								tokenLookup.negate=negate;
 								tokens.add(tokenLookup);
 								
@@ -388,7 +389,7 @@ public final class Interpreter{
 								int close=findRightBracket(curExpr,pos);
 								String args[]=splitArgs(curExpr.substring(pos+1,close));
 								
-								Token tokenMat=new Token(word,Type.NUMERIC,myModel,false);
+								Token tokenMat=new Token(word,Type.NUMERIC,myModel,false,language);
 								tokenMat.objectType=ObjectType.MATRIX_ELEMENT;
 								tokenMat.curTable=curTable;
 								tokenMat.matrix=new Numeric(curTable.data);
@@ -407,11 +408,11 @@ public final class Interpreter{
 							int close=findRightBracket(curExpr,pos);
 							String args[]=splitArgs(curExpr.substring(pos+1,close));
 							if(args.length!=2){
-								throw new NumericException("Invalid trace arguments","trace");
+								throw new NumericException(language.message.getString("err.invalid_trace_args"),"trace",language); //Invalid trace arguments
 								//throw error
 							}
 							
-							Token tokenTrace=new Token(word,Type.NUMERIC,myModel,false);
+							Token tokenTrace=new Token(word,Type.NUMERIC,myModel,false,language);
 							tokenTrace.objectType=ObjectType.TRACE;
 							tokenTrace.strArgs=args;
 							tokenTrace.negate=negate;
@@ -426,7 +427,7 @@ public final class Interpreter{
 							int paramIndex=myModel.getParameterIndex(word);
 							Parameter curParam=myModel.parameters.get(paramIndex);
 							
-							Token tokenMat=new Token(word,Type.NUMERIC,myModel,false);
+							Token tokenMat=new Token(word,Type.NUMERIC,myModel,false,language);
 							tokenMat.objectType=ObjectType.PARAM_MATRIX;
 							tokenMat.curParam=curParam;
 							int close=findRightBracket(curExpr,pos);
@@ -451,7 +452,7 @@ public final class Interpreter{
 							int varIndex=myModel.getVariableIndex(word);
 							Variable curVar=myModel.variables.get(varIndex);
 							
-							Token tokenMat=new Token(word,Type.NUMERIC,myModel,false);
+							Token tokenMat=new Token(word,Type.NUMERIC,myModel,false,language);
 							tokenMat.objectType=ObjectType.VAR_MATRIX;
 							tokenMat.curVar=curVar;
 							int close=findRightBracket(curExpr,pos);
@@ -479,7 +480,7 @@ public final class Interpreter{
 					else{ //beginning of word, get matrix values
 						int close=findRightBracket(curExpr,pos);
 						String strMatrix=curExpr.substring(pos+1,close);
-						Token matrix=parseMatrix(strMatrix,myModel);
+						Token matrix=parseMatrix(strMatrix,myModel,language);
 						//check for unary '-' before matrix
 						if(tokens.size()==1){
 							Token prevToken=tokens.get(0);
@@ -497,9 +498,9 @@ public final class Interpreter{
 				else if(isCloseParen(curChar)){
 					if(pos>0){ //get preceding word
 						String word=curExpr.substring(0, pos); //get preceding word
-						tokens.add(new Token(word,Type.NUMERIC,myModel,true));
+						tokens.add(new Token(word,Type.NUMERIC,myModel,true,language));
 					}
-					tokens.add(new Token(")",Type.PAREN_RIGHT,myModel,true));
+					tokens.add(new Token(")",Type.PAREN_RIGHT,myModel,true,language));
 					endWord=true;
 					curExpr=curExpr.substring(pos+1);
 				}
@@ -518,41 +519,41 @@ public final class Interpreter{
 						
 						if(sciNotation==false) {
 							String word=curExpr.substring(0, pos);
-							tokens.add(new Token(word,Type.NUMERIC,myModel,true));
-							tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true));
+							tokens.add(new Token(word,Type.NUMERIC,myModel,true,language));
+							tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true,language));
 							endWord=true;
 							curExpr=curExpr.substring(pos+1);
 						}
 					}
 					else{ //first char in string
 						if(curExpr.charAt(0)!='-'){ //not '-'
-							tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true));
+							tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true,language));
 							endWord=true;
 							curExpr=curExpr.substring(pos+1);
 						}
 						else{ //is '-', check if should be subtraction operator
 							if(isOpenParen(curExpr.charAt(1)) || isOpenBracket(curExpr.charAt(1))){ //followed by ( or [, operator
 								if(tokens.isEmpty()){ //beginning of expression, negation operation
-									tokens.add(new Token("-1",Type.NUMERIC,myModel,true));
-									tokens.add(new Token("*",Type.OPERATOR,myModel,true));
+									tokens.add(new Token("-1",Type.NUMERIC,myModel,true,language));
+									tokens.add(new Token("*",Type.OPERATOR,myModel,true,language));
 									endWord=true;
 									curExpr=curExpr.substring(pos+1);
 								}
 								else{ //not first token
 									Token prevToken=tokens.get(tokens.size()-1);
 									if(prevToken.type==Type.OPERATOR || prevToken.type==Type.PAREN_LEFT){ //preceded by operator or (, negation operation
-										tokens.add(new Token("-1",Type.NUMERIC,myModel,true));
+										tokens.add(new Token("-1",Type.NUMERIC,myModel,true,language));
 										if(prevToken.word.equals("/")){ //retain division, otherwise lost by -1*
-											tokens.add(new Token("/",Type.OPERATOR,myModel,true));
+											tokens.add(new Token("/",Type.OPERATOR,myModel,true,language));
 										}
 										else{
-											tokens.add(new Token("*",Type.OPERATOR,myModel,true)); //-1* to negate
+											tokens.add(new Token("*",Type.OPERATOR,myModel,true,language)); //-1* to negate
 										}
 										endWord=true;
 										curExpr=curExpr.substring(pos+1);
 									}
 									else{
-										tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true));
+										tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true,language));
 										endWord=true;
 										curExpr=curExpr.substring(pos+1);
 									}
@@ -562,7 +563,7 @@ public final class Interpreter{
 								if(!tokens.isEmpty()){ //not first token
 									Token prevToken=tokens.get(tokens.size()-1);
 									if(prevToken.type==Type.PAREN_RIGHT || prevToken.type==Type.NUMERIC){ //operator
-										tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true));
+										tokens.add(new Token(curExpr.substring(pos,pos+1),Type.OPERATOR,myModel,true,language));
 										endWord=true;
 										curExpr=curExpr.substring(pos+1);
 									}
@@ -575,16 +576,16 @@ public final class Interpreter{
 				else if(isOperator2_1(curChar)){
 					if(pos>0){ //get preceding word
 						String word=curExpr.substring(0, pos);
-						tokens.add(new Token(word,Type.NUMERIC,myModel,true));
+						tokens.add(new Token(word,Type.NUMERIC,myModel,true,language));
 					}
 					int off=1;
 					if(curExpr.length()>2 && isOperator2_2(curExpr.substring(pos,pos+2))){off=2;} //check double digit operator
-					tokens.add(new Token(curExpr.substring(pos,pos+off),Type.OPERATOR,myModel,true));
+					tokens.add(new Token(curExpr.substring(pos,pos+off),Type.OPERATOR,myModel,true,language));
 					endWord=true;
 					curExpr=curExpr.substring(pos+off);
 				}
 				else if(pos==curExpr.length()-1){ //end of expression
-					tokens.add(new Token(curExpr,Type.NUMERIC,myModel,true));
+					tokens.add(new Token(curExpr,Type.NUMERIC,myModel,true,language));
 					endWord=true;
 					curExpr=""; //empty
 				}
@@ -602,7 +603,7 @@ public final class Interpreter{
 	 * @return
 	 * @throws NumericException 
 	 */
-	private static Token[] shuntTokens(ArrayList<Token> input) throws NumericException{
+	private static Token[] shuntTokens(ArrayList<Token> input, Language language) throws NumericException{
 		ArrayList<Token> output=new ArrayList<Token>();
 		Stack<Token> stack=new Stack<Token>();
 		int numTokens=input.size();
@@ -634,7 +635,7 @@ public final class Interpreter{
 					output.add(stack.pop());
 					//if empty stack we have mismatched parens
 					if(stack.isEmpty()){
-						throw new NumericException("Mismatched parantheses","Interpreter");
+						throw new NumericException(language.message.getString("err.mismatched_parentheses"),"Interpreter",language); //Mismatched parentheses
 					}
 				}
 				stack.pop(); //remove left paren
@@ -644,7 +645,7 @@ public final class Interpreter{
 		while(stack.size()>0){
 			if(stack.peek().type==Type.PAREN_RIGHT || stack.peek().type==Type.PAREN_LEFT){
 				//mismatched
-				throw new NumericException("Mismatched parantheses","Interpreter");
+				throw new NumericException(language.message.getString("err.mismatched_parentheses"),"Interpreter",language); //Mismatched parentheses
 			}
 			else{
 				output.add(stack.pop());

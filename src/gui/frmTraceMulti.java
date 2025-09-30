@@ -44,6 +44,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import base.RunReport;
 import filters.CSVFilter;
+import lang.Language;
 import main.ErrorLog;
 import main.ScaledIcon;
 import markov.MarkovTrace;
@@ -66,6 +67,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -87,11 +89,12 @@ public class frmTraceMulti {
 	private JTable table;
 	JFileChooser fc;
 	ErrorLog errorLog;
+	Language language;
 	
 	/**
 	 *  Default Constructor
 	 */
-	public frmTraceMulti(RunReport runReport, ErrorLog errorLog1) {
+	public frmTraceMulti(RunReport runReport, ErrorLog errorLog1, Language language) {
 		this.runReport=runReport;
 		this.errorLog=errorLog1;
 		curTrace=runReport.markovTraces.get(0);
@@ -99,6 +102,7 @@ public class frmTraceMulti {
 			numSubgroups=runReport.subgroupNames.length;
 			this.subgroupNames=runReport.subgroupNames;
 		}
+		this.language=language;
 		initialize();
 	}
 
@@ -108,7 +112,7 @@ public class frmTraceMulti {
 	private void initialize() {
 		try{
 			frmTraceMulti = new JFrame();
-			frmTraceMulti.setTitle("Amua - Markov Traces");
+			frmTraceMulti.setTitle("Amua - "+language.base.getString("markov.markov_traces")); //Markov Traces
 			frmTraceMulti.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTraceMulti.class.getResource("/images/logo_128.png")));
 			frmTraceMulti.setBounds(100, 100, 1200, 600);
 			frmTraceMulti.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -122,7 +126,8 @@ public class frmTraceMulti {
 			dataTrace = new DefaultXYDataset();
 			colSeries=new XYSeriesCollection();
 			
-			chartTrace = ChartFactory.createScatterPlot(null, "t", "Prev(t)", dataTrace, PlotOrientation.VERTICAL, true, false, false);
+			chartTrace = ChartFactory.createScatterPlot(null, "t", language.analysis.getString("result.prev_t"), //Prev(t) 
+					dataTrace, PlotOrientation.VERTICAL, true, false, false);
 			chartTrace.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 			
 			JPanel panel = new JPanel();
@@ -134,8 +139,9 @@ public class frmTraceMulti {
 			gbc_panel.gridy = 0;
 			frmTraceMulti.getContentPane().add(panel, gbc_panel);
 			
-			JLabel lblChain = new JLabel("Chain:");
-			lblChain.setBounds(2, 5, 42, 16);
+			JLabel lblChain = new JLabel(language.base.getString("node.chain")+":"); //Chain
+			lblChain.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblChain.setBounds(2, 5, 50, 16);
 			panel.add(lblChain);
 			
 			comboChain = new JComboBox();
@@ -151,11 +157,12 @@ public class frmTraceMulti {
 				}
 			});
 			comboChain.setModel(new DefaultComboBoxModel(runReport.names.toArray()));
-			comboChain.setBounds(41, 0, 150, 26);
+			comboChain.setBounds(55, 0, 140, 26);
 			panel.add(comboChain);
 			
-			JLabel lblNewLabel = new JLabel("Plot:");
-			lblNewLabel.setBounds(207, 5, 34, 16);
+			JLabel lblNewLabel = new JLabel(language.base.getString("button.plot")+":"); //Plot
+			lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblNewLabel.setBounds(197, 5, 50, 16);
 			panel.add(lblNewLabel);
 			
 			comboPlot = new JComboBox();
@@ -164,16 +171,24 @@ public class frmTraceMulti {
 					updateChart(comboPlot.getSelectedIndex());
 				}
 			});
-			comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)"}));
+			comboPlot.setModel(new DefaultComboBoxModel(new String[] {
+					language.analysis.getString("result.state_prevalence"), //State Prevalence
+					language.analysis.getString("result.rewards_cycle"), //Rewards (Cycle)
+					language.analysis.getString("result.rewards_cum")})); //Rewards (Cum.)
 			if(curTrace.numVariables>0){
-				comboPlot.setModel(new DefaultComboBoxModel(new String[] {"State Prevalence", "Rewards (Cycle)", "Rewards (Cum.)","Variables (Cycle)"}));
+				comboPlot.setModel(new DefaultComboBoxModel(new String[] {
+						language.analysis.getString("result.state_prevalence"), //State Prevalence 
+						language.analysis.getString("result.rewards_cycle"), //Rewards (Cycle)
+						language.analysis.getString("result.rewards_cum"), //Rewards (Cum.)
+						language.analysis.getString("result.variables_cycle")})); //Variable (Cycle)
 			}
-			comboPlot.setBounds(235, 0, 150, 26);
+			comboPlot.setBounds(248, 0, 145, 26);
 			panel.add(comboPlot);
 			
-			JLabel lblGroup = new JLabel("Group:");
+			JLabel lblGroup = new JLabel(language.analysis.getString("result.group")+":"); //Group
+			lblGroup.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblGroup.setVisible(false);
-			lblGroup.setBounds(397, 5, 55, 16);
+			lblGroup.setBounds(395, 5, 55, 16);
 			panel.add(lblGroup);
 			
 			comboGroup = new JComboBox();
@@ -191,12 +206,12 @@ public class frmTraceMulti {
 				}
 			});
 			comboGroup.setVisible(false);
-			comboGroup.setBounds(441, 0, 150, 26);
+			comboGroup.setBounds(450, 0, 140, 26);
 			panel.add(comboGroup);
 			
 			if(numSubgroups>0){
 				String names[]=new String[numSubgroups+1];
-				names[0]="Overall";
+				names[0]=language.analysis.getString("result.overall"); //Overall
 				for(int g=0; g<numSubgroups; g++){names[g+1]=subgroupNames[g];}
 				comboGroup.setModel(new DefaultComboBoxModel(names));
 				comboGroup.setVisible(true);
@@ -237,7 +252,7 @@ public class frmTraceMulti {
 			
 			//pop-up menu
 			JPopupMenu popup = panelChart.getPopupMenu();
-			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColor = new JMenuItem(language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					Paint curPaints[]=null;
@@ -252,7 +267,7 @@ public class frmTraceMulti {
 						curPaints=seriesPaints_Vars;
 					}
 					
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chartTrace, dataTrace, curPaints);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartTrace, dataTrace, curPaints, language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -268,14 +283,14 @@ public class frmTraceMulti {
 			gbc_toolBar.gridy = 0;
 			frmTraceMulti.getContentPane().add(toolBar, gbc_toolBar);
 			
-			JButton btnExport = new JButton("Export");
+			JButton btnExport = new JButton(language.base.getString("menu.export")); //Export
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
 						fc=new JFileChooser();
-						fc.setDialogTitle("Export Trace");
-						fc.setApproveButtonText("Export");
-						fc.setFileFilter(new CSVFilter());
+						fc.setDialogTitle(language.base.getString("title.export_trace")); //Export Trace
+						fc.setApproveButtonText(language.base.getString("menu.export")); //Export
+						fc.setFileFilter(new CSVFilter(language));
 
 						int returnVal = fc.showOpenDialog(frmTraceMulti);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -302,7 +317,7 @@ public class frmTraceMulti {
 							
 							out.close();
 							
-							JOptionPane.showMessageDialog(frmTraceMulti, "Exported!");
+							JOptionPane.showMessageDialog(frmTraceMulti, language.message.getString("info.exported")); //Exported!
 						}
 
 					}catch(Exception er){
@@ -312,10 +327,10 @@ public class frmTraceMulti {
 				}
 			});
 			btnExport.setIcon(new ScaledIcon("/images/export",16,16,16,true));
-			btnExport.setToolTipText("Export");
+			btnExport.setToolTipText(language.base.getString("menu.export")); //Export
 			toolBar.add(btnExport);
 			
-			JButton btnCopy = new JButton("Copy");
+			JButton btnCopy = new JButton(language.base.getString("menu.copy")); //Copy
 			btnCopy.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int numCol=curTrace.modelTraceRounded.getColumnCount();
@@ -338,7 +353,7 @@ public class frmTraceMulti {
 				}
 			});
 			btnCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
-			btnCopy.setToolTipText("Copy");
+			btnCopy.setToolTipText(language.base.getString("menu.copy")); //Copy
 			toolBar.add(btnCopy);
 			
 			JScrollPane scrollPane = new JScrollPane();
@@ -404,7 +419,7 @@ public class frmTraceMulti {
 			}
 			plot.setRenderer(renderer);
 			plot.setDataset(dataTrace);
-			plot.getRangeAxis().setLabel("Prev(t)");
+			plot.getRangeAxis().setLabel(language.analysis.getString("result.prev_t")); //Prev(t)
 		}
 		else if(type==1){ //Rewards - Cycle
 			for(int d=0; d<curTrace.numDim; d++){
@@ -414,12 +429,12 @@ public class frmTraceMulti {
 			if(curTrace.discounted==true){
 				for(int d=0; d<curTrace.numDim; d++){
 					renderer.setSeriesPaint(curTrace.numDim+d, seriesPaints_Rewards[curTrace.numDim+d]);
-					dataTrace.addSeries(curTrace.dimNames[d]+" (Discounted)",getSeriesData(curTrace.cycles,curTrace.cycleRewardsDis[d]));
+					dataTrace.addSeries(curTrace.dimNames[d]+" ("+language.analysis.getString("result.discounted")+")",getSeriesData(curTrace.cycles,curTrace.cycleRewardsDis[d]));
 				}
 			}
 			plot.setRenderer(renderer);
 			plot.setDataset(dataTrace);
-			plot.getRangeAxis().setLabel("Rewards(t)");
+			plot.getRangeAxis().setLabel(language.analysis.getString("result.rewards_t")); //Rewards(t)
 		}
 		else if(type==2){ //Rewards - Cumulative
 			for(int d=0; d<curTrace.numDim; d++){
@@ -429,12 +444,12 @@ public class frmTraceMulti {
 			if(curTrace.discounted==true){
 				for(int d=0; d<curTrace.numDim; d++){
 					renderer.setSeriesPaint(curTrace.numDim+d, seriesPaints_Rewards[curTrace.numDim+d]);
-					dataTrace.addSeries(curTrace.dimNames[d]+" (Discounted)",getSeriesData(curTrace.cycles,curTrace.cumRewardsDis[d]));
+					dataTrace.addSeries(curTrace.dimNames[d]+" ("+language.analysis.getString("result.discounted")+")",getSeriesData(curTrace.cycles,curTrace.cumRewardsDis[d]));
 				}
 			}
 			plot.setRenderer(renderer);
 			plot.setDataset(dataTrace);
-			plot.getRangeAxis().setLabel("Cum. Rewards(t)");
+			plot.getRangeAxis().setLabel(language.analysis.getString("result.cum_rewards_t")); //Cum. Rewards(t)
 		}
 		else if(type==3){ //Variables - Cycle
 			for(int c=0; c<curTrace.numVariables; c++){
@@ -443,7 +458,7 @@ public class frmTraceMulti {
 			}
 			plot.setRenderer(renderer);
 			plot.setDataset(dataTrace);
-			plot.getRangeAxis().setLabel("Variables(t)");
+			plot.getRangeAxis().setLabel(language.analysis.getString("result.variables_t")); //Variables(t)
 		}
 	}
 	

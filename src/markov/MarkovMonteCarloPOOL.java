@@ -18,6 +18,7 @@
 
 package markov;
 
+import java.text.MessageFormat;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -136,10 +137,10 @@ public class MarkovMonteCarloPOOL{
 		
 		maxProg=numPeople; //initialize + simulate
 		if(myModel.cluster==false) { //desktop
-			progress=new ProgressMonitor(myModel.mainForm.frmMain, "Initializing simulants", "", 0, (int) maxProg);
+			progress=new ProgressMonitor(myModel.mainForm.frmMain, myModel.language.message.getString("info.init_simulants"), "", 0, (int) maxProg); //Initializing simulants
 		}
 		else { //cluster
-			System.out.println("Initializing simulants...");
+			System.out.println(myModel.language.message.getString("info.init_simulants")+"...");
 		}
 		
 		numSubgroups=0;
@@ -187,7 +188,7 @@ public class MarkovMonteCarloPOOL{
 							for(int v=0; v<numVars; v++){
 								if(variables[v].independent){
 									variables[v].locked[finalN]=true;
-									variables[v].value[finalN]=Interpreter.evaluateTokens(variables[v].parsedTokens, finalN, true);
+									variables[v].value[finalN]=Interpreter.evaluateTokens(variables[v].parsedTokens, finalN, true, myModel.language);
 								}
 							}
 							//Update any dependent variables
@@ -204,8 +205,8 @@ public class MarkovMonteCarloPOOL{
 							if(myModel.reportSubgroups){
 								people[p].inSubgroup=new boolean[numSubgroups];
 								for(int g=0; g<numSubgroups; g++){
-									Numeric curVal=Interpreter.evaluateTokens(myModel.subgroupTokens[g], finalN, false);
-									people[p].inSubgroup[g]=curVal.getBool();
+									Numeric curVal=Interpreter.evaluateTokens(myModel.subgroupTokens[g], finalN, false, myModel.language);
+									people[p].inSubgroup[g]=curVal.getBool(myModel.language);
 								}
 							}
 
@@ -273,10 +274,10 @@ public class MarkovMonteCarloPOOL{
 		curProg=0;
 		maxProg=numChains*guessMaxCycles; //initialize + simulate
 		if(myModel.cluster==false) { //desktop
-			progress=new ProgressMonitor(myModel.mainForm.frmMain, "Monte Carlo simulation", "", 0, (int) maxProg);
+			progress=new ProgressMonitor(myModel.mainForm.frmMain, myModel.language.analysis.getString("sim.monte_carlo_simulation"), "", 0, (int) maxProg); //Monte Carlo simulation
 		}
 		else { //cluster
-			System.out.println("Monte Carlo simulation...");
+			System.out.println(myModel.language.analysis.getString("sim.monte_carlo_simulation")+"..."); //Monte Carlo simulation
 		}
 		
 		//Chain
@@ -285,7 +286,7 @@ public class MarkovMonteCarloPOOL{
 			final int finalC=c;
 			
 			if(myModel.cluster==true) {
-				System.out.println("Chain: "+curChain.name);
+				System.out.println(myModel.language.base.getString("node.chain")+": "+curChain.name); //Chain
 			}
 			
 			//Reset t
@@ -394,7 +395,7 @@ public class MarkovMonteCarloPOOL{
 			while(terminate==false && t<markovTree.maxCycles){
 				if(showProgress){
 					curProg++;
-					updateProgress(curProg,"Running "+curChain.name);
+					updateProgress(curProg,myModel.language.message.getString("info.running")+" "+curChain.name); //Running
 				}
 				if(myModel.cluster==true) {
 					System.out.println("t: "+t);
@@ -403,7 +404,7 @@ public class MarkovMonteCarloPOOL{
 				//Update discount factor
 				if(markovTree.discountRewards){
 					for(int d=0; d<numDim; d++) {
-						Numeric curVal=Interpreter.evaluate(markovTree.discountRates[d], myModel, false);
+						Numeric curVal=Interpreter.evaluate(markovTree.discountRates[d], myModel, false, myModel.language);
 						double discountRate=curVal.getValue()/100.0;
 						if(t<markovTree.discountStartCycle) { //don't discount yet
 							discountFactor[d]=1.0;
@@ -421,7 +422,7 @@ public class MarkovMonteCarloPOOL{
 					evalCosts(curChain,n);
 					for(int s=0; s<numStates; s++){
 						for(int d=0; d<numDim; d++){
-							double curReward=Interpreter.evaluateTokens(states[s].curRewardTokens[d], n, false).getDouble();
+							double curReward=Interpreter.evaluateTokens(states[s].curRewardTokens[d], n, false, myModel.language).getDouble(myModel.language);
 							states[s].curRewards[d][n]=curReward;
 						}
 					}
@@ -521,7 +522,7 @@ public class MarkovMonteCarloPOOL{
 				final double chainCosts[]=new double[numDim]; //up-front costs
 				if(curChain.hasCost) {
 					for(int d=0; d<numDim; d++){
-						double curCost=Interpreter.evaluateTokens(curChain.curCostTokens[d],0,false).getDouble();
+						double curCost=Interpreter.evaluateTokens(curChain.curCostTokens[d],0,false,myModel.language).getDouble(myModel.language);
 						chainCosts[d]=curCost;
 					}
 				}
@@ -753,7 +754,7 @@ public class MarkovMonteCarloPOOL{
 									curPerson.rewardsDis[d]+=states[curState].curRewards[d][finalN]*discountFactor[d];
 								}
 								else{ //has variable, re-evaluate reward
-									double curReward=Interpreter.evaluateTokens(states[curState].curRewardTokens[d], finalN, false).getDouble();
+									double curReward=Interpreter.evaluateTokens(states[curState].curRewardTokens[d], finalN, false, myModel.language).getDouble(myModel.language);
 									cycleRewards[d][finalN]+=curReward;
 									for(int g=0; g<numSubgroups; g++){
 										if(curPerson.inSubgroup[g]){cycleRewardsGroup[g][d][finalN]+=curReward;}
@@ -768,7 +769,7 @@ public class MarkovMonteCarloPOOL{
 							
 							//record variable values
 							for(int v=0; v<numVars; v++){
-								double val=variables[v].value[finalN].getDouble();
+								double val=variables[v].value[finalN].getDouble(myModel.language);
 								cycleVariables[v][finalN]+=val; cycleVariablesDenom[v][finalN]++;
 								for(int g=0; g<numSubgroups; g++){
 									if(curPerson.inSubgroup[g]){
@@ -817,18 +818,18 @@ public class MarkovMonteCarloPOOL{
 		if(minutes.length()<2){minutes="0"+minutes;}
 		if(myModel.cluster==false) { //desktop
 			progress.setProgress(curProg+1);
-			progress.setNote(note+" - Total time left: "+minutes+":"+seconds);
+			progress.setNote(note+" - "+myModel.language.message.getString("info.total_time_left")+": "+minutes+":"+seconds); //Total time left
 		}
 		else { //cluster
-			System.out.println("Progress: "+(curProg+1));
+			System.out.println(myModel.language.message.getString("info.progress")+": "+(curProg+1)); //Progress
 		}
 	}
 	
 		
 	private boolean checkTerminationCondition(MarkovNode curChain) throws Exception{
 		boolean terminate=false;
-		Numeric check=Interpreter.evaluateTokens(curChain.curTerminationTokens, 0, false);
-		if(check.getBool()){ //termination condition true
+		Numeric check=Interpreter.evaluateTokens(curChain.curTerminationTokens, 0, false, myModel.language);
+		if(check.getBool(myModel.language)){ //termination condition true
 			terminate=true;
 		}
 		return(terminate);
@@ -866,7 +867,7 @@ public class MarkovMonteCarloPOOL{
 					curPerson.rewardsDis[d]+=node.curCosts[d][curThread]*discountFactor[d];
 				}
 				else{ //has variable, re-evaluate cost
-					double curCost=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false).getDouble();
+					double curCost=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false, myModel.language).getDouble(myModel.language);
 					cycleRewards[d][curThread]+=curCost;
 					for(int g=0; g<numSubgroups; g++){
 						if(curPerson.inSubgroup[g]){cycleRewardsGroup[g][d][curThread]+=curCost;}
@@ -909,7 +910,7 @@ public class MarkovMonteCarloPOOL{
 	private void evalCosts(MarkovNode node,int curThread) throws NumericException, Exception{
 		if(node.hasCost){
 			for(int d=0; d<numDim; d++){
-				double curCost=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false).getDouble();
+				double curCost=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false, myModel.language).getDouble(myModel.language);
 				node.curCosts[d][curThread]=curCost;
 			}
 		}
@@ -936,21 +937,27 @@ public class MarkovMonteCarloPOOL{
 					indexCompProb=c;
 				}
 				else{ //Evaluate text
-					curChild.curProb[curThread]=Interpreter.evaluateTokens(curChild.curProbTokens, curThread, false).getDouble();
+					curChild.curProb[curThread]=Interpreter.evaluateTokens(curChild.curProbTokens, curThread, false, myModel.language).getDouble(myModel.language);
 					sumProb+=curChild.curProb[curThread];
 				}
 			}
 			if(indexCompProb==-1){
 				if(Math.abs(1.0-sumProb)>MathUtils.tolerance){ //throw error
-					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
+					// Probabilities sum to [sumProb]
+					String msg = MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb);
+					throw new Exception(myModel.language.message.getString("error")+": "+msg+" ("+node.chain.name+": "+node.name+")");
 				}
 			}
 			else{
 				if(sumProb<0.0) { //throw error
-					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
+					// Probabilities sum to [sumProb]
+					String msg = MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb);
+					throw new Exception(myModel.language.message.getString("error")+": "+msg+" ("+node.chain.name+": "+node.name+")");
 				}
 				else if(sumProb>1.0){ //check if should renorm
-					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
+					// Probabilities sum to [sumProb]
+					String msg = MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb);
+					throw new Exception(myModel.language.message.getString("error")+": "+msg+" ("+node.chain.name+": "+node.name+")");
 				}
 				else{
 					MarkovNode curChild=node.children[indexCompProb];
@@ -1203,7 +1210,7 @@ public class MarkovMonteCarloPOOL{
 							curPerson.rewardsDis[d]+=states[curState].curRewards[d][finalN]*discountFactor[d];
 						}
 						else{ //has variable, re-evaluate reward
-							double curReward=Interpreter.evaluateTokens(states[curState].curRewardTokens[d], finalN, false).getDouble();
+							double curReward=Interpreter.evaluateTokens(states[curState].curRewardTokens[d], finalN, false, myModel.language).getDouble(myModel.language);
 							cycleRewards[d][finalN]+=curReward;
 							for(int g=0; g<numSubgroups; g++){
 								if(curPerson.inSubgroup[g]){cycleRewardsGroup[g][d][finalN]+=curReward;}
@@ -1218,7 +1225,7 @@ public class MarkovMonteCarloPOOL{
 
 					//update variables
 					for(int v=0; v<numVars; v++){
-						double val=variables[v].value[finalN].getDouble();
+						double val=variables[v].value[finalN].getDouble(myModel.language);
 						cycleVariables[v][finalN]+=val; cycleVariablesDenom[v][finalN]++;
 						for(int g=0; g<numSubgroups; g++){
 							if(curPerson.inSubgroup[g]){

@@ -63,6 +63,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.Toolkit;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -96,13 +97,13 @@ public class frmExport {
 			frmExport = new JDialog();
 			frmExport.setIconImage(Toolkit.getDefaultToolkit().getImage(frmExport.class.getResource("/images/export_128.png")));
 			frmExport.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmExport.setTitle("Amua - Export Model");
+			frmExport.setTitle("Amua - "+myModel.language.base.getString("title.export_model")); //Export Model
 			frmExport.setResizable(false);
 			frmExport.setBounds(100, 100, 500, 300);
 			frmExport.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmExport.getContentPane().setLayout(null);
 			
-			JLabel lblSelectAnExport = new JLabel("Select a language:");
+			JLabel lblSelectAnExport = new JLabel(myModel.language.message.getString("ask.select_language")+":"); //Select a language
 			lblSelectAnExport.setBounds(12, 23, 146, 16);
 			frmExport.getContentPane().add(lblSelectAnExport);
 			
@@ -111,10 +112,10 @@ public class frmExport {
 			frmExport.getContentPane().add(scrollPane);
 			
 			final String descriptions[]=new String[5];
-			descriptions[0]="C++ source files";
-			descriptions[1]="Java source files";
-			descriptions[2]="Python 3 source files\n(requires NumPy library)";
-			descriptions[3]="R source files";
+			descriptions[0]=myModel.language.base.getString("file.cpp"); //C++ source files
+			descriptions[1]=myModel.language.base.getString("file.java"); //Java source files
+			descriptions[2]=myModel.language.base.getString("file.py3_source"); //Python 3 source files\n(requires NumPy library)
+			descriptions[3]=myModel.language.base.getString("file.r_source"); //R source files
 			
 			final String logos[]=new String[5];
 			logos[0]="/images/cppIcon";
@@ -142,11 +143,11 @@ public class frmExport {
 			list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			scrollPane.setViewportView(list);
 			
-			JLabel lblDescription = new JLabel("Description:");
-			lblDescription.setBounds(232, 23, 86, 16);
+			JLabel lblDescription = new JLabel(myModel.language.base.getString("title.description")+":"); //Description
+			lblDescription.setBounds(232, 23, 205, 16);
 			frmExport.getContentPane().add(lblDescription);
 			
-			JButton btnExport = new JButton("Export");
+			JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int selected=list.getSelectedIndex();
@@ -155,9 +156,9 @@ public class frmExport {
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 						
-						fc.setDialogTitle("Select Export Folder");
+						fc.setDialogTitle(myModel.language.base.getString("title.select_export_folder")); //Select Export Folder
 						
-						int returnVal = fc.showDialog(frmExport, "Select");
+						int returnVal = fc.showDialog(frmExport, myModel.language.base.getString("button.select")); //Select
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
 							String dir=file.getAbsolutePath()+File.separator+myModel.name+"_Export";
@@ -202,7 +203,7 @@ public class frmExport {
 								}
 							}
 							
-							JOptionPane.showMessageDialog(frmExport, "Exported!");
+							JOptionPane.showMessageDialog(frmExport, myModel.language.message.getString("info.exported")); //Exported!
 							frmExport.dispose();
 						}
 
@@ -212,7 +213,7 @@ public class frmExport {
 			btnExport.setBounds(274, 232, 90, 28);
 			frmExport.getContentPane().add(btnExport);
 			
-			JButton btnCancel = new JButton("Cancel");
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmExport.dispose();
@@ -250,15 +251,16 @@ public class frmExport {
 			lblModelType.setBounds(96, 195, 16, 16);
 			frmExport.getContentPane().add(lblModelType);
 			
-			lblTableFormat = new JLabel("Table format:");
+			lblTableFormat = new JLabel(myModel.language.base.getString("table.table_format")+":"); //Table format
+			lblTableFormat.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblTableFormat.setEnabled(false);
-			lblTableFormat.setBounds(232, 195, 72, 16);
+			lblTableFormat.setBounds(207, 195, 115, 16);
 			frmExport.getContentPane().add(lblTableFormat);
 			
 			comboTables = new JComboBox<String>();
 			comboTables.setEnabled(false);
-			comboTables.setModel(new DefaultComboBoxModel<String>(new String[] {"In-line", "Separate Files"}));
-			comboTables.setBounds(309, 190, 162, 26);
+			comboTables.setModel(new DefaultComboBoxModel<String>(new String[] {myModel.language.base.getString("table.inline"), myModel.language.base.getString("table.separate_files")})); //In-line, Separate Files
+			comboTables.setBounds(326, 190, 162, 26);
 			frmExport.getContentPane().add(comboTables);
 			
 		} catch (Exception ex){

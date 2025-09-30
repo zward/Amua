@@ -18,6 +18,9 @@
 
 
 package math;
+import java.text.MessageFormat;
+
+import lang.Language;
 import main.MersenneTwisterFast;
 import math.distributions.Bernoulli;
 import math.distributions.Beta;
@@ -103,545 +106,553 @@ public final class Distributions{
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Numeric evaluate(String dist, Numeric params[], int df) throws NumericException{
+	public static Numeric evaluate(String dist, Numeric params[], int df, Language language) throws NumericException{
 		switch(dist){
 		//Discrete
 		case "Bern":{
 			if(params.length==1){ //(p,~)
-				if(df==-1 || df==3){return(Bernoulli.mean(params));} //Sample, Mean
-				else if(df==4){return(Bernoulli.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Bern");}
+				if(df==-1 || df==3){return(Bernoulli.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Bernoulli.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Bern", language);} //Invalid parameters
 			}
 			else if(params.length==2){ //(k,p,f)
-				if(df==0){return(Bernoulli.pmf(params));} //PMF
-				else if(df==1){return(Bernoulli.cdf(params));} //CDF
-				else if(df==2){return(Bernoulli.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Bern");}
+				if(df==0){return(Bernoulli.pmf(params, language));} //PMF
+				else if(df==1){return(Bernoulli.cdf(params, language));} //CDF
+				else if(df==2){return(Bernoulli.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Bern", language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Bern");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Bern", language);} //Incorrect number of parameters
 		}
 		case "Bin": {
 			if(params.length==2){ //(n,p,~)
-				if(df==-1 || df==3){return(Binomial.mean(params));} //Sample, Mean
-				else if(df==4){return(Binomial.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Bin");}
+				if(df==-1 || df==3){return(Binomial.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Binomial.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Bin", language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(k,n,p,f)
-				if(df==0){return(Binomial.pmf(params));} //PMF
-				else if(df==1){return(Binomial.cdf(params));} //CDF
-				else if(df==2){return(Binomial.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Bin");}
+				if(df==0){return(Binomial.pmf(params, language));} //PMF
+				else if(df==1){return(Binomial.cdf(params, language));} //CDF
+				else if(df==2){return(Binomial.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Bin", language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Bin");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Bin", language);} //Incorrect number of parameters
 		}
 		case "Cat":{
 			if(params.length==1){ //(p,~)
-				if(df==-1 || df==3){return(Categorical.mean(params));} //Sample, Mean
-				else if(df==4){return(Categorical.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Cat");}
+				if(df==-1 || df==3){return(Categorical.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Categorical.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Cat",language);} //Invalid parameters
 			}
 			else if(params.length==2){ //(k,p,f)
-				if(df==0){return(Categorical.pmf(params));} //PMF
-				else if(df==1){return(Categorical.cdf(params));} //CDF
-				else if(df==2){return(Categorical.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Cat");}
+				if(df==0){return(Categorical.pmf(params, language));} //PMF
+				else if(df==1){return(Categorical.cdf(params, language));} //CDF
+				else if(df==2){return(Categorical.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Cat",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Cat");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Cat",language);} //Incorrect number of parameters
 		}
 		case "DUnif": { 
 			if(params.length==2){ //(a,b,~)
-				if(df==-1 || df==3){return(DiscreteUniform.mean(params));} //Sample, Mean
-				else if(df==4){return(DiscreteUniform.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","DUnif");}
+				if(df==-1 || df==3){return(DiscreteUniform.mean(params, language));} //Sample, Mean
+				else if(df==4){return(DiscreteUniform.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"DUnif",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(k,a,b,f)
-				if(df==0){return(DiscreteUniform.pmf(params));} //PMF
-				else if(df==1){return(DiscreteUniform.cdf(params));} //CDF
-				else if(df==2){return(DiscreteUniform.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","DUnif");}
+				if(df==0){return(DiscreteUniform.pmf(params, language));} //PMF
+				else if(df==1){return(DiscreteUniform.cdf(params, language));} //CDF
+				else if(df==2){return(DiscreteUniform.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"DUnif",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","DUnif");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"DUnif",language);} //Incorrect number of parameters
 		}
 		case "Geom": {
 			if(params.length==1){ //(p,~)
-				if(df==-1 || df==3){return(Geometric.mean(params));} //Sample, Mean
-				else if(df==4){return(Geometric.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Geom");}
+				if(df==-1 || df==3){return(Geometric.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Geometric.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Geom",language);} //Invalid parameters
 			}
 			else if(params.length==2){ //(k,p,f)
-				if(df==0){return(Geometric.pmf(params));} //PMF
-				else if(df==1){return(Geometric.cdf(params));} //CDF
-				else if(df==2){return(Geometric.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Geom");}
+				if(df==0){return(Geometric.pmf(params, language));} //PMF
+				else if(df==1){return(Geometric.cdf(params, language));} //CDF
+				else if(df==2){return(Geometric.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Geom",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Geom");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Geom",language);} //Incorrect number of parameters
 		}
 		case "HGeom": {
 			if(params.length==3){ //(w,b,n,~)
-				if(df==-1 || df==3){return(Hypergeometric.mean(params));} //Sample, Mean
-				else if(df==4){return(Hypergeometric.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","HGeom");}
+				if(df==-1 || df==3){return(Hypergeometric.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Hypergeometric.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"HGeom",language);} //Invalid parameters
 			}
 			else if(params.length==4){ //(k,w,b,n,f)
-				if(df==0){return(Hypergeometric.pmf(params));} //PMF
-				else if(df==1){return(Hypergeometric.cdf(params));} //CDF
-				else if(df==2){return(Hypergeometric.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","HGeom");}
+				if(df==0){return(Hypergeometric.pmf(params, language));} //PMF
+				else if(df==1){return(Hypergeometric.cdf(params, language));} //CDF
+				else if(df==2){return(Hypergeometric.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"HGeom",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","HGeom");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"HGeom",language);} //Incorrect number of parameters
 		}
 		case "NBin": {
 			if(params.length==2){ //(r,p,~)
-				if(df==-1 || df==3){return(NegativeBinomial.mean(params));} //Sample, Mean
-				else if(df==4){return(NegativeBinomial.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","NBin");}
+				if(df==-1 || df==3){return(NegativeBinomial.mean(params, language));} //Sample, Mean
+				else if(df==4){return(NegativeBinomial.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"NBin",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(k,r,p,f)
-				if(df==0){return(NegativeBinomial.pmf(params));} //PMF
-				else if(df==1){return(NegativeBinomial.cdf(params));} //CDF
-				else if(df==2){return(NegativeBinomial.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","NBin");}
+				if(df==0){return(NegativeBinomial.pmf(params, language));} //PMF
+				else if(df==1){return(NegativeBinomial.cdf(params, language));} //CDF
+				else if(df==2){return(NegativeBinomial.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"NBin",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","NBin");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"NBin",language);} //Incorrect number of parameters
 		}
 		case "Pois": {
 			if(params.length==1){ //(λ,~)
-				if(df==-1 || df==3){return(Poisson.mean(params));} //Sample, Mean
-				else if(df==4){return(Poisson.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Pois");}
+				if(df==-1 || df==3){return(Poisson.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Poisson.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Pois",language);} //Invalid parameters
 			}
 			else if(params.length==2){ //(k,λ,f)
-				if(df==0){return(Poisson.pmf(params));} //PMF
-				else if(df==1){return(Poisson.cdf(params));} //CDF
-				else if(df==2){return(Poisson.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Pois");}
+				if(df==0){return(Poisson.pmf(params, language));} //PMF
+				else if(df==1){return(Poisson.cdf(params, language));} //CDF
+				else if(df==2){return(Poisson.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Pois",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Pois");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Pois",language);} //Incorrect number of parameters
 		}
 		case "Zipf": {
 			if(params.length==2){ //(s,n,~)
-				if(df==-1 || df==3){return(Zipf.mean(params));} //Sample, Mean
-				else if(df==4){return(Zipf.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Zipf");}
+				if(df==-1 || df==3){return(Zipf.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Zipf.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Zipf",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(k,s,n,f)
-				if(df==0){return(Zipf.pmf(params));} //PMF
-				else if(df==1){return(Zipf.cdf(params));} //CDF
-				else if(df==2){return(Zipf.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Zipf");}
+				if(df==0){return(Zipf.pmf(params, language));} //PMF
+				else if(df==1){return(Zipf.cdf(params, language));} //CDF
+				else if(df==2){return(Zipf.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Zipf",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Zipf");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Zipf",language);} //Incorrect number of parameters
 		}
 
 		//Continuous
 		case "Beta": {
 			if(params.length==2){ //(a,b,~)
-				if(df==-1 || df==3){return(Beta.mean(params));} //Sample, Mean
-				else if(df==4){return(Beta.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Beta");}
+				if(df==-1 || df==3){return(Beta.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Beta.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Beta",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,a,b,f)
-				if(df==0){return(Beta.pdf(params));} //PDF
-				else if(df==1){return(Beta.cdf(params));} //CDF
-				else if(df==2){return(Beta.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Beta");}
+				if(df==0){return(Beta.pdf(params, language));} //PDF
+				else if(df==1){return(Beta.cdf(params, language));} //CDF
+				else if(df==2){return(Beta.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Beta",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Beta");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Beta",language);} //Incorrect number of parameters
 		}
 		case "Cauchy": {
 			if(params.length==2){ //(loc,scale,~)
 				if(df==-1){ //Sample (return median) 
-					double a=params[0].getDouble(), b=params[1].getDouble();
-					if(b<=0){throw new NumericException("γ should be >0","Cauchy");}
+					double a=params[0].getDouble(language), b=params[1].getDouble(language);
+					if(b<=0){
+						//[val] should be >0
+						String msg = MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "γ");
+						throw new NumericException(msg,"Cauchy",language);
+					}
 					return(new Numeric(a));
 				} 
-				else if(df==3){return(Cauchy.mean(params));} //Sample, Mean
-				else if(df==4){return(Cauchy.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Cauchy");}
+				else if(df==3){return(Cauchy.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Cauchy.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Cauchy",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,loc,scale,f)
-				if(df==0){return(Cauchy.pdf(params));} //PDF
-				else if(df==1){return(Cauchy.cdf(params));} //CDF
-				else if(df==2){return(Cauchy.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Cauchy");}
+				if(df==0){return(Cauchy.pdf(params, language));} //PDF
+				else if(df==1){return(Cauchy.cdf(params, language));} //CDF
+				else if(df==2){return(Cauchy.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Cauchy",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Cauchy");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Cauchy",language);} //Incorrect number of parameters
 		}
 		case "ChiSq":{
 			if(params.length==1){ //(k,~)
-				if(df==-1 || df==3){return(ChiSquare.mean(params));} //Sample, Mean
-				else if(df==4){return(ChiSquare.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","ChiSq");}
+				if(df==-1 || df==3){return(ChiSquare.mean(params, language));} //Sample, Mean
+				else if(df==4){return(ChiSquare.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"ChiSq",language);} //Invalid parameters
 			}
 			else if(params.length==2){ //(x,k,f)
-				if(df==0){return(ChiSquare.pdf(params));} //PDF
-				else if(df==1){return(ChiSquare.cdf(params));} //CDF
-				else if(df==2){return(ChiSquare.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","ChiSq");}
+				if(df==0){return(ChiSquare.pdf(params, language));} //PDF
+				else if(df==1){return(ChiSquare.cdf(params, language));} //CDF
+				else if(df==2){return(ChiSquare.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"ChiSq",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","ChiSq");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"ChiSq",language);} //Incorrect number of parameters
 		}
 		case "Expo": {
 			if(params.length==1){ //(lambda,~)
-				if(df==-1 || df==3){return(Exponential.mean(params));} //Sample, Mean
-				else if(df==4){return(Exponential.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Expo");}
+				if(df==-1 || df==3){return(Exponential.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Exponential.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Expo",language);} //Invalid parameters
 			}
 			else if(params.length==2){//(x,lambda,f): 
-				if(df==0){return(Exponential.pdf(params));} //PDF
-				else if(df==1){return(Exponential.cdf(params));} //CDF
-				else if(df==2){return(Exponential.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Expo");}
+				if(df==0){return(Exponential.pdf(params, language));} //PDF
+				else if(df==1){return(Exponential.cdf(params, language));} //CDF
+				else if(df==2){return(Exponential.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Expo",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Expo");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Expo",language);} //Incorrect number of parameters
 		}
 		case "Gamma":{
 			if(params.length==2){ //(k,theta,~)
-				if(df==-1 || df==3){return(Gamma.mean(params));} //Sample, Mean
-				else if(df==4){return(Gamma.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Gamma");}
+				if(df==-1 || df==3){return(Gamma.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Gamma.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Gamma",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,k,theta,f)
-				if(df==0){return(Gamma.pdf(params));} //PDF
-				else if(df==1){return(Gamma.cdf(params));} //CDF
-				else if(df==2){return(Gamma.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Gamma");}
+				if(df==0){return(Gamma.pdf(params, language));} //PDF
+				else if(df==1){return(Gamma.cdf(params, language));} //CDF
+				else if(df==2){return(Gamma.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Gamma",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Gamma");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Gamma",language);} //Incorrect number of parameters
 		}
 		case "Gumbel":{
 			if(params.length==2){ //(mu,beta,~)
-				if(df==-1 || df==3){return(Gumbel.mean(params));} //Sample, Mean
-				else if(df==4){return(Gumbel.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Gumbel");}
+				if(df==-1 || df==3){return(Gumbel.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Gumbel.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Gumbel",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,mu,beta,f)
-				if(df==0){return(Gumbel.pdf(params));} //PDF
-				else if(df==1){return(Gumbel.cdf(params));} //CDF
-				else if(df==2){return(Gumbel.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Gumbel");}
+				if(df==0){return(Gumbel.pdf(params, language));} //PDF
+				else if(df==1){return(Gumbel.cdf(params, language));} //CDF
+				else if(df==2){return(Gumbel.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Gumbel",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Gumbel");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Gumbel",language);} //Incorrect number of parameters
 		}
 		case "HalfCauchy":{
 			if(params.length==1){ //(gamma,~)
 				if(df==-1){ //Sample (return median)
-					double gamma=params[0].getDouble();
-					if(gamma<=0){throw new NumericException("γ should be >0","HalfCauchy");}
+					double gamma=params[0].getDouble(language);
+					if(gamma<=0){
+						//[val] should be >0
+						String msg = MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "γ");
+						throw new NumericException(msg,"HalfCauchy",language);
+					}
 					return(new Numeric(gamma)); //median
 				}
-				else if(df==3){return(HalfCauchy.mean(params));} //Mean
-				else if(df==4){return(HalfCauchy.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","HalfCauchy");}
+				else if(df==3){return(HalfCauchy.mean(params, language));} //Mean
+				else if(df==4){return(HalfCauchy.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"HalfCauchy",language);} //Invalid parameters
 			}
 			else if(params.length==2){ //(x,gamma,f)
-				if(df==0){return(HalfCauchy.pdf(params));} //PDF
-				else if(df==1){return(HalfCauchy.cdf(params));} //CDF
-				else if(df==2){return(HalfCauchy.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","HalfCauchy");}
+				if(df==0){return(HalfCauchy.pdf(params, language));} //PDF
+				else if(df==1){return(HalfCauchy.cdf(params, language));} //CDF
+				else if(df==2){return(HalfCauchy.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"HalfCauchy",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","HalfCauchy");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"HalfCauchy",language);} //Incorrect number of parameters
 		}
 		case "HalfNorm":{
 			if(params.length==1){ //(sigma,~)
-				if(df==-1 || df==3){return(HalfNormal.mean(params));} //Sample, Mean
-				else if(df==4){return(HalfNormal.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","HalfNorm");}
+				if(df==-1 || df==3){return(HalfNormal.mean(params, language));} //Sample, Mean
+				else if(df==4){return(HalfNormal.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"HalfNorm",language);} //Invalid parameters
 			}
 			else if(params.length==2){ //(x,sigma,f)
-				if(df==0){return(HalfNormal.pdf(params));} //PDF
-				else if(df==1){return(HalfNormal.cdf(params));} //CDF
-				else if(df==2){return(HalfNormal.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","HalfNorm");}
+				if(df==0){return(HalfNormal.pdf(params, language));} //PDF
+				else if(df==1){return(HalfNormal.cdf(params, language));} //CDF
+				else if(df==2){return(HalfNormal.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"HalfNorm",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","HalfNorm");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"HalfNorm",language);} //Incorrect number of parameters
 		}
 		case "Laplace": {
 			if(params.length==2){ //(mu,b,~)
-				if(df==-1 || df==3){return(Laplace.mean(params));} //Sample, Mean
-				else if(df==4){return(Laplace.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Laplace");}
+				if(df==-1 || df==3){return(Laplace.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Laplace.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Laplace",language);} //Invalid parameters
 			}
 			else if(params.length==3){ // (x,mu,b,f)
-				if(df==0){return(Laplace.pdf(params));} //PDF
-				else if(df==1){return(Laplace.cdf(params));} //CDF
-				else if(df==2){return(Laplace.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Laplace");}
+				if(df==0){return(Laplace.pdf(params, language));} //PDF
+				else if(df==1){return(Laplace.cdf(params, language));} //CDF
+				else if(df==2){return(Laplace.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Laplace",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Laplace");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Laplace",language);} //Incorrect number of parameters
 		}
 		case "Logistic": {
 			if(params.length==2){ //(mu,s,~)
-				if(df==-1 || df==3){return(Logistic.mean(params));} //Sample, Mean
-				else if(df==4){return(Logistic.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Logistic");}
+				if(df==-1 || df==3){return(Logistic.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Logistic.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Logistic",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,mu,s,f)
-				if(df==0){return(Logistic.pdf(params));} //PDF
-				else if(df==1){return(Logistic.cdf(params));} //CDF
-				else if(df==2){return(Logistic.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Logistic");}
+				if(df==0){return(Logistic.pdf(params, language));} //PDF
+				else if(df==1){return(Logistic.cdf(params, language));} //CDF
+				else if(df==2){return(Logistic.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Logistic",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Logistic");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Logistic",language);} //Incorrect number of parameters
 		}
 		case "LogNorm": {
 			if(params.length==2){ //(mu,sigma,~)
-				if(df==-1 || df==3){return(LogNormal.mean(params));} //Sample, Mean
-				else if(df==4){return(LogNormal.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","LogNorm");}
+				if(df==-1 || df==3){return(LogNormal.mean(params, language));} //Sample, Mean
+				else if(df==4){return(LogNormal.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"LogNorm",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,mu,sigma,f)
-				if(df==0){return(LogNormal.pdf(params));} //PDF
-				else if(df==1){return(LogNormal.cdf(params));} //CDF
-				else if(df==2){return(LogNormal.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","LogNorm");}
+				if(df==0){return(LogNormal.pdf(params, language));} //PDF
+				else if(df==1){return(LogNormal.cdf(params, language));} //CDF
+				else if(df==2){return(LogNormal.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"LogNorm",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","LogNorm");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"LogNorm",language);} //Incorrect number of parameters
 		}
 		case "Norm": {
 			if(params.length==2){ //(mu,sigma,~)
-				if(df==-1 || df==3){return(Normal.mean(params));} //Sample, Mean
-				else if(df==4){return(Normal.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Norm");}
+				if(df==-1 || df==3){return(Normal.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Normal.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Norm",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,mu,sigma,f)
-				if(df==0){return(Normal.pdf(params));} //PDF
-				else if(df==1){return(Normal.cdf(params));} //CDF
-				else if(df==2){return(Normal.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Norm");}
+				if(df==0){return(Normal.pdf(params, language));} //PDF
+				else if(df==1){return(Normal.cdf(params, language));} //CDF
+				else if(df==2){return(Normal.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Norm",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Norm");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Norm",language);} //Incorrect number of parameters
 		}
 		case "Pareto": {
 			if(params.length==2){ //(k,alpha,~)
-				if(df==-1 || df==3){return(Pareto.mean(params));} //Sample, Mean
-				else if(df==4){return(Pareto.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Pareto");}
+				if(df==-1 || df==3){return(Pareto.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Pareto.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Pareto",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,k,alpha,f)
-				if(df==0){return(Pareto.pdf(params));} //PDF
-				else if(df==1){return(Pareto.cdf(params));} //CDF
-				else if(df==2){return(Pareto.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Pareto");}
+				if(df==0){return(Pareto.pdf(params, language));} //PDF
+				else if(df==1){return(Pareto.cdf(params, language));} //CDF
+				else if(df==2){return(Pareto.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Pareto",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Pareto");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Pareto",language);} //Incorrect number of parameters
 		}
 		case "PERT": { 
 			if(params.length==3){ //(a,b,c,~)
-				if(df==-1 || df==3){return(PERT.mean(params));} //Sample, Mean
-				else if(df==4){return(PERT.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","PERT");}
+				if(df==-1 || df==3){return(PERT.mean(params, language));} //Sample, Mean
+				else if(df==4){return(PERT.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"PERT",language);} //Invalid parameters
 			}
 			else if(params.length==4){ //(x,a,b,c,f)
-				if(df==0){return(PERT.pdf(params));} //PDF
-				else if(df==1){return(PERT.cdf(params));} //CDF
-				else if(df==2){return(PERT.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","PERT");}
+				if(df==0){return(PERT.pdf(params, language));} //PDF
+				else if(df==1){return(PERT.cdf(params, language));} //CDF
+				else if(df==2){return(PERT.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"PERT",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","PERT");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"PERT",language);} //Incorrect number of parameters
 		}
 		case "StudentT":{
 			if(params.length==1){ //(nu,~)
 				if(df==-1){return(new Numeric(0));} //Sample (median) 
-				else if(df==3){return(StudentT.mean(params));} //Mean
-				else if(df==4){return(StudentT.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","StudentT");}
+				else if(df==3){return(StudentT.mean(params, language));} //Mean
+				else if(df==4){return(StudentT.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"StudentT",language);} //Invalid parameters
 			}
 			else if(params.length==2){ //(x,nu,f)
-				if(df==0){return(StudentT.pdf(params));} //PDF
-				else if(df==1){return(StudentT.cdf(params));} //CDF
-				else if(df==2){return(StudentT.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","StudentT");}
+				if(df==0){return(StudentT.pdf(params, language));} //PDF
+				else if(df==1){return(StudentT.cdf(params, language));} //CDF
+				else if(df==2){return(StudentT.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"StudentT",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","StudentT");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"StudentT",language);} //Incorrect number of parameters
 		}
 		case "Tri": {
 			if(params.length==3){ //(a,b,c,~)
-				if(df==-1 || df==3){return(Triangular.mean(params));} //Sample, Mean
-				else if(df==4){return(Triangular.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Tri");}
+				if(df==-1 || df==3){return(Triangular.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Triangular.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Tri",language);} //Invalid parameters
 			}
 			else if(params.length==4){ //(x,a,b,c,f)
-				if(df==0){return(Triangular.pdf(params));} //PDF
-				else if(df==1){return(Triangular.cdf(params));} //CDF
-				else if(df==2){return(Triangular.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Tri");}
+				if(df==0){return(Triangular.pdf(params, language));} //PDF
+				else if(df==1){return(Triangular.cdf(params, language));} //CDF
+				else if(df==2){return(Triangular.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Tri",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Tri");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Tri",language);} //Incorrect number of parameters
 		}
 		case "Unif": {
 			if(params.length==2){ //(a,b,~)
-				if(df==-1 || df==3){return(Uniform.mean(params));} //Sample, Mean
-				else if(df==4){return(Uniform.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Unif");}
+				if(df==-1 || df==3){return(Uniform.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Uniform.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Unif",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,a,b,f)
-				if(df==0){return(Uniform.pdf(params));} //PDF
-				else if(df==1){return(Uniform.cdf(params));} //CDF
-				else if(df==2){return(Uniform.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Unif");}
+				if(df==0){return(Uniform.pdf(params, language));} //PDF
+				else if(df==1){return(Uniform.cdf(params, language));} //CDF
+				else if(df==2){return(Uniform.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Unif",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Unif");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Unif",language);} //Incorrect number of parameters
 		}
 		case "Weibull": {
 			if(params.length==2){ //(a,b,~)
-				if(df==-1 || df==3){return(Weibull.mean(params));} //Sample, Mean
-				else if(df==4){return(Weibull.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Weibull");}
+				if(df==-1 || df==3){return(Weibull.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Weibull.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Weibull",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,a,b,f)
-				if(df==0){return(Weibull.pdf(params));} //PDF
-				else if(df==1){return(Weibull.cdf(params));} //CDF
-				else if(df==2){return(Weibull.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Weibull");}
+				if(df==0){return(Weibull.pdf(params, language));} //PDF
+				else if(df==1){return(Weibull.cdf(params, language));} //CDF
+				else if(df==2){return(Weibull.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Weibull",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Weibull");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Weibull",language);} //Incorrect number of parameters
 		}
 
 		//Truncated
 		case "TruncNorm": {
 			if(params.length==4){ //(mu,sigma,a,b,~) return mean
-				if(df==-1 || df==3){return(TruncatedNormal.mean(params));} //Sample, Mean
-				else if(df==4){return(TruncatedNormal.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","TruncNorm");}
+				if(df==-1 || df==3){return(TruncatedNormal.mean(params, language));} //Sample, Mean
+				else if(df==4){return(TruncatedNormal.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"TruncNorm",language);} //Invalid parameters
 			}
 			else if(params.length==5){ //(x,mu,sigma,a,b,f)
-				if(df==0){return(TruncatedNormal.pdf(params));} //PDF
-				else if(df==1){return(TruncatedNormal.cdf(params));} //CDF
-				else if(df==2){return(TruncatedNormal.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","TruncNorm");}
+				if(df==0){return(TruncatedNormal.pdf(params, language));} //PDF
+				else if(df==1){return(TruncatedNormal.cdf(params, language));} //CDF
+				else if(df==2){return(TruncatedNormal.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"TruncNorm",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","TruncNorm");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"TruncNorm",language);} //Incorrect number of parameters
 		}
 		
 		//Multivariate
 		case "Dir": {
 			if(params.length==1){ //(alpha) return mean
-				if(df==-1 || df==3){return(Dirichlet.mean(params));} //Sample, Mean
-				else if(df==4){return(Dirichlet.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Dir");}
+				if(df==-1 || df==3){return(Dirichlet.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Dirichlet.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Dir",language);} //Invalid parameters
 			}
 			else if(params.length==2){ //(x,alpha,f)
-				if(df==0){return(Dirichlet.pdf(params));} //PDF
-				else if(df==1){return(Dirichlet.cdf(params));} //CDF
-				else if(df==2){return(Dirichlet.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Dir");}
+				if(df==0){return(Dirichlet.pdf(params, language));} //PDF
+				else if(df==1){return(Dirichlet.cdf(params, language));} //CDF
+				else if(df==2){return(Dirichlet.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Dir",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Dir");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Dir",language);} //Incorrect number of parameters
 		}
 		case "MvNorm": {
 			if(params.length==2){ //(mu,sigma) return mean
-				if(df==-1 || df==3){return(MultivariateNormal.mean(params));} //Sample, Mean
-				else if(df==4){return(MultivariateNormal.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","MvNorm");}
+				if(df==-1 || df==3){return(MultivariateNormal.mean(params, language));} //Sample, Mean
+				else if(df==4){return(MultivariateNormal.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"MvNorm",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(x,mu,sigma,f)
-				if(df==0){return(MultivariateNormal.pdf(params));} //PDF
-				else if(df==1){return(MultivariateNormal.cdf(params));} //CDF
-				else if(df==2){return(MultivariateNormal.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","MvNorm");}
+				if(df==0){return(MultivariateNormal.pdf(params, language));} //PDF
+				else if(df==1){return(MultivariateNormal.cdf(params, language));} //CDF
+				else if(df==2){return(MultivariateNormal.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"MvNorm",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","MvNorm");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"MvNorm",language);} //Incorrect number of parameters
 		}
 		case "Multi": {
 			if(params.length==2){ //(n,p,~) return mean
-				if(df==-1 || df==3){return(Multinomial.mean(params));} //Sample, Mean
-				else if(df==4){return(Multinomial.variance(params));} //Variance
-				else{throw new NumericException("Invalid parameters","Multi");}
+				if(df==-1 || df==3){return(Multinomial.mean(params, language));} //Sample, Mean
+				else if(df==4){return(Multinomial.variance(params, language));} //Variance
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Multi",language);} //Invalid parameters
 			}
 			else if(params.length==3){ //(k,n,p,f)
-				if(df==0){return(Multinomial.pmf(params));} //PMF
-				else if(df==1){return(Multinomial.cdf(params));} //CDF
-				else if(df==2){return(Multinomial.quantile(params));} //Quantile
-				else{throw new NumericException("Invalid parameters","Multi");}
+				if(df==0){return(Multinomial.pmf(params, language));} //PMF
+				else if(df==1){return(Multinomial.cdf(params, language));} //CDF
+				else if(df==2){return(Multinomial.quantile(params, language));} //Quantile
+				else{throw new NumericException(language.message.getString("err.invalid_params"),"Multi",language);} //Invalid parameters
 			}
-			else{throw new NumericException("Incorrect number of parameters","Multi");}
+			else{throw new NumericException(language.message.getString("err.incorrect_num_params"),"Multi",language);} //Incorrect number of parameters
 		}
 
 		} //End switch
 		return(null);
 	}
 
-	public static Numeric sample(String dist, Numeric params[], MersenneTwisterFast generator) throws NumericException{
+	public static Numeric sample(String dist, Numeric params[], MersenneTwisterFast generator, Language language) throws NumericException{
 		switch(dist){
 		//Discrete
-		case "Bern": return(Bernoulli.sample(params, generator));
-		case "Bin": return(Binomial.sample(params, generator));
-		case "Cat": return(Categorical.sample(params, generator));
-		case "DUnif": return(DiscreteUniform.sample(params, generator));
-		case "Geom": return(Geometric.sample(params, generator));
-		case "HGeom": return(Hypergeometric.sample(params, generator));
-		case "NBin": return(NegativeBinomial.sample(params, generator));
-		case "Pois": return(Poisson.sample(params, generator));
-		case "Zipf": return(Zipf.sample(params, generator));
+		case "Bern": return(Bernoulli.sample(params, generator, language));
+		case "Bin": return(Binomial.sample(params, generator, language));
+		case "Cat": return(Categorical.sample(params, generator, language));
+		case "DUnif": return(DiscreteUniform.sample(params, generator, language));
+		case "Geom": return(Geometric.sample(params, generator, language));
+		case "HGeom": return(Hypergeometric.sample(params, generator, language));
+		case "NBin": return(NegativeBinomial.sample(params, generator, language));
+		case "Pois": return(Poisson.sample(params, generator, language));
+		case "Zipf": return(Zipf.sample(params, generator, language));
 		//Continuous
-		case "Beta": return(Beta.sample(params, generator));
-		case "Cauchy": return(Cauchy.sample(params, generator));
-		case "ChiSq": return(ChiSquare.sample(params, generator));
-		case "Expo": return(Exponential.sample(params, generator));
-		case "Gamma": return(Gamma.sample(params, generator));
-		case "Gumbel": return(Gumbel.sample(params, generator));
-		case "HalfCauchy": return(HalfCauchy.sample(params, generator));
-		case "HalfNorm": return(HalfNormal.sample(params, generator));
-		case "Laplace": return(Laplace.sample(params, generator));
-		case "Logistic": return(Logistic.sample(params, generator));
-		case "LogNorm": return(LogNormal.sample(params, generator));
-		case "Norm": return(Normal.sample(params, generator));
-		case "Pareto": return(Pareto.sample(params, generator));
-		case "PERT": return(PERT.sample(params, generator));
-		case "StudentT": return(StudentT.sample(params, generator));
-		case "Tri": return(Triangular.sample(params, generator));
-		case "Unif": return(Uniform.sample(params, generator));
-		case "Weibull": return(Weibull.sample(params, generator));
+		case "Beta": return(Beta.sample(params, generator, language));
+		case "Cauchy": return(Cauchy.sample(params, generator, language));
+		case "ChiSq": return(ChiSquare.sample(params, generator, language));
+		case "Expo": return(Exponential.sample(params, generator, language));
+		case "Gamma": return(Gamma.sample(params, generator, language));
+		case "Gumbel": return(Gumbel.sample(params, generator, language));
+		case "HalfCauchy": return(HalfCauchy.sample(params, generator, language));
+		case "HalfNorm": return(HalfNormal.sample(params, generator, language));
+		case "Laplace": return(Laplace.sample(params, generator, language));
+		case "Logistic": return(Logistic.sample(params, generator, language));
+		case "LogNorm": return(LogNormal.sample(params, generator, language));
+		case "Norm": return(Normal.sample(params, generator, language));
+		case "Pareto": return(Pareto.sample(params, generator, language));
+		case "PERT": return(PERT.sample(params, generator, language));
+		case "StudentT": return(StudentT.sample(params, generator, language));
+		case "Tri": return(Triangular.sample(params, generator, language));
+		case "Unif": return(Uniform.sample(params, generator, language));
+		case "Weibull": return(Weibull.sample(params, generator, language));
 		//Truncated
-		case "TruncNorm": return(TruncatedNormal.sample(params, generator));
+		case "TruncNorm": return(TruncatedNormal.sample(params, generator, language));
 		//Multivariate
-		case "Dir": return(Dirichlet.sample(params, generator));
-		case "MvNorm": return(MultivariateNormal.sample(params, generator));
-		case "Multi": return(Multinomial.sample(params, generator));
+		case "Dir": return(Dirichlet.sample(params, generator, language));
+		case "MvNorm": return(MultivariateNormal.sample(params, generator, language));
+		case "Multi": return(Multinomial.sample(params, generator, language));
 	
 		} //End switch
 		return(null);
 	}
 	
-	public static String getDescription(String dist){
+	public static String getDescription(String dist, Language language){
 		String des=null;
 		switch(dist){
 		//Discrete
-		case "Bern": return(Bernoulli.description());
-		case "Bin": return(Binomial.description());
-		case "Cat": return(Categorical.description());
-		case "DUnif": return(DiscreteUniform.description());
-		case "Geom": return(Geometric.description());
-		case "HGeom": return(Hypergeometric.description());
-		case "NBin": return(NegativeBinomial.description());
-		case "Pois": return(Poisson.description());
-		case "Zipf": return(Zipf.description());
+		case "Bern": return(Bernoulli.description(language));
+		case "Bin": return(Binomial.description(language));
+		case "Cat": return(Categorical.description(language));
+		case "DUnif": return(DiscreteUniform.description(language));
+		case "Geom": return(Geometric.description(language));
+		case "HGeom": return(Hypergeometric.description(language));
+		case "NBin": return(NegativeBinomial.description(language));
+		case "Pois": return(Poisson.description(language));
+		case "Zipf": return(Zipf.description(language));
 		//Continuous
-		case "Beta": return(Beta.description()); 
-		case "Cauchy": return(Cauchy.description());
-		case "ChiSq": return(ChiSquare.description());
-		case "Expo": return(Exponential.description());
-		case "Gamma": return(Gamma.description());
-		case "Gumbel": return(Gumbel.description());
-		case "HalfCauchy": return(HalfCauchy.description());
-		case "HalfNorm": return(HalfNormal.description());
-		case "Laplace": return(Laplace.description());
-		case "Logistic": return(Logistic.description());
-		case "LogNorm": return(LogNormal.description());
-		case "Norm": return(Normal.description());
-		case "Pareto": return(Pareto.description());
-		case "PERT": return(PERT.description());
-		case "StudentT": return(StudentT.description());
-		case "Tri": return(Triangular.description());
-		case "Unif": return(Uniform.description());
-		case "Weibull": return(Weibull.description());
+		case "Beta": return(Beta.description(language)); 
+		case "Cauchy": return(Cauchy.description(language));
+		case "ChiSq": return(ChiSquare.description(language));
+		case "Expo": return(Exponential.description(language));
+		case "Gamma": return(Gamma.description(language));
+		case "Gumbel": return(Gumbel.description(language));
+		case "HalfCauchy": return(HalfCauchy.description(language));
+		case "HalfNorm": return(HalfNormal.description(language));
+		case "Laplace": return(Laplace.description(language));
+		case "Logistic": return(Logistic.description(language));
+		case "LogNorm": return(LogNormal.description(language));
+		case "Norm": return(Normal.description(language));
+		case "Pareto": return(Pareto.description(language));
+		case "PERT": return(PERT.description(language));
+		case "StudentT": return(StudentT.description(language));
+		case "Tri": return(Triangular.description(language));
+		case "Unif": return(Uniform.description(language));
+		case "Weibull": return(Weibull.description(language));
 		//Truncated
-		case "TruncNorm": return(TruncatedNormal.description());
+		case "TruncNorm": return(TruncatedNormal.description(language));
 		//Multivariate
-		case "Dir": return(Dirichlet.description());
-		case "MvNorm": return(MultivariateNormal.description());
-		case "Multi": return(Multinomial.description());
+		case "Dir": return(Dirichlet.description(language));
+		case "MvNorm": return(MultivariateNormal.description(language));
+		case "Multi": return(Multinomial.description(language));
 
 		} //End switch
 		return(des);

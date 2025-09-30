@@ -58,8 +58,8 @@ public class frmDocument {
 	JButton btnDocument;
 	
 	public frmDocument(AmuaModel myModel){
-		initialize();
 		this.myModel=myModel;
+		initialize();
 	}
 	
 	/**
@@ -70,14 +70,14 @@ public class frmDocument {
 			frmDocument = new JDialog();
 			frmDocument.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDocument.class.getResource("/images/document_128.png")));
 			frmDocument.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmDocument.setTitle("Amua - Document Model");
+			frmDocument.setTitle("Amua - "+myModel.language.base.getString("title.document_model")); //Document Model
 			frmDocument.setResizable(false);
 			frmDocument.setBounds(100, 100, 500, 300);
 			frmDocument.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmDocument.getContentPane().setLayout(null);
 			
-			JLabel lblSelectAnExport = new JLabel("Select a format:");
-			lblSelectAnExport.setBounds(12, 23, 146, 16);
+			JLabel lblSelectAnExport = new JLabel(myModel.language.message.getString("ask.select_format")+":"); //Select a format
+			lblSelectAnExport.setBounds(12, 23, 188, 16);
 			frmDocument.getContentPane().add(lblSelectAnExport);
 			
 			JScrollPane scrollPane = new JScrollPane();
@@ -85,7 +85,8 @@ public class frmDocument {
 			frmDocument.getContentPane().add(scrollPane);
 			
 			final String descriptions[]=new String[1];
-			descriptions[0]="Creates an R Markdown file (.Rmd) that documents the model.  This can in turn be output to different formats (HTML, PDF, Word, etc).";
+			//descriptions[0]="Creates an R Markdown file (.Rmd) that documents the model.  This can in turn be output to different formats (HTML, PDF, Word, etc).";
+			descriptions[0]=myModel.language.base.getString("file.describe_rmarkdown");
 			
 			final String logos[]=new String[1];
 			logos[0]="/images/rMarkdownIcon";
@@ -100,7 +101,7 @@ public class frmDocument {
 				}
 			});
 			list.setModel(new AbstractListModel<String>() {
-				String[] values = new String[] {"R Markdown"};
+				String[] values = new String[] {myModel.language.base.getString("file.rmarkdown")}; //R markdown
 				public int getSize() {
 					return values.length;
 				}
@@ -111,11 +112,11 @@ public class frmDocument {
 			list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			scrollPane.setViewportView(list);
 			
-			JLabel lblDescription = new JLabel("Description:");
-			lblDescription.setBounds(232, 23, 86, 16);
+			JLabel lblDescription = new JLabel(myModel.language.base.getString("title.description")+":"); //Description
+			lblDescription.setBounds(232, 23, 256, 16);
 			frmDocument.getContentPane().add(lblDescription);
 			
-			btnDocument = new JButton("Document");
+			btnDocument = new JButton(myModel.language.base.getString("menu.document")); //Document
 			btnDocument.setEnabled(false);
 			btnDocument.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -125,10 +126,10 @@ public class frmDocument {
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 						
-						fc.setDialogTitle("Select Documentation Folder");
-						fc.setApproveButtonText("Document");
+						fc.setDialogTitle(myModel.language.base.getString("title.select_documentation_folder")); //Select Documentation Folder
+						fc.setApproveButtonText(myModel.language.base.getString("menu.document"));
 
-						int returnVal = fc.showDialog(frmDocument, "Select");
+						int returnVal = fc.showDialog(frmDocument, myModel.language.base.getString("button.select")); //Select
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
 							String dir=file.getAbsolutePath()+File.separator+myModel.name+"_Doc";
@@ -137,17 +138,17 @@ public class frmDocument {
 								new WriteRMD(dir,myModel);
 							}
 							
-							JOptionPane.showMessageDialog(frmDocument, "Documented!");
+							JOptionPane.showMessageDialog(frmDocument, myModel.language.message.getString("info.documented")); //Documented!
 							frmDocument.dispose();
 						}
 
 					}
 				}
 			});
-			btnDocument.setBounds(274, 232, 90, 28);
+			btnDocument.setBounds(254, 232, 110, 28);
 			frmDocument.getContentPane().add(btnDocument);
 			
-			JButton btnCancel = new JButton("Cancel");
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmDocument.dispose();

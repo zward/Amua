@@ -31,6 +31,7 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.awt.event.ActionEvent;
@@ -151,7 +152,7 @@ public class frmScenarios {
 	private void initialize() {
 		try{
 			frmScenarios = new JFrame();
-			frmScenarios.setTitle("Amua - Scenarios");
+			frmScenarios.setTitle("Amua - "+myModel.language.base.getString("menu.scenarios")); //Scenarios
 			frmScenarios.setIconImage(Toolkit.getDefaultToolkit().getImage(frmScenarios.class.getResource("/images/scenario_128.png")));
 			frmScenarios.setBounds(100, 100, 1100, 500);
 			frmScenarios.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -176,16 +177,20 @@ public class frmScenarios {
 					outcomes[d]=dimInfo.dimNames[d];
 				}
 				if(dimInfo.analysisType==1){ //CEA
-					outcomes[dimInfo.dimNames.length]="ICER ("+dimInfo.dimNames[dimInfo.costDim]+"/"+dimInfo.dimNames[dimInfo.effectDim]+")";
+					outcomes[dimInfo.dimNames.length]=myModel.language.analysis.getString("cea.icer")+" ("+dimInfo.dimNames[dimInfo.costDim]+"/"+dimInfo.dimNames[dimInfo.effectDim]+")"; //ICER
 				}
 				else if(dimInfo.analysisType==2){ //BCA
-					outcomes[dimInfo.dimNames.length]="NMB ("+dimInfo.dimNames[dimInfo.effectDim]+"-"+dimInfo.dimNames[dimInfo.costDim]+")";
+					outcomes[dimInfo.dimNames.length]=myModel.language.analysis.getString("bca.nmb")+" ("+dimInfo.dimNames[dimInfo.effectDim]+"-"+dimInfo.dimNames[dimInfo.costDim]+")"; //NMB
 				}
 			}
 
 			modelSchedule=new DefaultTableModel(
 					new Object[][] {,},
-					new String[] {"#", "Scenario Name","# Iterations","Object Updates","Sample Parameters"}) {
+					new String[] {"#", 
+							myModel.language.base.getString("object.scenario_name"), //Scenario Name
+							myModel.language.analysis.getString("sim.num_iterations"), //# Iterations
+							myModel.language.base.getString("object.object_updates"), //Object Updates
+							myModel.language.analysis.getString("sim.sample_parameters")}) { //Sample Parameters
 				public boolean isCellEditable(int row, int column) {return false;}
 			};
 
@@ -206,7 +211,7 @@ public class frmScenarios {
 
 				}
 			});
-			btnAdd.setToolTipText("Add");
+			btnAdd.setToolTipText(myModel.language.base.getString("button.add")); //Add
 			btnAdd.setIcon(new ScaledIcon("/images/add",16,16,16,true));
 			toolBar.add(btnAdd);
 
@@ -220,7 +225,7 @@ public class frmScenarios {
 					}
 				}
 			});
-			btnEdit.setToolTipText("Edit");
+			btnEdit.setToolTipText(myModel.language.base.getString("menu.edit")); //Edit
 			btnEdit.setIcon(new ScaledIcon("/images/edit",16,16,16,true));
 			toolBar.add(btnEdit);
 
@@ -234,7 +239,7 @@ public class frmScenarios {
 					}
 				}
 			});
-			btnDelete.setToolTipText("Delete");
+			btnDelete.setToolTipText(myModel.language.base.getString("button.delete")); //Delete
 			btnDelete.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
 			toolBar.add(btnDelete);
 
@@ -253,7 +258,7 @@ public class frmScenarios {
 					}
 				}
 			});
-			btnMoveUp.setToolTipText("Move Up");
+			btnMoveUp.setToolTipText(myModel.language.base.getString("button.move_up")); //Move Up
 			btnMoveUp.setIcon(new ScaledIcon("/images/upArrow",16,16,16,true));
 			toolBar.add(btnMoveUp);
 
@@ -272,11 +277,11 @@ public class frmScenarios {
 					}
 				}
 			});
-			btnMoveDown.setToolTipText("Move Down");
+			btnMoveDown.setToolTipText(myModel.language.base.getString("button.move_down")); //Move Down
 			btnMoveDown.setIcon(new ScaledIcon("/images/downArrow",16,16,16,true));
 			toolBar.add(btnMoveDown);
 
-			JLabel lblSelectScenariosTo = new JLabel("Select Scenarios to Run:");
+			JLabel lblSelectScenariosTo = new JLabel(myModel.language.message.getString("ask.select_scenarios")+":"); //Select Scenarios to Run
 			GridBagConstraints gbc_lblSelectScenariosTo = new GridBagConstraints();
 			gbc_lblSelectScenariosTo.anchor = GridBagConstraints.SOUTH;
 			gbc_lblSelectScenariosTo.insets = new Insets(0, 0, 5, 5);
@@ -294,7 +299,7 @@ public class frmScenarios {
 			frmScenarios.getContentPane().add(tabbedPane, gbc_tabbedPane);
 
 			JPanel panel_3 = new JPanel();
-			tabbedPane.addTab("Results", null, panel_3, null);
+			tabbedPane.addTab(myModel.language.analysis.getString("result.results"), null, panel_3, null); //Results
 			panel_3.setLayout(new BoxLayout(panel_3, BoxLayout.X_AXIS));
 
 			JScrollPane scrollPaneResults = new JScrollPane();
@@ -320,13 +325,13 @@ public class frmScenarios {
 				}
 			});
 			comboGroup.setVisible(false);
-			comboGroup.setBounds(935, 1, 136, 26);
+			comboGroup.setBounds(954, 1, 124, 26);
 			panel_2.add(comboGroup);
 
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				numSubgroups=myModel.subgroupNames.size();
 				subgroupNames=new String[numSubgroups+1];
-				subgroupNames[0]="Overall";
+				subgroupNames[0]=myModel.language.analysis.getString("result.overall"); //Overall
 				for(int g=0; g<numSubgroups; g++){
 					subgroupNames[g+1]=myModel.subgroupNames.get(g);
 				}
@@ -360,7 +365,7 @@ public class frmScenarios {
 			scrollPaneResults.setViewportView(tableResults);
 			
 			JPanel panel = new JPanel();
-			tabbedPane.addTab("Individual-level Results", null, panel, null);
+			tabbedPane.addTab(myModel.language.analysis.getString("result.individual_level_results"), null, panel, null); //Individual-level Results
 			tabbedPane.setEnabledAt(1, false);
 			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 			
@@ -450,7 +455,7 @@ public class frmScenarios {
 
 			
 
-			final JButton btnExport = new JButton("Export");
+			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -459,8 +464,8 @@ public class frmScenarios {
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 						
-						fc.setDialogTitle("Select Export Folder");
-						fc.setApproveButtonText("Export");
+						fc.setDialogTitle(myModel.language.base.getString("title.select_export_folder")); //Select Export Folder
+						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
 
 						int returnVal = fc.showSaveDialog(frmScenarios);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -474,7 +479,7 @@ public class frmScenarios {
 							int numRows=tableResults.getRowCount();
 							int numCols=tableResults.getColumnCount();
 							//headers
-							outS.write("Scenarios");
+							outS.write(myModel.language.base.getString("menu.scenarios")); //Scenarios
 							for(int c=1; c<numCols; c++){outS.write(","+tableResults.getColumnName(c));}
 							outS.newLine();
 							//data
@@ -494,7 +499,7 @@ public class frmScenarios {
 								int numRows2=tableIndResults.getRowCount();
 								int numCols2=tableIndResults.getColumnCount();
 								//headers
-								outS2.write("Scenario");
+								outS2.write(myModel.language.base.getString("object.scenario")); //Scenario
 								for(int c=1; c<numCols2; c++){outS2.write(","+tableIndResults.getColumnName(c));}
 								outS2.newLine();
 								//data
@@ -519,7 +524,7 @@ public class frmScenarios {
 									BufferedWriter out = new BufferedWriter(fstream);
 									
 									//Headers
-									out.write("Iteration");
+									out.write(myModel.language.base.getString("plot.iteration")); //Iteration
 									
 									DimInfo info=myModel.dimInfo;
 									int numDim=info.dimNames.length;
@@ -529,8 +534,8 @@ public class frmScenarios {
 										for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
 									}
 									if(analysisType>0){ //CEA or BCA
-										if(analysisType==1){out.write(",ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
-										else if(analysisType==2){out.write(",NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
+										if(analysisType==1){out.write(","+myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");} //ICER
+										else if(analysisType==2){out.write(","+myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");} //NMB
 										for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
 									}
 									out.newLine();
@@ -569,7 +574,7 @@ public class frmScenarios {
 								}
 							}
 							
-							JOptionPane.showMessageDialog(frmScenarios, "Exported!");
+							JOptionPane.showMessageDialog(frmScenarios, myModel.language.message.getString("info.exported")); //Exported!
 						}
 
 
@@ -583,18 +588,18 @@ public class frmScenarios {
 			btnExport.setBounds(712, 0, 90, 28);
 			panel_2.add(btnExport);
 
-			JButton btnSave = new JButton("Save");
+			JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					myModel.saveSnapshot("Edit Scenarios"); //Add to undo stack
+					myModel.saveSnapshot(myModel.language.base.getString("title.edit_scenarios")); //Add to undo stack (Edit Scenarios)
 					myModel.scenarios=scenarios;
 					frmScenarios.dispose();
 				}
 			});
-			btnSave.setBounds(116, 0, 83, 28);
+			btnSave.setBounds(99, 0, 100, 28);
 			panel_2.add(btnSave);
 
-			JButton btnCancel = new JButton("Cancel");
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmScenarios.dispose();
@@ -603,12 +608,12 @@ public class frmScenarios {
 			btnCancel.setBounds(226, 0, 90, 28);
 			panel_2.add(btnCancel);
 
-			JButton btnRun = new JButton("Run");
-			btnRun.setBounds(543, 0, 72, 28);
+			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
+			btnRun.setBounds(524, 0, 100, 28);
 			panel_2.add(btnRun);
 			
-			chckbxExportIterations = new JCheckBox("Export iterations");
-			chckbxExportIterations.setBounds(806, 5, 117, 18);
+			chckbxExportIterations = new JCheckBox(myModel.language.base.getString("title.export_iterations")); //Export iterations
+			chckbxExportIterations.setBounds(806, 5, 145, 18);
 			panel_2.add(chckbxExportIterations);
 			
 			
@@ -616,7 +621,7 @@ public class frmScenarios {
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					btnExport.setEnabled(false);
-					final ProgressMonitor progress=new ProgressMonitor(frmScenarios, "Running Scenarios", "Running", 0, 100);
+					final ProgressMonitor progress=new ProgressMonitor(frmScenarios, myModel.language.message.getString("info.running_scenarios"), myModel.language.message.getString("info.running"), 0, 100); //Running Scenarios, Running
 
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -628,10 +633,10 @@ public class frmScenarios {
 								//Check model first
 								ArrayList<String> errorsBase=myModel.parseModel();
 								if(errorsBase.size()>0){
-									JOptionPane.showMessageDialog(frmScenarios, "Errors in base case model!");
+									JOptionPane.showMessageDialog(frmScenarios, myModel.language.message.getString("err.base_case")); //Errors in base case model
 								}
 								else if(numScenarios==0){
-									JOptionPane.showMessageDialog(frmScenarios, "Please select at least one scenario to run!");
+									JOptionPane.showMessageDialog(frmScenarios, myModel.language.message.getString("err.select_one_scenario")); //Please select at least one scenario to run!
 								}
 								else{
 									boolean cancelled=false;
@@ -698,7 +703,7 @@ public class frmScenarios {
 									for(int g=0; g<numSubgroups+1; g++){
 										modelResults[g].setRowCount(0);
 										modelResults[g].setColumnCount(0);
-										modelResults[g].addColumn("Scenario");
+										modelResults[g].addColumn(myModel.language.base.getString("object.scenario")); //Scenario
 										if(maxIterations==1){ //no uncertainty
 											for(int d=0; d<numDim; d++){
 												for(int s=0; s<numStrat; s++){
@@ -707,30 +712,30 @@ public class frmScenarios {
 											}
 											//ICER
 											for(int s=0; s<numStrat; s++){
-												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]);
+												modelResults[g].addColumn(myModel.language.analysis.getString("cea.icer")+" "+myModel.strategyNames[s]); //ICER
 											}
 											//NMB
 											for(int s=0; s<numStrat; s++){
-												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]);
+												modelResults[g].addColumn(myModel.language.analysis.getString("bca.nmb")+" "+myModel.strategyNames[s]); //NMB
 											}
 										}
 										else{ //mean and bounds
 											for(int d=0; d<numDim; d++){
 												for(int s=0; s<numStrat; s++){
-													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (Mean)");
-													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (95% LB)");
-													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" (95% UB)");
+													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" ("+myModel.language.math.getString("sum.mean")+")"); //Mean
+													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" ("+myModel.language.math.getString("sum.95_lb")+")"); //95% LB
+													modelResults[g].addColumn(info.dimNames[d]+" "+myModel.strategyNames[s]+" ("+myModel.language.math.getString("sum.95_ub")+")"); //95% UB
 												}
 											}
 											for(int s=0; s<numStrat; s++){
-												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]+ "(Mean)");
-												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]+ "(95% LB)");
-												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]+ "(95% UB)");
+												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]+ "("+myModel.language.math.getString("sum.mean")+")"); //Mean
+												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]+ "("+myModel.language.math.getString("sum.95_lb")+")"); //95% LB
+												modelResults[g].addColumn("ICER "+myModel.strategyNames[s]+ "("+myModel.language.math.getString("sum.95_ub")+")"); //95% UB
 											}
 											for(int s=0; s<numStrat; s++){
-												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]+ "(Mean)");
-												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]+ "(95% LB)");
-												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]+ "(95% UB)");
+												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]+ "("+myModel.language.math.getString("sum.mean")+")"); //Mean
+												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]+ "("+myModel.language.math.getString("sum.95_lb")+")"); //95% LB
+												modelResults[g].addColumn("NMB "+myModel.strategyNames[s]+ "("+myModel.language.math.getString("sum.95_ub")+")"); //95% UB
 											}
 										}
 									}
@@ -740,26 +745,27 @@ public class frmScenarios {
 										for(int g=0; g<numSubgroups+1; g++){
 											modelIndResults[g].setRowCount(0);
 											modelIndResults[g].setColumnCount(0);
-											modelIndResults[g].addColumn("Scenario");
-											modelIndResults[g].addColumn("Strategy");
-											modelIndResults[g].addColumn("Outcome");
+											modelIndResults[g].addColumn(myModel.language.base.getString("object.scenario")); //Scenario
+											modelIndResults[g].addColumn(myModel.language.analysis.getString("gen.strategy")); //Strategy
+											modelIndResults[g].addColumn(myModel.language.analysis.getString("result.outcome")); //Outcome
 											if(maxIterations==1){ //no uncertainty
-												modelIndResults[g].addColumn("Mean");
-												modelIndResults[g].addColumn("SD");
-												modelIndResults[g].addColumn("Min");
-												modelIndResults[g].addColumn("Q1");
-												modelIndResults[g].addColumn("Median");
-												modelIndResults[g].addColumn("Q3");
-												modelIndResults[g].addColumn("Max");
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.mean")); //Mean
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.sd")); //SD
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.min")); //Min
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.q1")); //Q1
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.median")); //Median
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.q3")); //Q3
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.max")); //Max
 											}
 											else{ //mean and bounds
-												modelIndResults[g].addColumn("Mean: Mean (95% UI)");
-												modelIndResults[g].addColumn("SD: Mean (95% UI)");
-												modelIndResults[g].addColumn("Min: Mean (95% UI)");
-												modelIndResults[g].addColumn("Q1: Mean (95% UI)");
-												modelIndResults[g].addColumn("Median: Mean (95% UI)");
-												modelIndResults[g].addColumn("Q3: Mean (95% UI)");
-												modelIndResults[g].addColumn("Max: Mean (95% UI)");
+												String lbl=myModel.language.math.getString("sum.mean")+" ("+myModel.language.math.getString("sum.95_ui")+")";
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.mean")+": "+lbl); //Mean: Mean (95% UI)
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.sd")+": "+lbl); //SD: Mean (95% UI)
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.min")+": "+lbl); //Min: Mean (95% UI)
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.q1")+": "+lbl); //Q1: Mean (95% UI)
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.median")+": "+lbl); //Median: Mean (95% UI)
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.q3")+": "+lbl); //Q3: Mean (95% UI)
+												modelIndResults[g].addColumn(myModel.language.math.getString("sum.max")+": "+lbl); //Max: Mean (95% UI)
 											}
 										}
 									}
@@ -791,7 +797,9 @@ public class frmScenarios {
 										//Check for errors
 										ArrayList<String> errors=myModel.parseModel();
 										if(errors.size()>0){
-											JOptionPane.showMessageDialog(frmScenarios, "Errors found in run: "+curScenario.name+"!");
+											//Errors found in run [name]!
+											String msg = MessageFormat.format(myModel.language.message.getString("err.errs_found_run"), curScenario.name);
+											JOptionPane.showMessageDialog(frmScenarios, msg);
 										}
 
 										//Run model
@@ -818,7 +826,9 @@ public class frmScenarios {
 											myModel.markov.discountRewards=curScenario.discountRewards;
 											if(curScenario.discountRewards) {
 												if(curScenario.discountRates==null || curScenario.discountRates.length!=numDim) {
-													JOptionPane.showMessageDialog(frmScenarios, "Error: Incorrect model dimensions in Scenario "+curScenario.name+" !");
+													//Error: Incorrect model dimensions in Scenario [name]!
+													String msg = MessageFormat.format(myModel.language.message.getString("err.incorrect_dim_scenario"), curScenario.name);
+													JOptionPane.showMessageDialog(frmScenarios, msg);
 												}
 												else {
 													for(int d=0; d<numDim; d++) {
@@ -861,7 +871,7 @@ public class frmScenarios {
 											if(seconds.length()<2){seconds="0"+seconds;}
 											if(minutes.length()<2){minutes="0"+minutes;}
 											progress.setProgress(curProg);
-											progress.setNote("Time left: "+minutes+":"+seconds);
+											progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 
 											if(curScenario.sampleParams){
 												myModel.curGenerator[0]=myModel.generatorParam;
@@ -875,7 +885,7 @@ public class frmScenarios {
 													for(int v=0; v<numParams; v++){ //sample all parameters
 														Parameter curParam=myModel.parameters.get(v);
 														if(curParam.locked==false) {
-															curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+															curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true, myModel.language);
 															curParam.locked=true;
 														}
 													}

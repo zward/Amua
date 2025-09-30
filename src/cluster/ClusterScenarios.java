@@ -218,7 +218,7 @@ public class ClusterScenarios{
 						for(int v=0; v<numParams; v++){ //sample all parameters
 							Parameter curParam=myModel.parameters.get(v);
 							if(curParam.locked==false) {
-								curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+								curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true, myModel.language);
 								curParam.locked=true;
 							}
 						}

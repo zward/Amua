@@ -18,6 +18,9 @@
 
 package math.distributions;
 
+import java.text.MessageFormat;
+
+import lang.Language;
 import main.MersenneTwisterFast;
 import math.MathUtils;
 import math.Numeric;
@@ -25,24 +28,26 @@ import math.NumericException;
 
 public final class Bernoulli{
 	
-	public static Numeric pmf(Numeric params[]) throws NumericException{
+	public static Numeric pmf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			double p=params[1].getProb();
+			int k=params[0].getInt(language);
+			double p=params[1].getProb(language);
 			if(k==0){return(new Numeric(1-p));}
 			else if(k==1){return(new Numeric(p));}
 			else{return(new Numeric(0));} //outside support
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("k and p should be the same size","Bern");
+				//k and p should be the same size
+				String msg = MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "p");
+				throw new NumericException(msg, "Bern", language);
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int k=(int) params[0].matrix[i][j];
-					double p=params[1].getMatrixProb(i, j);
+					double p=params[1].getMatrixProb(i, j, language);
 					if(k==0) {vals.matrix[i][j]=1-p;}
 					else if(k==1) {vals.matrix[i][j]=p;}
 					else {vals.matrix[i][j]=0;} //outside support
@@ -52,24 +57,26 @@ public final class Bernoulli{
 		}
 	}
 
-	public static Numeric cdf(Numeric params[]) throws NumericException{
+	public static Numeric cdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			double p=params[1].getProb();
+			int k=params[0].getInt(language);
+			double p=params[1].getProb(language);
 			if(k<0){return(new Numeric(0));}
 			else if(k==0){return(new Numeric(1-p));}
 			else{return(new Numeric(1.0));}  //k>=1
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("k and p should be the same size","Bern");
+				//k and p should be the same size
+				String msg = MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "p");
+				throw new NumericException(msg, "Bern", language);
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					int k=(int) params[0].matrix[i][j];
-					double p=params[1].getMatrixProb(i, j);
+					double p=params[1].getMatrixProb(i, j, language);
 					if(k<0) {vals.matrix[i][j]=0;}
 					else if(k==0) {vals.matrix[i][j]=1-p;}
 					else {vals.matrix[i][j]=1.0;} //k>=1
@@ -79,23 +86,25 @@ public final class Bernoulli{
 		}
 	}
 	
-	public static Numeric quantile(Numeric params[]) throws NumericException{
+	public static Numeric quantile(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			double x=params[0].getProb();
-			double p=params[1].getProb();
+			double x=params[0].getProb(language);
+			double p=params[1].getProb(language);
 			if(x<=(1-p)){return(new Numeric(0));}
 			else{return(new Numeric(1));}
 		}
 		else { //matrix
 			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {
-				throw new NumericException("x and p should be the same size","Bern");
+				//x and p should be the same size
+				String msg = MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "p");
+				throw new NumericException(msg, "Bern", language);
 			}
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double x=params[0].getMatrixProb(i, j);
-					double p=params[1].getMatrixProb(i, j);
+					double x=params[0].getMatrixProb(i, j, language);
+					double p=params[1].getMatrixProb(i, j, language);
 					if(x<=(1-p)) {vals.matrix[i][j]=0;}
 					else {vals.matrix[i][j]=1;}
 				}
@@ -104,9 +113,9 @@ public final class Bernoulli{
 		}
 	}
 	
-	public static Numeric mean(Numeric params[]) throws NumericException{
+	public static Numeric mean(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false) { //real number
-			double p=params[0].getProb();
+			double p=params[0].getProb(language);
 			return(new Numeric(p));
 		}
 		else { //matrix
@@ -114,7 +123,7 @@ public final class Bernoulli{
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double p=params[0].getMatrixProb(i, j);
+					double p=params[0].getMatrixProb(i, j, language);
 					vals.matrix[i][j]=p;
 				}
 			}
@@ -122,9 +131,9 @@ public final class Bernoulli{
 		}
 	}
 	
-	public static Numeric variance(Numeric params[]) throws NumericException{
+	public static Numeric variance(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false) { //real number
-			double p=params[0].getProb();
+			double p=params[0].getProb(language);
 			return(new Numeric(p*(1-p)));
 		}
 		else { //matrix
@@ -132,7 +141,7 @@ public final class Bernoulli{
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double p=params[0].getMatrixProb(i, j);
+					double p=params[0].getMatrixProb(i, j, language);
 					vals.matrix[i][j]=p*(1-p);
 				}
 			}
@@ -140,10 +149,10 @@ public final class Bernoulli{
 		}
 	}
 	
-	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
-		if(params.length!=1){throw new NumericException("Incorrect number of parameters","Bern");}
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator, Language language) throws NumericException{
+		if(params.length!=1){throw new NumericException(language.message.getString("err.incorrect_num_params"), "Bern", language);} //Incorrect number of parameters
 		if(params[0].isMatrix()==false) { //real number
-			double p=params[0].getProb();
+			double p=params[0].getProb(language);
 			double rand=generator.nextDouble();
 			if(rand<p){return(new Numeric(1));}
 			else{return(new Numeric(0));}
@@ -153,7 +162,7 @@ public final class Bernoulli{
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double p=params[0].getMatrixProb(i, j);
+					double p=params[0].getMatrixProb(i, j, language);
 					double rand=generator.nextDouble();
 					if(rand<p) {vals.matrix[i][j]=1.0;}
 					else {vals.matrix[i][j]=0;}
@@ -163,20 +172,20 @@ public final class Bernoulli{
 		}
 	}
 	
-	public static String description(){
-		String des="<html><b>Bernoulli Distribution</b><br>";
-		des+="The probability distribution of a single Boolean-valued outcome<br><br>";
-		des+="<i>Parameters</i><br>";
-		des+=MathUtils.consoleFont("p")+": Probability of success<br>";
-		des+="<i><br>Sample</i><br>";
-		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(p,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the Bernoulli distribution. Integer in "+MathUtils.consoleFont("{0,1}")+"<br>";
-		des+="<i><br>Distribution Functions</i><br>";
-		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(k,p,<b><i>f</i></b>)")+": Returns the value of the Bernoulli PMF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(k,p,<b><i>F</i></b>)")+": Returns the value of the Bernoulli CDF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(x,p,<b><i>Q</i></b>)")+": Returns the quantile (inverse CDF) of the Bernoulli distribution at "+MathUtils.consoleFont("x")+"<br>";
-		des+="<i><br>Moments</i><br>";
-		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(p,<b><i>E</i></b>)")+": Returns the mean of the Bernoulli distribution<br>";
-		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(p,<b><i>V</i></b>)")+": Returns the variance of the Bernoulli distribution<br>";
+	public static String description(Language language){
+		String des="<html><b>"+language.dist.getString("bern.name")+"</b><br>"; //Bernoulli Distribution
+		des+=language.dist.getString("bern.desc")+"<br><br>"; //The probability distribution of a single Boolean-valued outcome
+		des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
+		des+=MathUtils.consoleFont("p")+": "+language.dist.getString("desc.prob_success")+"<br>"; //Probability of success
+		des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
+		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(p,<b><i>~</i></b>)")+": "+language.dist.getString("desc.sample")+". "+language.dist.getString("bern.support")+"<br>"; //Returns a random variable (mean in base case) from the Bernoulli distribution. Integer in {0,1}
+		des+="<i><br>"+language.dist.getString("gen.distribution_functions")+"</i><br>"; //Distribution Functions
+		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(k,p,<b><i>f</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.pmf"), "k")+"<br>"; //Returns the value of the Bernoulli PMF at k
+		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(k,p,<b><i>F</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.cdf"), "k")+"<br>"; //Returns the value of the Bernoulli CDF at k
+		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(x,p,<b><i>Q</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.quantile"), "x")+"<br>"; //Returns the quantile (inverse CDF) of the Bernoulli distribution at x
+		des+="<i><br>"+language.dist.getString("gen.moments")+"</i><br>"; //Moments
+		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(p,<b><i>E</i></b>)")+": "+language.dist.getString("desc.mean")+"<br>"; //Returns the mean of the Bernoulli distribution
+		des+=MathUtils.consoleFont("<b>Bern</b>","green")+MathUtils.consoleFont("(p,<b><i>V</i></b>)")+": "+language.dist.getString("desc.var")+"<br>"; //Returns the variance of the Bernoulli distribution
 		des+="</html>";
 		return(des);
 	}

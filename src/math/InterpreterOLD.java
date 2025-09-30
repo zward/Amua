@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 import base.AmuaModel;
+import lang.Language;
 import main.Parameter;
 import main.Table;
 import main.Variable;
@@ -35,30 +36,30 @@ import math.Distributions;
 public final class InterpreterOLD{
 
 	//Single-thread, defaults to thread 0
-	public static Numeric evaluate(String expression, AmuaModel myModel, boolean sample) throws Exception{
-		return(evaluate(expression,myModel,sample,0));
+	public static Numeric evaluate(String expression, AmuaModel myModel, boolean sample, Language language) throws Exception{
+		return(evaluate(expression,myModel,sample,0, language));
 	}
 	
 	//Thread-specific
-	public static Numeric evaluate(String expression,AmuaModel myModel,boolean sample,int curThread) throws Exception{
-		ArrayList<TokenOLD> tokens=tokenize(expression,myModel,sample,curThread);
+	public static Numeric evaluate(String expression,AmuaModel myModel,boolean sample,int curThread, Language language) throws Exception{
+		ArrayList<TokenOLD> tokens=tokenize(expression,myModel,sample,curThread,language);
 		/*System.out.println("Tokens:");
 		for(int i=0; i<tokens.size(); i++){
 			System.out.print(tokens.get(i).word+" ");
 		}*/
-		ArrayList<TokenOLD> output=shuntTokens(tokens);
+		ArrayList<TokenOLD> output=shuntTokens(tokens, language);
 		/*System.out.println("\nOutput:");
 		for(int i=0; i<output.size(); i++){
 			System.out.print(output.get(i).word+" ");
 		}
 		System.out.println("\n");*/
-		Numeric result=evaluateResult(output);
+		Numeric result=evaluateResult(output, language);
 		return(result);
 	}
 	
-	public static ArrayList<TokenOLD> parse(String expression,AmuaModel myModel, boolean sample, int curThread) throws Exception{
-		ArrayList<TokenOLD> tokens=tokenize(expression,myModel,sample,curThread);
-		ArrayList<TokenOLD> output=shuntTokens(tokens);
+	public static ArrayList<TokenOLD> parse(String expression,AmuaModel myModel, boolean sample, int curThread,Language language) throws Exception{
+		ArrayList<TokenOLD> tokens=tokenize(expression,myModel,sample,curThread,language);
+		ArrayList<TokenOLD> output=shuntTokens(tokens, language);
 		return(output);
 	}
 	
@@ -102,16 +103,16 @@ public final class InterpreterOLD{
 		return(rows);
 	}
 	
-	private static Numeric[] evalArgs(String strArgs, AmuaModel myModel, boolean sample, int curThread) throws Exception{
+	private static Numeric[] evalArgs(String strArgs, AmuaModel myModel, boolean sample, int curThread, Language language) throws Exception{
 		String args[]=splitArgs(strArgs);
 		Numeric argsNumeric[]=new Numeric[args.length];
 		for(int i=0; i<args.length; i++){
-			argsNumeric[i]=evaluate(args[i],myModel,sample,curThread);
+			argsNumeric[i]=evaluate(args[i],myModel,sample,curThread, language);
 		}
 		return(argsNumeric);
 	}
 	
-	public static Numeric parseMatrix(String strMatrix, AmuaModel myModel,boolean sample,int curThread) throws Exception{
+	public static Numeric parseMatrix(String strMatrix, AmuaModel myModel,boolean sample,int curThread, Language language) throws Exception{
 		//Get dimensions
 		String rows[];
 		if(strMatrix.contains("[")){rows=splitRows(strMatrix);}
@@ -121,13 +122,13 @@ public final class InterpreterOLD{
 		double matrix[][]=new double[nrow][ncol];
 		for(int i=0; i<nrow; i++){
 			String curRow=rows[i];
-			Numeric entries[]=evalArgs(curRow,myModel,sample,curThread);
+			Numeric entries[]=evalArgs(curRow,myModel,sample,curThread, language);
 			if(entries.length!=ncol){
 				//throw error
 				return(null);
 			}
 			for(int j=0; j<ncol; j++){
-				matrix[i][j]=entries[j].getDouble();
+				matrix[i][j]=entries[j].getDouble(language);
 			}
 		}
 		return(new Numeric(matrix));
@@ -169,7 +170,7 @@ public final class InterpreterOLD{
 		return(index);
 	}
 	
-	private static ArrayList<TokenOLD> tokenize(String expression,AmuaModel myModel,boolean sample,int curThread) throws Exception{
+	private static ArrayList<TokenOLD> tokenize(String expression,AmuaModel myModel,boolean sample,int curThread, Language language) throws Exception{
 		ArrayList<TokenOLD> tokens=new ArrayList<TokenOLD>();
 		String curExpr=expression.replace(" ",""); //remove whitespace
 		curExpr=curExpr.replace('−', '-'); //convert long dashes to short dashes
@@ -184,16 +185,16 @@ public final class InterpreterOLD{
 						if(Functions.isFunction(word)){ //Function
 							int close=findRightParen(curExpr,pos);
 							String args=curExpr.substring(pos+1,close);
-							Numeric argsNumeric[]=evalArgs(args,myModel,sample,curThread);
-							Numeric fxResult=Functions.evaluate(word, argsNumeric);
+							Numeric argsNumeric[]=evalArgs(args,myModel,sample,curThread,language);
+							Numeric fxResult=Functions.evaluate(word, language, argsNumeric);
 							tokens.add(new TokenOLD(fxResult));
 							off=(close+1)-pos;
 						}
 						else if(MatrixFunctions.isFunction(word)){ //Matrix Function
 							int close=findRightParen(curExpr,pos);
 							String args=curExpr.substring(pos+1,close);
-							Numeric argsNumeric[]=evalArgs(args,myModel,sample,curThread);
-							Numeric fxResult=MatrixFunctions.evaluate(word, argsNumeric);
+							Numeric argsNumeric[]=evalArgs(args,myModel,sample,curThread,language);
+							Numeric fxResult=MatrixFunctions.evaluate(word, language, argsNumeric);
 							tokens.add(new TokenOLD(fxResult));
 							off=(close+1)-pos;
 						}
@@ -208,27 +209,27 @@ public final class InterpreterOLD{
 							else if(params[numParams-1].equals("Q")){df=2; numParams--;}
 							else if(params[numParams-1].equals("E")){df=3; numParams--;}
 							else if(params[numParams-1].equals("V")){df=4; numParams--;}
-							else{throw new NumericException("Invalid parameter \""+params[numParams-1]+"\"",word);}
+							else{throw new NumericException("Invalid parameter \""+params[numParams-1]+"\"",word,language);}
 							
 							Numeric paramsEval[]=new Numeric[numParams];
-							for(int i=0; i<numParams; i++){paramsEval[i]=evaluate(params[i], myModel,sample,curThread);}
+							for(int i=0; i<numParams; i++){paramsEval[i]=evaluate(params[i], myModel,sample,curThread,language);}
 														
 							Numeric distResult;
 							if(sample==false){
-								distResult=Distributions.evaluate(word,paramsEval,df);
+								distResult=Distributions.evaluate(word,paramsEval,df,myModel.language);
 							}
 							else{ //sample is true
 								if(df!=-1){ //not a random variable
-									distResult=Distributions.evaluate(word,paramsEval,df);
+									distResult=Distributions.evaluate(word,paramsEval,df,myModel.language);
 								}
 								else{ //see if can sample
 									if(myModel.curGenerator[curThread]!=null){ //RNG available
 										//double rand=myModel.curGenerator[curThread].nextDouble();
 										//distResult=Distributions.sample(word,paramsEval,rand,myModel.curGenerator[curThread]);
-										distResult=Distributions.sample(word,paramsEval,myModel.curGenerator[curThread]);
+										distResult=Distributions.sample(word,paramsEval,myModel.curGenerator[curThread],language);
 									}
 									else{ //no RNG, shouldn't sample
-										distResult=Distributions.evaluate(word,paramsEval,df);
+										distResult=Distributions.evaluate(word,paramsEval,df,myModel.language);
 									}
 								}
 							}
@@ -252,7 +253,7 @@ public final class InterpreterOLD{
 								else if(params[numParams-1].equals("Q")){df=2; numParams--;}
 								else if(params[numParams-1].equals("E")){df=3; numParams--;}
 								else if(params[numParams-1].equals("V")){df=4; numParams--;}
-								else{throw new NumericException("Invalid parameter \""+params[numParams-1]+"\"",word);}
+								else{throw new NumericException("Invalid parameter \""+params[numParams-1]+"\"",word,language);}
 								
 								Numeric distResult;
 								if(sample==false){
@@ -309,8 +310,8 @@ public final class InterpreterOLD{
 							if(tableType.equals("Lookup")){
 								int close=findRightBracket(curExpr,pos);
 								String args[]=splitArgs(curExpr.substring(pos+1,close));
-								Numeric index=evaluate(args[0],myModel,sample,curThread);
-								Numeric val=new Numeric(curTable.getLookupValue(index.getDouble(), args[1]));
+								Numeric index=evaluate(args[0],myModel,sample,curThread,language);
+								Numeric val=new Numeric(curTable.getLookupValue(index.getDouble(language), args[1]));
 								if(negate){val.negate();}
 								tokens.add(new TokenOLD(val));
 								off=(close+1)-pos;
@@ -319,7 +320,7 @@ public final class InterpreterOLD{
 								int close=findRightBracket(curExpr,pos);
 								String args[]=splitArgs(curExpr.substring(pos+1,close));
 								Numeric matrix=new Numeric(curTable.data);
-								Numeric mat=matrix.getMatrixValue(args, myModel);
+								Numeric mat=matrix.getMatrixValue(args, myModel, myModel.language);
 								if(negate){mat.negate();}
 								tokens.add(new TokenOLD(mat));
 								off=(close+1)-pos;
@@ -329,7 +330,7 @@ public final class InterpreterOLD{
 							int close=findRightBracket(curExpr,pos);
 							String args[]=splitArgs(curExpr.substring(pos+1,close));
 							if(args.length!=2){
-								throw new NumericException("Invalid trace arguments","trace");
+								throw new NumericException("Invalid trace arguments","trace",language);
 								//throw error
 							}
 							Numeric trace=myModel.traceMarkov.getValue(args[0],args[1]);
@@ -341,12 +342,12 @@ public final class InterpreterOLD{
 							int paramIndex=myModel.getParameterIndex(word);
 							Parameter curParam=myModel.parameters.get(paramIndex);
 							if(curParam.locked==false){
-								curParam.value=InterpreterOLD.evaluate(curParam.expression,myModel,sample,curThread);
+								curParam.value=InterpreterOLD.evaluate(curParam.expression,myModel,sample,curThread,language);
 								if(sample){curParam.locked=true;}
 							}
 							int close=findRightBracket(curExpr,pos);
 							String args[]=splitArgs(curExpr.substring(pos+1,close));
-							Numeric mat=curParam.value.getMatrixValue(args,myModel);
+							Numeric mat=curParam.value.getMatrixValue(args,myModel,myModel.language);
 							if(negate){mat.negate();}
 							tokens.add(new TokenOLD(mat));
 							off=(close+1)-pos;
@@ -355,11 +356,11 @@ public final class InterpreterOLD{
 							int varIndex=myModel.getVariableIndex(word);
 							Variable curVar=myModel.variables.get(varIndex);
 							if(curVar.value==null){ //not initialized
-								curVar.value[curThread]=InterpreterOLD.evaluate(curVar.expression,myModel,sample,curThread);
+								curVar.value[curThread]=InterpreterOLD.evaluate(curVar.expression,myModel,sample,curThread,language);
 							}
 							int close=findRightBracket(curExpr,pos);
 							String args[]=splitArgs(curExpr.substring(pos+1,close));
-							Numeric mat=curVar.value[curThread].getMatrixValue(args,myModel);
+							Numeric mat=curVar.value[curThread].getMatrixValue(args,myModel,myModel.language);
 							if(negate){mat.negate();}
 							tokens.add(new TokenOLD(mat));
 							off=(close+1)-pos;
@@ -372,7 +373,7 @@ public final class InterpreterOLD{
 					else{ //beginning of word, get matrix values
 						int close=findRightBracket(curExpr,pos);
 						String strMatrix=curExpr.substring(pos+1,close);
-						Numeric matrix=parseMatrix(strMatrix,myModel,sample,curThread);
+						Numeric matrix=parseMatrix(strMatrix,myModel,sample,curThread,language);
 						tokens.add(new TokenOLD(matrix));
 						curExpr=curExpr.substring(close+1);
 						endWord=true;
@@ -463,7 +464,7 @@ public final class InterpreterOLD{
 	 * @return
 	 * @throws NumericException 
 	 */
-	private static ArrayList<TokenOLD> shuntTokens(ArrayList<TokenOLD> input) throws NumericException{
+	private static ArrayList<TokenOLD> shuntTokens(ArrayList<TokenOLD> input, Language language) throws NumericException{
 		ArrayList<TokenOLD> output=new ArrayList<TokenOLD>();
 		Stack<TokenOLD> stack=new Stack<TokenOLD>();
 		int numTokens=input.size();
@@ -495,7 +496,7 @@ public final class InterpreterOLD{
 					output.add(stack.pop());
 					//if empty stack we have mismatched parens
 					if(stack.isEmpty()){
-						throw new NumericException("Mismatched parantheses","Calculator");
+						throw new NumericException("Mismatched parantheses","Calculator",language);
 					}
 				}
 				stack.pop(); //remove left paren
@@ -505,7 +506,7 @@ public final class InterpreterOLD{
 		while(stack.size()>0){
 			if(stack.peek().type==Type.PAREN_RIGHT || stack.peek().type==Type.PAREN_LEFT){
 				//mismatched
-				throw new NumericException("Mismatched parantheses","Calculator");
+				throw new NumericException("Mismatched parantheses","Calculator",language);
 			}
 			else{
 				output.add(stack.pop());
@@ -521,7 +522,7 @@ public final class InterpreterOLD{
 	 * @return
 	 * @throws NumericException 
 	 */
-	private static Numeric evaluateResult(ArrayList<TokenOLD> tokens) throws NumericException{
+	private static Numeric evaluateResult(ArrayList<TokenOLD> tokens, Language language) throws NumericException{
 		int numTokens=tokens.size();
 		Stack<Numeric> operands=new Stack<Numeric>();
 		for(int i=0; i<numTokens; i++){
@@ -530,7 +531,7 @@ public final class InterpreterOLD{
 				String operator=curToken.word;
 				Numeric operand_2=operands.pop();
 				Numeric operand_1=operands.pop();
-				Numeric result=Operators.evaluate(operator,operand_1,operand_2);
+				Numeric result=Operators.evaluate(operator,operand_1,operand_2, language);
 				operands.push(result);
 			}
 			else{ //operand

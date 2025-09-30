@@ -86,7 +86,7 @@ public class ModelTextField extends JTextField{
 			if(node.validateText(checkProb)==false){valid=false;}
 			else{
 				try{
-					double testProb=Interpreter.evaluate(checkProb, myModel,false).getDouble();
+					double testProb=Interpreter.evaluate(checkProb, myModel, false, myModel.language).getDouble(myModel.language);
 					if(testProb<0 || testProb>1){valid=false;}
 				}catch(Exception e){
 					valid=false;

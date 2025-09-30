@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class GIFFilter extends javax.swing.filechooser.FileFilter {
-    public boolean accept(File f) {
+	Language language;
+	
+	public GIFFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
+	public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".gif");
     }
     
     public String getDescription() {
-        return "GIF Graphics Interchange Format";
+        return language.base.getString("file.gif"); //GIF Graphics Interchange Format
     }
 }

@@ -191,7 +191,7 @@ public class MarkovMonteCarloTEST{
 							for(int v=0; v<numVars; v++){
 								if(variables[v].independent){
 									//people[p].initVariableVals[v]=Interpreter.evaluate(variables[v].expression, myModel,true,finalN);
-									people[p].initVariableVals[v]=Interpreter.evaluateTokens(variables[v].parsedTokens, finalN, true);
+									people[p].initVariableVals[v]=Interpreter.evaluateTokens(variables[v].parsedTokens, finalN, true, myModel.language);
 									variables[v].value[finalN]=people[p].initVariableVals[v];
 								}
 							}
@@ -208,8 +208,8 @@ public class MarkovMonteCarloTEST{
 								people[p].inSubgroup=new boolean[numSubgroups];
 								for(int g=0; g<numSubgroups; g++){
 									//Numeric curVal=Interpreter.evaluate(myModel.subgroupDefinitions.get(g), myModel, false,finalN);
-									Numeric curVal=Interpreter.evaluateTokens(myModel.subgroupTokens[g], finalN, false);
-									people[p].inSubgroup[g]=curVal.getBool();
+									Numeric curVal=Interpreter.evaluateTokens(myModel.subgroupTokens[g], finalN, false, myModel.language);
+									people[p].inSubgroup[g]=curVal.getBool(myModel.language);
 								}
 							}
 
@@ -283,7 +283,7 @@ public class MarkovMonteCarloTEST{
 				if(t<markovTree.discountStartCycle){disCycle=0;} //don't discount yet
 				else{disCycle=(t-markovTree.discountStartCycle)+1;}
 				for(int d=0; d<numDim; d++){
-					Numeric curVal=Interpreter.evaluate(markovTree.discountRates[d], myModel, false);
+					Numeric curVal=Interpreter.evaluate(markovTree.discountRates[d], myModel, false, myModel.language);
 					double discountRate=curVal.getValue()/100.0;
 					discountFactors[t][d]=1.0/Math.pow(1+discountRate, disCycle);
 				}
@@ -414,7 +414,7 @@ public class MarkovMonteCarloTEST{
 									
 									for(int d=0; d<numDim; d++){ //Update state rewards
 										if(states[curState].rewardHasVariables[d]==true){
-											states[curState].curRewards[d][finalN]=Interpreter.evaluateTokens(states[curState].curRewardTokens[d], finalN, false).getDouble();
+											states[curState].curRewards[d][finalN]=Interpreter.evaluateTokens(states[curState].curRewardTokens[d], finalN, false, myModel.language).getDouble(myModel.language);
 										}
 										cycleRewards[t][d][finalN]+=states[curState].curRewards[d][finalN];
 										for(int g=0; g<numSubgroups; g++){
@@ -429,7 +429,7 @@ public class MarkovMonteCarloTEST{
 									
 									//update variables
 									for(int v=0; v<numVars; v++){
-										double val=variables[v].value[finalN].getDouble();
+										double val=variables[v].value[finalN].getDouble(myModel.language);
 										cycleVariables[t][v][finalN]+=val; cycleVariablesDenom[t][v][finalN]++;
 										for(int g=0; g<numSubgroups; g++){
 											if(curPerson.inSubgroup[g]){
@@ -565,7 +565,7 @@ public class MarkovMonteCarloTEST{
 				if(showTrace){//Show trace
 					String subgroupNames[]=new String[numSubgroups];
 					for(int g=0; g<numSubgroups; g++){subgroupNames[g]=myModel.subgroupNames.get(g);}
-					frmTrace window=new frmTrace(trace,curChain.panel.errorLog,traceGroup,subgroupNames);
+					frmTrace window=new frmTrace(trace,curChain.panel.errorLog,traceGroup,subgroupNames,myModel.language);
 					window.frmTrace.setVisible(true);
 				}
 			}
@@ -634,8 +634,8 @@ public class MarkovMonteCarloTEST{
 	private boolean checkTerminationCondition(MarkovNode curChain, int curThread) throws Exception{
 		boolean terminate=false;
 		//Numeric check=Interpreter.evaluate(curChain.terminationCondition, myModel,false);
-		Numeric check=Interpreter.evaluateTokens(curChain.curTerminationTokens, curThread, false);
-		if(check.getBool()){ //termination condition true
+		Numeric check=Interpreter.evaluateTokens(curChain.curTerminationTokens, curThread, false, myModel.language);
+		if(check.getBool(myModel.language)){ //termination condition true
 			terminate=true;
 		}
 		return(terminate);
@@ -665,7 +665,7 @@ public class MarkovMonteCarloTEST{
 		if(node.hasCost){
 			for(int d=0; d<numDim; d++){
 				if(node.costHasVariables[d]==true){
-					node.curCosts[d][curThread]=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false).getDouble();
+					node.curCosts[d][curThread]=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false, myModel.language).getDouble(myModel.language);
 				}
 				cycleRewards[t][d][curThread]+=node.curCosts[d][curThread];
 				for(int g=0; g<numSubgroups; g++){
@@ -701,7 +701,7 @@ public class MarkovMonteCarloTEST{
 		if(node.hasCost){
 			for(int d=0; d<numDim; d++){
 				//double curCost=Interpreter.evaluate(node.cost[d],myModel,false,curThread).getDouble();
-				double curCost=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false).getDouble();
+				double curCost=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false, myModel.language).getDouble(myModel.language);
 				node.curCosts[d][curThread]=curCost;
 			}
 		}
@@ -713,7 +713,7 @@ public class MarkovMonteCarloTEST{
 	private void evalRewards(int curThread) throws NumericException, Exception{
 		for(int s=0; s<numStates; s++){ //get pointers
 			for(int d=0; d<numDim; d++){
-				states[s].curRewards[d][curThread]=Interpreter.evaluateTokens(states[s].curRewardTokens[d], curThread, false).getDouble();
+				states[s].curRewards[d][curThread]=Interpreter.evaluateTokens(states[s].curRewardTokens[d], curThread, false, myModel.language).getDouble(myModel.language);
 			}
 		}
 	}
@@ -737,7 +737,7 @@ public class MarkovMonteCarloTEST{
 				}
 				else{ //Evaluate text
 					//curChild.curProb[curThread]=Interpreter.evaluate(curChild.prob,myModel,false,curThread).getDouble();
-					curChild.curProb[curThread]=Interpreter.evaluateTokens(curChild.curProbTokens, curThread, false).getDouble();
+					curChild.curProb[curThread]=Interpreter.evaluateTokens(curChild.curProbTokens, curThread, false, myModel.language).getDouble(myModel.language);
 					sumProb+=curChild.curProb[curThread];
 				}
 			}

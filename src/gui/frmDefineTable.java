@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.Vector;
 
 import javax.swing.DefaultCellEditor;
@@ -61,6 +62,7 @@ import javax.swing.table.TableCellEditor;
 
 import base.AmuaModel;
 import filters.CSVFilter;
+import lang.Language;
 import main.ErrorLog;
 import main.ScaledIcon;
 import main.Table;
@@ -112,18 +114,18 @@ public class frmDefineTable {
 			frmDefineTable = new JDialog();
 			frmDefineTable.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineTable.class.getResource("/images/table_128.png")));
 			frmDefineTable.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmDefineTable.setTitle("Amua - Define Table");
+			frmDefineTable.setTitle("Amua - "+myModel.language.base.getString("title.define_table")); //Define Table
 			frmDefineTable.setBounds(100, 100, 925, 600);
 			frmDefineTable.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			
 			GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.columnWidths = new int[]{75, 123, 84, 134, 100, 110, 285, 0, 0};
 			gridBagLayout.rowHeights = new int[]{28, 28, 334, 22, 65, 28, 0};
-			gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+			gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
 			gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 			frmDefineTable.getContentPane().setLayout(gridBagLayout);
 
-			JLabel lblName = new JLabel("Name:");
+			JLabel lblName = new JLabel(myModel.language.base.getString("object.name")+":"); //Name
 			GridBagConstraints gbc_lblName = new GridBagConstraints();
 			gbc_lblName.anchor = GridBagConstraints.EAST;
 			gbc_lblName.insets = new Insets(0, 0, 5, 5);
@@ -141,7 +143,7 @@ public class frmDefineTable {
 			frmDefineTable.getContentPane().add(textName, gbc_textName);
 			textName.setColumns(10);
 
-			JLabel lblType = new JLabel("Table Type:");
+			JLabel lblType = new JLabel(myModel.language.base.getString("table.table_type")+":"); //Table Type
 			GridBagConstraints gbc_lblType = new GridBagConstraints();
 			gbc_lblType.anchor = GridBagConstraints.EAST;
 			gbc_lblType.insets = new Insets(0, 0, 5, 5);
@@ -150,8 +152,8 @@ public class frmDefineTable {
 			frmDefineTable.getContentPane().add(lblType, gbc_lblType);
 
 			comboType = new JComboBox<String>();
-			lblExpectedValue = new JLabel("Expected Value:");
-			btnEvaluate = new JButton("Evaluate");
+			lblExpectedValue = new JLabel(myModel.language.math.getString("sum.expected_value")+":"); //Expected Value
+			btnEvaluate = new JButton(myModel.language.base.getString("button.evaluate")); //Evaluate
 			btnEvaluate.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try{
@@ -167,13 +169,15 @@ public class frmDefineTable {
 							mean+=prob*val;
 						}
 						if(Math.abs(sumProb-1.0)>MathUtils.tolerance){
-							JOptionPane.showMessageDialog(frmDefineTable, "Probabilities sum to "+sumProb+"!");
+							//Probabilities sum to [value]!
+							String msg=MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb);
+							JOptionPane.showMessageDialog(frmDefineTable, msg); 
 						}
 						else{
 							textEV.setText(mean+"");
 						}
 					}catch(Exception er){
-						JOptionPane.showMessageDialog(frmDefineTable,"Error: "+er.getMessage());
+						JOptionPane.showMessageDialog(frmDefineTable,myModel.language.message.getString("error")+": "+er.getMessage());
 					}
 				}
 			});
@@ -183,19 +187,19 @@ public class frmDefineTable {
 					if(selected==0){ //Lookup
 						int numCols=model.getColumnCount();
 						if(numCols==0){
-							model.addColumn("Index");
-							model.addColumn("Value");
+							model.addColumn(myModel.language.base.getString("table.index")); //Index
+							model.addColumn(myModel.language.analysis.getString("result.value")); //Value
 						}
 						else if(numCols==1){
-							model.setColumnIdentifiers(new String[]{"Index"});
-							model.addColumn("Value");
+							model.setColumnIdentifiers(new String[]{myModel.language.base.getString("table.index")}); //Index
+							model.addColumn(myModel.language.analysis.getString("result.value")); //Value
 						}
 						else{
 							String colNames[]=new String[numCols];
 							for(int c=0; c<numCols; c++){
 								colNames[c]=model.getColumnName(c);
 							}
-							colNames[0]="Index";
+							colNames[0]=myModel.language.base.getString("table.index"); //Index
 							model.setColumnIdentifiers(colNames);
 						}
 						textNumCols.setText(model.getColumnCount()+"");
@@ -209,19 +213,19 @@ public class frmDefineTable {
 					else if(selected==1){ //Distribution
 						int numCols=model.getColumnCount();
 						if(numCols==0){
-							model.addColumn("Probability");
-							model.addColumn("Value");
+							model.addColumn(myModel.language.math.getString("prob.probability")); //Probability
+							model.addColumn(myModel.language.analysis.getString("result.value")); //Value
 						}
 						else if(numCols==1){
-							model.setColumnIdentifiers(new String[]{"Probability"});
-							model.addColumn("Value");
+							model.setColumnIdentifiers(new String[]{myModel.language.math.getString("prob.probability")}); //Probability
+							model.addColumn(myModel.language.analysis.getString("result.value")); //Value
 						}
 						else{
 							String colNames[]=new String[numCols];
 							for(int c=0; c<numCols; c++){
 								colNames[c]=model.getColumnName(c);
 							}
-							colNames[0]="Probability";
+							colNames[0]=myModel.language.math.getString("prob.probability"); //Probability
 							model.setColumnIdentifiers(colNames);
 						}
 						textNumCols.setText(model.getColumnCount()+"");
@@ -249,7 +253,13 @@ public class frmDefineTable {
 					}
 				}
 			});
-			comboType.setModel(new DefaultComboBoxModel<String>(new String[] {"Lookup", "Distribution","Matrix"}));
+			//comboType.setModel(new DefaultComboBoxModel<String>(new String[] {"Lookup", "Distribution","Matrix"}));
+			String types[]=new String[3];
+			types[0]=myModel.language.base.getString("table.lookup"); //Lookup
+			types[1]=myModel.language.base.getString("table.distribution"); //Distribution
+			types[2]=myModel.language.base.getString("table.matrix"); //Matrix
+			comboType.setModel(new DefaultComboBoxModel<String>(types));
+			
 			GridBagConstraints gbc_comboType = new GridBagConstraints();
 			gbc_comboType.insets = new Insets(0, 0, 5, 5);
 			gbc_comboType.fill = GridBagConstraints.HORIZONTAL;
@@ -267,14 +277,15 @@ public class frmDefineTable {
 			frmDefineTable.getContentPane().add(scrollPane_2, gbc_scrollPane_2);
 
 			tableInterpolation = new interpolateTable();
+			tableInterpolation.language=myModel.language;
 			scrollPane_2.setViewportView(tableInterpolation);
 			tableInterpolation.setRowSelectionAllowed(false);
 			tableInterpolation.setShowVerticalLines(true);
 			tableInterpolation.setModel(new DefaultTableModel(
 					new Object[][] {
-						{"Interpolation Method", "Linear"},
-						{"Boundary Condition", "Natural"},
-						{"Extrapolate", "No"},
+						{myModel.language.base.getString("table.interpolation_method"), myModel.language.base.getString("table.linear")}, //Interpolation Method, Linear
+						{myModel.language.base.getString("table.boundary_condition"), myModel.language.base.getString("table.natural")}, //Boundary Condition, Natural
+						{myModel.language.base.getString("table.extrapolate"), myModel.language.base.getString("button.no")}, //Extrapolate, No
 					},
 					new String[] {
 							"", ""
@@ -315,13 +326,13 @@ public class frmDefineTable {
 			gbc_toolBar.gridy = 1;
 			frmDefineTable.getContentPane().add(toolBar, gbc_toolBar);
 
-			JButton btnImport = new JButton("Import");
+			JButton btnImport = new JButton(myModel.language.base.getString("menu.import")); //Import
 			btnImport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
-						fc.setDialogTitle("Import Table");
-						fc.setApproveButtonText("Import");
-						fc.setFileFilter(new CSVFilter());
+						fc.setDialogTitle(myModel.language.base.getString("title.import_table")); //Import Table
+						fc.setApproveButtonText(myModel.language.base.getString("menu.import")); //Import
+						fc.setFileFilter(new CSVFilter(myModel.language));
 
 						int returnVal = fc.showOpenDialog(frmDefineTable);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -361,7 +372,7 @@ public class frmDefineTable {
 					}
 				}
 			});
-			btnImport.setToolTipText("Import Table");
+			btnImport.setToolTipText(myModel.language.base.getString("title.import_table")); //Import Table
 			btnImport.setIcon(new ScaledIcon("/images/import",16,16,16,true));
 			toolBar.add(btnImport);
 
@@ -394,16 +405,16 @@ public class frmDefineTable {
 				}
 			});
 			btnPasteTable.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
-			btnPasteTable.setToolTipText("Paste Table");
+			btnPasteTable.setToolTipText(myModel.language.base.getString("title.paste_table")); //Paste Table
 			toolBar.add(btnPasteTable);
 			
-			JButton btnExport = new JButton("Export");
+			JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
-						fc.setDialogTitle("Export Table");
-						fc.setApproveButtonText("Export");
-						fc.setFileFilter(new CSVFilter());
+						fc.setDialogTitle(myModel.language.base.getString("title.export_table")); //Export Table
+						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
+						fc.setFileFilter(new CSVFilter(myModel.language));
 
 						int returnVal = fc.showSaveDialog(frmDefineTable);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -432,7 +443,7 @@ public class frmDefineTable {
 							}
 							out.close();
 							
-							JOptionPane.showMessageDialog(frmDefineTable, "Exported!");
+							JOptionPane.showMessageDialog(frmDefineTable, myModel.language.message.getString("info.exported")); //Exported!
 						}
 
 					}catch(Exception er){
@@ -441,7 +452,7 @@ public class frmDefineTable {
 					}
 				}
 			});
-			btnExport.setToolTipText("Export Table");
+			btnExport.setToolTipText(myModel.language.base.getString("title.export_table")); //Export Table
 			btnExport.setIcon(new ScaledIcon("/images/export",16,16,16,true));
 			toolBar.add(btnExport);
 
@@ -449,7 +460,7 @@ public class frmDefineTable {
 			separator.setOrientation(SwingConstants.VERTICAL);
 			toolBar.add(separator);
 
-			JLabel lblRows = new JLabel(" Rows:");
+			JLabel lblRows = new JLabel(" "+myModel.language.base.getString("table.rows")+":"); //Rows
 			toolBar.add(lblRows);
 
 			JButton btnAddRow = new JButton("");
@@ -462,7 +473,7 @@ public class frmDefineTable {
 					textNumRows.setText(model.getRowCount()+"");
 				}
 			});
-			btnAddRow.setToolTipText("Add Row");
+			btnAddRow.setToolTipText(myModel.language.base.getString("table.add_row")); //Add Row
 			btnAddRow.setIcon(new ScaledIcon("/images/add",16,16,16,true));
 			toolBar.add(btnAddRow);
 
@@ -478,7 +489,7 @@ public class frmDefineTable {
 					}
 				}
 			});
-			btnRemoveRow.setToolTipText("Remove Row");
+			btnRemoveRow.setToolTipText(myModel.language.base.getString("table.remove_row")); //Remove Row
 			btnRemoveRow.setIcon(new ScaledIcon("/images/remove",16,16,16,true));
 			toolBar.add(btnRemoveRow);
 
@@ -494,7 +505,7 @@ public class frmDefineTable {
 			separator_1.setOrientation(SwingConstants.VERTICAL);
 			toolBar.add(separator_1);
 
-			JLabel lblCols = new JLabel(" Cols:");
+			JLabel lblCols = new JLabel(" "+myModel.language.base.getString("table.cols")+":"); //Cols
 			toolBar.add(lblCols);
 
 			JButton btnBtnaddcol = new JButton("");
@@ -504,7 +515,7 @@ public class frmDefineTable {
 					int selected=viewTable.getSelectedColumn();
 					String name=null;
 					if(tableType<2){ //Lookup or distribution
-						name = JOptionPane.showInputDialog(frmDefineTable, "Column name:");
+						name = JOptionPane.showInputDialog(frmDefineTable, myModel.language.base.getString("table.column_name")+":"); //Column name
 					}
 					else{ //matrix
 						name=model.getColumnCount()+"";
@@ -532,7 +543,7 @@ public class frmDefineTable {
 				}
 			});
 			btnBtnaddcol.setIcon(new ScaledIcon("/images/add",16,16,16,true));
-			btnBtnaddcol.setToolTipText("Add Column");
+			btnBtnaddcol.setToolTipText(myModel.language.base.getString("table.add_column")); //Add Column
 			toolBar.add(btnBtnaddcol);
 
 			JButton btnRemoveColumn = new JButton("");
@@ -562,7 +573,7 @@ public class frmDefineTable {
 				}
 			});
 			btnRemoveColumn.setIcon(new ScaledIcon("/images/remove",16,16,16,true));
-			btnRemoveColumn.setToolTipText("Remove Column");
+			btnRemoveColumn.setToolTipText(myModel.language.base.getString("table.remove_column")); //Remove Column
 			toolBar.add(btnRemoveColumn);
 			
 			JButton btnEditColName = new JButton("");
@@ -570,11 +581,11 @@ public class frmDefineTable {
 				public void actionPerformed(ActionEvent arg0) {
 					int selected=viewTable.getSelectedColumn();
 					if(selected==-1) {
-						JOptionPane.showMessageDialog(frmDefineTable, "Please select a cell in the table!");
+						JOptionPane.showMessageDialog(frmDefineTable, myModel.language.message.getString("err.select_cell")); //Please select a cell in the table!
 					}
 					else{
 						String curName=model.getColumnName(selected);
-						String name = JOptionPane.showInputDialog(frmDefineTable, "Column name:",curName);
+						String name = JOptionPane.showInputDialog(frmDefineTable, myModel.language.base.getString("table.column_name")+":",curName); //Column name
 						if(name!=null && !name.isEmpty()){
 							int numCols=model.getColumnCount();
 							String colNames[]=new String[numCols];
@@ -587,7 +598,7 @@ public class frmDefineTable {
 					}
 				}
 			});
-			btnEditColName.setToolTipText("Edit Column Name");
+			btnEditColName.setToolTipText(myModel.language.base.getString("table.edit_column_name")); //Edit Column Name
 			btnEditColName.setIcon(new ScaledIcon("/images/edit",16,16,16,true));
 			toolBar.add(btnEditColName);
 
@@ -599,7 +610,7 @@ public class frmDefineTable {
 			toolBar.add(textNumCols);
 			textNumCols.setColumns(2);
 
-			lblMethod = new JLabel("Lookup Method:");
+			lblMethod = new JLabel(myModel.language.base.getString("table.lookup_method")+":"); //Lookup Method
 			GridBagConstraints gbc_lblMethod = new GridBagConstraints();
 			gbc_lblMethod.anchor = GridBagConstraints.EAST;
 			gbc_lblMethod.insets = new Insets(0, 0, 5, 5);
@@ -619,7 +630,13 @@ public class frmDefineTable {
 				}
 			});
 
-			comboLookupMethod.setModel(new DefaultComboBoxModel(new String[] {"Exact", "Interpolate", "Truncate"}));
+			//comboLookupMethod.setModel(new DefaultComboBoxModel(new String[] {"Exact", "Interpolate", "Truncate"}));
+			String methods[]=new String[3];
+			methods[0]=myModel.language.base.getString("table.exact"); //Exact
+			methods[1]=myModel.language.base.getString("table.interpolate"); //Interpolate
+			methods[2]=myModel.language.base.getString("table.truncate"); //Truncate
+			comboLookupMethod.setModel(new DefaultComboBoxModel(methods));
+			
 			GridBagConstraints gbc_comboLookupMethod = new GridBagConstraints();
 			gbc_comboLookupMethod.insets = new Insets(0, 0, 5, 5);
 			gbc_comboLookupMethod.fill = GridBagConstraints.HORIZONTAL;
@@ -636,7 +653,8 @@ public class frmDefineTable {
 			gbc_scrollPane.gridy = 2;
 			frmDefineTable.getContentPane().add(scrollPane, gbc_scrollPane);
 
-			model=new DefaultTableModel(new Object[][] {{null, null},},new String[] {"Index", "Value"});
+			model=new DefaultTableModel(new Object[][] {{null, null},},
+					new String[] {myModel.language.base.getString("table.index"), myModel.language.analysis.getString("result.value")}); //Index, Value
 
 			viewTable = new JTable();
 			viewTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -646,7 +664,7 @@ public class frmDefineTable {
 			viewTable.setModel(model);
 			scrollPane.setViewportView(viewTable);
 
-			JLabel lblNotes = new JLabel("Notes:");
+			JLabel lblNotes = new JLabel(myModel.language.base.getString("menu.notes")+":"); //Notes
 			GridBagConstraints gbc_lblNotes = new GridBagConstraints();
 			gbc_lblNotes.anchor = GridBagConstraints.SOUTHEAST;
 			gbc_lblNotes.insets = new Insets(0, 0, 5, 5);
@@ -693,138 +711,172 @@ public class frmDefineTable {
 			textNotes = new JTextArea();
 			scrollPane_1.setViewportView(textNotes);
 
-			JButton btnSave = new JButton("Save");
+			JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
-					boolean proceed=true;
-					//Ensure name is valid and unique
-					String testName=textName.getText();
-					String testType=(String) comboType.getSelectedItem();
-					String testLookupMethod=(String) comboLookupMethod.getSelectedItem();
-					String testInterpolate=(String) tableInterpolation.getValueAt(0, 1);
-					String testBoundary=(String) tableInterpolation.getValueAt(1, 1);
-					String testExtrapolate=(String) tableInterpolation.getValueAt(2, 1);
-					String testNotes=textNotes.getText();
-					if(testName.length()==0){
-						JOptionPane.showMessageDialog(frmDefineTable, "Please enter a name!"); 
-						proceed=false;
-					}
-					else if(Interpreter.isReservedString(testName)){
-						JOptionPane.showMessageDialog(frmDefineTable, testName+" is a reserved variable name!");
-						proceed=false;
-					}
-					else{
-						//Ensure name is unique
-						int index=myModel.getTableIndex(testName);
-						if(index!=-1 && index!=tableNum){
-							JOptionPane.showMessageDialog(frmDefineTable, testName+" is already defined as a table!");
-							proceed=false;
-						}
-						index=myModel.getParameterIndex(testName);
-						if(index!=-1){
-							JOptionPane.showMessageDialog(frmDefineTable, testName+" is already defined as a parameter!");
-							proceed=false;
-						}
-						index=myModel.getVariableIndex(testName);
-						if(index!=-1){
-							JOptionPane.showMessageDialog(frmDefineTable, testName+" is already defined as a variable!");
-							proceed=false;
-						}
-						
-						//Ensure name is valid
-						for(int i=0; i<testName.length(); i++){
-							if(Interpreter.isBreak(testName.charAt(i))){
-								JOptionPane.showMessageDialog(frmDefineTable, "Invalid character in name: "+testName.charAt(i));
-								proceed=false;
-							}
-						}
-											
-						for(int d=0; d<myModel.dimInfo.dimSymbols.length; d++){
-							if(testName.equals(myModel.dimInfo.dimSymbols[d])){
-								JOptionPane.showMessageDialog(frmDefineTable, testName+ " is a dimension label!");
-								proceed=false;
-							}
-						}
-					}
+						boolean proceed=true;
+						//Ensure name is valid and unique
+						String testName=textName.getText();
+						String strTypes[]=new String[] {"Lookup","Distribution","Matrix"};
+						String testType=strTypes[comboType.getSelectedIndex()];
+						String strMethods[]=new String[] {"Exact","Interpolate","Truncate"};
+						String testLookupMethod=strMethods[comboLookupMethod.getSelectedIndex()];
+						//tableInterpolation
+						String testInterpolate="";
+						String strVal=(String) tableInterpolation.getValueAt(0, 1);
+						if(strVal.equals(myModel.language.base.getString("table.linear"))) {testInterpolate="Linear";}
+						else if(strVal.equals(myModel.language.base.getString("table.cubic_splines"))) {testInterpolate="Cubic Splines";}
 
-					if(proceed==true){
-						if(comboType.getSelectedIndex()==0){ //Lookup
-							proceed=checkTable(); //Check table values
-							if(proceed==true){//Ensure index is ascending
-								for(int r=1; r<tempTable.length; r++){
-									double index0=tempTable[r-1][0];
-									double index1=tempTable[r][0];
-									if(index1<=index0){
-										JOptionPane.showMessageDialog(frmDefineTable, "Error: Index is not strictly ascending! ("+index1+"<="+index0+")");
-										proceed=false;
-										r=tempTable.length; //Quit loop
-									}
-								}
+						String testBoundary="";
+						strVal=(String) tableInterpolation.getValueAt(1, 1);
+						if(strVal.equals(myModel.language.base.getString("table.natural"))) {testBoundary="Natural";}
+						else if(strVal.equals(myModel.language.base.getString("table.clamped"))) {testBoundary="Clamped";}
+						else if(strVal.equals(myModel.language.base.getString("table.not_a_knot"))) {testBoundary="Not-a-knot";}
+						else if(strVal.equals(myModel.language.base.getString("table.periodic"))) {testBoundary="Periodic";}
+
+						String testExtrapolate="";
+						strVal=(String) tableInterpolation.getValueAt(2, 1);
+						if(strVal.equals(myModel.language.base.getString("button.no"))) {testExtrapolate="No";}
+						else if(strVal.equals(myModel.language.base.getString("button.yes"))) {testExtrapolate="Yes";}
+						else if(strVal.equals(myModel.language.base.getString("table.left_only"))) {testExtrapolate="Left only";}
+						else if(strVal.equals(myModel.language.base.getString("table.right_only"))) {testExtrapolate="Right only";}
+
+						String testNotes=textNotes.getText();
+						if(testName.length()==0){
+							JOptionPane.showMessageDialog(frmDefineTable, myModel.language.message.getString("err.please_enter_name")); //Please enter a name!
+							proceed=false;
+						}
+						else if(Interpreter.isReservedString(testName)){
+							//[name] is a reserved variable name!
+							String msg=MessageFormat.format(myModel.language.message.getString("err.reserved_name"), testName);
+							JOptionPane.showMessageDialog(frmDefineTable, msg);
+							proceed=false;
+						}
+						else{
+							//Ensure name is unique
+							int index=myModel.getTableIndex(testName);
+							if(index!=-1 && index!=tableNum){
+								//[name] is already defined as a table!
+								String msg=MessageFormat.format(myModel.language.message.getString("err.defined_table"), testName);
+								JOptionPane.showMessageDialog(frmDefineTable, msg);
+								proceed=false;
 							}
-							if(comboLookupMethod.getSelectedIndex()==1){ //Interpolate
-								if(viewTable.getRowCount()<2){
-									JOptionPane.showMessageDialog(frmDefineTable, "Error: At least 2 points are needed for interpolation!");
+							index=myModel.getParameterIndex(testName);
+							if(index!=-1){
+								//[name] is already defined as a parameter!
+								String msg=MessageFormat.format(myModel.language.message.getString("err.defined_parameter"), testName);
+								JOptionPane.showMessageDialog(frmDefineTable, msg);
+								proceed=false;
+							}
+							index=myModel.getVariableIndex(testName);
+							if(index!=-1){
+								//[name] is already defined as a variable!
+								String msg=MessageFormat.format(myModel.language.message.getString("err.defined_variable"), testName);
+								JOptionPane.showMessageDialog(frmDefineTable, msg);
+								proceed=false;
+							}
+
+							//Ensure name is valid
+							for(int i=0; i<testName.length(); i++){
+								if(Interpreter.isBreak(testName.charAt(i))){
+									//Invalid character in name
+									JOptionPane.showMessageDialog(frmDefineTable, myModel.language.message.getString("err.invalid_character")+": "+testName.charAt(i));
 									proceed=false;
 								}
 							}
-						}
-						else if(comboType.getSelectedIndex()==1){ //Distribution
-							proceed=checkTable(); //Check table values
-							if(proceed==true){ //Ensure probabilities sum to 1.0
-								double sum=0;
-								for(int r=0; r<tempTable.length; r++){
-									sum+=tempTable[r][0];
-								}
-								if(Math.abs(sum-1.0)>MathUtils.tolerance){
-									JOptionPane.showMessageDialog(frmDefineTable, "Error: Probabilities sum to "+sum);
+
+							for(int d=0; d<myModel.dimInfo.dimSymbols.length; d++){
+								if(testName.equals(myModel.dimInfo.dimSymbols[d])){
+									//[name] is a dimension label!
+									String msg=MessageFormat.format(myModel.language.message.getString("err.dim_label"), testName);
+									JOptionPane.showMessageDialog(frmDefineTable, msg);
 									proceed=false;
 								}
 							}
-						}
-						else if(comboType.getSelectedIndex()==2){ //Matrix
-							proceed=checkTable();
 						}
 
 						if(proceed==true){
-							if(tableNum==-1){
-								myModel.saveSnapshot("Add Table"); //Add to undo stack
-								table.name=testName;
-								table.type=testType;
-								table.lookupMethod=testLookupMethod;
-								parseTable();
-								table.notes=testNotes;
-								table.myModel=myModel;
-								myModel.tables.add(table);
-								myModel.addTable(table);
-							}
-							else{
-								boolean changed=false;
-								if(!table.name.equals(testName)){changed=true;}
-								if(!table.type.matches(testType)){changed=true;}
-								if(!table.lookupMethod.matches(testLookupMethod)){changed=true;}
-								if(table.interpolate!=null){
-									if(!table.interpolate.matches(testInterpolate)){changed=true;}
-									if(table.boundary!=null && !table.boundary.matches(testBoundary)){changed=true;}
-									if(!table.extrapolate.matches(testExtrapolate)){changed=true;}
+							if(comboType.getSelectedIndex()==0){ //Lookup
+								proceed=checkTable(); //Check table values
+								if(proceed==true){//Ensure index is ascending
+									for(int r=1; r<tempTable.length; r++){
+										double index0=tempTable[r-1][0];
+										double index1=tempTable[r][0];
+										if(index1<=index0){
+											//Error: Index is not strictly ascending!
+											JOptionPane.showMessageDialog(frmDefineTable, myModel.language.message.getString("err.index_ascending")+" ("+index1+"<="+index0+")");
+											proceed=false;
+											r=tempTable.length; //Quit loop
+										}
+									}
 								}
-								if(matchTable()==false){changed=true;}
-								if(table.notes!=null && !table.notes.equals(testNotes)){changed=true;}
-
-								if(changed){myModel.saveSnapshot("Edit Table");} //Add to undo stack
-								table.name=testName;
-								table.type=testType;
-								table.lookupMethod=testLookupMethod;
-								parseTable();
-								table.notes=testNotes;
-								myModel.editTable(tableNum);
+								if(comboLookupMethod.getSelectedIndex()==1){ //Interpolate
+									if(viewTable.getRowCount()<2){
+										//Error: At least 2 points are needed for interpolation!
+										JOptionPane.showMessageDialog(frmDefineTable, myModel.language.message.getString("err.interpolate_points"));
+										proceed=false;
+									}
+								}
 							}
-							myModel.validateModelObjects(); //Update all model objects
-							myModel.rescale(myModel.scale); //Re-validates textfields
+							else if(comboType.getSelectedIndex()==1){ //Distribution
+								proceed=checkTable(); //Check table values
+								if(proceed==true){ //Ensure probabilities sum to 1.0
+									double sum=0;
+									for(int r=0; r<tempTable.length; r++){
+										sum+=tempTable[r][0];
+									}
+									if(Math.abs(sum-1.0)>MathUtils.tolerance){
+										//Probabilities sum to [value]!
+										String msg=MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sum);
+										JOptionPane.showMessageDialog(frmDefineTable, msg);
+										proceed=false;
+									}
+								}
+							}
+							else if(comboType.getSelectedIndex()==2){ //Matrix
+								proceed=checkTable();
+							}
 
-							frmDefineTable.dispose();
+							if(proceed==true){
+								if(tableNum==-1){
+									myModel.saveSnapshot(myModel.language.base.getString("button.add_table")); //Add to undo stack (Add Table)
+									table.name=testName;
+									table.type=testType;
+									table.lookupMethod=testLookupMethod;
+									parseTable();
+									table.notes=testNotes;
+									table.myModel=myModel;
+									myModel.tables.add(table);
+									myModel.addTable(table);
+								}
+								else{
+									boolean changed=false;
+									if(!table.name.equals(testName)){changed=true;}
+									if(!table.type.matches(testType)){changed=true;}
+									if(!table.lookupMethod.matches(testLookupMethod)){changed=true;}
+									if(table.interpolate!=null){
+										if(!table.interpolate.matches(testInterpolate)){changed=true;}
+										if(table.boundary!=null && !table.boundary.matches(testBoundary)){changed=true;}
+										if(!table.extrapolate.matches(testExtrapolate)){changed=true;}
+									}
+									if(matchTable()==false){changed=true;}
+									if(table.notes!=null && !table.notes.equals(testNotes)){changed=true;}
+
+									if(changed){myModel.saveSnapshot(myModel.language.base.getString("button.edit_table"));} //Add to undo stack (Edit Table)
+									table.name=testName;
+									table.type=testType;
+									table.lookupMethod=testLookupMethod;
+									parseTable();
+									table.notes=testNotes;
+									myModel.editTable(tableNum);
+								}
+								myModel.validateModelObjects(); //Update all model objects
+								myModel.rescale(myModel.scale); //Re-validates textfields
+
+								frmDefineTable.dispose();
+							}
 						}
-					}
 					}catch(Exception e1) {
 						e1.printStackTrace();
 						myModel.errorLog.recordError(e1);
@@ -840,7 +892,7 @@ public class frmDefineTable {
 			gbc_btnSave.gridy = 5;
 			frmDefineTable.getContentPane().add(btnSave, gbc_btnSave);
 
-			JButton btnCancel = new JButton("Cancel");
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmDefineTable.dispose();
@@ -872,7 +924,9 @@ public class frmDefineTable {
 					tempTable[r][c]=Double.parseDouble((String)viewTable.getValueAt(r, c));
 				}catch(Exception e){
 					valid=false;
-					JOptionPane.showMessageDialog(frmDefineTable, "Invalid entry: "+viewTable.getValueAt(r,c)+" (Row: "+r+" Col: "+c+")");
+					//Invalid entry: [value] (Row: [r] Col: [c])
+					String msg=MessageFormat.format(myModel.language.message.getString("err.invalid_entry"), viewTable.getValueAt(r,c), r, c);
+					JOptionPane.showMessageDialog(frmDefineTable, msg);
 					c=numCols; //Quit loop
 					r=numRows;
 				}
@@ -908,10 +962,27 @@ public class frmDefineTable {
 
 	private void parseTable(){
 		if(table.lookupMethod.matches("Interpolate")){
-			table.interpolate=(String) tableInterpolation.getValueAt(0, 1);
-			table.extrapolate=(String) tableInterpolation.getValueAt(2, 1);
-			if(table.interpolate.matches("Cubic Splines")){table.boundary=(String) tableInterpolation.getValueAt(1, 1);}
-			else{table.boundary=null;}
+			//Method
+			String strVal=(String) tableInterpolation.getValueAt(0, 1);
+			if(strVal.equals(myModel.language.base.getString("table.linear"))) {table.interpolate="Linear";}
+			else if(strVal.equals(myModel.language.base.getString("table.cubic_splines"))) {table.interpolate="Cubic Splines";}
+			//Extrapolate
+			strVal=(String) tableInterpolation.getValueAt(2, 1);
+			if(strVal.equals(myModel.language.base.getString("button.no"))) {table.extrapolate="No";}
+			else if(strVal.equals(myModel.language.base.getString("button.yes"))) {table.extrapolate="Yes";}
+			else if(strVal.equals(myModel.language.base.getString("table.left_only"))) {table.extrapolate="Left only";}
+			else if(strVal.equals(myModel.language.base.getString("table.right_only"))) {table.extrapolate="Right only";}
+			if(table.interpolate.matches("Cubic Splines")){
+				//Boundary condition
+				strVal=(String) tableInterpolation.getValueAt(1, 1);
+				if(strVal.equals(myModel.language.base.getString("table.natural"))) {table.boundary="Natural";}
+				else if(strVal.equals(myModel.language.base.getString("table.clamped"))) {table.boundary="Clamped";}
+				else if(strVal.equals(myModel.language.base.getString("table.not_a_knot"))) {table.boundary="Not-a-knot";}
+				else if(strVal.equals(myModel.language.base.getString("table.periodic"))) {table.boundary="Periodic";}
+			}
+			else{
+				table.boundary=null;
+			}
 		}
 		else{
 			table.interpolate=null;
@@ -941,13 +1012,36 @@ public class frmDefineTable {
 	private void getTable(){
 		table=myModel.tables.get(tableNum);
 		textName.setText(table.name);
-		comboType.setSelectedItem(table.type);
-		comboLookupMethod.setSelectedItem(table.lookupMethod);
+		//Type
+		if(table.type.matches("Lookup")) {comboType.setSelectedIndex(0);}
+		else if(table.type.matches("Distribution")) {comboType.setSelectedIndex(1);}
+		else if(table.type.matches("Matrix")) {comboType.setSelectedIndex(2);}
+		//Lookup Method
+		if(table.lookupMethod.matches("Exact")) {comboLookupMethod.setSelectedIndex(0);}
+		else if(table.lookupMethod.matches("Interpolate")) {comboLookupMethod.setSelectedIndex(1);}
+		else if(table.lookupMethod.matches("Truncate")) {comboLookupMethod.setSelectedIndex(2);}
+		
 		if(table.lookupMethod.matches("Interpolate")){
-			tableInterpolation.setValueAt(table.interpolate, 0, 1);
-			tableInterpolation.setValueAt(table.extrapolate, 2, 1);
+			//Method
+			String strVal="";
+			if(table.interpolate.matches("Linear")) {strVal=myModel.language.base.getString("table.linear");}
+			else if(table.interpolate.matches("Cubic Splines")) {strVal=myModel.language.base.getString("table.cubic_splines");}
+			tableInterpolation.setValueAt(strVal, 0, 1);	
+			//Extrapolate
+			strVal="";
+			if(table.extrapolate.matches("No")) {strVal=myModel.language.base.getString("button.no");}
+			else if(table.extrapolate.matches("Yes")) {strVal=myModel.language.base.getString("button.yes");}
+			else if(table.extrapolate.matches("Left only")) {strVal=myModel.language.base.getString("table.left_only");}
+			else if(table.extrapolate.matches("Right only")) {strVal=myModel.language.base.getString("table.right_only");}
+			tableInterpolation.setValueAt(strVal, 2, 1);	
+			//Boundary condition
 			if(table.interpolate.matches("Cubic Splines")){
-				tableInterpolation.setValueAt(table.boundary, 1, 1);
+				strVal="";
+				if(table.boundary.matches("Natural")){strVal=myModel.language.base.getString("table.natural");}
+				else if(table.boundary.matches("Clamped")){strVal=myModel.language.base.getString("table.clamped");}
+				else if(table.boundary.matches("Not-a-knot")){strVal=myModel.language.base.getString("table.not_a_knot");}
+				else if(table.boundary.matches("Periodic")){strVal=myModel.language.base.getString("table.periodic");}
+				tableInterpolation.setValueAt(strVal, 1, 1);
 				tableInterpolation.enabled[1]=true;
 			}
 		}
@@ -1006,6 +1100,7 @@ class interpolateTable extends JTable{
 	public boolean enabled[]=new boolean[]{false,false,false};
 	boolean isCubic=false;
 	interpolateTable thisTable=this;
+	Language language;
 	
 	@Override
 	public void setEnabled(boolean enabled){
@@ -1019,8 +1114,8 @@ class interpolateTable extends JTable{
 		if(column==1){
 			if(row==0){ //Interpolation method
 				final JComboBox<String> comboInterpolate = new JComboBox<String>();
-				comboInterpolate.addItem("Linear");
-				comboInterpolate.addItem("Cubic Splines");
+				comboInterpolate.addItem(language.base.getString("table.linear")); //Linear
+				comboInterpolate.addItem(language.base.getString("table.cubic_splines")); //Cubic Splines
 				comboInterpolate.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						int selected=comboInterpolate.getSelectedIndex();
@@ -1040,19 +1135,19 @@ class interpolateTable extends JTable{
 			}
 			else if(row==1){ //Boundary conditions
 				JComboBox<String> comboBoundary = new JComboBox<String>();
-				comboBoundary.addItem("Natural");
-				comboBoundary.addItem("Clamped");
-				comboBoundary.addItem("Not-a-knot");
-				comboBoundary.addItem("Periodic");
+				comboBoundary.addItem(language.base.getString("table.natural")); //Natural
+				comboBoundary.addItem(language.base.getString("table.clamped")); //Clamped
+				comboBoundary.addItem(language.base.getString("table.not_a_knot")); //Not-a-knot
+				comboBoundary.addItem(language.base.getString("table.periodic")); //Periodic
 				comboBoundary.setEnabled(enabled[1]);
 				return(new DefaultCellEditor(comboBoundary));
 			}
 			else if(row==2){ //Extrapolate
 				JComboBox<String> comboExtrapolate= new JComboBox<String>();
-				comboExtrapolate.addItem("No");
-				comboExtrapolate.addItem("Yes");
-				comboExtrapolate.addItem("Left only");
-				comboExtrapolate.addItem("Right only");
+				comboExtrapolate.addItem(language.base.getString("button.no")); //No
+				comboExtrapolate.addItem(language.base.getString("button.yes")); //Yes
+				comboExtrapolate.addItem(language.base.getString("table.left_only")); //Left only
+				comboExtrapolate.addItem(language.base.getString("table.right_only")); //Right only
 				return(new DefaultCellEditor(comboExtrapolate));
 			}
 		}

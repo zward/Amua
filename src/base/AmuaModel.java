@@ -20,6 +20,7 @@ package base;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -39,6 +40,7 @@ import gui.frmCEPlane;
 import gui.frmMain;
 import gui.frmTraceSummary;
 import gui.frmTraceSummaryMulti;
+import lang.Language;
 import main.Console;
 import main.ConsoleTable;
 import main.Constraint;
@@ -118,15 +120,17 @@ public class AmuaModel{
 	@XmlTransient public PanelMarkov panelMarkov;
 	
 	@XmlTransient public boolean cluster=false;
+	@XmlTransient public Language language;
 
 
 	//Constructor
 	public AmuaModel(int modelType,frmMain mainFrm, ErrorLog errorLog){
 		this.mainForm=mainFrm;
 		this.errorLog=errorLog;
+		this.language=mainFrm.language;
 		meta=new Metadata(mainFrm.version);
 		meta.update();
-		dimInfo=new DimInfo();
+		dimInfo=new DimInfo(language);
 		parameters=new ArrayList<Parameter>();
 		variables=new ArrayList<Variable>();
 		innateVariables=new ArrayList<Variable>();
@@ -174,6 +178,8 @@ public class AmuaModel{
 			this.mainForm=mainFrm;
 			this.errorLog=errorLog;
 			this.meta.version=mainFrm.version;
+			this.language=mainFrm.language;
+			this.dimInfo.language=language;
 			
 			innateVariables=new ArrayList<Variable>();
 			if(type==1) { //Markov
@@ -219,9 +225,9 @@ public class AmuaModel{
 			actionStackUndo=new Stack<String>();
 			actionStackRedo=new Stack<String>();
 			mainForm.mntmUndo.setEnabled(false);
-			mainForm.mntmUndo.setText("Undo");
+			mainForm.mntmUndo.setText(language.base.getString("menu.undo")); //Undo
 			mainForm.mntmRedo.setEnabled(false);
-			mainForm.mntmRedo.setText("Redo");
+			mainForm.mntmRedo.setText(language.base.getString("menu.redo")); //Redo
 			
 			if(type==0){ //Decision tree
 				panelTree=new PanelTree(mainFrm,this,errorLog);
@@ -357,7 +363,8 @@ public class AmuaModel{
 		modelStackRedo.push(new ModelSnapshot(this));
 		actionStackRedo.push(lastAction);
 		mainForm.mntmRedo.setEnabled(true);
-		mainForm.mntmRedo.setText("Redo "+lastAction);
+		String msg=MessageFormat.format(language.base.getString("menu.redo_action"), lastAction);
+		mainForm.mntmRedo.setText(msg); //Redo [action]
 
 		modelStackUndo.pop().getSnapshot(this); //gets previous model
 		
@@ -372,14 +379,20 @@ public class AmuaModel{
 		refreshAlignment();
 		refreshParamSetsTable();
 		
-		if(lastAction.contains("Parameter") || lastAction.contains("Variable") || lastAction.contains("Table") || lastAction.contains("Constraint")){rescale(scale);} //Re-validates textfields
+		String strParameter=language.base.getString("object.parameter"); //Parameter
+		String strVariable=language.base.getString("object.variable"); //Variable
+		String strTable=language.base.getString("object.table"); //Table
+		String strConstraint=language.base.getString("object.constraint"); //Constraint
+		
+		if(lastAction.contains(strParameter) || lastAction.contains(strVariable) || lastAction.contains(strTable) || lastAction.contains(strConstraint)){rescale(scale);} //Re-validates textfields
 
 		if(modelStackUndo.size()==0){
 			mainForm.mntmUndo.setEnabled(false);
-			mainForm.mntmUndo.setText("Undo");
+			mainForm.mntmUndo.setText(language.base.getString("menu.undo")); //Undo
 		}
 		else{
-			mainForm.mntmUndo.setText("Undo "+actionStackUndo.peek());
+			msg=MessageFormat.format(language.base.getString("menu.undo_action"), actionStackUndo.peek());
+			mainForm.mntmUndo.setText(msg); //Undo [action]
 		}
 	}
 
@@ -403,7 +416,8 @@ public class AmuaModel{
 		modelStackUndo.push(new ModelSnapshot(this));
 		actionStackUndo.push(lastAction);
 		mainForm.mntmUndo.setEnabled(true);
-		mainForm.mntmUndo.setText("Undo "+lastAction);
+		String msg=MessageFormat.format(language.base.getString("menu.undo_action"), lastAction);
+		mainForm.mntmUndo.setText(msg); //Undo [action]
 
 		modelStackRedo.pop().getSnapshot(this); //gets previous model
 		
@@ -418,14 +432,20 @@ public class AmuaModel{
 		refreshAlignment();
 		refreshParamSetsTable();
 		
-		if(lastAction.contains("Parameter") || lastAction.contains("Variable") || lastAction.contains("Table") || lastAction.contains("Constraint")){rescale(scale);} //Re-validates textfields
+		String strParameter=language.base.getString("object.parameter"); //Parameter
+		String strVariable=language.base.getString("object.variable"); //Variable
+		String strTable=language.base.getString("object.table"); //Table
+		String strConstraint=language.base.getString("object.constraint"); //Constraint
+		
+		if(lastAction.contains(strParameter) || lastAction.contains(strVariable) || lastAction.contains(strTable) || lastAction.contains(strConstraint)){rescale(scale);} //Re-validates textfields
 		
 		if(modelStackRedo.size()==0){
 			mainForm.mntmRedo.setEnabled(false);
-			mainForm.mntmRedo.setText("Redo");
+			mainForm.mntmRedo.setText(language.base.getString("menu.redo")); //Redo
 		}
 		else{
-			mainForm.mntmRedo.setText("Redo "+actionStackRedo.peek());
+			msg=MessageFormat.format(language.base.getString("menu.redo_action"), actionStackRedo.peek());
+			mainForm.mntmRedo.setText(msg); //Redo [action]
 		}
 	}
 
@@ -445,28 +465,28 @@ public class AmuaModel{
 	}
 
 	public void deleteParameter(int paramNum){
-		saveSnapshot("Delete Parameter");//Add to undo stack
+		saveSnapshot(language.base.getString("button.delete_parameter"));//"Delete Parameter": Add to undo stack
 		parameters.remove(paramNum);
 		mainForm.modelParameters.removeRow(paramNum);
 		validateModelObjects();
 	}
 	
 	public void deleteVariable(int varNum){
-		saveSnapshot("Delete Variable");//Add to undo stack
+		saveSnapshot(language.base.getString("button.delete_variable"));//"Delete Variable": Add to undo stack
 		variables.remove(varNum);
 		mainForm.modelVariables.removeRow(varNum);
 		validateModelObjects();
 	}
 
 	public void deleteTable(int tableNum){
-		saveSnapshot("Delete Table");//Add to undo stack
+		saveSnapshot(language.base.getString("button.delete_table"));//"Delete Table": Add to undo stack
 		tables.remove(tableNum);
 		mainForm.modelTables.removeRow(tableNum);
 		validateModelObjects();
 	}
 	
 	public void deleteConstraint(int constNum){
-		saveSnapshot("Delete Constraint"); //Add to undo stack
+		saveSnapshot(language.base.getString("button.delete_constraint")); //"Delete Constraint": Add to undo stack
 		constraints.remove(constNum);
 		mainForm.modelConstraints.removeRow(constNum);
 		validateModelObjects();
@@ -531,8 +551,8 @@ public class AmuaModel{
 			curParam.valid=true;
 			if(curParam.locked==false){
 				try{
-					curParam.parsedTokens=Interpreter.parse(curParam.expression,this);
-					curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, false);
+					curParam.parsedTokens=Interpreter.parse(curParam.expression, this, language);
+					curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, false, language);
 					
 				}catch(Exception e){
 					curParam.valid=false;
@@ -548,8 +568,8 @@ public class AmuaModel{
 			Variable curVar=variables.get(i);
 			curVar.valid=true;
 			try{
-				curVar.parsedTokens=Interpreter.parse(curVar.expression, this);
-				curVar.value[0]=Interpreter.evaluateTokens(curVar.parsedTokens, 0, false);
+				curVar.parsedTokens=Interpreter.parse(curVar.expression, this, language);
+				curVar.value[0]=Interpreter.evaluateTokens(curVar.parsedTokens, 0, false, language);
 				curVar.dependents=new ArrayList<Variable>();
 			}catch(Exception e){
 				curVar.valid=false;
@@ -651,13 +671,14 @@ public class AmuaModel{
 		actionStackUndo.push(action);
 		modelStackUndo.push(new ModelSnapshot(this));
 		mainForm.mntmUndo.setEnabled(true);
-		mainForm.mntmUndo.setText("Undo "+action);
+		String msg=MessageFormat.format(language.base.getString("menu.undo_action"), action);
+		mainForm.mntmUndo.setText(msg); //Undo [action]
 		//Clear redo stack
 		actionStackRedo.clear();
 		modelStackRedo.clear();
 
 		mainForm.mntmRedo.setEnabled(false);
-		mainForm.mntmRedo.setText("Redo");
+		mainForm.mntmRedo.setText(language.base.getString("menu.redo")); //Redo
 	}
 
 	private void setUnsavedStatus(){
@@ -668,20 +689,22 @@ public class AmuaModel{
 		//Undo
 		if(modelStackUndo.size()==0){
 			mainForm.mntmUndo.setEnabled(false);
-			mainForm.mntmUndo.setText("Undo");
+			mainForm.mntmUndo.setText(language.base.getString("menu.undo")); //Undo
 		}
 		else{
 			mainForm.mntmUndo.setEnabled(true);
-			mainForm.mntmUndo.setText("Undo "+actionStackUndo.peek());
+			String msg=MessageFormat.format(language.base.getString("menu.undo_action"), actionStackUndo.peek());
+			mainForm.mntmUndo.setText(msg); //Undo [action]
 		}
 		//Redo
 		if(modelStackRedo.size()==0){
 			mainForm.mntmRedo.setEnabled(false);
-			mainForm.mntmRedo.setText("Redo");
+			mainForm.mntmRedo.setText(language.base.getString("menu.redo")); //Redo
 		}
 		else{
 			mainForm.mntmRedo.setEnabled(true);
-			mainForm.mntmRedo.setText("Redo "+actionStackRedo.peek());
+			String msg=MessageFormat.format(language.base.getString("menu.redo_action"), actionStackRedo.peek());
+			mainForm.mntmRedo.setText(msg); //Redo action
 		}
 
 	}
@@ -698,7 +721,8 @@ public class AmuaModel{
 		for(int i=0; i<numParams; i++){
 			int index=getParameterIndex(parameterNames[i]);
 			if(index==-1){
-				console.print("Parameter not found: "+parameterNames[i]+"\n"); console.newLine();
+				//Parameter not found
+				console.print(language.message.getString("err.param_not_found")+": "+parameterNames[i]+"\n"); console.newLine();
 				valid=false;
 			}
 		}
@@ -720,24 +744,31 @@ public class AmuaModel{
 		
 		if(dimInfo.analysisType==0) { //EV
 			if(dimInfo.objectiveDim<0 || dimInfo.objectiveDim>dimInfo.dimNames.length-1) {
-				console.print("Analysis Type Error: EV Outcome is out of bounds! Index "+dimInfo.objectiveDim+"\n" );
-				console.print("Go to Model -> Properties to select a valid outcome\n");
+				//Error: EV Outcome is out of bounds! Index [index]
+				String msg=MessageFormat.format(language.message.getString("err.outcome_out_of_bounds"), dimInfo.objectiveDim);
+				console.print(msg+"\n" );
+				//Go to Model -> Properties to select a valid outcome
+				console.print(language.message.getString("err.select_valid_outcome")+"\n");
 				console.newLine();
 				return(false);
 			}
 		}
 		else { //CEA or BCA
-			String type="CEA";
-			if(dimInfo.analysisType==2) {type="BCA";}
 			if(dimInfo.costDim<0 || dimInfo.costDim>dimInfo.dimNames.length-1) {
-				console.print(type+" Error: Cost outcome is out of bounds! Index "+dimInfo.costDim+"\n" );
-				console.print("Go to Model -> Properties to select a valid cost outcome\n");
+				//Error: Cost outcome is out of bounds! Index [index]
+				String msg=MessageFormat.format(language.message.getString("err.cost_out_of_bounds"), dimInfo.costDim);
+				console.print(msg+"\n");
+				//Go to Model -> Properties to select a valid cost outcome
+				console.print(language.message.getString("err.select_valid_cost")+"\n");
 				console.newLine();
 				return(false);
 			}
 			if(dimInfo.effectDim<0 || dimInfo.effectDim>dimInfo.dimNames.length-1) {
-				console.print(type+" Error: Effect outcome is out of bounds! Index "+dimInfo.effectDim+"\n" );
-				console.print("Go to Model -> Properties to select a valid effect outcome\n");
+				////Error: Effect outcome is out of bounds! Index [index]
+				String msg=MessageFormat.format(language.message.getString("err.effect_out_of_bounds"), dimInfo.effectDim);
+				console.print(msg+"\n");
+				//Go to Model -> Properties to select a valid effect outcome
+				console.print(language.message.getString("err.select_valid_effect")+"\n");
 				console.newLine();
 				return(false);
 			}
@@ -745,14 +776,17 @@ public class AmuaModel{
 		
 		if(dimInfo.analysisType==1){ //CEA
 			if(dimInfo.baseScenario==null || dimInfo.baseScenario.isEmpty()){
-				console.print("\nCEA Error: Baseline scenario is not specified!\n");
+				//CEA Error: Baseline scenario is not specified!
+				console.print("\n"+language.message.getString("err.cea_baseline_not_specified")+"\n");
 				console.newLine();
 				return(false);
 			}
 			else{ //ensure strategy is valid
 				int baseIndex=getStrategyIndex(dimInfo.baseScenario);
 				if(baseIndex==-1){
-					console.print("\nCEA Error: Baseline scenario is not recognized! ("+dimInfo.baseScenario+")\n");
+					//CEA Error: Baseline scenario is not recognized! ("+dimInfo.baseScenario+")
+					String msg=MessageFormat.format(language.message.getString("err.cea_baseline_not_recognized"), dimInfo.baseScenario);
+					console.print("\n"+msg+"\n");
 					console.newLine();
 					return(false);
 				}
@@ -766,24 +800,25 @@ public class AmuaModel{
 		for(int p=0; p<parameters.size(); p++){
 			if(parameters.get(p).valid==false){
 				parse=false;
-				objectErrors.add("Parameter: "+parameters.get(p).name);
+				objectErrors.add(language.base.getString("object.parameter")+": "+parameters.get(p).name); //Parameter
 			}
 		}
 		for(int v=0; v<variables.size(); v++){
 			if(variables.get(v).valid==false){
 				parse=false;
-				objectErrors.add("Variable: "+variables.get(v).name);
+				objectErrors.add(language.base.getString("object.variable")+": "+variables.get(v).name); //Variable
 			}
 		}
 		for(int c=0; c<constraints.size(); c++){
 			if(constraints.get(c).valid==false){
 				parse=false;
-				objectErrors.add("Constraint: "+constraints.get(c).name);
+				objectErrors.add(language.base.getString("object.constraint")+": "+constraints.get(c).name); //Constraint
 			}
 		}
 				
 		if(parse==false){ //object errors found
-			console.print(objectErrors.size()+" object errors:\n");
+			String msg=MessageFormat.format(language.message.getString("err.object_errors"), objectErrors.size());
+			console.print(msg+":\n");  //[#] object errors
 			for(int i=0; i<objectErrors.size(); i++){
 				console.print(objectErrors.get(i)+"\n");		
 			}
@@ -827,21 +862,21 @@ public class AmuaModel{
 
 	public void printSimInfo(Console console){
 		console.print(new Date()+"\n");
-		if(type==0){console.print("Decision Tree:\t"+name+"\n");}
-		else if(type==1){console.print("Markov Model:\t"+name+"\n");}
+		if(type==0){console.print(language.base.getString("menu.decision_tree")+":\t"+name+"\n");} //Decision Tree
+		else if(type==1){console.print(language.base.getString("menu.markov_model")+":\t"+name+"\n");} //Markov Model
 		
-		if(simType==0 && cohortSize>1){console.print("Cohort size:\t"+cohortSize+"\n");}
-		else if(simType==1){console.print("Monte Carlo simulations:\t"+cohortSize+"\n");}
+		if(simType==0 && cohortSize>1){console.print(language.analysis.getString("sim.cohort_size")+":\t"+cohortSize+"\n");} //Cohort size
+		else if(simType==1){console.print(language.analysis.getString("sim.monte_carlo_simulations")+":\t"+cohortSize+"\n");} //Monte Carlo simulations
 	}
 	
 	public String getSimInfoHTML() {
 		String info="";
 		info+=(new Date()+"<br>");
-		if(type==0){info+=("Decision Tree:\t"+name+"<br>");}
-		else if(type==1){info+=("Markov Model:\t"+name+"<br>");}
+		if(type==0){info+=(language.base.getString("menu.decision_tree")+":\t"+name+"<br>");} //Decision Tree
+		else if(type==1){info+=(language.base.getString("menu.markov_model")+":\t"+name+"<br>");} //Markov Model
 		
-		if(simType==0 && cohortSize>1){info+=("Cohort size:\t"+cohortSize+"<br>");}
-		else if(simType==1){info+=("Monte Carlo simulations:\t"+cohortSize+"<br>");}
+		if(simType==0 && cohortSize>1){info+=(language.analysis.getString("sim.cohort_size")+":\t"+cohortSize+"<br>");} //Cohort size
+		else if(simType==1){info+=(language.analysis.getString("sim.monte_carlo_simulations")+":\t"+cohortSize+"<br>");} //Monte Carlo simulations
 		
 		return(info);
 	}
@@ -875,7 +910,7 @@ public class AmuaModel{
 	private void runDecisionTree(Console console,boolean display,RunReport runReport){
 		try{
 			if(display){
-				console.print("Running tree... ");
+				console.print(language.message.getString("info.running_tree")+"... "); //Running tree
 				panelTree.tree.showEV=true;
 			}
 			evaluateParameters(); //get parameters
@@ -884,7 +919,7 @@ public class AmuaModel{
 			unlockParams(); //unlock parameters
 			
 			if(display){
-				console.print("done!\n");
+				console.print(language.message.getString("info.done")+"\n"); //done!
 				printSimInfo(console);
 				runReport.printResults(console,true);
 				if(dimInfo.analysisType>0){ //display ICERS/NMB on tree
@@ -911,11 +946,11 @@ public class AmuaModel{
 			evaluateParameters(); //get parameters
 			if(cluster==false) { //desktop
 				if(panelMarkov.curNode==null || panelMarkov.curNode.type!=1){ //No Markov Chain selected, run all chains
-					if(display){console.print("Running model... ");}
+					if(display){console.print(language.message.getString("info.running_model")+"... ");} //Running model
 					markov.runModel(display,runReport,true);
 					runReport.getResults(true);
 					if(display){
-						console.print(" done!\n");
+						console.print(" "+language.message.getString("info.done")+"\n"); //done
 						printSimInfo(console);
 						runReport.printResults(console,true);
 						if(dimInfo.analysisType>0){ //display ICERs/NMB on tree
@@ -928,11 +963,11 @@ public class AmuaModel{
 					}
 				}
 				else{ //Single Markov Chain selected
-					if(display){console.print("Running Markov Chain: "+panelMarkov.curNode.name);}
+					if(display){console.print(language.message.getString("info.running_markov_chain")+": "+panelMarkov.curNode.name);} //Running Markov Chain
 					markov.runModel(display,runReport,false);
 
 					if(display){
-						console.print(" done!\n");
+						console.print(" "+language.message.getString("info.done")+"\n"); //done
 					}
 				}
 			}
@@ -953,7 +988,7 @@ public class AmuaModel{
 	
 	private void runMarkovParamSets(Console console,boolean display){
 		try{
-			ProgressMonitor progress=new ProgressMonitor(mainForm.frmMain, "Running parameter sets", "", 0, 100);
+			ProgressMonitor progress=new ProgressMonitor(mainForm.frmMain, language.message.getString("info.running_parameter_sets"), "", 0, 100); //Running parameter sets
 			int prog=0;
 			//get number of chains
 			ArrayList<MarkovNode> chainRoots=new ArrayList<MarkovNode>();
@@ -968,7 +1003,7 @@ public class AmuaModel{
 			int numSets=parameterSets.length;
 			MarkovTrace traces[][]=new MarkovTrace[numChains][numSets];
 			if(display){
-				console.print("Running parameter sets... ");
+				console.print(language.message.getString("info.running_parameter_sets")+"... "); //Running parameter sets
 				progress.setMaximum(numSets+1);
 			}
 			
@@ -1009,7 +1044,7 @@ public class AmuaModel{
 
 				//get mean and bounds of traces
 				if(display){
-					console.print(" done!\n");
+					console.print(" "+language.message.getString("info.done")+"\n"); //done
 					
 					double meanResults[][]=new double[numDim][numStrat];
 					double lbResults[][]=new double[numDim][numStrat];
@@ -1032,17 +1067,24 @@ public class AmuaModel{
 					
 					//Print results summary to console
 					printSimInfo(console);
-					console.print("Parameter Sets:\t"+numSets+"\n\n");
+					console.print(language.base.getString("menu.param_sets")+":\t"+numSets+"\n\n"); //Parameter Sets
 					boolean colTypes[]=new boolean[]{false,false,true,true,true}; //is column number (true), or text (false)
 					ConsoleTable curTable=new ConsoleTable(console,colTypes);
-					String headers[]=new String[]{"Strategy","Outcome","Mean","95% LB","95% UB"};
+					//String headers[]=new String[]{"Strategy","Outcome","Mean","95% LB","95% UB"};
+					String headers[]=new String[5];
+					headers[0]=language.analysis.getString("gen.strategy"); //Strategy
+					headers[1]=language.analysis.getString("result.outcome"); //Outcome
+					headers[2]=language.math.getString("sum.mean"); //Mean
+					headers[3]=language.math.getString("sum.95_lb"); //95% LB
+					headers[4]=language.math.getString("sum.95_ub"); //95% UB
+					
 					curTable.addRow(headers);
 					//strategy results
 					for(int s=0; s<numStrat; s++){
 						String stratName=strategyNames[s];
 						for(int d=0; d<numDim; d++){
 							String dimName=dimInfo.dimNames[d];
-							if(type==1 && markov.discountRewards){dimName+=" (Dis)";}
+							if(type==1 && markov.discountRewards){dimName+=(" "+language.analysis.getString("result.dis"));} //(Dis)
 							double mean=MathUtils.round(meanResults[d][s],dimInfo.decimals[d]);
 							double lb=MathUtils.round(lbResults[d][s],dimInfo.decimals[d]);
 							double ub=MathUtils.round(ubResults[d][s],dimInfo.decimals[d]);
@@ -1052,10 +1094,10 @@ public class AmuaModel{
 					}
 					curTable.print();
 					if(simType==1 && displayIndResults==true){
-						console.print("\nIndividual-level Results:\n");
+						console.print("\n"+language.analysis.getString("result.individual_level_results")+":\n"); //Individual-level Results
 						RunReportSummary summary=new RunReportSummary(runReports);
 						for(int s=0; s<numChains; s++){
-							console.print("Chain: "+chainRoots.get(s).name+"\n");
+							console.print(language.base.getString("node.chain")+": "+chainRoots.get(s).name+"\n"); //Chain
 							summary.microStatsSummary[s].printSummary(console);
 						}
 					}
@@ -1093,14 +1135,14 @@ public class AmuaModel{
 						}
 						
 						if(markov.showTrace==true && markov.compileTraces==false) {
-							frmTraceSummary showSummary=new frmTraceSummary(traceSummary,errorLog,null);
+							frmTraceSummary showSummary=new frmTraceSummary(traceSummary,errorLog,null,language);
 							showSummary.frmTraceSummary.setVisible(true);
 						}
 					}
 				}
 				if(markov.showTrace==true && markov.compileTraces==true) {
 					RunReportSummary reportSummary=new RunReportSummary(runReports);
-					frmTraceSummaryMulti window=new frmTraceSummaryMulti(reportSummary,errorLog);
+					frmTraceSummaryMulti window=new frmTraceSummaryMulti(reportSummary,errorLog,language);
 					window.frmTraceSummaryMulti.setVisible(true);
 				}
 				
@@ -1341,12 +1383,12 @@ public class AmuaModel{
 		int index=getParameterIndex(param);
 		Parameter curParam=parameters.get(index);
 		des="<html><b>"+curParam.name+"</b><br>";
-		des+="Expression: <br>"+MathUtils.consoleFont(curParam.expression)+"<br><br>";
+		des+=language.base.getString("object.expression")+": <br>"+MathUtils.consoleFont(curParam.expression)+"<br><br>"; //Expression
 		String strEV=curParam.value.toString().replaceAll("\\n", "<br>");
-		des+="Expected Value: <br>"+MathUtils.consoleFont(strEV)+"<br><br>";
+		des+=language.math.getString("sum.expected_value")+": <br>"+MathUtils.consoleFont(strEV)+"<br><br>"; //Expected Value
 		if(curParam.notes!=null && !curParam.notes.isEmpty()){
 			String strNotes=curParam.notes.replaceAll("\\n", "<br>");
-			des+="Notes: "+strNotes+"<br>";
+			des+=language.base.getString("menu.notes")+": "+strNotes+"<br>"; //Notes
 		}
 		des+="</html>";
 		return(des);
@@ -1357,12 +1399,12 @@ public class AmuaModel{
 		int index=getVariableIndex(var);
 		Variable curVar=variables.get(index);
 		des="<html><b>"+curVar.name+"</b><br>";
-		des+="Expression: <br>"+MathUtils.consoleFont(curVar.expression)+"<br><br>";
+		des+=language.base.getString("object.expression")+": <br>"+MathUtils.consoleFont(curVar.expression)+"<br><br>"; //Expression
 		String strEV=curVar.value[0].toString().replaceAll("\\n", "<br>");
-		des+="Expected Value: <br>"+MathUtils.consoleFont(strEV)+"<br><br>";
+		des+=language.math.getString("sum.expected_value")+": <br>"+MathUtils.consoleFont(strEV)+"<br><br>"; //Expected Value
 		if(curVar.notes!=null && !curVar.notes.isEmpty()){
 			String strNotes=curVar.notes.replaceAll("\\n", "<br>");
-			des+="Notes: "+strNotes+"<br>";
+			des+=language.base.getString("menu.notes")+": "+strNotes+"<br>"; //Notes
 		}
 		des+="</html>";
 		return(des);
@@ -1373,50 +1415,62 @@ public class AmuaModel{
 		Table curTable=tables.get(index);
 		if(curTable.type.matches("Lookup")){
 			String des="<html><b>"+curTable.name+"</b><br>";
-			des+="User-defined Lookup Table<br>";
-			des+="Lookup Method: "+curTable.lookupMethod+"<br>";
-			if(curTable.lookupMethod.matches("Interpolate")){
-				des+="Interpolation Method: "+curTable.interpolate+"<br>";
+			des+=language.base.getString("table.user_defined_lookup_table")+"<br>"; //User-defined Lookup Table
+			des+=language.base.getString("table.lookup_method")+": "+curTable.lookupMethod+"<br>"; //Lookup Method
+			if(curTable.lookupMethod.matches("Interpolate")){ 
+				des+=language.base.getString("table.interpolation_method")+": "+curTable.interpolate+"<br>"; //Interpolation Method
 				if(curTable.interpolate.matches("Cubic Splines")){
-					des+="Boundary Condition: "+curTable.boundary+"<br>";
+					des+=language.base.getString("table.boundary_condition")+": "+curTable.boundary+"<br>"; //Boundary Condition
 				}
-				des+="Extrapolate: "+curTable.extrapolate+"<br>";
+				des+=language.base.getString("table.extrapolate")+": "+curTable.extrapolate+"<br>"; //Extrapolate
 			}
-			des+="Size: "+MathUtils.consoleFont(curTable.numRows+"")+" x "+MathUtils.consoleFont(curTable.numCols+"")+"<br>";
+			des+=language.base.getString("object.size")+": "+MathUtils.consoleFont(curTable.numRows+"")+" x "+MathUtils.consoleFont(curTable.numCols+"")+"<br>"; //Size
 			if(curTable.notes!=null && !curTable.notes.isEmpty()){
 				String strNotes=curTable.notes.replaceAll("\\n", "<br>");
-				des+="Notes: "+strNotes+"<br>";
+				des+=language.base.getString("menu.notes")+": "+strNotes+"<br>"; //Notes
 			}
 			des+="</html>";
 			return(des);
 		}
 		else if(curTable.type.matches("Distribution")){
 			String des="<html><b>"+curTable.name+"</b><br>";
-			des+="User-defined (empirical) distribution<br><br>";
-			if(curTable.notes!=null && !curTable.notes.isEmpty()){des+="Notes: "+curTable.notes+"<br>";}
-			des+="<i>Parameters</i><br>";
+			des+=language.base.getString("table.user_defined_empirical_distribution")+"<br><br>"; //User-defined (empirical) distribution
+			if(curTable.notes!=null && !curTable.notes.isEmpty()){des+=language.base.getString("menu.notes")+": "+curTable.notes+"<br>";} //Notes
+			des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
 			int maxCol=curTable.numCols-1;
-			if(maxCol==1){des+=MathUtils.consoleFont("n")+": Table column ("+MathUtils.consoleFont("1")+")<br>";}
-			else{des+=MathUtils.consoleFont("n")+": Table column "+MathUtils.consoleFont("{1,...,"+maxCol+"}")+"<br><";}
-			des+="<i><br>Sample</i><br>";
-			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(n,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the user-defined distribution.<br>";
-			des+="<i><br>Distribution Functions</i><br>";
-			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(k,n,<b><i>f</i></b>)")+": Returns the value of the user-defined PMF at "+MathUtils.consoleFont("k")+"<br>";
-			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(k,n,<b><i>F</i></b>)")+": Returns the value of the user-defined CDF at "+MathUtils.consoleFont("k")+"<br>";
-			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(x,n,<b><i>Q</i></b>)")+": Returns the quantile (inverse CDF) of the user-defined distribution at "+MathUtils.consoleFont("x")+"<br>";
-			des+="<i><br>Moments</i><br>";
-			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(n,<b><i>E</i></b>)")+": Returns the mean of the user-defined distribution<br>";
-			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(n,<b><i>V</i></b>)")+": Returns the variance of the user-defined distribution<br>";
+			if(maxCol==1){des+=MathUtils.consoleFont("n")+": "+language.base.getString("table.table_column")+" ("+MathUtils.consoleFont("1")+")<br>";} //Table column
+			else{des+=MathUtils.consoleFont("n")+": "+language.base.getString("table.table_column")+" "+MathUtils.consoleFont("{1,...,"+maxCol+"}")+"<br><";} //Table column
+			des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
+			//Returns a random variable (mean in base case) from the user-defined distribution
+			String msg=language.dist.getString("desc.sample");
+			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(n,<b><i>~</i></b>)")+": "+msg+"<br>";
+			des+="<i><br>"+language.dist.getString("gen.distribution_functions")+"</i><br>"; //Distribution Functions
+			//Returns the value of the user-defined PMF at k
+			msg=MessageFormat.format(language.dist.getString("desc.pmf"), "k");
+			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(k,n,<b><i>f</i></b>)")+": "+msg+"<br>";
+			//Returns the value of the user-defined CDF at k
+			msg=MessageFormat.format(language.dist.getString("desc.cdf"), "k");
+			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(k,n,<b><i>F</i></b>)")+": "+msg+"<br>";
+			//Returns the quantile (inverse CDF) of the user-defined distribution at
+			msg=MessageFormat.format(language.dist.getString("desc.quantile"), "x");
+			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(x,n,<b><i>Q</i></b>)")+": "+msg+"<br>";
+			des+="<i><br>"+language.dist.getString("gen.moments")+"</i><br>";  //Moments
+			//Returns the mean of the user-defined distribution
+			msg=language.dist.getString("desc.mean");
+			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(n,<b><i>E</i></b>)")+": "+msg+"<br>";
+			//Returns the variance of the user-defined distribution
+			msg=language.dist.getString("desc.var");
+			des+=MathUtils.consoleFont("<b>"+curTable.name+"</b>","green")+MathUtils.consoleFont("(n,<b><i>V</i></b>)")+": "+msg+"<br>";
 			des+="</html>";
 			return(des);
 		}
 		else if(curTable.type.matches("Matrix")){
 			String des="<html><b>"+curTable.name+"</b><br>";
-			des+="Matrix<br>";
-			des+="Size: "+MathUtils.consoleFont(curTable.numRows+"")+" x "+MathUtils.consoleFont(curTable.numCols+"")+"<br>";
+			des+=language.base.getString("table.matrix")+"<br>"; //Matrix
+			des+=language.base.getString("object.size")+": "+MathUtils.consoleFont(curTable.numRows+"")+" x "+MathUtils.consoleFont(curTable.numCols+"")+"<br>"; //Size
 			if(curTable.notes!=null && !curTable.notes.isEmpty()){
 				String strNotes=curTable.notes.replaceAll("\\n", "<br>");
-				des+="Notes: "+strNotes+"<br>";
+				des+=language.base.getString("menu.notes")+": "+strNotes+"<br>"; //Notes
 			}
 			des+="</html>";
 			return(des);
@@ -1429,8 +1483,8 @@ public class AmuaModel{
 	public void buildParamSetsTable(DefaultTableModel modelParams){
 		modelParams.setRowCount(0);
 		modelParams.setColumnCount(0);
-		modelParams.addColumn("Set");
-		modelParams.addColumn("Score");
+		modelParams.addColumn(language.base.getString("object.set")); //Set
+		modelParams.addColumn(language.base.getString("object.score")); //Score
 		int numParams=parameterNames.length;
 		for(int p=0; p<numParams; p++){
 			modelParams.addColumn(parameterNames[p]);
@@ -1459,7 +1513,7 @@ public class AmuaModel{
 			Parameter curParam=parameters.get(p);
 			if(curParam.locked==false){
 				//curParam.value=Interpreter.evaluate(curParam.expression, this,sampleParam);
-				curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, sampleParam);
+				curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, sampleParam, language);
 				curParam.locked=true;
 			}
 		}
@@ -1470,7 +1524,7 @@ public class AmuaModel{
 		int numSubgroups=subgroupDefinitions.size();
 		subgroupTokens=new Token[numSubgroups][];
 		for(int g=0; g<numSubgroups; g++){
-			subgroupTokens[g]=Interpreter.parse(subgroupDefinitions.get(g), this);
+			subgroupTokens[g]=Interpreter.parse(subgroupDefinitions.get(g), this, language);
 		}
 	}
 }

@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class AmuaModelFilter extends javax.swing.filechooser.FileFilter {
+	Language language;
+	
+	public AmuaModelFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
     public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".amua");
     }
     
     public String getDescription() {
-        return "Amua Model";
+        return language.base.getString("file.amua"); //Amua Model
     }
 }

@@ -144,7 +144,16 @@ public class MicroStatsSummary{
 		
 		//outcomes
 		ConsoleTable table1=new ConsoleTable(console,colTypes);
-		String headers[]=new String[]{"Outcome","Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
+		//String headers[]=new String[]{"Outcome","Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
+		String headers[]=new String[8]; 
+		headers[0]=myModel.language.analysis.getString("result.outcome"); //Outcome
+		headers[1]=myModel.language.math.getString("sum.mean"); //Mean
+		headers[2]=myModel.language.math.getString("sum.sd"); //SD
+		headers[3]=myModel.language.math.getString("sum.min"); //Min
+		headers[4]=myModel.language.math.getString("sum.q1_25"); //Q1 (25%)
+		headers[5]=myModel.language.math.getString("sum.median"); //Median
+		headers[6]=myModel.language.math.getString("sum.q3_75"); //Q3 (75%)
+		headers[7]=myModel.language.math.getString("sum.max"); //Max
 		table1.addRow(headers);
 		int maxDec=0;
 		for(int d=0; d<numDim; d++){
@@ -163,7 +172,16 @@ public class MicroStatsSummary{
 		//variables
 		if(numVars>0){
 			ConsoleTable table2=new ConsoleTable(console,colTypes);
-			headers=new String[]{"Variable","Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
+			//headers=new String[]{"Variable","Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
+			headers=new String[8]; 
+			headers[0]=myModel.language.base.getString("object.variable"); //Variable
+			headers[1]=myModel.language.math.getString("sum.mean"); //Mean
+			headers[2]=myModel.language.math.getString("sum.sd"); //SD
+			headers[3]=myModel.language.math.getString("sum.min"); //Min
+			headers[4]=myModel.language.math.getString("sum.q1_25"); //Q1 (25%)
+			headers[5]=myModel.language.math.getString("sum.median"); //Median
+			headers[6]=myModel.language.math.getString("sum.q3_75"); //Q3 (75%)
+			headers[7]=myModel.language.math.getString("sum.max"); //Max
 			table2.addRow(headers);
 			for(int v=0; v<numVars; v++){
 				String row[]=new String[8];
@@ -182,8 +200,24 @@ public class MicroStatsSummary{
 		FileWriter fstream = new FileWriter(filepath); //Create new file
 		BufferedWriter out = new BufferedWriter(fstream);
 
-		String est[]=new String[]{"Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
-		out.write("Outcome,Estimate,Mean,95% LB,95% UB"); out.newLine();
+		//String est[]=new String[]{"Mean","SD","Min","Q1 (25%)","Median","Q3 (75%)","Max"};
+		String est[]=new String[7];
+		est[0]=myModel.language.math.getString("sum.mean"); //Mean
+		est[1]=myModel.language.math.getString("sum.sd"); //SD
+		est[2]=myModel.language.math.getString("sum.min"); //Min
+		est[3]=myModel.language.math.getString("sum.q1_25"); //Q1 (25%)
+		est[4]=myModel.language.math.getString("sum.median"); //Median
+		est[5]=myModel.language.math.getString("sum.q3_75"); //Q3 (75%)
+		est[6]=myModel.language.math.getString("sum.max"); //Max
+		
+		//out.write("Outcome,Estimate,Mean,95% LB,95% UB"); out.newLine();
+		out.write(myModel.language.analysis.getString("result.outcome")+","); //Outcome
+		out.write(myModel.language.analysis.getString("result.estimate")+","); //Estimate
+		out.write(myModel.language.math.getString("sum.mean")+","); //Mean
+		out.write(myModel.language.math.getString("sum.sum.95_lb")+","); //95% LB
+		out.write(myModel.language.math.getString("sum.sum.95_ub")+""); //95% UB
+		out.newLine();
+		
 		for(int d=0; d<numDim; d++){
 			for(int e=0; e<7; e++){
 				out.write(dimInfo.dimNames[d]+",");
@@ -197,7 +231,14 @@ public class MicroStatsSummary{
 		out.newLine();
 		
 		if(numVars>0){
-			out.write("Variable,Estimate,Mean,95% LB,95% UB"); out.newLine();
+			//out.write("Variable,Estimate,Mean,95% LB,95% UB"); out.newLine();
+			out.write(myModel.language.base.getString("object.variable")+","); //Variable
+			out.write(myModel.language.analysis.getString("result.estimate")+","); //Estimate
+			out.write(myModel.language.math.getString("sum.mean")+","); //Mean
+			out.write(myModel.language.math.getString("sum.sum.95_lb")+","); //95% LB
+			out.write(myModel.language.math.getString("sum.sum.95_ub")+""); //95% UB
+			out.newLine();
+			
 			for(int v=0; v<numVars; v++){
 				String varName=myModel.variables.get(v).name;
 				for(int e=0; e<7; e++){

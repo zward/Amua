@@ -65,33 +65,33 @@ public class WriteRMD{
 			writeLine("```");
 			writeLine("");
 			
-			writeLine("This model was developed in Amua (https://github.com/zward/Amua).");
+			writeLine(myModel.language.base.getString("title.this_model_amua")+" (https://github.com/zward/Amua)."); //This model was developed in Amua (https://github.com/zward/Amua)
 			writeLine("");
-			writeLine("|Property|Value|");
+			writeLine("|"+myModel.language.base.getString("title.property")+"|"+myModel.language.analysis.getString("result.value")+"|"); //Property, Value
 			writeLine("|--------|-----|");
-			writeLine("|Model name|"+myModel.name+"|");
-			if(myModel.type==0){writeLine("|Model type|Decision Tree|");}
-			else if(myModel.type==1){writeLine("|Model type|Markov Model|");}
-			if(myModel.simType==0){writeLine("|Simulation type|Cohort|");}
-			else if(myModel.simType==1){writeLine("|Simulation type|Monte Carlo|");}
+			writeLine("|"+myModel.language.base.getString("meta.model_name")+"|"+myModel.name+"|"); //Model name
+			if(myModel.type==0){writeLine("|"+myModel.language.base.getString("meta.model_type")+"|"+myModel.language.base.getString("menu.decision_tree")+"|");} //Model type, Decision Tree
+			else if(myModel.type==1){writeLine("|"+myModel.language.base.getString("meta.model_type")+"|"+myModel.language.base.getString("menu.markov_model")+"|");} //Model type, Markov Model
+			if(myModel.simType==0){writeLine("|"+myModel.language.analysis.getString("sim.simulation_type")+"|"+myModel.language.analysis.getString("sim.cohort")+"|");} //Simulation type, Cohort
+			else if(myModel.simType==1){writeLine("|"+myModel.language.analysis.getString("sim.simulation_type")+"|"+myModel.language.analysis.getString("sim.monte_carlo")+"|");} //Simulation type, Monte Carlo
 			writeLine("");
 			
-			writeLine("# Model Properties");
+			writeLine("# "+myModel.language.base.getString("title.model_properties")); //Model Properties
 			writeLine("");
 			//metadata
-			writeLine("## Metadata");
-			writeLine("|Property|Value|");
+			writeLine("## "+myModel.language.base.getString("meta.metadata")); //Metadata
+			writeLine("|"+myModel.language.base.getString("title.property")+"|"+myModel.language.analysis.getString("result.value")+"|"); //Property, Value
 			writeLine("|--------|-----|");
-			writeLine("|Created by|"+myModel.meta.author+"|");
-			writeLine("|Created|"+myModel.meta.dateCreated+"|");
-			writeLine("|Version created|"+myModel.meta.versionCreated+"|");
-			writeLine("|Modified by|"+myModel.meta.modifier+"|");
-			writeLine("|Modified|"+myModel.meta.dateModified+"|");
-			writeLine("|Version modified|"+myModel.meta.versionModified+"|");
+			writeLine("|"+myModel.language.base.getString("meta.created_by")+"|"+myModel.meta.author+"|"); //Created by
+			writeLine("|"+myModel.language.base.getString("meta.created")+"|"+myModel.meta.dateCreated+"|"); //Created
+			writeLine("|"+myModel.language.base.getString("meta.version_created")+"|"+myModel.meta.versionCreated+"|"); //Version created
+			writeLine("|"+myModel.language.base.getString("meta.modified_by")+"|"+myModel.meta.modifier+"|"); //Modified by
+			writeLine("|"+myModel.language.base.getString("meta.modified")+"|"+myModel.meta.dateModified+"|"); //Modified
+			writeLine("|"+myModel.language.base.getString("meta.version_modified")+"|"+myModel.meta.versionModified+"|"); //Version modified
 			writeLine("");
 			//analysis
-			writeLine("## Analysis");
-			writeLine("|Dimension|Symbol|Decimals|");
+			writeLine("## "+myModel.language.analysis.getString("gen.analysis")); //Analysis
+			writeLine("|"+myModel.language.analysis.getString("gen.dimension")+"|"+myModel.language.analysis.getString("gen.symbol")+"|"+myModel.language.analysis.getString("gen.decimals")+"|"); //Dimension|Symbol|Decimals
 			writeLine("|---------|------|--------|");
 			for(int d=0; d<myModel.dimInfo.dimNames.length; d++){
 				out.write("|"+myModel.dimInfo.dimNames[d]);
@@ -99,55 +99,55 @@ public class WriteRMD{
 				out.write("|"+myModel.dimInfo.decimals[d]+"|\n");
 			}
 			writeLine("");
-			writeLine("|Property|Value|");
+			writeLine("|"+myModel.language.base.getString("title.property")+"|"+myModel.language.analysis.getString("result.value")+"|"); //Property, Value
 			writeLine("|--------|-----|");
 			if(myModel.dimInfo.analysisType==0){ //EV
-				writeLine("|Analysis Type|Expected Value (EV)|");
-				if(myModel.dimInfo.objective==0){writeLine("|Objective|Maximize|");}
-				else if(myModel.dimInfo.objective==1){writeLine("|Objective|Minimize|");}
-				writeLine("|Outcome|"+myModel.dimInfo.dimNames[myModel.dimInfo.objectiveDim]+"|");
+				writeLine("|"+myModel.language.analysis.getString("gen.analysis_type")+"|"+myModel.language.analysis.getString("gen.expected_value")+"|"); //Analysis Type|Expected Value (EV)
+				if(myModel.dimInfo.objective==0){writeLine("|"+myModel.language.analysis.getString("gen.objective")+"|"+myModel.language.analysis.getString("gen.maximize")+"|");} //Objective|Maximize
+				else if(myModel.dimInfo.objective==1){writeLine("|"+myModel.language.analysis.getString("gen.objective")+"|"+myModel.language.analysis.getString("gen.minimize")+"|");} //Objective|Minimize
+				writeLine("|"+myModel.language.analysis.getString("result.outcome")+"|"+myModel.dimInfo.dimNames[myModel.dimInfo.objectiveDim]+"|"); //Outcome
 			}
 			else if(myModel.dimInfo.analysisType==1){ //CEA
-				writeLine("|Analysis Type|Cost-Effectiveness Analysis (CEA)|");
-				writeLine("|Cost|"+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]+"|");
-				writeLine("|Effect|"+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]+"|");
+				writeLine("|"+myModel.language.analysis.getString("gen.analysis_type")+"|"+myModel.language.analysis.getString("cea.cost_effectiveness_analysis")+"|"); //|Analysis Type|Cost-Effectiveness Analysis (CEA)|
+				writeLine("|"+myModel.language.analysis.getString("cea.cost")+"|"+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]+"|"); //Cost
+				writeLine("|"+myModel.language.analysis.getString("cea.effect")+"|"+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]+"|"); //Effect
 				myModel.getStrategies();
-				writeLine("|Baseline Strategy|"+myModel.dimInfo.baseScenario+"|");
-				writeLine("|Willingness-to-pay (WTP)|"+myModel.dimInfo.WTP+"|");
+				writeLine("|"+myModel.language.analysis.getString("cea.baseline_strategy")+"|"+myModel.dimInfo.baseScenario+"|"); //Baseline Strategy
+				writeLine("|"+myModel.language.analysis.getString("cea.wtp")+"|"+myModel.dimInfo.WTP+"|"); //Willingness-to-pay (WTP)
 			}
 			else if(myModel.dimInfo.analysisType==2){ //BCA
-				writeLine("|Analysis Type|Benefit-Cost Analysis (BCA)|");
-				writeLine("|Cost|"+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]+"|");
-				writeLine("|Benefit|"+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]+"|");
-				writeLine("|Willingness-to-pay (WTP)|"+myModel.dimInfo.WTP+"|");
+				writeLine("|"+myModel.language.analysis.getString("gen.analysis_type")+"|"+myModel.language.analysis.getString("bca.benefit_cost_analysis")+"|"); //|Analysis Type|Benefit-Cost Analysis (BCA)|
+				writeLine("|"+myModel.language.analysis.getString("cea.cost")+"|"+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]+"|"); //Cost
+				writeLine("|"+myModel.language.analysis.getString("bca.benefit")+"|"+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]+"|"); //Benefit
+				writeLine("|"+myModel.language.analysis.getString("cea.wtp")+"|"+myModel.dimInfo.WTP+"|"); //Willingness-to-pay (WTP)
 			}
 			writeLine("");
 			//simulation
-			writeLine("## Simulation");
-			writeLine("|Property|Value|");
+			writeLine("## "+myModel.language.analysis.getString("sim.simulation")); //Simulation
+			writeLine("|"+myModel.language.base.getString("title.property")+"|"+myModel.language.analysis.getString("result.value")+"|"); //Property, Value
 			writeLine("|--------|-----|");
 			if(myModel.simType==0){ //Cohort
-				writeLine("|Simulation type|Cohort (Deterministic)|");
-				writeLine("|Cohort size|"+myModel.cohortSize+"|");
+				writeLine("|"+myModel.language.analysis.getString("sim.simulation_type")+"|"+myModel.language.analysis.getString("sim.cohort_deterministic")+"|"); //Simulation type|Cohort (Deterministic)
+				writeLine("|"+myModel.language.analysis.getString("sim.cohort_size")+"|"+myModel.cohortSize+"|"); //Cohort size
 			}
 			else if(myModel.simType==1){ //Monte Carlo
-				writeLine("|Simulation type|Monte Carlo (Stochastic)|");
-				writeLine("|Number of simulations|"+myModel.cohortSize+"|");
+				writeLine("|"+myModel.language.analysis.getString("sim.simulation_type")+"|"+myModel.language.analysis.getString("sim.monte_carlo_stochastic")+"|"); //Simulation type|Monte Carlo (Stochastic)
+				writeLine("|"+myModel.language.analysis.getString("sim.number_of_simulations")+"|"+myModel.cohortSize+"|"); //Number of simulations
 				if(myModel.CRN){
-					writeLine("|RNG Seed|"+myModel.crnSeed+"|");
+					writeLine("|"+myModel.language.analysis.getString("sim.rng_seed")+"|"+myModel.crnSeed+"|"); //RNG Seed
 				}
 			}
 			if(myModel.type==1){ //Markov
 				writeLine("");
-				writeLine("## Markov");
-				writeLine("|Property|Value|");
+				writeLine("## "+myModel.language.base.getString("markov.markov")); //Markov
+				writeLine("|"+myModel.language.base.getString("title.property")+"|"+myModel.language.analysis.getString("result.value")+"|"); //Property, Value
 				writeLine("|--------|-----|");
-				writeLine("|Max cycles|"+myModel.markov.maxCycles+"|");
-				writeLine("|Half-cycle correction|"+myModel.markov.halfCycleCorrection+"|");
-				writeLine("|Discount Rewards|"+myModel.markov.discountRewards+"|");
+				writeLine("|"+myModel.language.analysis.getString("sim.max_cycles")+"|"+myModel.markov.maxCycles+"|"); //Max cycles
+				writeLine("|"+myModel.language.analysis.getString("gen.half_cycle_correction")+"|"+myModel.markov.halfCycleCorrection+"|"); //Half-cycle correction
+				writeLine("|"+myModel.language.analysis.getString("gen.discount_rewards")+"|"+myModel.markov.discountRewards+"|"); //Discount Rewards
 				if(myModel.markov.discountRewards){
-					writeLine("|Discount start cycle|"+myModel.markov.discountStartCycle+"|");
-					writeLine("|*Dimension*|*Discount Rate (%)*|");
+					writeLine("|"+myModel.language.analysis.getString("gen.discount_start_cycle")+"|"+myModel.markov.discountStartCycle+"|"); //Discounted start cycle
+					writeLine("|*"+myModel.language.analysis.getString("gen.dimension")+"*|*"+myModel.language.analysis.getString("gen.discount_rate")+"*|"); //Dimension, Discount rate (%)
 					for(int d=0; d<myModel.dimInfo.dimNames.length; d++){
 						out.write("|"+myModel.dimInfo.dimNames[d]);
 						out.write("|"+myModel.markov.discountRates[d]+"|\n");
@@ -159,12 +159,12 @@ public class WriteRMD{
 			//model structure
 			writeLine("");
 			saveDiagram();
-			writeLine("# Model Diagram");
+			writeLine("# "+myModel.language.base.getString("title.model_diagram")); //Model Diagram
 			writeLine("![Model Diagram]("+dir+myModel.name+"_Diagram.png)");
 			writeLine("\\clearpage");
 			writeLine("");
 			
-			writeLine("# Model Inputs");
+			writeLine("# "+myModel.language.base.getString("title.model_inputs")); //Model Inputs
 			
 			writeParameters();
 			
@@ -193,9 +193,9 @@ public class WriteRMD{
 		int numParams=myModel.parameters.size();
 		if(numParams>0){
 			writeLine("");
-			writeLine("## Parameters");
+			writeLine("## "+myModel.language.base.getString("object.parameters")); //Parameters
 			writeLine("");
-			writeLine("|Parameter|Expression|Expected Value|Notes|");
+			writeLine("|"+myModel.language.base.getString("object.parameter")+"|"+myModel.language.base.getString("object.expression")+"|"+myModel.language.base.getString("object.expected_value")+"|"+myModel.language.base.getString("menu.notes")+"|"); //Parameter|Expression|Expected Value|Notes
 			writeLine("|---------|----------|--------------|-----|");
 			for(int i=0; i<numParams; i++){
 				Parameter curParam=myModel.parameters.get(i);
@@ -239,8 +239,8 @@ public class WriteRMD{
 		int numVars=myModel.variables.size();
 		if(numVars>0){
 			writeLine("");
-			writeLine("## Variables");
-			writeLine("|Variable|Initial Value|Notes|");
+			writeLine("## "+myModel.language.base.getString("object.variables")); //Variables
+			writeLine("|"+myModel.language.base.getString("object.variable")+"|"+myModel.language.base.getString("object.initial_value")+"|"+myModel.language.base.getString("menu.notes")+"|"); //Variable|Initial Value|Notes
 			writeLine("|--------|-------------|-----|");
 			for(int i=0; i<numVars; i++){
 				Variable curVar=myModel.variables.get(i);
@@ -257,29 +257,29 @@ public class WriteRMD{
 		int numTables=myModel.tables.size();
 		if(numTables>0){
 			writeLine("");
-			writeLine("## Tables");
+			writeLine("## "+myModel.language.base.getString("object.tables")); //Tables
 			for(int i=0; i<myModel.tables.size(); i++){
 				Table curTable=myModel.tables.get(i);
 				writeLine("");
 				writeLine("### "+curTable.name);
 				writeLine("");
-				writeLine("|Property|Value|");
+				writeLine("|"+myModel.language.base.getString("title.property")+"|"+myModel.language.analysis.getString("result.value")+"|"); //Property, Value
 				writeLine("|--------|-----|");
-				writeLine("|Table Type|"+curTable.type+"|");
+				writeLine("|"+myModel.language.base.getString("table.table_type")+"|"+curTable.type+"|"); //Table Type
 				if(curTable.type.matches("Lookup")){
-					writeLine("|Lookup Method|"+curTable.lookupMethod+"|");
+					writeLine("|"+myModel.language.base.getString("table.lookup_method")+"|"+curTable.lookupMethod+"|"); //Lookup Method
 					if(curTable.lookupMethod.matches("Interpolate")){
-						writeLine("|Interpolation Method|"+curTable.interpolate+"|");
+						writeLine("|"+myModel.language.base.getString("table.interpolation_method")+"|"+curTable.interpolate+"|"); //Interpolation Method
 						if(curTable.interpolate.matches("Cubic Splines")){
-							writeLine("|Boundary Condition|"+curTable.boundary+"|");
+							writeLine("|"+myModel.language.base.getString("table.boundary_condition")+"|"+curTable.boundary+"|"); //Boundary Condition
 						}
-						writeLine("|Extrapolate|"+curTable.extrapolate+"|");
+						writeLine("|"+myModel.language.base.getString("table.extrapolate")+"|"+curTable.extrapolate+"|"); //Extrapolate
 					}
 				}
 				if(!curTable.notes.isEmpty()){
 					String notes=curTable.notes;
 					notes=notes.replace("\n", "; ");
-					writeLine("|Notes|"+notes+"|");
+					writeLine("|"+myModel.language.base.getString("menu.notes")+"|"+notes+"|"); //Notes
 				}
 				//table headers
 				writeLine("");

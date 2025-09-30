@@ -53,6 +53,8 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -89,7 +91,7 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder = new JDialog();
 			frmExpressionBuilder.setIconImage(Toolkit.getDefaultToolkit().getImage(frmExpressionBuilder.class.getResource("/images/formula_128.png")));
 			frmExpressionBuilder.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmExpressionBuilder.setTitle("Amua - Build Expression");
+			frmExpressionBuilder.setTitle("Amua - "+myModel.language.base.getString("button.build_expression")); //Build Expression
 			frmExpressionBuilder.setResizable(false);
 			frmExpressionBuilder.setBounds(100, 100, 1000, 600);
 			frmExpressionBuilder.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -114,36 +116,36 @@ public class frmExpressionBuilder {
 			});
 			
 			DefaultListModel<String> modelType= new DefaultListModel<String>();
-			modelType.addElement("<html><b><i>Model Objects</i></b></html>");
-			modelType.addElement("Parameter");
-			modelType.addElement("Table");
-			modelType.addElement("Variable");
+			modelType.addElement("<html><b><i>"+myModel.language.base.getString("object.model_objects")+"</i></b></html>"); //Model Objects
+			modelType.addElement(myModel.language.base.getString("object.parameter")); //Parameter
+			modelType.addElement(myModel.language.base.getString("object.table")); //Table
+			modelType.addElement(myModel.language.base.getString("object.variable")); //Variable
 			if(myModel.type==1){
-				modelType.addElement("Markov");
+				modelType.addElement(myModel.language.base.getString("markov.markov")); //Markov
 			}
 			modelType.addElement("");
-			modelType.addElement("<html><b><i>Functions</i></b></html>");
-			modelType.addElement("Constant");
-			modelType.addElement("Distribution");
-			modelType.addElement("Function");
-			modelType.addElement("Matrix Function");
+			modelType.addElement("<html><b><i>"+myModel.language.math.getString("fx.functions")+"</i></b></html>"); //Functions
+			modelType.addElement(myModel.language.math.getString("const.constant")); //Constant
+			modelType.addElement(myModel.language.base.getString("table.distribution")); //Distribution
+			modelType.addElement(myModel.language.math.getString("fx.function")); //Function
+			modelType.addElement(myModel.language.math.getString("mat.matrix_function")); //Matrix Function
 			modelType.addElement("");
-			modelType.addElement("<html><b><i>Operators</i></b></html>");
-			modelType.addElement("Logical Operator");
-			modelType.addElement("Operator");
+			modelType.addElement("<html><b><i>"+myModel.language.math.getString("op.operators")+"</i></b></html>"); //Operators
+			modelType.addElement(myModel.language.math.getString("op.logical_operator")); //Logical Operator
+			modelType.addElement(myModel.language.math.getString("op.operator")); //Operator
 			if(updateOperation){
-				modelType.addElement("Update Operator");
+				modelType.addElement(myModel.language.math.getString("op.update_operator")); //Update Operator
 			}
 			
 			listType.setModel(modelType);
 			listType.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			scrollPane.setViewportView(listType);
 			
-			JLabel lblDescription = new JLabel("Description");
+			JLabel lblDescription = new JLabel(myModel.language.base.getString("title.description")); //Description 
 			lblDescription.setBounds(421, 10, 86, 16);
 			frmExpressionBuilder.getContentPane().add(lblDescription);
 			
-			JButton btnInsert = new JButton("Update Expression");
+			JButton btnInsert = new JButton(myModel.language.base.getString("button.update_expression")); //Update Expression
 			btnInsert.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try{
@@ -158,10 +160,10 @@ public class frmExpressionBuilder {
 					}
 				}
 			});
-			btnInsert.setBounds(634, 510, 145, 28);
+			btnInsert.setBounds(623, 510, 161, 28);
 			frmExpressionBuilder.getContentPane().add(btnInsert);
 			
-			JButton btnCancel = new JButton("Cancel");
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel 
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmExpressionBuilder.dispose();
@@ -179,7 +181,7 @@ public class frmExpressionBuilder {
 			textPaneDescription.setEditable(false);
 			scrollPane_1.setViewportView(textPaneDescription);
 			
-			JLabel lblExpression = new JLabel("Expression:");
+			JLabel lblExpression = new JLabel(myModel.language.base.getString("object.expression")+":"); //Expression
 			lblExpression.setBounds(12, 368, 90, 16);
 			frmExpressionBuilder.getContentPane().add(lblExpression);
 			
@@ -187,7 +189,7 @@ public class frmExpressionBuilder {
 			scrollPane_2.setBounds(12, 391, 874, 80);
 			frmExpressionBuilder.getContentPane().add(scrollPane_2);
 			
-			textPaneExpression = new StyledTextPane(myModel);
+			textPaneExpression = new StyledTextPane(myModel, myModel.language);
 			textPaneExpression.setFont(new Font("Consolas", Font.PLAIN, 15));
 			textPaneExpression.addKeyListener(new KeyAdapter() {
 				@Override
@@ -200,11 +202,11 @@ public class frmExpressionBuilder {
 			scrollPane_2.setViewportView(textPaneExpression);
 			textPaneExpression.setText(targetPane.getText());
 			
-			JLabel lblType = new JLabel("Elements");
+			JLabel lblType = new JLabel(myModel.language.base.getString("object.elements")); //Elements
 			lblType.setBounds(12, 10, 55, 16);
 			frmExpressionBuilder.getContentPane().add(lblType);
 			
-			JLabel lblValues = new JLabel("Values");
+			JLabel lblValues = new JLabel(myModel.language.analysis.getString("result.values")); //Values
 			lblValues.setBounds(220, 10, 55, 16);
 			frmExpressionBuilder.getContentPane().add(lblValues);
 			
@@ -243,7 +245,7 @@ public class frmExpressionBuilder {
 			listValue.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			scrollPane_3.setViewportView(listValue);
 			
-			JButton btnInsertValue = new JButton("Insert Value");
+			JButton btnInsertValue = new JButton(myModel.language.base.getString("button.insert_value")); //Insert Value
 			btnInsertValue.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try{
@@ -256,10 +258,10 @@ public class frmExpressionBuilder {
 					}
 				}
 			});
-			btnInsertValue.setBounds(263, 351, 104, 28);
+			btnInsertValue.setBounds(252, 351, 115, 28);
 			frmExpressionBuilder.getContentPane().add(btnInsertValue);
 			
-			JButton btnEvaluate = new JButton("Evaluate");
+			JButton btnEvaluate = new JButton(myModel.language.base.getString("button.evaluate")); //Evaluate
 			btnEvaluate.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					evaluate();
@@ -268,7 +270,7 @@ public class frmExpressionBuilder {
 			btnEvaluate.setBounds(898, 407, 90, 28);
 			frmExpressionBuilder.getContentPane().add(btnEvaluate);
 			
-			JLabel lblExpectedValue = new JLabel("Expected Value:");
+			JLabel lblExpectedValue = new JLabel(myModel.language.base.getString("object.expected_value")+":"); //Expected Value
 			lblExpectedValue.setBounds(12, 474, 104, 16);
 			frmExpressionBuilder.getContentPane().add(lblExpectedValue);
 			
@@ -287,38 +289,33 @@ public class frmExpressionBuilder {
 	
 	private void selectType(String type){
 		modelValue.clear();
-		switch(type){
-		case "Parameter":{
-			for(int p=0; p<myModel.parameters.size(); p++){
-				modelValue.addElement(myModel.parameters.get(p).name);
-			}
-			break;
+	
+		if(type.equals(myModel.language.base.getString("object.parameter"))) { //Parameter
+		    for(int p=0; p<myModel.parameters.size(); p++){
+		        modelValue.addElement(myModel.parameters.get(p).name);
+		    }
 		}
-		case "Table":{
+		else if(type.equals(myModel.language.base.getString("object.table"))) { //Table
 			for(int p=0; p<myModel.tables.size(); p++){
 				modelValue.addElement(myModel.tables.get(p).name);
 			}
-			break;
 		}
-		case "Variable":{
+		else if(type.equals(myModel.language.base.getString("object.variable"))) { //Variable
 			for(int p=0; p<myModel.variables.size(); p++){
 				modelValue.addElement(myModel.variables.get(p).name);
 			}
-			break;
 		}
-		case "Markov":{
+		else if(type.equals(myModel.language.base.getString("markov.markov"))) { //Markov
 			modelValue.addElement("t");
 			modelValue.addElement("trace");
-			break;
 		}
-		case "Constant":{
+		else if(type.equals(myModel.language.math.getString("const.constant"))) { //Constant
 			modelValue.addElement("e");
 			modelValue.addElement("inf");
 			modelValue.addElement("pi");
-			break;
 		}
-		case "Distribution":{
-			modelValue.addElement("<html><b><i>Discrete</i></b></html>");
+		else if(type.equals(myModel.language.base.getString("table.distribution"))) { //Distribution
+			modelValue.addElement("<html><b><i>"+myModel.language.dist.getString("gen.discrete")+"</i></b></html>"); //Discrete
 			modelValue.addElement("Bern");
 			modelValue.addElement("Bin");
 			modelValue.addElement("Cat");
@@ -329,7 +326,7 @@ public class frmExpressionBuilder {
 			modelValue.addElement("Pois");
 			modelValue.addElement("Zipf");
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Continuous</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.dist.getString("gen.continuous")+"</i></b></html>"); //Continuous
 			modelValue.addElement("Beta");
 			modelValue.addElement("Cauchy");
 			modelValue.addElement("ChiSq");
@@ -350,14 +347,13 @@ public class frmExpressionBuilder {
 			modelValue.addElement("Unif");
 			modelValue.addElement("Weibull");
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Multivariate</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.dist.getString("gen.multivariate")+"</i></b></html>"); //Multivariate
 			modelValue.addElement("Dir");
 			modelValue.addElement("MvNorm");
 			modelValue.addElement("Multi");
-			break;
 		}
-		case "Function":{
-			modelValue.addElement("<html><b><i>Bounding</i></b></html>");
+		else if(type.equals(myModel.language.math.getString("fx.function"))) { //Function
+			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.bounding")+"</i></b></html>"); //Bounding
 			modelValue.addElement("abs");
 			modelValue.addElement("bound");
 			modelValue.addElement("ceil");
@@ -368,20 +364,20 @@ public class frmExpressionBuilder {
 			modelValue.addElement("signum");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Combinatorial</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.combinatorial")+"</i></b></html>"); //Combinatorial
 			modelValue.addElement("choose");
 			modelValue.addElement("fact");
 			modelValue.addElement("gamma");
 			modelValue.addElement("logGamma");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Error</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.error")+"</i></b></html>"); //Error
 			modelValue.addElement("erf");
 			modelValue.addElement("invErf");
 			modelValue.addElement("probit");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Logarithmic</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.logarithmic")+"</i></b></html>"); //Logarithmic
 			modelValue.addElement("exp");
 			modelValue.addElement("log");
 			modelValue.addElement("logb");
@@ -390,22 +386,22 @@ public class frmExpressionBuilder {
 			modelValue.addElement("logistic");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Logical</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.logical")+"</i></b></html>"); //Logical
 			modelValue.addElement("if");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Probability/Rate</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.prob_rate")+"</i></b></html>"); //Probability/Rate
 			modelValue.addElement("probRescale");
 			modelValue.addElement("probToRate");
 			modelValue.addElement("rateToProb");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Roots</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.roots")+"</i></b></html>"); //Roots
 			modelValue.addElement("cbrt");
 			modelValue.addElement("sqrt");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Summary</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.summary")+"</i></b></html>"); //Summary
 			modelValue.addElement("mean");
 			modelValue.addElement("product");
 			modelValue.addElement("quantile");
@@ -414,7 +410,7 @@ public class frmExpressionBuilder {
 			modelValue.addElement("var");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>Trigonometric</i></b></html>");
+			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.trigonometric")+"</i></b></html>"); //Trigonometric
 			modelValue.addElement("acos");
 			modelValue.addElement("asin");
 			modelValue.addElement("atan");
@@ -425,10 +421,8 @@ public class frmExpressionBuilder {
 			modelValue.addElement("sinh");
 			modelValue.addElement("tan");
 			modelValue.addElement("tanh");
-			
-			break;
 		}
-		case "Matrix Function":{
+		else if(type.equals(myModel.language.math.getString("mat.matrix_function"))) { //Matrix Function
 			modelValue.addElement("chol");
 			modelValue.addElement("det");
 			modelValue.addElement("diag");
@@ -445,10 +439,8 @@ public class frmExpressionBuilder {
 			modelValue.addElement("stack");
 			modelValue.addElement("tp");
 			modelValue.addElement("tr");
-			
-			break;
 		}
-		case "Logical Operator":{
+		else if(type.equals(myModel.language.math.getString("op.logical_operator"))) { //Logical Operator
 			modelValue.addElement("==");
 			modelValue.addElement("!=");
 			modelValue.addElement("<");
@@ -458,18 +450,16 @@ public class frmExpressionBuilder {
 			modelValue.addElement("&");
 			modelValue.addElement("|");
 			modelValue.addElement("^|");
-			break;
 		}
-		case "Operator":{
+		else if(type.equals(myModel.language.math.getString("op.operator"))) { //Operator
 			modelValue.addElement("+");
 			modelValue.addElement("-");
 			modelValue.addElement("*");
 			modelValue.addElement("/");
 			modelValue.addElement("^");
 			modelValue.addElement("%");
-			break;
 		}
-		case "Update Operator":{
+		else if(type.equals(myModel.language.math.getString("op.update_operator"))) { //Update Operator
 			modelValue.addElement("=");
 			modelValue.addElement("++");
 			modelValue.addElement("--");
@@ -477,135 +467,169 @@ public class frmExpressionBuilder {
 			modelValue.addElement("-=");
 			modelValue.addElement("*=");
 			modelValue.addElement("/=");
-			break;
 		}
-		
-		} //end switch
 	}
-	
+		
 	private String getDescription(){
 		String selectedType=listType.getSelectedValue();
 		String selectedValue=listValue.getSelectedValue();
 		
-		switch(selectedType){
-		case "Parameter": 	return(myModel.getParamDescription(selectedValue));
-		case "Table": 	return(myModel.getTableDescription(selectedValue));
-		case "Variable": 	return(myModel.getVarDescription(selectedValue));
-		case "Markov":{
+		
+		if(selectedType.equals(myModel.language.base.getString("object.parameter"))) { //Parameter
+			return(myModel.getParamDescription(selectedValue));
+		}
+		else if(selectedType.equals(myModel.language.base.getString("object.table"))) { //Table
+			return(myModel.getTableDescription(selectedValue));
+		}
+		else if(selectedType.equals(myModel.language.base.getString("object.variable"))) { //Variable
+			return(myModel.getVarDescription(selectedValue));
+		}
+		else if(selectedType.equals(myModel.language.base.getString("markov.markov"))) { //Markov
 			String des="";
 			switch(selectedValue){
 			case "t":
-				des="<html><b>Time (cycle index)</b><br>";
-				des+=MathUtils.consoleFont("<b><i>t</i></b>")+": Returns the current cycle index, starting from "+MathUtils.consoleFont("t=0")+"<br>";
+				des="<html><b>"+myModel.language.base.getString("markov.time_cycle_index")+"</b><br>"; //Time (cycle index)
+				des+=MathUtils.consoleFont("<b><i>t</i></b>")+": "+myModel.language.base.getString("markov.t_desc")+"<br>"; //Returns the current cycle index, starting from t=0
 				des+="</html>";
 				return(des);
 			case "trace":
-				des="<html><b>Markov Trace</b><br>";
-				des+=MathUtils.consoleFont("<b><i>trace</i></b>[cycle,column]")+": Returns the "+MathUtils.consoleFont("column")+" trace value for the specified "+MathUtils.consoleFont("cycle")+"<br>";
-				des+="<br><i>Arguments</i><br>";
-				des+=MathUtils.consoleFont("cycle")+": Cycle index, integer "+MathUtils.consoleFont("≥0")+"<br>";
-				des+=MathUtils.consoleFont("column")+": Column index (integer "+MathUtils.consoleFont("≥0")+"), or column name as a "+MathUtils.consoleFont("string")+"<br>";
+				des="<html><b>"+myModel.language.base.getString("markov.markov_trace")+"</b><br>"; //Markov Trace
+				String strCycle=myModel.language.base.getString("markov.cycle").toLowerCase(myModel.language.locale);
+				String strColumn=myModel.language.base.getString("table.column").toLowerCase(myModel.language.locale);
+				des+=MathUtils.consoleFont("<b><i>trace</i></b>["+strCycle+","+strColumn+"]")+": "+myModel.language.base.getString("markov.trace_desc")+"<br>"; //Returns the column trace value for the specified cycle
+				des+="<br><i>"+myModel.language.math.getString("fx.arguments")+"</i><br>"; //Arguments
+				des+=MathUtils.consoleFont(strCycle)+": "+myModel.language.base.getString("markov.arg_cycle")+"<br>"; //Cycle index, integer ≥0
+				des+=MathUtils.consoleFont(strColumn)+": "+myModel.language.base.getString("markov.arg_column")+"<br>"; //Column index (integer ≥0), or column name as a string
 				des+="</html>";
 				return(des);
 			} //end switch
 			return(""); //fell through
 		}
-		case "Constant": 	return(Constants.getDescription(selectedValue));
-		case "Distribution": return(Distributions.getDescription(selectedValue));
-		case "Function": return(Functions.getDescription(selectedValue));
-		case "Matrix Function": return(MatrixFunctions.getDescription(selectedValue));
-		case "Logical Operator": return(Operators.getDescription(selectedValue));
-		case "Operator": return(Operators.getDescription(selectedValue));
-		case "Update Operator":{
+		else if(selectedType.equals(myModel.language.math.getString("const.constant"))) { //Constant
+			return(Constants.getDescription(selectedValue, myModel.language));
+		}
+		else if(selectedType.equals(myModel.language.base.getString("table.distribution"))) { //Distribution
+			return(Distributions.getDescription(selectedValue, myModel.language));
+		}
+		else if(selectedType.equals(myModel.language.math.getString("fx.function"))) { //Function
+			return(Functions.getDescription(selectedValue, myModel.language));
+		}
+		else if(selectedType.equals(myModel.language.math.getString("mat.matrix_function"))) { //Matrix Function
+			return(MatrixFunctions.getDescription(selectedValue, myModel.language));
+		}
+		else if(selectedType.equals(myModel.language.math.getString("op.logical_operator"))) { //Logical Operator
+			return(Operators.getDescription(selectedValue, myModel.language));
+		}
+		else if(selectedType.equals(myModel.language.math.getString("op.operator"))) { //Operator
+			return(Operators.getDescription(selectedValue, myModel.language));
+		}
+		else if(selectedType.equals(myModel.language.math.getString("op.update_operator"))) { //Update Operator
 			String des="";
 			switch(selectedValue){
 			case "=":
-				des="<html><b>Assignment</b><br>";
-				des+=MathUtils.consoleFont("a = b")+": Updates the value of "+MathUtils.consoleFont("a")+" to equal "+MathUtils.consoleFont("b")+"<br><br>";
-				des+="<i>Example</i><br>"+MathUtils.consoleFont("var = 3 + 3")+" results in "+MathUtils.consoleFont("var = 6")+"<br>";
+				des="<html><b>"+myModel.language.math.getString("up.assignment")+"</b><br>"; //Assignment
+				des+=MathUtils.consoleFont("a = b")+": "+myModel.language.math.getString("up.assign_desc")+"<br><br>"; //Updates the value of a to equal b
+				des+="<i>"+myModel.language.base.getString("title.example")+"</i><br>"+MathUtils.consoleFont("var = 3 + 3")+" "+myModel.language.math.getString("up.results_in")+" "+MathUtils.consoleFont("var = 6")+"<br>"; //...results in...
 				des+="</html>";
 				return(des);
 			case "++":
-				des="<html><b>Increment by 1</b><br>";
-				des+=MathUtils.consoleFont("a++")+": Increments the value of "+MathUtils.consoleFont("a")+" by "+MathUtils.consoleFont("1")+"<br><br>";
-				des+="<i>Example</i><br>"+MathUtils.consoleFont("var++")+" results in the same update as "+MathUtils.consoleFont("var = var + 1")+"<br>";
+				des="<html><b>"+myModel.language.math.getString("up.increment")+"</b><br>"; //Increment by 1
+				des+=MathUtils.consoleFont("a++")+": "+myModel.language.math.getString("up.increment_desc")+"<br><br>"; //Increments the value of a by 1
+				des+="<i>"+myModel.language.base.getString("title.example")+"</i><br>"+MathUtils.consoleFont("var++")+" "+myModel.language.math.getString("up.results_in_same")+" "+MathUtils.consoleFont("var = var + 1")+"<br>"; //results in the same update as
 				des+="</html>";
 				return(des);
 			case "--":
-				des="<html><b>Decrement by 1</b><br>";
-				des+=MathUtils.consoleFont("a--")+": Decrements the value of "+MathUtils.consoleFont("a")+" by "+MathUtils.consoleFont("1")+"<br><br>";
-				des+="<i>Example</i><br>"+MathUtils.consoleFont("var--")+" results in the same update as "+MathUtils.consoleFont("var = var - 1")+"<br>";
+				des="<html><b>"+myModel.language.math.getString("up.decrement")+"</b><br>"; //Decrement by 1
+				des+=MathUtils.consoleFont("a--")+": "+myModel.language.math.getString("up.decrement_desc")+"<br><br>"; //Decrements the value of a by 1
+				des+="<i>"+myModel.language.base.getString("title.example")+"</i><br>"+MathUtils.consoleFont("var--")+" "+myModel.language.math.getString("up.results_in_same")+" "+MathUtils.consoleFont("var = var - 1")+"<br>"; //results in the same update as
 				des+="</html>";
 				return(des);
 			case "+=":
-				des="<html><b>Increment</b><br>";
-				des+=MathUtils.consoleFont("a += b")+": Increments the value of "+MathUtils.consoleFont("a")+" by "+MathUtils.consoleFont("b")+"<br><br>";
-				des+="<i>Example</i><br>"+MathUtils.consoleFont("var += b")+" results in the same update as "+MathUtils.consoleFont("var = var + b")+"<br>";
+				des="<html><b>"+myModel.language.math.getString("up.increment_gen")+"</b><br>"; //Increment
+				des+=MathUtils.consoleFont("a += b")+": "+myModel.language.math.getString("up.increment_gen_desc")+"<br><br>"; //Increments the value of a by b
+				des+="<i>"+myModel.language.base.getString("title.example")+"</i><br>"+MathUtils.consoleFont("var += b")+" "+myModel.language.math.getString("up.results_in_same")+" "+MathUtils.consoleFont("var = var + b")+"<br>"; //results in the same update as
 				des+="</html>";
 				return(des);
 			case "-=":
-				des="<html><b>Decrement</b><br>";
-				des+=MathUtils.consoleFont("a -= b")+": Decrements the value of "+MathUtils.consoleFont("a")+" by "+MathUtils.consoleFont("b")+"<br><br>";
-				des+="<i>Example</i><br>"+MathUtils.consoleFont("var -= b")+" results in the same update as "+MathUtils.consoleFont("var = var - b")+"<br>";
+				des="<html><b>"+myModel.language.math.getString("up.decrement_gen")+"</b><br>"; //Decrement
+				des+=MathUtils.consoleFont("a -= b")+": "+myModel.language.math.getString("up.decrement_gen_desc")+"<br><br>"; //Decrements the value of a by b
+				des+="<i>"+myModel.language.base.getString("title.example")+"</i><br>"+MathUtils.consoleFont("var -= b")+" "+myModel.language.math.getString("up.results_in_same")+" "+MathUtils.consoleFont("var = var - b")+"<br>"; //results in the same update as
 				des+="</html>";
 				return(des);
 			case "*=":
-				des="<html><b>Multiplication Assignment</b><br>";
-				des+=MathUtils.consoleFont("a *= b")+": Multiplies the value of "+MathUtils.consoleFont("a")+" by "+MathUtils.consoleFont("b")+"<br><br>";
-				des+="<i>Example</i><br>"+MathUtils.consoleFont("var *= b")+" results in the same update as "+MathUtils.consoleFont("var = var * b")+"<br>";
+				des="<html><b>"+myModel.language.math.getString("up.mult")+"</b><br>"; //Multiplication Assignment
+				des+=MathUtils.consoleFont("a *= b")+": "+myModel.language.math.getString("up.mult_desc")+"<br><br>"; //Multiplies the value of a by b
+				des+="<i>"+myModel.language.base.getString("title.example")+"</i><br>"+MathUtils.consoleFont("var *= b")+" "+myModel.language.math.getString("up.results_in_same")+" "+MathUtils.consoleFont("var = var * b")+"<br>"; //results in the same update as
 				des+="</html>";
 				return(des);
 			case "/=":
-				des="<html><b>Division Assignment</b><br>";
-				des+=MathUtils.consoleFont("a /= b")+": Divides the value of "+MathUtils.consoleFont("a")+" by "+MathUtils.consoleFont("b")+"<br><br>";
-				des+="<i>Example</i><br>"+MathUtils.consoleFont("var /= b")+" results in the same update as "+MathUtils.consoleFont("var = var / b")+"<br>";
+				des="<html><b>"+myModel.language.math.getString("up.div")+"</b><br>"; //Division Assignment
+				des+=MathUtils.consoleFont("a /= b")+": "+myModel.language.math.getString("up.div_desc")+"<br><br>"; //Divides the value of a by b
+				des+="<i>"+myModel.language.base.getString("title.example")+"</i><br>"+MathUtils.consoleFont("var /= b")+" "+myModel.language.math.getString("up.results_in_same")+" "+MathUtils.consoleFont("var = var / b")+"<br>"; //results in the same update as
 				des+="</html>";
 				return(des);
 			}//end switch
 			return(""); //fell through
 		}
-		
-		} //end switch
-		return("");
+		return(""); //fell through
 	}
 	
 	private String insertValue(){
 		String selectedType=listType.getSelectedValue();
 		String selectedValue=listValue.getSelectedValue();
 		
-		switch(selectedType){
-		case "Parameter": 	return(selectedValue);
-		case "Table":{ 	
+		if(selectedType.equals(myModel.language.base.getString("object.parameter"))) { //Parameter
+			return(selectedValue);
+		}
+		else if(selectedType.equals(myModel.language.base.getString("object.table"))) { //Table
 			Table curTable=myModel.tables.get(myModel.getTableIndex(selectedValue));
 			if(curTable.type.matches("Lookup")){
-				return(selectedValue+"[index,column]");
+				String strIndex=myModel.language.base.getString("table.index").toLowerCase(myModel.language.locale);
+				String strColumn=myModel.language.base.getString("table.column").toLowerCase(myModel.language.locale);
+				return(selectedValue+"["+strIndex+","+strColumn+"]");
 			}
 			else if(curTable.type.matches("Distribution")){
-				return(selectedValue+"(column,~)");
+				String strColumn=myModel.language.base.getString("table.column").toLowerCase(myModel.language.locale);
+				return(selectedValue+"("+strColumn+",~)");
 			}
 			else if(curTable.type.matches("Matrix")){
-				return(selectedValue+"[row,column]");
+				String strRow=myModel.language.base.getString("table.row").toLowerCase(myModel.language.locale);
+				String strColumn=myModel.language.base.getString("table.column").toLowerCase(myModel.language.locale);
+				return(selectedValue+"["+strRow+","+strColumn+"]");
 			}
 			return(myModel.getTableDescription(selectedValue));
 		}
-		case "Variable": 	return(selectedValue);
-		case "Markov":{
-			switch(selectedValue){
-			case "t": return("t");
-			case "trace": return("trace[cycle,column]");
-			} //end switch
-			return(""); //fell through
+		else if(selectedType.equals(myModel.language.base.getString("object.variable"))) { //Variable
+			return(selectedValue);
 		}
-		case "Constant": 	return(selectedValue);
-		case "Distribution": return(Distributions.getDefaultParams(selectedValue));
-		case "Function": return(Functions.getDefaultArgs(selectedValue));
-		case "Matrix Function": return(MatrixFunctions.getDefaultArgs(selectedValue));
-		case "Logical Operator": return(selectedValue);
-		case "Operator": return(selectedValue);
-		case "Update Operator": return(selectedValue);
-		
-		} //end switch
-		return("");
+		else if(selectedType.equals(myModel.language.base.getString("markov.markov"))) { //Markov
+			if(selectedValue.equals("t")) { return("t");}
+			else if(selectedValue.equals("trace")) {return("trace[cycle,column]");}
+			else {return("");} //fell through
+		}
+		else if(selectedType.equals(myModel.language.math.getString("const.constant"))) { //Constant
+			return(selectedValue);
+		}
+		else if(selectedType.equals(myModel.language.base.getString("table.distribution"))) { //Distribution
+			return(Distributions.getDefaultParams(selectedValue));
+		}
+		else if(selectedType.equals(myModel.language.math.getString("fx.function"))) { //Function
+			return(Functions.getDefaultArgs(selectedValue));
+		}
+		else if(selectedType.equals(myModel.language.math.getString("mat.matrix_function"))) { //Matrix Function
+			return(MatrixFunctions.getDefaultArgs(selectedValue));
+		}
+		else if(selectedType.equals(myModel.language.math.getString("op.logical_operator"))) { //Logical Operator
+			return(selectedValue);
+		}
+		else if(selectedType.equals(myModel.language.math.getString("op.operator"))) { //Operator
+			return(selectedValue);
+		}
+		else if(selectedType.equals(myModel.language.math.getString("op.update_operator"))) { //Update Operator
+			return(selectedValue);
+		}
+	
+		return(""); //fell through
 	}
 	
 	private void evaluate(){
@@ -614,7 +638,7 @@ public class frmExpressionBuilder {
 		if(updateOperation==false){
 			boolean updatePane=true;
 			try{
-				testVal=Interpreter.evaluate(testExp, myModel,false);
+				testVal=Interpreter.evaluate(testExp, myModel,false,myModel.language);
 			}catch(Exception e1){
 				updatePane=false;
 				textPaneValue.setText(e1.toString());

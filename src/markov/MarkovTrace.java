@@ -83,29 +83,29 @@ public class MarkovTrace{
 		}
 		//Build Model headers
 		modelTraceRaw=new DefaultTableModel(); modelTraceRounded=new DefaultTableModel();
-		modelTraceRaw.addColumn("Cycle"); modelTraceRounded.addColumn("Cycle");
+		modelTraceRaw.addColumn(myModel.language.base.getString("markov.cycle")); modelTraceRounded.addColumn(myModel.language.base.getString("markov.cycle")); //Cycle
 		for(int s=0; s<numStates; s++){
 			modelTraceRaw.addColumn(stateNames[s]);
 			modelTraceRounded.addColumn(stateNames[s]);
 		}
 		//undiscounted
 		for(int d=0; d<numDim; d++){
-			modelTraceRaw.addColumn("Cycle_"+dimSymbols[d]);
-			modelTraceRounded.addColumn("Cycle_"+dimSymbols[d]);
+			modelTraceRaw.addColumn(myModel.language.base.getString("markov.cycle")+"_"+dimSymbols[d]); //Cycle
+			modelTraceRounded.addColumn(myModel.language.base.getString("markov.cycle")+"_"+dimSymbols[d]); //Cycle
 		}
 		for(int d=0; d<numDim; d++){
-			modelTraceRaw.addColumn("Cum_"+dimSymbols[d]);
-			modelTraceRounded.addColumn("Cum_"+dimSymbols[d]);
+			modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cum")+"_"+dimSymbols[d]); //Cum
+			modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cum")+"_"+dimSymbols[d]); //Cum
 		}
 		//discounted
 		if(discounted==true){
 			for(int d=0; d<numDim; d++){
-				modelTraceRaw.addColumn("Cycle_Dis_"+dimSymbols[d]);
-				modelTraceRounded.addColumn("Cycle_Dis_"+dimSymbols[d]);
+				modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cycle_dis")+"_"+dimSymbols[d]); //Cycle_Dis
+				modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cycle_dis")+"_"+dimSymbols[d]); //Cycle_Dis
 			}
 			for(int d=0; d<numDim; d++){
-				modelTraceRaw.addColumn("Cum_Dis_"+dimSymbols[d]);
-				modelTraceRounded.addColumn("Cum_Dis_"+dimSymbols[d]);
+				modelTraceRaw.addColumn(myModel.language.analysis.getString("result.cum_dis")+"_"+dimSymbols[d]); //Cum_Dis
+				modelTraceRounded.addColumn(myModel.language.analysis.getString("result.cum_dis")+"_"+dimSymbols[d]); //Cum_Dis
 			}
 		}
 		//variables
@@ -245,12 +245,12 @@ public class MarkovTrace{
 			}
 			else{ //"x:y" Sequence of rows
 				int index=row.indexOf(":");
-				startRow=Interpreter.evaluate(row.substring(0, index),myModel,false).getInt();
-				endRow=Interpreter.evaluate(row.substring(index+1),myModel,false).getInt();
+				startRow=Interpreter.evaluate(row.substring(0, index),myModel,false,myModel.language).getInt(myModel.language);
+				endRow=Interpreter.evaluate(row.substring(index+1),myModel,false,myModel.language).getInt(myModel.language);
 			}
 		}
 		else{
-			startRow=Interpreter.evaluate(row,myModel,false).getInt();
+			startRow=Interpreter.evaluate(row,myModel,false,myModel.language).getInt(myModel.language);
 			endRow=startRow;
 		}
 		
@@ -260,8 +260,8 @@ public class MarkovTrace{
 			}
 			else{ //"x:y" Sequence of cols
 				int index=col.indexOf(":");
-				startCol=Interpreter.evaluate(col.substring(0, index),myModel,false).getInt();
-				endCol=Interpreter.evaluate(col.substring(index+1),myModel,false).getInt();
+				startCol=Interpreter.evaluate(col.substring(0, index),myModel,false,myModel.language).getInt(myModel.language);
+				endCol=Interpreter.evaluate(col.substring(index+1),myModel,false,myModel.language).getInt(myModel.language);
 			}
 		}
 		else{
@@ -291,16 +291,16 @@ public class MarkovTrace{
 				if(colText.equals(modelTraceRaw.getColumnName(col))){found=true;}
 			}
 			if(found==false){
-				throw new NumericException("Can't find column: "+colText,"trace");
+				throw new NumericException(myModel.language.message.getString("err.cant_find_column")+": "+colText,"trace",myModel.language); //Can't find column
 			}
 		}
 		else{ //Try evaluate as integer
 			try{
-				col=Interpreter.evaluate(colText,myModel,false).getInt();
+				col=Interpreter.evaluate(colText,myModel,false,myModel.language).getInt(myModel.language);
 			}
 			catch(Exception  e){
 				col=-1;
-				throw new NumericException("Invalid column index: "+colText,"trace");
+				throw new NumericException(myModel.language.message.getString("err.invalid_column_index")+": "+colText,"trace",myModel.language); //Invalid column index
 			}
 		}
 		return(col);

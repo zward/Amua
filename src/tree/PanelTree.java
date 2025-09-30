@@ -28,6 +28,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,7 +80,7 @@ public class PanelTree extends ModelPanel{
 				if(!e.isTemporary()){
 					if(prevNode!=null){
 						if(tempNotes!=null && !tempNotes.equals(prevNode.tempNotes)){ //Notes were changed
-							saveSnapshot("Edit Notes");
+							saveSnapshot(myModel.language.base.getString("title.edit_notes")); //Edit Notes
 						}
 						prevNode.notes=tempNotes;
 						notesFocus=false;
@@ -157,38 +158,38 @@ public class PanelTree extends ModelPanel{
 		//Pop-up menu
 		popup = new JPopupMenu();
 
-		mnAdd = new JMenu("Add");
+		mnAdd = new JMenu(myModel.language.base.getString("button.add")); //Add
 		popup.add(mnAdd);
 
-		JMenuItem mntmDecision = new JMenuItem("Decision Node");
+		JMenuItem mntmDecision = new JMenuItem(myModel.language.base.getString("node.decision")); //Decision Node
 		mntmDecision.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(0);}});
 		mntmDecision.setIcon(new ScaledIcon("/images/decisionNode",16,16,16,true));
 		mntmDecision.setDisabledIcon(new ScaledIcon("/images/decisionNode",16,16,16,false));
 		mnAdd.add(mntmDecision);
 
-		JMenuItem mntmChance = new JMenuItem("Chance Node");
+		JMenuItem mntmChance = new JMenuItem(myModel.language.base.getString("node.chance")); //Chance Node
 		mntmChance.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(1);}});
 		mntmChance.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
 		mntmChance.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 		mnAdd.add(mntmChance);
 
-		JMenuItem mntmTerminal = new JMenuItem("Terminal Node");
+		JMenuItem mntmTerminal = new JMenuItem(myModel.language.base.getString("node.terminal")); //Terminal Node
 		mntmTerminal.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(2);}});
 		mntmTerminal.setIcon(new ScaledIcon("/images/terminalNode",16,16,16,true));
 		mntmTerminal.setDisabledIcon(new ScaledIcon("/images/terminalNode",16,16,16,false));
 		mnAdd.add(mntmTerminal);
 
-		mntmChangeType= new JMenuItem("Change Node Type");
+		mntmChangeType= new JMenuItem(myModel.language.base.getString("button.change_node_type")); //Change Node Type
 		mntmChangeType.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {changeNodeType();}});
 		popup.add(mntmChangeType);
 
-		mntmUpdateVariable = new JMenuItem("Add/Remove Variable Updates");
+		mntmUpdateVariable = new JMenuItem(myModel.language.base.getString("button.add_remove_var_updates")); //Add/Remove Variable Updates
 		mntmUpdateVariable.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveVarUpdates();}});
 		mntmUpdateVariable.setIcon(new ScaledIcon("/images/updateVariable",16,16,16,true));
 		mntmUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",16,16,16,false));
 		popup.add(mntmUpdateVariable);
 		
-		mntmShowCost= new JMenuItem("Add/Remove Cost (One-time Event)");
+		mntmShowCost= new JMenuItem(myModel.language.base.getString("button.add_remove_cost")); //Add/Remove Cost (One-time Event)
 		mntmShowCost.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveCost();}});
 		mntmShowCost.setIcon(new ScaledIcon("/images/cost",16,16,16,true));
 		mntmShowCost.setDisabledIcon(new ScaledIcon("/images/cost",16,16,16,false));
@@ -196,19 +197,19 @@ public class PanelTree extends ModelPanel{
 
 		popup.addSeparator();
 
-		final JMenuItem mntmCut = new JMenuItem("Cut");
+		final JMenuItem mntmCut = new JMenuItem(myModel.language.base.getString("menu.cut")); //Cut
 		mntmCut.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {cutSubtree();}});
 		mntmCut.setIcon(new ScaledIcon("/images/cut",16,16,16,true));
 		mntmCut.setDisabledIcon(new ScaledIcon("/images/cut",16,16,16,false));
 		popup.add(mntmCut);
 
-		final JMenuItem mntmCopy = new JMenuItem("Copy");
+		final JMenuItem mntmCopy = new JMenuItem(myModel.language.base.getString("menu.copy")); //Copy
 		mntmCopy.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {copySubtree();}});
 		mntmCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
 		mntmCopy.setDisabledIcon(new ScaledIcon("/images/copy",16,16,16,false));
 		popup.add(mntmCopy);
 
-		mntmPaste = new JMenuItem("Paste");
+		mntmPaste = new JMenuItem(myModel.language.base.getString("menu.paste")); //Paste
 		mntmPaste.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {pasteSubtree();}});
 		mntmPaste.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
 		mntmPaste.setDisabledIcon(new ScaledIcon("/images/paste",16,16,16,false));
@@ -216,13 +217,13 @@ public class PanelTree extends ModelPanel{
 		popup.add(mntmPaste);
 
 		popup.addSeparator();
-		mntmDelete= new JMenuItem("Delete");
+		mntmDelete= new JMenuItem(myModel.language.base.getString("button.delete")); //Delete
 		mntmDelete.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {deleteNode(true);}});
 		mntmDelete.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
 		mntmDelete.setDisabledIcon(new ScaledIcon("/images/delete",16,16,16,false));
 		popup.add(mntmDelete);
 
-		mntmCollapse=new JMenuItem("Collapse Branch");
+		mntmCollapse=new JMenuItem(myModel.language.base.getString("button.collapse_branch")); //Collapse Branch
 		mntmCollapse.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {collapseBranch();}});
 		popup.add(mntmCollapse);
 
@@ -406,12 +407,12 @@ public class PanelTree extends ModelPanel{
 		if(curNode!=null){
 			//Check to see if it is a parent
 			if(curNode.childIndices.size()>0){
-				if(allowUndo){saveSnapshot("Delete Subtree");}
+				if(allowUndo){saveSnapshot(myModel.language.base.getString("title.delete_subtree"));} //Delete Subtree
 				removeSubtree(curNode);
 				//JOptionPane.showMessageDialog(this, "You cannot delete a parent node!");
 			}
 			else{
-				if(allowUndo){saveSnapshot("Delete Node");}
+				if(allowUndo){saveSnapshot(myModel.language.base.getString("title.delete_node"));} //Delete Node
 
 				int curIndex=tree.nodes.indexOf(curNode);
 				//Remove node
@@ -456,7 +457,7 @@ public class PanelTree extends ModelPanel{
 	public void changeNodeType(){
 		if(curNode!=null){
 			if(curNode.type==1){ //Chance->Terminal
-				saveSnapshot("Change Node Type");
+				saveSnapshot(myModel.language.base.getString("button.change_node_type")); //Change Node Type
 				curNode.type=2;
 				this.remove(curNode.lblCost); this.remove(curNode.textCost);
 				this.remove(curNode.textEV);
@@ -472,7 +473,7 @@ public class PanelTree extends ModelPanel{
 				selectNode(curNode.xPos,curNode.yPos);
 			}
 			else if(curNode.type==2){ //Terminal->Chance
-				saveSnapshot("Change Node Type");
+				saveSnapshot(myModel.language.base.getString("button.change_node_type")); //Change Node Type
 				curNode.type=1;
 				this.remove(curNode.textPayoff);
 				curNode.textPayoff=null;
@@ -490,16 +491,16 @@ public class PanelTree extends ModelPanel{
 
 	public void addRemoveVarUpdates(){
 		if(curNode!=null && curNode.level!=0){
-			if(curNode.hasVarUpdates){saveSnapshot("Remove Variable Updates");}
-			else{saveSnapshot("Add Variable Updates");}
+			if(curNode.hasVarUpdates){saveSnapshot(myModel.language.base.getString("title.remove_var_updates"));} //Remove Variable Updates
+			else{saveSnapshot(myModel.language.base.getString("title.add_var_updates"));} //Add Variable Updates
 			curNode.addRemoveVarUpdates();
 		}
 	}
 	
 	public void addRemoveCost(){
 		if(curNode!=null && curNode.type!=2 && curNode.level!=0){
-			if(curNode.hasCost){saveSnapshot("Remove Cost");}
-			else{saveSnapshot("Add Cost");}
+			if(curNode.hasCost){saveSnapshot(myModel.language.base.getString("button.remove_cost"));} //Remove Cost
+			else{saveSnapshot(myModel.language.base.getString("button.add_cost"));} //Add Cost
 			curNode.addRemoveCost();
 		}
 	}
@@ -517,7 +518,7 @@ public class PanelTree extends ModelPanel{
 
 	public void cutSubtree(){
 		if(curNode!=null){
-			saveSnapshot("Cut");
+			saveSnapshot(myModel.language.base.getString("menu.cut")); //Cut
 			mainForm.clipboard.clear();
 			mainForm.clipboard.copyModel=myModel;
 			mainForm.clipboard.copyTree=tree.copySubtree(curNode);
@@ -533,16 +534,16 @@ public class PanelTree extends ModelPanel{
 			//Check if nodes are compatible
 			boolean compatible=mainForm.clipboard.isCompatible(myModel);
 			if(compatible==false){
-				JOptionPane.showMessageDialog(this, "Cannot paste here: Incompatible nodes!");
+				JOptionPane.showMessageDialog(this, myModel.language.message.getString("err.cant_paste_incompatible_nodes")); //Cannot paste here: Incompatible nodes!
 			}
 			else{ //Paste
 				//check dimensions
 				if(mainForm.clipboard.compareDimensions(myModel)==false) {
 					String warn=mainForm.clipboard.coerceDimensions(myModel);
-					JOptionPane.showMessageDialog(this, "Warning: "+warn);
+					JOptionPane.showMessageDialog(this, myModel.language.message.getString("warning")+": "+warn); //Warning
 				}
 				
-				saveSnapshot("Paste");
+				saveSnapshot(myModel.language.base.getString("menu.paste")); //Paste
 				this.setVisible(false); //Don't paint anything until updated
 
 				//Paste
@@ -737,7 +738,7 @@ public class PanelTree extends ModelPanel{
 			xOffset=0; yOffset=0;
 			int numChildren=curNode.childIndices.size();
 			if(numChildren>2){
-				saveSnapshot("Vertical Spacing");
+				saveSnapshot(myModel.language.base.getString("button.vertical_spacing")); //Vertical Spacing
 				TreeNode curChild=tree.nodes.get(curNode.childIndices.get(0));
 				int curY=curChild.yPos, minY=curY, maxY=curY;
 				ArrayList<Integer> listY=new ArrayList<Integer>();
@@ -779,13 +780,13 @@ public class PanelTree extends ModelPanel{
 		boolean valid=false;
 		if(errors.size()==0){
 			if(console!=null){
-				console.print("Tree checked!\n"); console.newLine();;
+				console.print(myModel.language.message.getString("info.tree_checked")+"\n"); console.newLine(); //Tree checked!
 			}
 			valid=true;
 		}
 		else{
 			if(console!=null){
-				console.print(errors.size()+" errors:\n");
+				console.print(MessageFormat.format(myModel.language.message.getString("err.num_errors"), errors.size())+":\n"); //Errors
 				for(int i=0; i<errors.size(); i++){
 					console.print(errors.get(i)+"\n");		
 				}
@@ -794,7 +795,7 @@ public class PanelTree extends ModelPanel{
 			valid=false;
 		}
 		if(myModel.simType==0 && myModel.variables.size()>0){ //Variables in cohort model
-			console.print("WARNING: Variables are not evaluated in a Decision Tree cohort simulation!\n");
+			console.print(myModel.language.message.getString("warn.vars_not_eval_tree_cohort")+"\n"); //Warning: Variables are not evaluated in a Decision Tree cohort simulation!
 		}
 		
 		return(valid);
@@ -855,14 +856,14 @@ public class PanelTree extends ModelPanel{
 		mntmUpdateVariable.setEnabled(true);
 		if(curNode.type==0){
 			mntmChangeType.setEnabled(false);
-			mntmChangeType.setText("Change Node Type");
+			mntmChangeType.setText(myModel.language.base.getString("button.change_node_type")); //Change Node Type
 			mntmChangeType.setIcon(null);
 			if(mainForm.clipboard.copyTree!=null){mntmPaste.setEnabled(true);}
 			else{mntmPaste.setEnabled(false);}
 		}
 		else if(curNode.type==1){
 			mntmChangeType.setEnabled(true);
-			mntmChangeType.setText("Change to Terminal Node");
+			mntmChangeType.setText(myModel.language.base.getString("button.change_to_terminal")); //Change to Terminal Node
 			mntmChangeType.setIcon(new ScaledIcon("/images/terminalNode",16,16,16,true));
 			mntmChangeType.setDisabledIcon(new ScaledIcon("/images/terminalNode",16,16,16,false));
 			if(mainForm.clipboard.copyTree!=null){mntmPaste.setEnabled(true);}
@@ -871,7 +872,7 @@ public class PanelTree extends ModelPanel{
 		else if(curNode.type==2){
 			mnAdd.setEnabled(false);
 			mntmChangeType.setEnabled(true);
-			mntmChangeType.setText("Change to Chance Node");
+			mntmChangeType.setText(myModel.language.base.getString("button.change_to_chance")); //Change to Chance Node
 			mntmChangeType.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
 			mntmChangeType.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 			mntmShowCost.setEnabled(false);
@@ -882,16 +883,16 @@ public class PanelTree extends ModelPanel{
 			//mntmDelete.setEnabled(false);
 			mntmCollapse.setEnabled(true);
 			if(curNode.collapsed){
-				mntmCollapse.setText("Expand branch");
+				mntmCollapse.setText(myModel.language.base.getString("button.expand_branch")); //Expand branch
 				mnAdd.setEnabled(false);
 			}
-			else{mntmCollapse.setText("Collapse branch");}
+			else{mntmCollapse.setText(myModel.language.base.getString("button.collapse_branch"));} //Collapse branch
 		}
 		else{
 			mntmCollapse.setEnabled(false);
 		}
-		if(curNode.hasCost){mntmShowCost.setText("Remove Cost (One-time Event)");}
-		else{mntmShowCost.setText("Add Cost (One-time Event)");}
+		if(curNode.hasCost){mntmShowCost.setText(myModel.language.base.getString("button.remove_cost"));} //Remove Cost (One-time Event)
+		else{mntmShowCost.setText(myModel.language.base.getString("button.add_cost"));} //Add Cost (One-time Event)
 
 		if(curNode.level==0){ //root
 			mntmShowCost.setEnabled(false);

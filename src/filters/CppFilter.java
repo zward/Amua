@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class CppFilter extends javax.swing.filechooser.FileFilter {
-    public boolean accept(File f) {
+	Language language;
+
+	public CppFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
+	public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".cpp");
     }
     
     public String getDescription() {
-        return "C++ source files";
+        return language.base.getString("file.cpp"); //C++ source files
     }
 }

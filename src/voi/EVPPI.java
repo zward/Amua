@@ -159,7 +159,7 @@ public class EVPPI{
 		ArrayList<String> errorsBase=myModel.parseModel();
 
 		if(errorsBase.size()>0){
-			JOptionPane.showMessageDialog(curFrm, "Errors in base case model!");
+			JOptionPane.showMessageDialog(curFrm, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 		}
 		else{
 
@@ -240,7 +240,7 @@ public class EVPPI{
 							param0.locked=false;
 							param0.value=origValues[p];
 							//sample value
-							param0.value=Interpreter.evaluateTokens(param0.parsedTokens, 0, true);
+							param0.value=Interpreter.evaluateTokens(param0.parsedTokens, 0, true, myModel.language);
 							param0.locked=true;
 							//check constraints
 							validParams=true;
@@ -283,7 +283,7 @@ public class EVPPI{
 									if(v!=p) {
 										Parameter curParam=myModel.parameters.get(v);
 										if(curParam.locked==false) {
-											curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+											curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true, myModel.language);
 											curParam.locked=true;
 										}
 									}
@@ -308,7 +308,7 @@ public class EVPPI{
 								if(curDim==1) { //scalar
 									dataParamsIter[v][0][0][n]=n; dataParamsVal[v][0][0][n]=n;
 									try{
-										dataParamsIter[v][0][1][n]=myModel.parameters.get(v).value.getDouble();
+										dataParamsIter[v][0][1][n]=myModel.parameters.get(v).value.getDouble(myModel.language);
 									} catch(Exception e){
 										dataParamsIter[v][0][1][n]=Double.NaN;
 									}
@@ -742,7 +742,7 @@ public class EVPPI{
 		if(minutes.length()<2){minutes="0"+minutes;}
 		progress.setProgress(z);
 		if(z>0) {
-			progress.setNote("Time left: "+minutes+":"+seconds);
+			progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 		}
 
 	}

@@ -84,13 +84,13 @@ public class frmDefineClusterRun {
 			frmDefineClusterRun = new JDialog();
 			frmDefineClusterRun.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineClusterRun.class.getResource("/images/cluster_128.png")));
 			frmDefineClusterRun.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmDefineClusterRun.setTitle("Amua - Define Cluster Run");
+			frmDefineClusterRun.setTitle("Amua - "+myModel.language.base.getString("title.define_cluster_run")); //Define Cluster Run
 			frmDefineClusterRun.setResizable(false);
 			frmDefineClusterRun.setBounds(100, 100, 679, 371);
 			frmDefineClusterRun.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmDefineClusterRun.getContentPane().setLayout(null);
 
-			JButton btnSave = new JButton("Save");
+			JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					ClusterInputs inputs=new ClusterInputs();
@@ -110,10 +110,10 @@ public class frmDefineClusterRun {
 					
 					//save to file
 					JFileChooser fc= new JFileChooser(myModel.filepath);
-					fc.setDialogTitle("Save Cluster Run Inputs");
-					fc.setApproveButtonText("Save");
+					fc.setDialogTitle(myModel.language.base.getString("title.save_cluster_run_inputs")); //Save Cluster Run Inputs
+					fc.setApproveButtonText(myModel.language.base.getString("menu.save"));
 					fc.resetChoosableFileFilters();
-					fc.addChoosableFileFilter(new XMLFilter());
+					fc.addChoosableFileFilter(new XMLFilter(myModel.language));
 					fc.setAcceptAllFileFilterUsed(false);
 					
 					int returnVal = fc.showSaveDialog(frmDefineClusterRun);
@@ -145,20 +145,20 @@ public class frmDefineClusterRun {
 									
 				}
 			});
-			btnSave.setBounds(255, 289, 90, 28);
+			btnSave.setBounds(195, 289, 150, 28);
 			frmDefineClusterRun.getContentPane().add(btnSave);
 
-			JButton btnCancel = new JButton("Cancel");
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmDefineClusterRun.dispose();
 				}
 			});
-			btnCancel.setBounds(370, 289, 90, 28);
+			btnCancel.setBounds(376, 289, 150, 28);
 			frmDefineClusterRun.getContentPane().add(btnCancel);
 											
-			JLabel lblRun = new JLabel("Run Type:");
-			lblRun.setBounds(6, 6, 74, 16);
+			JLabel lblRun = new JLabel(myModel.language.analysis.getString("gen.run_type")+":"); //Run Type
+			lblRun.setBounds(6, 6, 232, 16);
 			frmDefineClusterRun.getContentPane().add(lblRun);
 			
 			JScrollPane scrollPane = new JScrollPane();
@@ -186,35 +186,35 @@ public class frmDefineClusterRun {
 			listRuns.setSelectedIndex(0);
 			scrollPane.setViewportView(listRuns);
 			
-			chckbxSeedIteration = new JCheckBox("Use iteration as RNG seed");
+			chckbxSeedIteration = new JCheckBox(myModel.language.analysis.getString("sim.iteration_as_seed")); //Use iteration as RNG seed
 			chckbxSeedIteration.setSelected(true);
-			chckbxSeedIteration.setBounds(275, 29, 185, 18);
+			chckbxSeedIteration.setBounds(275, 29, 338, 18);
 			frmDefineClusterRun.getContentPane().add(chckbxSeedIteration);
 			
 			JPanel panel = new JPanel();
 			panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-			panel.setBounds(275, 64, 203, 85);
+			panel.setBounds(275, 64, 325, 85);
 			frmDefineClusterRun.getContentPane().add(panel);
 			panel.setLayout(null);
 			
 			
-			JLabel lblPsa = new JLabel("PSA:");
-			lblPsa.setBounds(6, 6, 54, 16);
+			JLabel lblPsa = new JLabel(myModel.language.analysis.getString("gen.psa")+":"); //PSA
+			lblPsa.setBounds(6, 6, 301, 16);
 			panel.add(lblPsa);
 			lblPsa.setFont(new Font("SansSerif", Font.BOLD, 12));
 			
-			chckbxPSASeed = new JCheckBox("Seed");
-			chckbxPSASeed.setBounds(6, 32, 68, 18);
+			chckbxPSASeed = new JCheckBox(myModel.language.analysis.getString("sim.seed")); //Seed
+			chckbxPSASeed.setBounds(6, 32, 87, 18);
 			panel.add(chckbxPSASeed);
 			
 			textPSASeed = new JTextField();
-			textPSASeed.setBounds(72, 27, 54, 28);
+			textPSASeed.setBounds(96, 27, 54, 28);
 			panel.add(textPSASeed);
 			textPSASeed.setEnabled(false);
 			textPSASeed.setColumns(10);
 			
-			chckbxSampleParameterSets = new JCheckBox("Sample parameter sets");
-			chckbxSampleParameterSets.setBounds(6, 62, 159, 18);
+			chckbxSampleParameterSets = new JCheckBox(myModel.language.analysis.getString("sim.sample_parameter_sets")); //Sample parameter sets
+			chckbxSampleParameterSets.setBounds(6, 62, 301, 18);
 			panel.add(chckbxSampleParameterSets);
 			chckbxSampleParameterSets.setEnabled(false);
 			chckbxPSASeed.addActionListener(new ActionListener() {

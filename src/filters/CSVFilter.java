@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class CSVFilter extends javax.swing.filechooser.FileFilter {
+	Language language;
+	
+	public CSVFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
     public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".csv");
     }
     
     public String getDescription() {
-        return "Comma-separated values file";
+        return language.base.getString("file.csv_full"); //Comma-separated values file
     }
 }

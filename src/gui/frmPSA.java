@@ -36,6 +36,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -196,7 +197,7 @@ public class frmPSA {
 	private void initialize() {
 		try{
 			frmPSA = new JFrame();
-			frmPSA.setTitle("Amua - Probabilistic Sensitivity Analysis");
+			frmPSA.setTitle("Amua - "+myModel.language.analysis.getString("sens.prob_sens_analysis")); //Probabilistic Sensitivity Analysis
 			frmPSA.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPSA.class.getResource("/images/psa_128.png")));
 			frmPSA.setBounds(100, 100, 1000, 600);
 			frmPSA.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -223,9 +224,8 @@ public class frmPSA {
 
 			modelParams=new DefaultTableModel(
 					new Object[][] {,},
-					//new String[] {"Parameter", "Expression","Sample"}) {
-					new String[] {"Parameter", "Expression"}){
-					//boolean[] columnEditables = new boolean[] {false, false,true};
+					new String[] {myModel.language.base.getString("object.parameter"), //Parameter 
+							myModel.language.base.getString("object.expression")}){ //Expression
 					boolean[] columnEditables = new boolean[] {false, false};
 					public boolean isCellEditable(int row, int column) {return columnEditables[column];}
 			};
@@ -239,7 +239,6 @@ public class frmPSA {
 				Parameter curParam=myModel.parameters.get(i);
 				modelParams.setValueAt(curParam.name, i, 0);
 				modelParams.setValueAt(curParam.expression, i, 1);
-				//modelParams.setValueAt(Boolean.TRUE , i, 2);
 				paramNames[i]=curParam.name;
 				paramDims[i]=1; //default to single dimension (scalar)
 				if(curParam.value.isMatrix()) {
@@ -255,12 +254,6 @@ public class frmPSA {
 			gbc_scrollPaneParams.gridy = 0;
 			panel_1.add(scrollPaneParams, gbc_scrollPaneParams);
 			tableParams=new JTable();
-			/*tableParams = new JTable(){
-				@Override
-		        public Class<?> getColumnClass(int columnIndex) {
-					return(modelParams.getValueAt(0, columnIndex).getClass());
-		        }
-			};*/
 			tableParams.setRowSelectionAllowed(false);
 			tableParams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableParams.setShowVerticalLines(true);
@@ -291,18 +284,18 @@ public class frmPSA {
 					outcomes[d]=info.dimNames[d];
 				}
 				if(info.analysisType==1){ //CEA
-					outcomes[info.dimNames.length]="ICER ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("cea.icer")+" ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")"; //ICER
 				}
 				else if(info.analysisType==2){ //BCA
-					outcomes[info.dimNames.length]="NMB ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("bca.nmb")+" ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")"; //NMB
 				}
 			}
 
-			JButton btnRun = new JButton("Run");
+			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
 			btnRun.setBounds(359, 6, 90, 28);
 			panel_2.add(btnRun);
 
-			final JButton btnExport = new JButton("Export");
+			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -310,18 +303,18 @@ public class frmPSA {
 						//Show save as dialog
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setAcceptAllFileFilterUsed(false);
-						fc.setFileFilter(new CSVFilter());
+						fc.setFileFilter(new CSVFilter(myModel.language));
 
 						if(tabbedPane.getSelectedIndex()<3) { //Not CEAC or CEAF
-							fc.setDialogTitle("Export PSA Results");
+							fc.setDialogTitle(myModel.language.base.getString("title.export_psa_results")); //Export PSA Results
 						}
 						else if(tabbedPane.getSelectedIndex()==3){
-							fc.setDialogTitle("Export CEAC Results");
+							fc.setDialogTitle(myModel.language.base.getString("title.export_ceac_results")); //Export CEAC Results
 						}
 						else if(tabbedPane.getSelectedIndex()==4){
-							fc.setDialogTitle("Export CEAF Results");
+							fc.setDialogTitle(myModel.language.base.getString("title.export_ceaf_results")); //Export CEAF Results
 						}
-						fc.setApproveButtonText("Export");
+						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
 
 						int returnVal = fc.showSaveDialog(frmPSA);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -358,8 +351,8 @@ public class frmPSA {
 									for(int s=0; s<numStrat; s++){out.write(",\""+myModel.strategyNames[s]+"\"");}
 								}
 								if(analysisType>0){ //CEA or BCA
-									if(analysisType==1){out.write(",\"ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")\"");}
-									else if(analysisType==2){out.write(",\"NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")\"");}
+									if(analysisType==1){out.write(",\""+myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")\"");} //ICER
+									else if(analysisType==2){out.write(",\""+myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")\"");} //NMB
 									for(int s=0; s<numStrat; s++){out.write(",\""+myModel.strategyNames[s]+"\"");}
 								}
 								out.newLine();
@@ -405,7 +398,7 @@ public class frmPSA {
 							else if(tabbedPane.getSelectedIndex()==3){ //CEAC
 								//Headers
 								int numStrat=myModel.strategyNames.length;
-								out.write("WTP");
+								out.write(myModel.language.analysis.getString("cea.wtp_abbr")); //WTP
 								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
 								out.newLine();
 								
@@ -425,7 +418,7 @@ public class frmPSA {
 							else if(tabbedPane.getSelectedIndex()==4){ //CEAF
 								//Headers
 								int numStrat=myModel.strategyNames.length;
-								out.write("WTP");
+								out.write(myModel.language.analysis.getString("cea.wtp_abbr")); //WTP
 								for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
 								out.newLine();
 								
@@ -443,7 +436,7 @@ public class frmPSA {
 								out.close();
 							}
 
-							JOptionPane.showMessageDialog(frmPSA, "Exported!");
+							JOptionPane.showMessageDialog(frmPSA, myModel.language.message.getString("info.exported")); //Exported
 						}
 
 
@@ -457,7 +450,7 @@ public class frmPSA {
 			btnExport.setBounds(359, 36, 90, 28);
 			panel_2.add(btnExport);
 
-			JLabel lblIterations = new JLabel("# Iterations:");
+			JLabel lblIterations = new JLabel(myModel.language.analysis.getString("sim.num_iterations")+":"); //# Iterations
 			lblIterations.setBounds(6, 12, 69, 16);
 			panel_2.add(lblIterations);
 
@@ -468,14 +461,14 @@ public class frmPSA {
 			panel_2.add(textIterations);
 			textIterations.setColumns(10);
 
-			chckbxSeed = new JCheckBox("Seed");
+			chckbxSeed = new JCheckBox(myModel.language.analysis.getString("sim.seed")); //Seed
 			chckbxSeed.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(chckbxSeed.isSelected()){textSeed.setEnabled(true);}
 					else{textSeed.setEnabled(false);}
 				}
 			});
-			chckbxSeed.setBounds(162, 11, 59, 18);
+			chckbxSeed.setBounds(145, 11, 76, 18);
 			panel_2.add(chckbxSeed);
 
 			textSeed = new JTextField();
@@ -484,9 +477,9 @@ public class frmPSA {
 			panel_2.add(textSeed);
 			textSeed.setColumns(10);
 			
-			chckbxSampleParameterSets = new JCheckBox("Sample parameter sets");
+			chckbxSampleParameterSets = new JCheckBox(myModel.language.analysis.getString("sim.sample_parameter_sets")); //Sample parameter sets
 			chckbxSampleParameterSets.setEnabled(false);
-			chckbxSampleParameterSets.setBounds(162, 41, 185, 18);
+			chckbxSampleParameterSets.setBounds(73, 41, 274, 18);
 			panel_2.add(chckbxSampleParameterSets);
 			
 			if(myModel.parameterSets!=null) {
@@ -502,7 +495,7 @@ public class frmPSA {
 			frmPSA.getContentPane().add(tabbedPane, gbc_tabbedPane);
 
 			JPanel panelResults = new JPanel();
-			tabbedPane.addTab("Results", null, panelResults, null);
+			tabbedPane.addTab(myModel.language.analysis.getString("result.results"), null, panelResults, null); //Results
 			GridBagLayout gbl_panelResults = new GridBagLayout();
 			gbl_panelResults.columnWidths = new int[]{165, 165, 165, 0, 0};
 			gbl_panelResults.rowHeights = new int[]{0, 0, 0};
@@ -511,7 +504,8 @@ public class frmPSA {
 			panelResults.setLayout(gbl_panelResults);
 
 			chartDataResults = new DefaultXYDataset();
-			chartResults = ChartFactory.createScatterPlot(null, "Value", "Density", chartDataResults, PlotOrientation.VERTICAL, true, false, false);
+			chartResults = ChartFactory.createScatterPlot(null, myModel.language.analysis.getString("result.value"), myModel.language.base.getString("plot.density"), //Value, Density
+					chartDataResults, PlotOrientation.VERTICAL, true, false, false);
 			chartResults.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 			//Draw axes
 			ValueMarker marker = new ValueMarker(0);  // position is the value on the axis
@@ -538,10 +532,10 @@ public class frmPSA {
 			
 			//pop-up menu
 			JPopupMenu popup = panelChartResults.getPopupMenu();
-			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColor = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints_Strat, frmThis);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints_Strat, frmThis, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -566,7 +560,15 @@ public class frmPSA {
 			gbc_comboDimensions.gridx = 0;
 			gbc_comboDimensions.gridy = 1;
 			panelResults.add(comboDimensions, gbc_comboDimensions);
-			comboResults.setModel(new DefaultComboBoxModel<String>(new String[] {"Density","Histogram","Cumulative Distribution","Quantiles","Iteration"}));
+			//comboResults.setModel(new DefaultComboBoxModel<String>(new String[] {"Density","Histogram","Cumulative Distribution","Quantiles","Iteration"}));
+			String plotType[]=new String[5];
+			plotType[0]=myModel.language.base.getString("plot.density"); //Density
+			plotType[1]=myModel.language.base.getString("plot.histogram"); //Histogram
+			plotType[2]=myModel.language.base.getString("plot.cumulative_distribution"); //Cumulative Distribution
+			plotType[3]=myModel.language.base.getString("plot.quantiles"); //Quantiles
+			plotType[4]=myModel.language.base.getString("plot.iteration"); //Iteration
+			comboResults.setModel(new DefaultComboBoxModel<String>(plotType));
+			
 			GridBagConstraints gbc_comboResults = new GridBagConstraints();
 			gbc_comboResults.fill = GridBagConstraints.HORIZONTAL;
 			gbc_comboResults.insets = new Insets(0, 0, 0, 5);
@@ -590,7 +592,7 @@ public class frmPSA {
 			panelResults.add(comboGroup, gbc_comboGroup);
 
 			JPanel panelParams = new JPanel();
-			tabbedPane.addTab("Parameters", null, panelParams, null);
+			tabbedPane.addTab(myModel.language.base.getString("object.parameters"), null, panelParams, null); //Parameters
 			GridBagLayout gbl_panelParams = new GridBagLayout();
 			gbl_panelParams.columnWidths = new int[]{225, 0, 0};
 			gbl_panelParams.rowHeights = new int[]{0, 0};
@@ -630,7 +632,7 @@ public class frmPSA {
 			for(int v=0; v<numParams; v++){selectedIndices[v]=v;}
 			listParams.setSelectedIndices(selectedIndices); //Select all
 
-			JButton btnUpdateChart = new JButton("Update Chart");
+			JButton btnUpdateChart = new JButton(myModel.language.base.getString("plot.update_plot")); //Update Plot
 			btnUpdateChart.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateParamChart();
@@ -643,7 +645,7 @@ public class frmPSA {
 			panel_3.add(btnUpdateChart, gbc_btnUpdateChart);
 
 			comboParams = new JComboBox<String>();
-			comboParams.setModel(new DefaultComboBoxModel<String>(new String[] {"Density","Histogram","Cumulative Distribution","Quantiles","Iteration"}));
+			comboParams.setModel(new DefaultComboBoxModel<String>(plotType));
 			GridBagConstraints gbc_comboParams = new GridBagConstraints();
 			gbc_comboParams.fill = GridBagConstraints.HORIZONTAL;
 			gbc_comboParams.gridx = 1;
@@ -651,7 +653,8 @@ public class frmPSA {
 			panel_3.add(comboParams, gbc_comboParams);
 
 			chartDataParams = new DefaultXYDataset();
-			chartParams = ChartFactory.createScatterPlot(null, "Value", "Density", chartDataParams, PlotOrientation.VERTICAL, true, false, false);
+			chartParams = ChartFactory.createScatterPlot(null, myModel.language.analysis.getString("result.value"), myModel.language.base.getString("plot.density"), //Value, Density
+					chartDataParams, PlotOrientation.VERTICAL, true, false, false);
 			chartParams.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 			//Draw axes
 			chartParams.getXYPlot().addDomainMarker(marker);
@@ -672,17 +675,17 @@ public class frmPSA {
 			
 			//pop-up menu
 			popup = panelChartParams.getPopupMenu();
-			JMenuItem mntmChangeColorParams = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColorParams = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColorParams.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chartParams, chartDataParams, seriesPaints_Params);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartParams, chartDataParams, seriesPaints_Params, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
 			popup.insert(mntmChangeColorParams, 0);
 			
 			JPanel panelScatter = new JPanel();
-			tabbedPane.addTab("Scatter", null, panelScatter, null); 
+			tabbedPane.addTab(myModel.language.base.getString("plot.scatter"), null, panelScatter, null); //Scatter
 			tabbedPane.setEnabledAt(2, false);
 
 			chartDataScatter = new DefaultXYDataset();
@@ -705,7 +708,9 @@ public class frmPSA {
 					updateScatter();
 				}
 			});
-			comboScatterType.setModel(new DefaultComboBoxModel(new String[] {"Absolute Magnitude", "Relative to Baseline"}));
+			comboScatterType.setModel(new DefaultComboBoxModel(new String[] {
+					myModel.language.base.getString("plot.absolute_magnitude"), // Absolute Magnitude
+					myModel.language.base.getString("plot.relative_baseline")})); //Relative to Baseline
 			GridBagConstraints gbc_comboScatterType = new GridBagConstraints();
 			gbc_comboScatterType.fill = GridBagConstraints.HORIZONTAL;
 			gbc_comboScatterType.insets = new Insets(0, 0, 5, 5);
@@ -721,7 +726,7 @@ public class frmPSA {
 				}
 			});
 			
-			chckbxScatterMeans = new JCheckBox("Display Means");
+			chckbxScatterMeans = new JCheckBox(myModel.language.base.getString("plot.display_means")); //Display Means
 			chckbxScatterMeans.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
 					updateScatter();
@@ -753,11 +758,11 @@ public class frmPSA {
 			
 			//pop-up menu
 			popup = panelChartScatter.getPopupMenu();
-			JMenuItem mntmChangeColorScatter = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColorScatter = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColorScatter.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					//pass results chart, not scatter (extra series for means)
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints_Strat, frmThis);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartResults, chartDataResults, seriesPaints_Strat, frmThis, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -765,17 +770,19 @@ public class frmPSA {
 			
 			//CEAC *********************************
 			JPanel panelCEAC = new JPanel();
-			tabbedPane.addTab("CEAC", null, panelCEAC, "Cost-Effectiveness Acceptability Curve");
+			tabbedPane.addTab(myModel.language.analysis.getString("cea.ceac"), null, panelCEAC, myModel.language.analysis.getString("cea.ceac_full")); //CEAC, "Cost-Effectiveness Acceptability Curve"
 			tabbedPane.setEnabledAt(3, false);
 			
 			chartDataCEAC = new DefaultXYDataset();
-			String costDim="Cost", effectDim="Effect";
+			String costDim=myModel.language.analysis.getString("cea.cost"), effectDim=myModel.language.analysis.getString("cea.effect"); //Cost, Effect
 			if(myModel.dimInfo.analysisType>0) {
 				costDim=myModel.dimInfo.dimNames[myModel.dimInfo.costDim];
 				effectDim=myModel.dimInfo.dimNames[myModel.dimInfo.effectDim];
 			}
-			chartCEAC = ChartFactory.createScatterPlot(null, "Willingness-to-pay ("+costDim+" per "+effectDim+")", 
-					"p(Optimal)", chartDataCEAC, PlotOrientation.VERTICAL, true, false, false);
+			//Willingness-to-pay ([cost] per [effect])
+			String msg = MessageFormat.format(myModel.language.analysis.getString("cea.wtp_per"), costDim, effectDim);
+			chartCEAC = ChartFactory.createScatterPlot(null, msg, 
+					myModel.language.analysis.getString("sens.pOptimal"), chartDataCEAC, PlotOrientation.VERTICAL, true, false, false); //p(Optimal)
 			chartCEAC.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 			//Draw axes
 			chartCEAC.getXYPlot().addDomainMarker(marker);
@@ -802,37 +809,40 @@ public class frmPSA {
 			gbc_panelCEACHeader.gridy = 0;
 			panelCEAC.add(panelCEACHeader, gbc_panelCEACHeader);
 			
-			JLabel lblCEACMin = new JLabel("Min:");
-			lblCEACMin.setBounds(0, 6, 23, 16);
+			JLabel lblCEACMin = new JLabel(myModel.language.math.getString("sum.min")+":"); //Min
+			lblCEACMin.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblCEACMin.setBounds(0, 6, 36, 16);
 			panelCEACHeader.add(lblCEACMin);
 			
 			textCEACMin = new JTextField();
 			textCEACMin.setText("0");
-			textCEACMin.setBounds(25, 0, 70, 28);
+			textCEACMin.setBounds(37, 0, 58, 28);
 			panelCEACHeader.add(textCEACMin);
 			textCEACMin.setColumns(10);
 			
-			JLabel lblCEACMax = new JLabel("Max:");
-			lblCEACMax.setBounds(97, 6, 36, 16);
+			JLabel lblCEACMax = new JLabel(myModel.language.math.getString("sum.max")+":"); //Max
+			lblCEACMax.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblCEACMax.setBounds(90, 6, 36, 16);
 			panelCEACHeader.add(lblCEACMax);
 			
 			textCEACMax = new JTextField();
-			textCEACMax.setBounds(127, 0, 70, 28);
+			textCEACMax.setBounds(127, 0, 58, 28);
 			panelCEACHeader.add(textCEACMax);
 			textCEACMax.setColumns(10);
 			textCEACMax.setText((myModel.dimInfo.WTP*3)+"");
 			
-			JLabel lblIntervals = new JLabel("Intervals:");
-			lblIntervals.setBounds(202, 6, 54, 16);
+			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblIntervals.setBounds(200, 6, 70, 16);
 			panelCEACHeader.add(lblIntervals);
 			
 			textCEACIntervals = new JTextField();
 			textCEACIntervals.setText("100");
-			textCEACIntervals.setBounds(258, 0, 50, 28);
+			textCEACIntervals.setBounds(270, 0, 50, 28);
 			panelCEACHeader.add(textCEACIntervals);
 			textCEACIntervals.setColumns(10);
 			
-			JButton btnUpdateCEAC = new JButton("Update");
+			JButton btnUpdateCEAC = new JButton(myModel.language.base.getString("button.update")); //Update
 			btnUpdateCEAC.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int group=0;
@@ -840,12 +850,12 @@ public class frmPSA {
 					updateCEAC(group);
 				}
 			});
-			btnUpdateCEAC.setBounds(315, 0, 70, 28);
+			btnUpdateCEAC.setBounds(325, 0, 100, 28);
 			panelCEACHeader.add(btnUpdateCEAC);
 			
 			comboCEACGroup = new JComboBox();
 			comboCEACGroup.setVisible(false);
-			comboCEACGroup.setBounds(389, 1, 139, 26);
+			comboCEACGroup.setBounds(428, 1, 100, 26);
 			panelCEACHeader.add(comboCEACGroup);
 			
 			ChartPanel panelChartCEAC = new ChartPanel(chartCEAC,false);
@@ -857,10 +867,10 @@ public class frmPSA {
 			
 			//pop-up menu
 			popup = panelChartCEAC.getPopupMenu();
-			JMenuItem mntmChangeColorCEAC = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColorCEAC = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColorCEAC.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chartCEAC, chartDataCEAC, seriesPaints_Strat, frmThis);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartCEAC, chartDataCEAC, seriesPaints_Strat, frmThis, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -868,17 +878,19 @@ public class frmPSA {
 			
 			// CEAF ******************************************************
 			JPanel panelCEAF = new JPanel();
-			tabbedPane.addTab("CEAF", null, panelCEAF, "Cost-Effectiveness Acceptability Frontier");
+			tabbedPane.addTab(myModel.language.analysis.getString("cea.ceaf"), null, panelCEAF, myModel.language.analysis.getString("cea.ceaf_full")); //CEAF, Cost-Effectiveness Acceptability Frontier
 			tabbedPane.setEnabledAt(4, false);
 			
 			chartDataCEAF = new DefaultXYDataset();
-			costDim="Cost"; effectDim="Effect";
+			costDim=myModel.language.analysis.getString("cea.cost"); effectDim=myModel.language.analysis.getString("cea.effect"); //Cost, Effect
 			if(myModel.dimInfo.analysisType>0) {
 				costDim=myModel.dimInfo.dimNames[myModel.dimInfo.costDim];
 				effectDim=myModel.dimInfo.dimNames[myModel.dimInfo.effectDim];
 			}
-			chartCEAF = ChartFactory.createScatterPlot(null, "Willingness-to-pay ("+costDim+" per "+effectDim+")", 
-					"p(Optimal)", chartDataCEAF, PlotOrientation.VERTICAL, true, false, false);
+			//Willingness-to-pay ([cost] per [effect])
+			msg = MessageFormat.format(myModel.language.analysis.getString("cea.wtp_per"), costDim, effectDim);
+			chartCEAF = ChartFactory.createScatterPlot(null, msg, 
+					myModel.language.analysis.getString("sens.pOptimal"), chartDataCEAF, PlotOrientation.VERTICAL, true, false, false); //p(Optimal)
 			chartCEAF.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 			//Draw axes
 			chartCEAF.getXYPlot().addDomainMarker(marker);
@@ -905,37 +917,40 @@ public class frmPSA {
 			gbc_panelCEAFHeader.gridy = 0;
 			panelCEAF.add(panelCEAFHeader, gbc_panelCEAFHeader);
 			
-			JLabel lblCEAFMin = new JLabel("Min:");
-			lblCEAFMin.setBounds(0, 6, 23, 16);
+			JLabel lblCEAFMin = new JLabel(myModel.language.math.getString("sum.min")+":"); //Min
+			lblCEAFMin.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblCEAFMin.setBounds(0, 6, 36, 16);
 			panelCEAFHeader.add(lblCEAFMin);
 			
 			textCEAFMin = new JTextField();
 			textCEAFMin.setText("0");
-			textCEAFMin.setBounds(25, 0, 70, 28);
+			textCEAFMin.setBounds(37, 0, 58, 28);
 			panelCEAFHeader.add(textCEAFMin);
 			textCEAFMin.setColumns(10);
 			
-			JLabel lblCEAFMax = new JLabel("Max:");
-			lblCEAFMax.setBounds(97, 6, 36, 16);
+			JLabel lblCEAFMax = new JLabel(myModel.language.math.getString("sum.max")+":"); //Max
+			lblCEAFMax.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblCEAFMax.setBounds(90, 6, 36, 16);
 			panelCEAFHeader.add(lblCEAFMax);
 			
 			textCEAFMax = new JTextField();
-			textCEAFMax.setBounds(127, 0, 70, 28);
+			textCEAFMax.setBounds(127, 0, 58, 28);
 			panelCEAFHeader.add(textCEAFMax);
 			textCEAFMax.setColumns(10);
 			textCEAFMax.setText((myModel.dimInfo.WTP*3)+"");
 			
-			JLabel lblIntervalsCEAF = new JLabel("Intervals:");
-			lblIntervalsCEAF.setBounds(202, 6, 54, 16);
+			JLabel lblIntervalsCEAF = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervalsCEAF.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblIntervalsCEAF.setBounds(200, 6, 70, 16);
 			panelCEAFHeader.add(lblIntervalsCEAF);
 			
 			textCEAFIntervals = new JTextField();
 			textCEAFIntervals.setText("100");
-			textCEAFIntervals.setBounds(258, 0, 50, 28);
+			textCEAFIntervals.setBounds(270, 0, 50, 28);
 			panelCEAFHeader.add(textCEAFIntervals);
 			textCEAFIntervals.setColumns(10);
 			
-			JButton btnUpdateCEAF = new JButton("Update");
+			JButton btnUpdateCEAF = new JButton(myModel.language.base.getString("button.update")); //Update
 			btnUpdateCEAF.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int group=0;
@@ -943,12 +958,12 @@ public class frmPSA {
 					updateCEAF(group);
 				}
 			});
-			btnUpdateCEAF.setBounds(315, 0, 70, 28);
+			btnUpdateCEAF.setBounds(325, 0, 100, 28);
 			panelCEAFHeader.add(btnUpdateCEAF);
 			
 			comboCEAFGroup = new JComboBox();
 			comboCEAFGroup.setVisible(false);
-			comboCEAFGroup.setBounds(389, 1, 139, 26);
+			comboCEAFGroup.setBounds(428, 1, 100, 26);
 			panelCEAFHeader.add(comboCEAFGroup);
 			
 			ChartPanel panelChartCEAF = new ChartPanel(chartCEAF,false);
@@ -960,10 +975,10 @@ public class frmPSA {
 			
 			//pop-up menu
 			popup = panelChartCEAF.getPopupMenu();
-			JMenuItem mntmChangeColorCEAF = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColorCEAF = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColorCEAF.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chartCEAF, chartDataCEAF, seriesPaints_Strat, frmThis);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chartCEAF, chartDataCEAF, seriesPaints_Strat, frmThis, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -973,7 +988,7 @@ public class frmPSA {
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				int numGroups=myModel.subgroupNames.size();
 				subgroupNames=new String[numGroups+1];
-				subgroupNames[0]="Overall";
+				subgroupNames[0]=myModel.language.analysis.getString("result.overall"); //Overall
 				for(int i=0; i<numGroups; i++){subgroupNames[i+1]=myModel.subgroupNames.get(i);}
 				comboGroup.setModel(new DefaultComboBoxModel(subgroupNames));
 				comboGroup.setVisible(true);
@@ -988,7 +1003,7 @@ public class frmPSA {
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmPSA, "PSA", "Sampling", 0, 100);
+					final ProgressMonitor progress=new ProgressMonitor(frmPSA, myModel.language.analysis.getString("gen.psa"), myModel.language.message.getString("info.sampling"), 0, 100); //PSA, Sampling
 
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -1003,7 +1018,7 @@ public class frmPSA {
 								ArrayList<String> errorsBase=myModel.parseModel();
 								
 								if(errorsBase.size()>0){
-									JOptionPane.showMessageDialog(frmPSA, "Errors in base case model!");
+									JOptionPane.showMessageDialog(frmPSA, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 								}
 								else{
 									boolean cancelled=false;
@@ -1106,7 +1121,7 @@ public class frmPSA {
 										if(minutes.length()<2){minutes="0"+minutes;}
 										progress.setProgress(n);
 										if(n>0) {
-											progress.setNote("Time left: "+minutes+":"+seconds);
+											progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 										}
 										
 										//Sample parameters
@@ -1122,7 +1137,7 @@ public class frmPSA {
 											for(int v=0; v<numParams; v++){ //sample all parameters
 												Parameter curParam=myModel.parameters.get(v);
 												if(curParam.locked==false) {
-													curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+													curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true, myModel.language);
 													curParam.locked=true;
 												}
 											}
@@ -1151,7 +1166,7 @@ public class frmPSA {
 											if(curDim==1) { //scalar
 												dataParamsIter[v][0][0][n]=n; dataParamsVal[v][0][0][n]=n;
 												try{
-													dataParamsIter[v][0][1][n]=myModel.parameters.get(v).value.getDouble();
+													dataParamsIter[v][0][1][n]=myModel.parameters.get(v).value.getDouble(myModel.language);
 												} catch(Exception e){
 													dataParamsIter[v][0][1][n]=Double.NaN;
 												}
@@ -1419,13 +1434,13 @@ public class frmPSA {
 													for(int g=0; g<numSubgroups+1; g++){
 														traceSummaries[g]=new MarkovTraceSummary(traces[c][g]);
 													}
-													frmTraceSummary showSummary=new frmTraceSummary(traceSummaries,myModel.errorLog,subgroupNames);
+													frmTraceSummary showSummary=new frmTraceSummary(traceSummaries,myModel.errorLog,subgroupNames,myModel.language);
 													showSummary.frmTraceSummary.setVisible(true);
 												}
 											}
 											else {
 												RunReportSummary reportSummary=new RunReportSummary(reports);
-												frmTraceSummaryMulti window=new frmTraceSummaryMulti(reportSummary,myModel.errorLog);
+												frmTraceSummaryMulti window=new frmTraceSummaryMulti(reportSummary,myModel.errorLog,myModel.language);
 												window.frmTraceSummaryMulti.setVisible(true);
 											}
 										}
@@ -1433,17 +1448,22 @@ public class frmPSA {
 										//Print results summary to console
 										Console console=myModel.mainForm.console;
 										myModel.printSimInfo(console);
-										console.print("PSA Iterations:\t"+numIterations+"\n\n");
+										console.print(myModel.language.analysis.getString("sens.psa_iterations")+":\t"+numIterations+"\n\n"); //PSA Iterations
 										boolean colTypes[]=new boolean[]{false,false,true,true,true}; //is column number (true), or text (false)
 										ConsoleTable curTable=new ConsoleTable(console,colTypes);
-										String headers[]=new String[]{"Strategy","Outcome","Mean","95% LB","95% UB"};
+										String headers[]=new String[]{
+												myModel.language.analysis.getString("gen.strategy"), //Strategy
+												myModel.language.analysis.getString("result.outcome"), //Outcome
+												myModel.language.math.getString("sum.mean"), //Mean
+												myModel.language.math.getString("sum.95_lb"), //95% LB
+												myModel.language.math.getString("sum.95_ub")}; //95% UB
 										curTable.addRow(headers);
 										//strategy results - overall
 										for(int s=0; s<numStrat; s++){
 											String stratName=myModel.strategyNames[s];
 											for(int d=0; d<numDim; d++){
 												String dimName=myModel.dimInfo.dimNames[d];
-												if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" (Dis)";}
+												if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" "+myModel.language.analysis.getString("result.dis");} //(Dis)
 												double mean=MathUtils.round(meanResults[0][d][s],myModel.dimInfo.decimals[d]);
 												double lb=MathUtils.round(lbResults[0][d][s],myModel.dimInfo.decimals[d]);
 												double ub=MathUtils.round(ubResults[0][d][s],myModel.dimInfo.decimals[d]);
@@ -1462,14 +1482,14 @@ public class frmPSA {
 										
 										//subgroups
 										for(int g=0; g<numSubgroups; g++){
-											console.print("\nSubgroup Results: "+myModel.subgroupNames.get(g)+"\n");
+											console.print("\n"+myModel.language.analysis.getString("result.subgroup_results")+": "+myModel.subgroupNames.get(g)+"\n"); //Subgroup Results
 											curTable=new ConsoleTable(console,colTypes);
 											curTable.addRow(headers);
 											for(int s=0; s<numStrat; s++){
 												String stratName=myModel.strategyNames[s];
 												for(int d=0; d<numDim; d++){
 													String dimName=myModel.dimInfo.dimNames[d];
-													if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" (Dis)";}
+													if(myModel.type==1 && myModel.markov.discountRewards){dimName+=" "+myModel.language.analysis.getString("result.dis");} //(Dis)
 													double mean=MathUtils.round(meanResults[g+1][d][s],myModel.dimInfo.decimals[d]);
 													double lb=MathUtils.round(lbResults[g+1][d][s],myModel.dimInfo.decimals[d]);
 													double ub=MathUtils.round(ubResults[g+1][d][s],myModel.dimInfo.decimals[d]);
@@ -1490,10 +1510,10 @@ public class frmPSA {
 										}
 										
 										if(myModel.simType==1 && myModel.displayIndResults==true){
-											console.print("\nIndividual-level Results:\n");
+											console.print("\n"+myModel.language.analysis.getString("result.individual_level_results")+":\n"); //Individual-level Results
 											RunReportSummary summary=new RunReportSummary(reports);
 											for(int s=0; s<numStrat; s++){
-												console.print("Strategy: "+myModel.strategyNames[s]+"\n");
+												console.print(myModel.language.analysis.getString("gen.strategy")+": "+myModel.strategyNames[s]+"\n"); //Strategy
 												summary.microStatsSummary[s].printSummary(console);
 											}
 											
@@ -1537,9 +1557,9 @@ public class frmPSA {
 				analysisType=myModel.dimInfo.analysisType;
 			}
 		}
-		if(analysisType==0){outcome="EV ("+info.dimSymbols[dim]+")";}
-		else if(analysisType==1){outcome="ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")";}
-		else if(analysisType==2){outcome="NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")";}
+		if(analysisType==0){outcome=myModel.language.analysis.getString("result.ev")+" ("+info.dimSymbols[dim]+")";} //EV
+		else if(analysisType==1){outcome=myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")";} //ICER
+		else if(analysisType==2){outcome=myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")";} //NMB
 		if(chartDataResults.getSeriesCount()>0){
 			for(int s=0; s<numStrat; s++){
 				chartDataResults.removeSeries(myModel.strategyNames[s]);
@@ -1563,39 +1583,39 @@ public class frmPSA {
 		if(comboGroup.isVisible()){group=comboGroup.getSelectedIndex();}
 				
 		if(selected==0){ //Density
-			chartResults.getXYPlot().getDomainAxis().setLabel("Value");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Density");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("plot.density")); //Density
 			for(int s=0; s<numStrat; s++){
 				double kde[][]=KernelSmooth.density(dataResultsIter[group][dim][s][1], 100);
 				chartDataResults.addSeries(myModel.strategyNames[s],kde);
 			}
 		}
 		else if(selected==1){ //Histogram
-			chartResults.getXYPlot().getDomainAxis().setLabel("Value");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Frequency");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("plot.frequency")); //Frequency
 			for(int s=0; s<numStrat; s++){
 				double kde[][]=KernelSmooth.histogram(dataResultsIter[group][dim][s][1], 100, 10);
 				chartDataResults.addSeries(myModel.strategyNames[s],kde);
 			}
 		}
 		else if(selected==2){ //CDF
-			chartResults.getXYPlot().getDomainAxis().setLabel("Value");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Cumulative Distribution");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("result.value")); // Value
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("plot.cumulative_distribution")); //Cumulative Distribution
 			for(int s=0; s<numStrat; s++){
 				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsCumDens[group][dim][s]);
 			}
 		
 		}
 		else if(selected==3){ //Quantile
-			chartResults.getXYPlot().getDomainAxis().setLabel("Quantile");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Value");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.base.getString("plot.quantile")); //Quantile
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
 			for(int s=0; s<numStrat; s++){
 				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsVal[group][dim][s]);
 			}
 		}
 		else if(selected==4){ //Iteration
-			chartResults.getXYPlot().getDomainAxis().setLabel("Iteration");
-			chartResults.getXYPlot().getRangeAxis().setLabel("Value");
+			chartResults.getXYPlot().getDomainAxis().setLabel(myModel.language.base.getString("plot.iteration")); //Iteration
+			chartResults.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
 			for(int s=0; s<numStrat; s++){
 				chartDataResults.addSeries(myModel.strategyNames[s],dataResultsIter[group][dim][s]);
 			}
@@ -1621,8 +1641,8 @@ public class frmPSA {
 		}
 		
 		if(selected==0){ //Density
-			chartParams.getXYPlot().getDomainAxis().setLabel("Value");
-			chartParams.getXYPlot().getRangeAxis().setLabel("Density");
+			chartParams.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
+			chartParams.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("plot.density")); //Density
 			for(int v=0; v<numParams; v++){
 				if(listParams.isSelectedIndex(v)){
 					int curDim=paramDims[v];
@@ -1642,8 +1662,8 @@ public class frmPSA {
 			}
 		}
 		else if(selected==1){ //Histogram
-			chartParams.getXYPlot().getDomainAxis().setLabel("Value");
-			chartParams.getXYPlot().getRangeAxis().setLabel("Frequency");
+			chartParams.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
+			chartParams.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("plot.frequency")); //Frequency
 			for(int v=0; v<numParams; v++){
 				if(listParams.isSelectedIndex(v)){
 					int curDim=paramDims[v];
@@ -1663,8 +1683,8 @@ public class frmPSA {
 			}
 		}
 		else if(selected==2){ //CDF
-			chartParams.getXYPlot().getDomainAxis().setLabel("Value");
-			chartParams.getXYPlot().getRangeAxis().setLabel("Cumulative Distribution");
+			chartParams.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
+			chartParams.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("plot.cumulative_distribution")); //Cumulative Distribution
 			for(int v=0; v<numParams; v++){
 				if(listParams.isSelectedIndex(v)){
 					int curDim=paramDims[v];
@@ -1682,8 +1702,8 @@ public class frmPSA {
 			}
 		}
 		else if(selected==3){ //Quantile
-			chartParams.getXYPlot().getDomainAxis().setLabel("Quantile");
-			chartParams.getXYPlot().getRangeAxis().setLabel("Value");
+			chartParams.getXYPlot().getDomainAxis().setLabel(myModel.language.base.getString("plot.quantile")); //Quantile
+			chartParams.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
 			for(int v=0; v<numParams; v++){
 				if(listParams.isSelectedIndex(v)){
 					int curDim=paramDims[v];
@@ -1701,8 +1721,8 @@ public class frmPSA {
 			}
 		}
 		else if(selected==4){ //Iteration
-			chartParams.getXYPlot().getDomainAxis().setLabel("Iteration");
-			chartParams.getXYPlot().getRangeAxis().setLabel("Value");
+			chartParams.getXYPlot().getDomainAxis().setLabel(myModel.language.base.getString("plot.iteration")); //Iteration
+			chartParams.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("result.value")); //Value
 			for(int v=0; v<numParams; v++){
 				if(listParams.isSelectedIndex(v)){
 					int curDim=paramDims[v];
@@ -1770,23 +1790,27 @@ public class frmPSA {
 		try {
 			minWTP=Double.parseDouble(textCEACMin.getText().replaceAll(",",""));
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(frmPSA, "CEAC: Please enter a valid min!");
+			JOptionPane.showMessageDialog(frmPSA, myModel.language.message.getString("err.valid_min")); //Please enter a valid min!
 		}
 		try {
 			maxWTP=Double.parseDouble(textCEACMax.getText().replaceAll(",",""));
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(frmPSA, "CEAC: Please enter a valid max!");
+			JOptionPane.showMessageDialog(frmPSA, myModel.language.message.getString("err.valid_max")); //Please enter a valid max!
 		}
 		int numIntervals=100;
 		try {
 			numIntervals=Integer.parseInt(textCEACIntervals.getText().replaceAll(",",""));
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(frmPSA, "CEAC: Please enter a valid number of intervals!");
+			JOptionPane.showMessageDialog(frmPSA, myModel.language.message.getString("err.valid_intervals")); //Please enter a valid number of intervals!
 		}
 		double step=(maxWTP-minWTP)/(numIntervals*1.0);
 		
 		int costDim=myModel.dimInfo.costDim;
 		int effectDim=myModel.dimInfo.effectDim;
+		int objSign=1;
+		if(myModel.dimInfo.objective==1) { //minimize
+			objSign=-1;
+		}
 				
 		//calculate 
 		for(int s=0; s<numStrat; s++) {
@@ -1800,7 +1824,7 @@ public class frmPSA {
 				int maxIndex=-1;
 				for(int s=0; s<numStrat; s++) {
 					double cost=dataResultsIter[g][costDim][s][1][i];
-					double effect=dataResultsIter[g][effectDim][s][1][i];
+					double effect=dataResultsIter[g][effectDim][s][1][i]*objSign;
 					double curNMB=(effect*curWTP)-cost;
 					if(curNMB>maxNMB) {
 						maxNMB=curNMB;
@@ -1837,23 +1861,27 @@ public class frmPSA {
 		try {
 			minWTP=Double.parseDouble(textCEAFMin.getText().replaceAll(",",""));
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(frmPSA, "CEAF: Please enter a valid min!");
+			JOptionPane.showMessageDialog(frmPSA, myModel.language.message.getString("err.valid_min")); //Please enter a valid min!
 		}
 		try {
 			maxWTP=Double.parseDouble(textCEAFMax.getText().replaceAll(",",""));
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(frmPSA, "CEAF: Please enter a valid max!");
+			JOptionPane.showMessageDialog(frmPSA, myModel.language.message.getString("err.valid_max")); //Please enter a valid max!
 		}
 		int numIntervals=100;
 		try {
 			numIntervals=Integer.parseInt(textCEAFIntervals.getText().replaceAll(",",""));
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(frmPSA, "CEAF: Please enter a valid number of intervals!");
+			JOptionPane.showMessageDialog(frmPSA, myModel.language.message.getString("err.valid_intervals")); //Please enter a valid number of intervals!
 		}
 		double step=(maxWTP-minWTP)/(numIntervals*1.0);
 		
 		int costDim=myModel.dimInfo.costDim;
 		int effectDim=myModel.dimInfo.effectDim;
+		int objSign=1;
+		if(myModel.dimInfo.objective==1) { //minimize
+			objSign=-1;
+		}
 				
 		//calculate 
 		for(int s=0; s<numStrat; s++) {
@@ -1869,7 +1897,7 @@ public class frmPSA {
 				int maxIndex=-1;
 				for(int s=0; s<numStrat; s++) {
 					double cost=dataResultsIter[g][costDim][s][1][i];
-					double effect=dataResultsIter[g][effectDim][s][1][i];
+					double effect=dataResultsIter[g][effectDim][s][1][i]*objSign;
 					double curNMB=(effect*curWTP)-cost;
 					meanNMB[s]+=curNMB;
 					if(curNMB>maxNMB) {
@@ -1959,10 +1987,15 @@ public class frmPSA {
 		
 		//Print results
 		DimInfo dimInfo=myModel.dimInfo;
-		console.print("\nCEA Results (Ratio of Means):\n");
+		console.print("\n"+myModel.language.analysis.getString("cea.cea_results")+" ("+myModel.language.analysis.getString("cea.ratio_of_means")+"):\n"); //CEA Results (Ratio of Means)
 		boolean colTypes[]=new boolean[]{false,true,true,true,false}; //is column number (true), or text (false)
 		ConsoleTable curTable=new ConsoleTable(console,colTypes);
-		String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.costDim],dimInfo.dimNames[dimInfo.effectDim],"ICER","Notes"};
+		String headers[]=new String[]{
+				myModel.language.analysis.getString("gen.strategy"), //Strategy
+				dimInfo.dimNames[dimInfo.costDim],
+				dimInfo.dimNames[dimInfo.effectDim],
+				myModel.language.analysis.getString("cea.icer"), //ICER
+				myModel.language.base.getString("menu.notes")}; //Notes
 		curTable.addRow(headers);
 		for(int s=0; s<numStrat; s++){
 			String cost=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.costDim])+"";
@@ -1996,10 +2029,14 @@ public class frmPSA {
 		
 		//Print results
 		DimInfo dimInfo=myModel.dimInfo;
-		console.print("\nBCA Results (Mean):\n");
+		console.print("\n"+myModel.language.analysis.getString("bca.bca_results")+" ("+myModel.language.math.getString("sum.mean")+"):\n"); //BCA Results (Mean)
 		boolean colTypes[]=new boolean[]{false,true,true,true}; //is column number (true), or text (false)
 		ConsoleTable curTable=new ConsoleTable(console,colTypes);
-		String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB"};
+		String headers[]=new String[]{
+				myModel.language.analysis.getString("gen.strategy"), //Strategy
+				dimInfo.dimNames[dimInfo.effectDim],
+				dimInfo.dimNames[dimInfo.costDim],
+				myModel.language.analysis.getString("bca.nmb")}; //NMB
 		curTable.addRow(headers);
 		for(int s=0; s<numStrat; s++){
 			String effect=MathUtils.round((double)table[s][2],dimInfo.decimals[dimInfo.effectDim])+"";

@@ -62,10 +62,10 @@ public class TreeMonteCarlo{
 		//Individuals
 		numPeople=myModel.cohortSize;
 		if(myModel.cluster==false) { //desktop
-			progress=new ProgressMonitor(myModel.mainForm.frmMain, "Monte Carlo simulation", "", 0, 100);
+			progress=new ProgressMonitor(myModel.mainForm.frmMain, myModel.language.analysis.getString("sim.monte_carlo_simulation"), "", 0, 100); //Monte Carlo simulation
 		}
 		else {
-			System.out.println("Monte Carlo simulation...");
+			System.out.println(myModel.language.analysis.getString("sim.monte_carlo_simulation")+"..."); //Monte Carlo simulation
 		}
 		
 		numDim=root.numDimensions;
@@ -157,7 +157,7 @@ public class TreeMonteCarlo{
 							for(int v=0; v<numVars; v++){
 								if(variables[v].independent){
 									variables[v].locked[finalN]=true;
-									people[p].initVariableVals[v]=Interpreter.evaluateTokens(variables[v].parsedTokens, finalN, true);
+									people[p].initVariableVals[v]=Interpreter.evaluateTokens(variables[v].parsedTokens, finalN, true, myModel.language);
 									variables[v].value[finalN]=people[p].initVariableVals[v];
 								}
 							}
@@ -173,8 +173,8 @@ public class TreeMonteCarlo{
 							if(myModel.reportSubgroups){
 								people[p].inSubgroup=new boolean[numSubgroups];
 								for(int g=0; g<numSubgroups; g++){
-									Numeric curVal=Interpreter.evaluateTokens(myModel.subgroupTokens[g], finalN, false);
-									people[p].inSubgroup[g]=curVal.getBool();
+									Numeric curVal=Interpreter.evaluateTokens(myModel.subgroupTokens[g], finalN, false, myModel.language);
+									people[p].inSubgroup[g]=curVal.getBool(myModel.language);
 								}
 							}
 							
@@ -383,13 +383,13 @@ public class TreeMonteCarlo{
 		if(minutes.length()<2){minutes="0"+minutes;}
 		if(myModel.cluster==false) { //desktop
 			progress.setProgress(curProg+1);
-			progress.setNote("Time left: "+minutes+":"+seconds);
+			progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 		}
 		else { //cluster
 			int intProg=(int)prog;
 			if(intProg>curProg) {
 				curProg=intProg;
-				System.out.println("Progress: "+curProg);
+				System.out.println(myModel.language.message.getString("info.progress")+": "+curProg); //Progress
 			}
 		}
 	}
@@ -430,7 +430,7 @@ public class TreeMonteCarlo{
 					}
 				}
 				else{ //has variable, re-evaluate cost
-					double curCost=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false).getDouble();
+					double curCost=Interpreter.evaluateTokens(node.curCostTokens[d], curThread, false, myModel.language).getDouble(myModel.language);
 					node.nTotalCosts[curThread][d]+=curCost;
 					curPerson.costs[d]+=curCost;
 					for(int g=0; g<numSubgroups; g++){
@@ -451,7 +451,7 @@ public class TreeMonteCarlo{
 					}
 				}
 				else{ //has variable, re-evaluate payoff
-					double curPayoff=Interpreter.evaluateTokens(node.curPayoffTokens[d], curThread, false).getDouble();
+					double curPayoff=Interpreter.evaluateTokens(node.curPayoffTokens[d], curThread, false, myModel.language).getDouble(myModel.language);
 					node.nTotalPayoffs[curThread][d]+=curPayoff;
 					curPerson.payoffs[d]+=curPayoff;
 					for(int g=0; g<numSubgroups; g++){
@@ -528,18 +528,18 @@ public class TreeMonteCarlo{
 					indexCompProb=c;
 				}
 				else{ //Evaluate text
-					curChild.curProb[curThread]=Interpreter.evaluateTokens(curChild.curProbTokens, curThread, false).getDouble();
+					curChild.curProb[curThread]=Interpreter.evaluateTokens(curChild.curProbTokens, curThread, false, myModel.language).getDouble(myModel.language);
 					sumProb+=curChild.curProb[curThread];
 				}
 			}
 			if(indexCompProb==-1){
 				if(sumProb!=1.0){ //throw error
-					throw new Exception("Probability error: "+node.name+" (Prob="+sumProb+")");
+					throw new Exception(myModel.language.message.getString("err.prob_error")+": "+node.name+" ("+sumProb+")"); //Probability error
 				}
 			}
 			else{
 				if(sumProb>1.0 || sumProb<0.0){ //throw error
-					throw new Exception("Probability error: "+node.name+" (Prob="+sumProb+")");
+					throw new Exception(myModel.language.message.getString("err.prob_error")+": "+node.name+" ("+sumProb+")"); //Probability error
 				}
 				else{
 					TreeNode curChild=node.children[indexCompProb];

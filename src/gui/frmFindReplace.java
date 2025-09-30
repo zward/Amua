@@ -27,6 +27,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextField;
 
@@ -37,6 +38,9 @@ import tree.TreeNode;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.Toolkit;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 /**
  *
@@ -56,7 +60,7 @@ public class frmFindReplace {
 		this.myModel=myModel;
 		initialize();
 	}
-	
+
 	/**
 	 * Initializes the contents of the frame, including ActionListeners for the Combo-boxes and buttons on the form.
 	 */
@@ -65,61 +69,102 @@ public class frmFindReplace {
 			frmFindReplace = new JDialog();
 			frmFindReplace.setIconImage(Toolkit.getDefaultToolkit().getImage(frmFindReplace.class.getResource("/images/find_128.png")));
 			frmFindReplace.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmFindReplace.setTitle("Amua - Find/Replace");
+			frmFindReplace.setTitle("Amua - "+myModel.language.base.getString("menu.find_replace")); //Find/Replace
 			frmFindReplace.setResizable(false);
 			frmFindReplace.setBounds(100, 100, 336, 206);
 			frmFindReplace.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-			frmFindReplace.getContentPane().setLayout(null);
+			GridBagLayout gridBagLayout = new GridBagLayout();
+			gridBagLayout.columnWidths = new int[]{55, 54, 96, 90, 0};
+			gridBagLayout.rowHeights = new int[]{28, 28, 39, 28, 0, 0};
+			gridBagLayout.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
+			gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+			frmFindReplace.getContentPane().setLayout(gridBagLayout);
 
-			JButton btnCancel = new JButton("Cancel");
-			btnCancel.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					frmFindReplace.dispose();
-				}
-			});
-			btnCancel.setBounds(223, 133, 90, 28);
-			frmFindReplace.getContentPane().add(btnCancel);
-
-			JLabel lblFind = new JLabel("Find:");
-			lblFind.setBounds(12, 13, 55, 16);
-			frmFindReplace.getContentPane().add(lblFind);
+			JLabel lblFind = new JLabel(myModel.language.base.getString("menu.find")+":");
+			GridBagConstraints gbc_lblFind = new GridBagConstraints();
+			gbc_lblFind.anchor = GridBagConstraints.EAST;
+			gbc_lblFind.insets = new Insets(5, 5, 5, 0);
+			gbc_lblFind.gridx = 0;
+			gbc_lblFind.gridy = 0;
+			frmFindReplace.getContentPane().add(lblFind, gbc_lblFind);
 
 			textFind = new JTextField();
-			textFind.setBounds(63, 7, 250, 28);
-			frmFindReplace.getContentPane().add(textFind);
+			GridBagConstraints gbc_textFind = new GridBagConstraints();
+			gbc_textFind.anchor = GridBagConstraints.NORTH;
+			gbc_textFind.fill = GridBagConstraints.HORIZONTAL;
+			gbc_textFind.insets = new Insets(0, 0, 5, 5);
+			gbc_textFind.gridwidth = 3;
+			gbc_textFind.gridx = 1;
+			gbc_textFind.gridy = 0;
+			frmFindReplace.getContentPane().add(textFind, gbc_textFind);
 			textFind.setColumns(10);
 
-			JLabel lblReplace = new JLabel("Replace:");
-			lblReplace.setBounds(12, 45, 55, 16);
-			frmFindReplace.getContentPane().add(lblReplace);
-
 			textReplace = new JTextField();
-			textReplace.setBounds(63, 39, 248, 28);
-			frmFindReplace.getContentPane().add(textReplace);
+			GridBagConstraints gbc_textReplace = new GridBagConstraints();
+			gbc_textReplace.anchor = GridBagConstraints.NORTH;
+			gbc_textReplace.fill = GridBagConstraints.HORIZONTAL;
+			gbc_textReplace.insets = new Insets(0, 0, 5, 5);
+			gbc_textReplace.gridwidth = 3;
+			gbc_textReplace.gridx = 1;
+			gbc_textReplace.gridy = 1;
+			frmFindReplace.getContentPane().add(textReplace, gbc_textReplace);
 			textReplace.setColumns(10);
 
-			JLabel lblScope = new JLabel("Scope:");
-			lblScope.setBounds(12, 93, 55, 16);
-			frmFindReplace.getContentPane().add(lblScope);
+			JLabel lblScope = new JLabel(myModel.language.base.getString("object.scope")+":");
+			GridBagConstraints gbc_lblScope = new GridBagConstraints();
+			gbc_lblScope.anchor = GridBagConstraints.EAST;
+			gbc_lblScope.insets = new Insets(5, 5, 5, 5);
+			gbc_lblScope.gridx = 0;
+			gbc_lblScope.gridy = 3;
+			frmFindReplace.getContentPane().add(lblScope, gbc_lblScope);
 
 			final JComboBox<String> comboScope = new JComboBox<String>();
 			if(myModel.type==0){ //Decision Tree
-				comboScope.setModel(new DefaultComboBoxModel<String>(new String[] {"All", "Name", "Probability", "Cost", "Payoff"}));
+				comboScope.setModel(new DefaultComboBoxModel<String>(new String[] {
+						myModel.language.base.getString("node.all"), //All
+						myModel.language.base.getString("object.name"), //Name
+						myModel.language.math.getString("prob.probability"), //Probability 
+						myModel.language.analysis.getString("cea.cost"), //Cost
+						myModel.language.base.getString("node.payoff")})); //Payoff
 			}
 			else if(myModel.type==1){ //Markov
-				comboScope.setModel(new DefaultComboBoxModel<String>(new String[] {"All", "Name", "Probability", "Cost", "Transition"}));
+				comboScope.setModel(new DefaultComboBoxModel<String>(new String[] {
+						myModel.language.base.getString("node.all"), //All
+						myModel.language.base.getString("object.name"), //Name
+						myModel.language.math.getString("prob.probability"), //Probability 
+						myModel.language.analysis.getString("cea.cost"), //Cost
+						myModel.language.base.getString("node.transition")})); //Transition
 			}
 			comboScope.setSelectedIndex(0);
-			comboScope.setBounds(63, 88, 154, 26);
-			frmFindReplace.getContentPane().add(comboScope);
+			
+			
+			GridBagConstraints gbc_comboScope = new GridBagConstraints();
+			gbc_comboScope.anchor = GridBagConstraints.NORTH;
+			gbc_comboScope.fill = GridBagConstraints.HORIZONTAL;
+			gbc_comboScope.insets = new Insets(0, 0, 5, 5);
+			gbc_comboScope.gridwidth = 2;
+			gbc_comboScope.gridx = 1;
+			gbc_comboScope.gridy = 3;
+			frmFindReplace.getContentPane().add(comboScope, gbc_comboScope);
+		
+			
+			JLabel lblReplace = new JLabel(myModel.language.base.getString("menu.replace")+":");
+			GridBagConstraints gbc_lblReplace = new GridBagConstraints();
+			gbc_lblReplace.anchor = GridBagConstraints.EAST;
+			gbc_lblReplace.insets = new Insets(5, 5, 5, 0);
+			gbc_lblReplace.gridx = 0;
+			gbc_lblReplace.gridy = 1;
+			frmFindReplace.getContentPane().add(lblReplace, gbc_lblReplace);
+			
+			
 
-			JButton btnReplace = new JButton("Replace");
+			JButton btnReplace = new JButton(myModel.language.base.getString("menu.replace")); //Replace
 			btnReplace.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int scope=comboScope.getSelectedIndex();
 					String find=textFind.getText();
 					String replace=textReplace.getText();
-					myModel.saveSnapshot("Find/Replace");
+					myModel.saveSnapshot(myModel.language.base.getString("menu.find_replace")); //Find/Replace
 					int count=0;
 					if(myModel.type==0){ //Decision tree
 						if(scope==0){ //All
@@ -145,13 +190,34 @@ public class frmFindReplace {
 						else if(scope==3){count=replaceCost(find,replace);}
 						else if(scope==4){count=replaceTransition(find,replace);}
 					}
-					
+
 					myModel.rescale(myModel.scale); //Refresh panel
-					JOptionPane.showMessageDialog(frmFindReplace, count+" fields updated!");
+					//[num] fields updated!
+					String msg = MessageFormat.format(myModel.language.message.getString("info.fields_updated"), count);
+					JOptionPane.showMessageDialog(frmFindReplace, msg); 
 				}
 			});
-			btnReplace.setBounds(121, 133, 90, 28);
-			frmFindReplace.getContentPane().add(btnReplace);
+
+			GridBagConstraints gbc_btnReplace = new GridBagConstraints();
+			gbc_btnReplace.anchor = GridBagConstraints.NORTHWEST;
+			gbc_btnReplace.insets = new Insets(0, 0, 0, 5);
+			gbc_btnReplace.gridx = 2;
+			gbc_btnReplace.gridy = 4;
+			frmFindReplace.getContentPane().add(btnReplace, gbc_btnReplace);
+
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmFindReplace.dispose();
+				}
+			});
+			GridBagConstraints gbc_btnCancel = new GridBagConstraints();
+			gbc_btnCancel.anchor = GridBagConstraints.NORTH;
+			gbc_btnCancel.insets = new Insets(0, 0, 0, 5);
+			gbc_btnCancel.fill = GridBagConstraints.HORIZONTAL;
+			gbc_btnCancel.gridx = 3;
+			gbc_btnCancel.gridy = 4;
+			frmFindReplace.getContentPane().add(btnCancel, gbc_btnCancel);
 
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -181,7 +247,7 @@ public class frmFindReplace {
 				}
 			}
 		}
-		
+
 		return(count);
 	}
 
@@ -259,7 +325,7 @@ public class frmFindReplace {
 		}
 		return(count);
 	}
-	
+
 	private int replaceTransition(String find, String replace){
 		int count=0;
 		if(myModel.type==1){ //Markov  tree

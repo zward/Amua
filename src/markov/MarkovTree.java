@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -203,24 +204,24 @@ public class MarkovTree{
 			if(curNode.prob.matches("C") || curNode.prob.matches("c")){curNode.curProb[0]=-1;} //Complementary
 			else{ //Evaluate text
 				try{
-					curNode.curProbTokens=Interpreter.parse(curNode.prob, myModel);
-					curNode.curProb[0]=Interpreter.evaluateTokens(curNode.curProbTokens, 0, false).getDouble();
+					curNode.curProbTokens=Interpreter.parse(curNode.prob, myModel, myModel.language);
+					curNode.curProb[0]=Interpreter.evaluateTokens(curNode.curProbTokens, 0, false, myModel.language).getDouble(myModel.language);
 				}catch(Exception e){
 					validProbs=false;
 					curNode.highlightTextField(0, Color.YELLOW); //Prob
-					errors.add("Node "+curNode.name+": Probability Error ("+curNode.prob+")");
+					errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.prob_error")+" ("+curNode.prob+")"); //Node, Probability Error
 				}
 				if(curNode.curProb[0]<0 || curNode.curProb[0]>1 || Double.isNaN(curNode.curProb[0])){
 					validProbs=false;
 					curNode.highlightTextField(0, Color.YELLOW); //Prob
-					errors.add("Node "+curNode.name+": Probability Error ("+curNode.prob+")");
+					errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.prob_error")+" ("+curNode.prob+")"); //Node, Probability Error
 				}
 			}
 		}
 		
 		if(curNode.type!=4){ //Not transition, ensure it has children
 			if(curNode.childIndices.size()==0){
-				errors.add("Node "+curNode.name+": Branches must end in a state transition");
+				errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.no_state_transition")); //Node, Branches must end in a state transition
 			}
 		}
 		else{ //Transition, validate next state
@@ -232,7 +233,7 @@ public class MarkovTree{
 			if(index==-1){
 				curNode.comboTransition.setBackground(Color.YELLOW);
 				curNode.comboTransition.setBorder(null);
-				errors.add("Node "+curNode.name+": State Transition not found ("+curNode.transition+")");
+				errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.state_transition_not_found")+" ("+curNode.transition+")"); //Node, State Transition not found
 			}
 		}
 		
@@ -242,16 +243,16 @@ public class MarkovTree{
 			curNode.curCostTokens=new Token[numDim][];
 			for(int c=0; c<numDim; c++){
 				try{
-					curNode.curCostTokens[c]=Interpreter.parse(curNode.cost[c], myModel);
-					double testVal=Interpreter.evaluateTokens(curNode.curCostTokens[c], 0, false).getDouble();
+					curNode.curCostTokens[c]=Interpreter.parse(curNode.cost[c], myModel, myModel.language);
+					double testVal=Interpreter.evaluateTokens(curNode.curCostTokens[c], 0, false, myModel.language).getDouble(myModel.language);
 					
 					if(Double.isNaN(testVal)){
 						curNode.highlightTextField(1, Color.YELLOW); //Cost
-						errors.add("Node "+curNode.name+": Cost Error ("+curNode.cost[c]+")");
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.cost_error")+" ("+curNode.cost[c]+")"); //Node, Cost Error
 					}
 				}catch(Exception e){
 					curNode.highlightTextField(1, Color.YELLOW); //Cost
-					errors.add("Node "+curNode.name+": Cost Error ("+curNode.cost[c]+")");
+					errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.cost_error")+" ("+curNode.cost[c]+")"); //Node, Cost Error
 				}
 			}
 		}
@@ -261,16 +262,16 @@ public class MarkovTree{
 			curNode.curRewardTokens=new Token[numDim][];
 			for(int c=0; c<numDim; c++){
 				try{
-					curNode.curRewardTokens[c]=Interpreter.parse(curNode.rewards[c], myModel);
-					double testVal=Interpreter.evaluateTokens(curNode.curRewardTokens[c], 0, false).getDouble();
+					curNode.curRewardTokens[c]=Interpreter.parse(curNode.rewards[c], myModel, myModel.language);
+					double testVal=Interpreter.evaluateTokens(curNode.curRewardTokens[c], 0, false, myModel.language).getDouble(myModel.language);
 					
 					if(Double.isNaN(testVal)){
 						curNode.highlightTextField(3, Color.YELLOW); //rewards
-						errors.add("Node "+curNode.name+": Rewards Error ("+curNode.rewards[c]+")");
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.rewards_error")+" ("+curNode.rewards[c]+")"); //Node, Rewards Error
 					}
 				}catch(Exception e){
 					curNode.highlightTextField(3, Color.YELLOW); //rewards
-					errors.add("Node "+curNode.name+": Rewards Error ("+curNode.rewards[c]+")");
+					errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.rewards_error")+" ("+curNode.rewards[c]+")"); //Node, Rewards Error
 				}
 			}
 		}
@@ -280,7 +281,7 @@ public class MarkovTree{
 			curNode.highlightTextField(5, null);
 			if(curNode.name==null || curNode.name.trim().isEmpty()){
 				curNode.highlightTextField(5, Color.YELLOW);
-				errors.add("Markov Chain Error: Chain not named");
+				errors.add(myModel.language.message.getString("err.chain_not_named")); //Markov Chain Error: Chain not named
 			}
 		}
 		
@@ -296,17 +297,17 @@ public class MarkovTree{
 				for(int u=0; u<updates.length; u++){
 					curU=u; //update for error catching
 					curNode.curVariableUpdates[u]=new VariableUpdate(updates[u],myModel);
-					double testVal=curNode.curVariableUpdates[u].testVal.getDouble();
+					double testVal=curNode.curVariableUpdates[u].testVal.getDouble(myModel.language);
 					if(Double.isNaN(testVal)){
 						curNode.highlightTextField(4, Color.YELLOW); //Variable updates
-						errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" ("+updates[u]+")"); //Node, Variable Update Error
 					}
 
 				}
 			}catch(Exception e){
 				curNode.highlightTextField(4, Color.YELLOW); //Variable updates
-				if(updates==null){errors.add("Node "+curNode.name+": Variable Update Error - Null entry");}
-				else{errors.add("Node "+curNode.name+": Variable Update Error ("+updates[curU]+")");}
+				if(updates==null){errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" - "+myModel.language.message.getString("err.null_entry"));} //Node, Variable Update Error - Null entry
+				else{errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" ("+updates[curU]+")");} //Node, Variable Update Error
 			}
 		}
 		if(curNode.hasVarUpdates && curNode.type==1) { //var updates, chain
@@ -315,7 +316,7 @@ public class MarkovTree{
 					(curNode.varUpdates==null || curNode.varUpdates.trim().isEmpty())) {
 				curNode.highlightTextField(4, Color.YELLOW); //Variable updates
 				curNode.highlightTextField(6, Color.YELLOW); //Variable updates
-				errors.add("Node "+curNode.name+": Variable Update Error - No entry for either update field");
+				errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" - "+myModel.language.message.getString("err.no_update_either_update")); //Node, Variable Update Error - No entry for either update field
 			}
 			else { //at least one is entered
 				if(curNode.varUpdatesT0!=null && curNode.varUpdatesT0.trim().isEmpty()==false) {
@@ -328,15 +329,15 @@ public class MarkovTree{
 						for(int u=0; u<updates.length; u++){
 							curU=u; //update for error catching
 							curNode.curVariableUpdatesT0[u]=new VariableUpdate(updates[u],myModel);
-							double testVal=curNode.curVariableUpdatesT0[u].testVal.getDouble();
+							double testVal=curNode.curVariableUpdatesT0[u].testVal.getDouble(myModel.language);
 							if(Double.isNaN(testVal)){
 								curNode.highlightTextField(6, Color.YELLOW); //Variable updates
-								errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
+								errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" ("+updates[u]+")"); //Node, Variable Update Error
 							}
 						}
 					}catch(Exception e){
 						curNode.highlightTextField(6, Color.YELLOW); //Variable updates
-						errors.add("Node "+curNode.name+": Variable Update Error ("+updates[curU]+")");
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" ("+updates[curU]+")"); //Node, Variable Update Error
 					}
 				}
 				if(curNode.varUpdates!=null && curNode.varUpdates.trim().isEmpty()==false) {
@@ -349,15 +350,15 @@ public class MarkovTree{
 						for(int u=0; u<updates.length; u++){
 							curU=u; //update for error catching
 							curNode.curVariableUpdates[u]=new VariableUpdate(updates[u],myModel);
-							double testVal=curNode.curVariableUpdates[u].testVal.getDouble();
+							double testVal=curNode.curVariableUpdates[u].testVal.getDouble(myModel.language);
 							if(Double.isNaN(testVal)){
 								curNode.highlightTextField(4, Color.YELLOW); //Variable updates
-								errors.add("Node "+curNode.name+": Variable Update Error ("+updates[u]+")");
+								errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" ("+updates[u]+")"); //Node, Variable Update Error
 							}
 						}
 					}catch(Exception e){
 						curNode.highlightTextField(4, Color.YELLOW); //Variable updates
-						errors.add("Node "+curNode.name+": Variable Update Error ("+updates[curU]+")");
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.var_update_error")+" ("+updates[curU]+")"); //Node, Variable Update Error
 					}
 				}
 			}
@@ -388,7 +389,9 @@ public class MarkovTree{
 				}
 				if(numCompProb==0){
 					if(Math.abs(1.0-sumProb)>MathUtils.tolerance){
-						errors.add("Node "+curNode.name+": Probabilities sum to "+sumProb+"!");
+						//Probabilities sum to [prob]!
+						String msg = MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb);
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+msg); //Node
 						for(int j=0; j<numChildren; j++){
 							MarkovNode child=nodes.get(curNode.childIndices.get(j));
 							child.highlightTextField(0, Color.YELLOW); //Prob
@@ -397,7 +400,9 @@ public class MarkovTree{
 				}
 				else if(numCompProb==1){
 					if(sumProb<0 || sumProb>(1.0+MathUtils.tolerance)){
-						errors.add("Node "+curNode.name+": Entered probabilities sum to "+sumProb+"!");
+						//Entered probabilities sum to [prob]!
+						String msg = MessageFormat.format(myModel.language.message.getString("err.entered_prob_sum"), sumProb);
+						errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+msg); //Node
 						for(int j=0; j<numChildren; j++){
 							MarkovNode child=nodes.get(curNode.childIndices.get(j));
 							if(child.curProb[0]!=-1){child.highlightTextField(0, Color.YELLOW);} //Entered prob
@@ -411,7 +416,7 @@ public class MarkovTree{
 					}
 				}
 				else{ //2+ comp probs
-					errors.add("Node "+curNode.name+": At most 1 probability can be complementary!");
+					errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.one_prob_complementary")); //Node, At most 1 probability can be complementary!
 					for(int j=0; j<numChildren; j++){
 						MarkovNode child=nodes.get(curNode.childIndices.get(j));
 						if(child.curProb[0]==-1){child.highlightTextField(0, Color.YELLOW);} //Comp. prob
@@ -435,20 +440,20 @@ public class MarkovTree{
 				myModel.traceMarkov=new MarkovTrace(curNode);
 				myModel.traceMarkov.setT0(curNode);
 				
-				curNode.curTerminationTokens=Interpreter.parse(curNode.terminationCondition, myModel);
-				Numeric check=Interpreter.evaluateTokens(curNode.curTerminationTokens, 0, false);
+				curNode.curTerminationTokens=Interpreter.parse(curNode.terminationCondition, myModel, myModel.language);
+				Numeric check=Interpreter.evaluateTokens(curNode.curTerminationTokens, 0, false, myModel.language);
 				if(check==null){ //if not parseable
 					//curNode.lblTermination.setBackground(Color.YELLOW);
-					errors.add("Node "+curNode.name+": Termination Condition Error ("+curNode.terminationCondition+")");
+					errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.termination_error")+" ("+curNode.terminationCondition+")"); //Node, Termination Condition Error
 				}
-				else if(check.getBool()==true){ //if true at t=0, model will never start
+				else if(check.getBool(myModel.language)==true){ //if true at t=0, model will never start
 					//curNode.lblTermination.setBackground(Color.YELLOW);
-					errors.add("Node "+curNode.name+": Termination Condition true at t=0 ("+curNode.terminationCondition+")");
+					errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.termination_true_t0")+" ("+curNode.terminationCondition+")"); //Node, Termination Condition true at t=0 
 				}
 			
 			}catch(Exception e){
 				//curNode.lblTermination.setBackground(Color.YELLOW);
-				errors.add("Node "+curNode.name+": Termination Condition Error ("+curNode.terminationCondition+")");
+				errors.add(myModel.language.base.getString("node.node")+" "+curNode.name+": "+myModel.language.message.getString("err.termination_error")+" ("+curNode.terminationCondition+")"); //Node, Termination Condition Error
 				e.printStackTrace();
 			}
 		}
@@ -468,7 +473,7 @@ public class MarkovTree{
 		if(node.curCosts==null || node.curCosts.length!=numDim){node.curCosts=new double[numDim][1];}
 		if(node.hasCost){
 			for(int c=0; c<numDim; c++){
-				node.curCosts[c][0]=Interpreter.evaluateTokens(node.curCostTokens[c], 0, false).getDouble();
+				node.curCosts[c][0]=Interpreter.evaluateTokens(node.curCostTokens[c], 0, false, myModel.language).getDouble(myModel.language);
 				node.curCosts[c][0]*=myModel.cohortSize; //scale costs by cohort size
 			}
 		}
@@ -551,18 +556,18 @@ public class MarkovTree{
 					indexCompProb=c;
 				}
 				else{ //Evaluate text
-					curChild.curProb[0]=Interpreter.evaluateTokens(curChild.curProbTokens, 0, false).getDouble();
+					curChild.curProb[0]=Interpreter.evaluateTokens(curChild.curProbTokens, 0, false, myModel.language).getDouble(myModel.language);
 					sumProb+=curChild.curProb[0];
 				}
 			}
 			if(indexCompProb==-1){
 				if(sumProb!=1.0){ //throw error
-					throw new Exception("Probability error: "+node.name+" (Prob="+sumProb+")");
+					throw new Exception(myModel.language.message.getString("err.prob_error")+": "+node.name+" ("+sumProb+")"); //Probability error
 				}
 			}
 			else{
 				if(sumProb>1.0 || sumProb<0.0){ //throw error
-					throw new Exception("Probability error: "+node.name+" (Prob="+sumProb+")");
+					throw new Exception(myModel.language.message.getString("err.prob_error")+": "+node.name+" ("+sumProb+")"); //Probability error
 				}
 				else{
 					MarkovNode curChild=node.children[indexCompProb];
@@ -632,12 +637,12 @@ public class MarkovTree{
 								traceGroups[g]=runReport.markovTracesGroup[g].get(c);
 							}
 						}
-						frmTrace window=new frmTrace(runReport.markovTraces.get(c),myModel.errorLog,traceGroups,runReport.subgroupNames);
+						frmTrace window=new frmTrace(runReport.markovTraces.get(c),myModel.errorLog,traceGroups,runReport.subgroupNames,myModel.language);
 						window.frmTrace.setVisible(true);
 					}
 				}
 				else {
-					frmTraceMulti window=new frmTraceMulti(runReport,myModel.errorLog);
+					frmTraceMulti window=new frmTraceMulti(runReport,myModel.errorLog,myModel.language);
 					window.frmTraceMulti.setVisible(true);
 				}
 			}
@@ -712,12 +717,12 @@ public class MarkovTree{
 		if(display && showTrace) {
 			if(compileTraces==false) {
 				for(int c=0; c<numChains; c++) {
-					frmTrace window=new frmTrace(runReport.markovTraces.get(c),myModel.errorLog,null,null);
+					frmTrace window=new frmTrace(runReport.markovTraces.get(c),myModel.errorLog,null,null,myModel.language);
 					window.frmTrace.setVisible(true);
 				}
 			}
 			else {
-				frmTraceMulti window=new frmTraceMulti(runReport,myModel.errorLog);
+				frmTraceMulti window=new frmTraceMulti(runReport,myModel.errorLog,myModel.language);
 				window.frmTraceMulti.setVisible(true);
 			}
 		}
@@ -780,10 +785,10 @@ public class MarkovTree{
 		ConsoleTable curTable=new ConsoleTable(console,colTypes);
 		String headers[]=new String[numDimensions+1];
 		if(discountRewards){headers=new String[numDimensions*2+1];}
-		headers[0]="Strategy";
+		headers[0]=myModel.language.analysis.getString("gen.strategy"); //Strategy
 		for(int d=0; d<numDimensions; d++){headers[d+1]=dimInfo.dimNames[d];}
 		if(discountRewards){
-			for(int d=0; d<numDimensions; d++){headers[numDimensions+d+1]=dimInfo.dimNames[d]+" (Dis)";}
+			for(int d=0; d<numDimensions; d++){headers[numDimensions+d+1]=dimInfo.dimNames[d]+" "+myModel.language.analysis.getString("result.dis");} //(Dis)
 		}
 		curTable.addRow(headers);
 		
@@ -811,7 +816,7 @@ public class MarkovTree{
 		
 		//subgroups
 		for(int g=0; g<report.numSubgroups; g++){
-			console.print("\nSubgroup Results: "+report.subgroupNames[g]+" (n="+report.subgroupSizes[g]+")\n");
+			console.print("\n"+myModel.language.analysis.getString("result.subgroup_results")+": "+report.subgroupNames[g]+" (n="+report.subgroupSizes[g]+")\n"); //Subgroup Results
 			curTable=new ConsoleTable(console,colTypes);
 			curTable.addRow(headers);
 			for(int c=0; c<root.numChildren; c++){
@@ -846,10 +851,10 @@ public class MarkovTree{
 		DimInfo dimInfo=myModel.dimInfo;
 		int numDimensions=dimInfo.dimSymbols.length;
 		//headers
-		out.write("Strategy");
+		out.write(myModel.language.analysis.getString("gen.strategy")); //Strategy
 		for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]);}
 		if(discountRewards){
-			for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]+" (Dis)");}
+			for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]+" "+myModel.language.analysis.getString("result.dis"));} //(Dis)
 		}
 		out.newLine();
 		
@@ -874,12 +879,12 @@ public class MarkovTree{
 		
 		//subgroups
 		for(int g=0; g<report.numSubgroups; g++){
-			out.write("Subgroup Results:,"+report.subgroupNames[g]+"n=,"+report.subgroupSizes[g]); out.newLine();
+			out.write(myModel.language.analysis.getString("result.subgroup_results")+":,"+report.subgroupNames[g]+"n=,"+report.subgroupSizes[g]); out.newLine(); //Subgroup Results
 			//headers
-			out.write("Strategy");
+			out.write(myModel.language.analysis.getString("gen.strategy")); //Strategy
 			for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]);}
 			if(discountRewards){
-				for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]+" (Dis)");}
+				for(int d=0; d<numDimensions; d++){out.write(","+dimInfo.dimNames[d]+" "+myModel.language.analysis.getString("result.dis"));} //(Dis)
 			}
 			out.newLine();
 			for(int c=0; c<root.numChildren; c++){
@@ -914,10 +919,10 @@ public class MarkovTree{
 		ConsoleTable curTable=new ConsoleTable(console,colTypes);
 		String headers[]=new String[numDimensions+1];
 		if(discountRewards){headers=new String[numDimensions*2+1];}
-		headers[0]="Chain";
+		headers[0]=myModel.language.base.getString("node.chain"); //Chain
 		for(int d=0; d<numDimensions; d++){headers[d+1]=dimInfo.dimNames[d];}
 		if(discountRewards){
-			for(int d=0; d<numDimensions; d++){headers[numDimensions+d+1]=dimInfo.dimNames[d]+" (Dis)";}
+			for(int d=0; d<numDimensions; d++){headers[numDimensions+d+1]=dimInfo.dimNames[d]+" "+myModel.language.analysis.getString("result.dis");} //(Dis)
 		}
 		curTable.addRow(headers);
 		//chain results
@@ -939,7 +944,7 @@ public class MarkovTree{
 		
 		//subgroups
 		for(int g=0; g<report.numSubgroups; g++){
-			console.print("\nSubgroup Results: "+report.subgroupNames[g]+" (n="+report.subgroupSizes[g]+")\n");
+			console.print("\n"+myModel.language.analysis.getString("result.subgroup_results")+": "+report.subgroupNames[g]+" (n="+report.subgroupSizes[g]+")\n"); //Subgroup Results
 			curTable=new ConsoleTable(console,colTypes);
 			curTable.addRow(headers);
 			row=new String[numDimensions+1];
@@ -974,8 +979,8 @@ public class MarkovTree{
 				if(icer.matches("---")){
 					icer=(String)report.table[s][5];
 				}
-				if(report.dimInfo.analysisType==1){icer="ICER: "+icer;}
-				else if(report.dimInfo.analysisType==2){icer="NMB: "+icer;}
+				if(report.dimInfo.analysisType==1){icer=myModel.language.analysis.getString("cea.icer")+": "+icer;} //ICER
+				else if(report.dimInfo.analysisType==2){icer=myModel.language.analysis.getString("bca.nmb")+": "+icer;} //NMB
 				child.icer=icer;
 				child.textICER.setText(icer);
 				if(child.visible){
@@ -1029,30 +1034,6 @@ public class MarkovTree{
 				}
 			}
 			
-			
-			/*curNode.cost=Arrays.copyOf(curNode.cost, numDimensions);
-			if(curNode.type==2){ //state
-				curNode.rewards=Arrays.copyOf(curNode.rewards, numDimensions);
-			}
-			else if(curNode.type==1){ //chain
-				if(curNode.expectedValues==null){curNode.expectedValues=new double[numDimensions];}
-				else{curNode.expectedValues=Arrays.copyOf(curNode.expectedValues, numDimensions);}
-				if(curNode.expectedValuesDis==null){curNode.expectedValuesDis=new double[numDimensions];}
-				else{curNode.expectedValuesDis=Arrays.copyOf(curNode.expectedValuesDis, numDimensions);}
-			}
-			else if((curNode.type==0 || curNode.type==3) && curNode.chain==null){ //Decision or chance node outside of chain
-				if(curNode.expectedValues==null){curNode.expectedValues=new double[numDimensions];}
-				else{curNode.expectedValues=Arrays.copyOf(curNode.expectedValues, numDimensions);}
-				if(curNode.expectedValuesDis==null){curNode.expectedValuesDis=new double[numDimensions];}
-				else{curNode.expectedValuesDis=Arrays.copyOf(curNode.expectedValuesDis, numDimensions);}
-			}
-			
-			for(int d=0; d<numDimensions; d++){
-				if(curNode.cost[d]==null){curNode.cost[d]="0";}
-				if(curNode.type==2){
-					if(curNode.rewards[d]==null){curNode.rewards[d]="0";}
-				}
-			}*/
 		}
 	}
 

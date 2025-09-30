@@ -70,6 +70,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
@@ -79,6 +80,7 @@ import java.awt.Cursor;
 import java.awt.Toolkit;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -109,24 +111,24 @@ public class frmImport2 {
 			frmImport2 = new JDialog();
 			frmImport2.setIconImage(Toolkit.getDefaultToolkit().getImage(frmImport2.class.getResource("/images/import_128.png")));
 			frmImport2.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmImport2.setTitle("Amua - Import Model Objects");
+			frmImport2.setTitle("Amua - "+myModel.language.base.getString("title.import_objects")); //Import Objects
 			frmImport2.setResizable(false);
 			frmImport2.setBounds(100, 100, 582, 328);
 			frmImport2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmImport2.getContentPane().setLayout(null);
 			
-			JLabel lblSelectAnExport = new JLabel("Select source:");
+			JLabel lblSelectAnExport = new JLabel(myModel.language.message.getString("ask.select_source")+":"); //Select source
 			lblSelectAnExport.setBounds(12, 23, 146, 16);
 			frmImport2.getContentPane().add(lblSelectAnExport);
 			
 			JScrollPane scrollPane = new JScrollPane();
-			scrollPane.setBounds(12, 42, 238, 145);
+			scrollPane.setBounds(12, 42, 226, 145);
 			frmImport2.getContentPane().add(scrollPane);
 			
 			textDescription = new JTextArea();
 			textDescription.setEditable(false);
 			textDescription.setLineWrap(true);
-			textDescription.setBounds(262, 41, 302, 146);
+			textDescription.setBounds(243, 41, 327, 146);
 			frmImport2.getContentPane().add(textDescription);
 						
 			final JList<String> list = new JList<String>();
@@ -135,15 +137,16 @@ public class frmImport2 {
 					//updates description
 					int index=list.getSelectedIndex();
 					if(index==0) { //Amua model
-						textDescription.setText("Imports model objects from an existing Amua model.");
+						textDescription.setText(myModel.language.message.getString("info.imports_objects_model")); //Imports model objects from an existing Amua model.
 					}
 					else if(index==1) {
-						textDescription.setText("Imports model objects from a .csv file.\n\nExpected columns are:\n| Name | Expression | Notes (optional) |\n\nThe first row should contain the column names.\nSubsequent rows should define model objects.");
+						//Imports model objects from a .csv file.\n\nExpected columns are:\n| Name | Expression | Notes (optional) |\n\nThe first row should contain the column names.\nSubsequent rows should define model objects."
+						textDescription.setText(myModel.language.message.getString("info.imports_objects_csv"));
 					}
 				}
 			});
 			list.setModel(new AbstractListModel() {
-				String[] values = new String[] {"Amua model", "CSV"};
+				String[] values = new String[] {myModel.language.base.getString("file.amua"), myModel.language.base.getString("file.csv")}; //Amua model, CSV
 				public int getSize() {
 					return values.length;
 				}
@@ -155,7 +158,7 @@ public class frmImport2 {
 			list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			scrollPane.setViewportView(list);
 			
-			JButton btnBrowse = new JButton("Browse");
+			JButton btnBrowse = new JButton(myModel.language.base.getString("button.browse")); //Browse
 			btnBrowse.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
@@ -165,17 +168,17 @@ public class frmImport2 {
 							if(selected==0) { //Amua model
 								JFileChooser fc=null;
 								fc=new JFileChooser(myModel.filepath);
-								fc.setFileFilter(new AmuaModelFilter());
+								fc.setFileFilter(new AmuaModelFilter(myModel.language));
 								fc.setAcceptAllFileFilterUsed(false);
 
-								fc.setDialogTitle("Import Model Objects");
+								fc.setDialogTitle(myModel.language.base.getString("title.import_objects")); //Import Objects
 
-								int returnVal = fc.showDialog(frmImport2, "Import");
+								int returnVal = fc.showDialog(frmImport2, myModel.language.base.getString("menu.import")); //Import
 								if (returnVal == JFileChooser.APPROVE_OPTION) {
 									File file = fc.getSelectedFile();
 									String path=file.getAbsolutePath();
 									if(path.equals(myModel.filepath)) {
-										JOptionPane.showMessageDialog(frmImport2, "Please select a different model!");
+										JOptionPane.showMessageDialog(frmImport2, myModel.language.message.getString("err.select_different_model")); //Please select a different model!
 									}
 									else { //open donor model
 										frmImport2.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -196,10 +199,10 @@ public class frmImport2 {
 							else if(selected==1) { //CSV
 								JFileChooser fc=null;
 								fc=new JFileChooser(myModel.filepath);
-								fc.setFileFilter(new CSVFilter());
+								fc.setFileFilter(new CSVFilter(myModel.language));
 								fc.setAcceptAllFileFilterUsed(false);
 
-								fc.setDialogTitle("Import Model Objects");
+								fc.setDialogTitle(myModel.language.base.getString("title.import_objects")); //Import Objects
 								int returnVal = fc.showOpenDialog(frmImport2);
 								if (returnVal == JFileChooser.APPROVE_OPTION) {
 									File file = fc.getSelectedFile();
@@ -211,7 +214,7 @@ public class frmImport2 {
 						}
 					}catch(Exception e1){
 						frmImport2.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-						JOptionPane.showMessageDialog(frmImport2, "Error: "+e1.getMessage());
+						JOptionPane.showMessageDialog(frmImport2, myModel.language.message.getString("error")+": "+e1.getMessage()); //Error
 						myModel.errorLog.recordError(e1);
 					}
 				}
@@ -219,38 +222,43 @@ public class frmImport2 {
 			btnBrowse.setBounds(12, 187, 90, 28);
 			frmImport2.getContentPane().add(btnBrowse);
 			
-			JButton btnCancel = new JButton("Cancel");
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmImport2.dispose();
 				}
 			});
-			btnCancel.setBounds(160, 187, 90, 28);
+			btnCancel.setBounds(146, 187, 90, 28);
 			frmImport2.getContentPane().add(btnCancel);
 			
-			JLabel lblNewLabel = new JLabel("Filepath:");
-			lblNewLabel.setBounds(12, 233, 52, 16);
+			JLabel lblNewLabel = new JLabel(myModel.language.base.getString("file.filepath")+":"); //Filepath
+			lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblNewLabel.setBounds(6, 233, 96, 16);
 			frmImport2.getContentPane().add(lblNewLabel);
 			
 			textFilepath = new JTextField();
-			textFilepath.setBounds(69, 227, 495, 28);
+			textFilepath.setBounds(103, 227, 461, 28);
 			frmImport2.getContentPane().add(textFilepath);
 			textFilepath.setColumns(10);
 			
-			JLabel lblNewLabel_1 = new JLabel("Object Type:");
-			lblNewLabel_1.setBounds(12, 261, 75, 16);
+			JLabel lblNewLabel_1 = new JLabel(myModel.language.base.getString("object.object_type")+":"); //Object Type
+			lblNewLabel_1.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblNewLabel_1.setBounds(6, 261, 96, 16);
 			frmImport2.getContentPane().add(lblNewLabel_1);
 			
 			JComboBox comboBox = new JComboBox();
-			comboBox.setModel(new DefaultComboBoxModel(new String[] {"Parameters", "Variables", "Constraints"}));
-			comboBox.setBounds(89, 256, 132, 26);
+			comboBox.setModel(new DefaultComboBoxModel(new String[] {
+					myModel.language.base.getString("object.parameters"), //Parameters
+					myModel.language.base.getString("object.variables"), //Variables
+					myModel.language.base.getString("object.constraints")})); //Constraints
+			comboBox.setBounds(103, 256, 132, 26);
 			frmImport2.getContentPane().add(comboBox);
 			
-			JCheckBox chckbxOverwrite = new JCheckBox("Overwrite current objects");
-			chckbxOverwrite.setBounds(226, 260, 166, 18);
+			JCheckBox chckbxOverwrite = new JCheckBox(myModel.language.base.getString("object.overwrite_current")); //Overwrite current objects
+			chckbxOverwrite.setBounds(238, 260, 216, 18);
 			frmImport2.getContentPane().add(chckbxOverwrite);
 			
-			btnImport = new JButton("Import CSV");
+			btnImport = new JButton(myModel.language.base.getString("button.import_csv")); //Import CSV
 			btnImport.setEnabled(false);
 			btnImport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -258,7 +266,7 @@ public class frmImport2 {
 					
 						boolean overwrite=chckbxOverwrite.isSelected();
 						int type=comboBox.getSelectedIndex();
-						myModel.saveSnapshot("Import Objects"); //Add to undo stack
+						myModel.saveSnapshot(myModel.language.base.getString("title.import_objects")); //Add to undo stack (Import Objects)
 
 						//read CSV
 						String path=textFilepath.getText();
@@ -355,17 +363,17 @@ public class frmImport2 {
 						
 					} catch(Exception e1) {
 						frmImport2.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-						JOptionPane.showMessageDialog(frmImport2, "Error: "+e1.getMessage());
+						JOptionPane.showMessageDialog(frmImport2, myModel.language.message.getString("error")+": "+e1.getMessage()); //Error
 						myModel.errorLog.recordError(e1);
 					}
 					
 				}
 			});
-			btnImport.setBounds(404, 255, 90, 28);
+			btnImport.setBounds(454, 255, 90, 28);
 			frmImport2.getContentPane().add(btnImport);
 			
-			JLabel lblDescription = new JLabel("Description:");
-			lblDescription.setBounds(263, 23, 90, 16);
+			JLabel lblDescription = new JLabel(myModel.language.base.getString("title.description")+":"); //Description
+			lblDescription.setBounds(243, 23, 90, 16);
 			frmImport2.getContentPane().add(lblDescription);
 			
 						
@@ -377,42 +385,53 @@ public class frmImport2 {
 	private boolean validateName(String testName) {
 		boolean valid=true;
 		if(testName.length()==0){
-			JOptionPane.showMessageDialog(frmImport2, "Error: Empty name!"); 
+			JOptionPane.showMessageDialog(frmImport2, myModel.language.message.getString("err.empty_name")); //Error: Empty name!
 			valid=false;
 		}
 		else if(Interpreter.isReservedString(testName)){
-			JOptionPane.showMessageDialog(frmImport2, testName+" is a reserved variable name!");
+			//[name] is a reserved variable name!
+			String msg=MessageFormat.format(myModel.language.message.getString("err.reserved_name"), testName);
+			JOptionPane.showMessageDialog(frmImport2, msg);
 			valid=false;
 		}
 		else{
 			//Ensure name is unique
 			int index=myModel.getTableIndex(testName);
 			if(index!=-1){
-				JOptionPane.showMessageDialog(frmImport2, testName+" is already defined as a table!");
+				//[name] is already defined as a table!
+				String msg=MessageFormat.format(myModel.language.message.getString("err.defined_table"), testName);
+				JOptionPane.showMessageDialog(frmImport2, msg);
 				valid=false;
 			}
 			index=myModel.getParameterIndex(testName);
 			if(index!=-1){
-				JOptionPane.showMessageDialog(frmImport2, testName+" is already defined as a parameter!");
+				//[name] is already defined as a parameter!
+				String msg=MessageFormat.format(myModel.language.message.getString("err.defined_parameter"), testName);
+				JOptionPane.showMessageDialog(frmImport2, msg);
 				valid=false;
 			}
 			index=myModel.getVariableIndex(testName);
 			if(index!=-1){
-				JOptionPane.showMessageDialog(frmImport2, testName+" is already defined as a variable!");
+				//[name] is already defined as a variable!
+				String msg=MessageFormat.format(myModel.language.message.getString("err.defined_variable"), testName);
+				JOptionPane.showMessageDialog(frmImport2, msg);
 				valid=false;
 			}
 			
 			//Ensure name is valid
 			for(int i=0; i<testName.length(); i++){
 				if(Interpreter.isBreak(testName.charAt(i))){
-					JOptionPane.showMessageDialog(frmImport2, "Invalid character in name: "+testName.charAt(i));
+					//Invalid character in name
+					JOptionPane.showMessageDialog(frmImport2, myModel.language.message.getString("err.invalid_character")+": "+testName.charAt(i));
 					valid=false;
 				}
 			}
 								
 			for(int d=0; d<myModel.dimInfo.dimSymbols.length; d++){
 				if(testName.equals(myModel.dimInfo.dimSymbols[d])){
-					JOptionPane.showMessageDialog(frmImport2, testName+ " is a dimension label!");
+					//[name] is a dimension label!
+					String msg=MessageFormat.format(myModel.language.message.getString("err.dim_label"), testName);
+					JOptionPane.showMessageDialog(frmImport2, msg);
 					valid=false;
 				}
 			}

@@ -19,7 +19,10 @@
 
 package math;
 
+import java.text.MessageFormat;
+
 import base.AmuaModel;
+import lang.Language;
 import main.Parameter;
 import main.Table;
 import main.Variable;
@@ -69,11 +72,13 @@ public class Token{
 	 */
 	Token matrixTokens[][][];
 	
+	Language language;
 	
-	public Token(String word, Type type, AmuaModel myModel, boolean parseWord) throws Exception{
+	public Token(String word, Type type, AmuaModel myModel, boolean parseWord, Language language) throws Exception{
 		this.word=word;
 		this.type=type;
 		this.myModel=myModel;
+		this.language=language;
 		if(myModel==null){this.numThreads=1;}
 		else{this.numThreads=myModel.numThreads;}
 		numeric=new Numeric[numThreads];
@@ -148,8 +153,9 @@ public class Token{
 						}
 					}
 					else{ //not understood, throw error
-						//try evaluate
-						throw new NumericException(word+" not recognized","Token");
+						//[word] not recognized
+						String msg=MessageFormat.format(language.message.getString("err.word_not_recognized"), word);
+						throw new NumericException(msg,"Token",language);
 					}
 				}
 			
@@ -161,48 +167,48 @@ public class Token{
 		if(objectType!=ObjectType.NUMBER && objectType!=ObjectType.MATRIX_STATIC){ //Not static number or matrix
 			if(objectType==ObjectType.PARAMETER){ //Parameter
 				if(curParam.locked==false){
-					curParam.parsedTokens=Interpreter.parse(curParam.expression, myModel);
-					curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens,curThread,sample);
+					curParam.parsedTokens=Interpreter.parse(curParam.expression, myModel, language);
+					curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens,curThread,sample,language);
 					if(sample){curParam.locked=true;}
 				}
 				numeric[curThread]=curParam.value.copy();
 			}
 			else if(objectType==ObjectType.VARIABLE){ //Variable
 				if(curVar.value[curThread]==null){ //not initialized
-					curVar.parsedTokens=Interpreter.parse(curVar.expression, myModel);
-					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample);
+					curVar.parsedTokens=Interpreter.parse(curVar.expression, myModel, language);
+					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample,language);
 				}
 				else if(curVar.locked[curThread]==false && curVar.independent==false) {
-					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample);
+					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample,language);
 					curVar.locked[curThread]=true;
 				}
 				numeric[curThread]=curVar.value[curThread].copy();
 			}
 			else if(objectType==ObjectType.FUNCTION){
 				Numeric argsNumeric[]=evalArgs(curThread,sample);
-				numeric[curThread]=Functions.evaluate(word, argsNumeric);
+				numeric[curThread]=Functions.evaluate(word, language, argsNumeric);
 			}
 			else if(objectType==ObjectType.MATRIX_FUNCTION){
 				Numeric argsNumeric[]=evalArgs(curThread,sample);
-				numeric[curThread]=MatrixFunctions.evaluate(word, argsNumeric);
+				numeric[curThread]=MatrixFunctions.evaluate(word, language, argsNumeric);
 			}
 			else if(objectType==ObjectType.DISTRIBUTION){
 				Numeric argsNumeric[]=evalArgs(curThread,sample);
 				if(sample==false){
-					numeric[curThread]=Distributions.evaluate(word,argsNumeric,distFx);
+					numeric[curThread]=Distributions.evaluate(word,argsNumeric,distFx, language);
 				}
 				else{ //sample is true
 					if(distFx!=-1){ //not a random variable
-						numeric[curThread]=Distributions.evaluate(word,argsNumeric,distFx);
+						numeric[curThread]=Distributions.evaluate(word,argsNumeric,distFx, language);
 					}
 					else{ //see if can sample
 						if(myModel.curGenerator[curThread]!=null){ //RNG available
 							//double rand=myModel.curGenerator[curThread].nextDouble();
 							//numeric[curThread]=Distributions.sample(word,argsNumeric,rand,myModel.curGenerator[curThread]);
-							numeric[curThread]=Distributions.sample(word,argsNumeric,myModel.curGenerator[curThread]);
+							numeric[curThread]=Distributions.sample(word,argsNumeric,myModel.curGenerator[curThread], language);
 						}
 						else{ //no RNG, shouldn't sample
-							numeric[curThread]=Distributions.evaluate(word,argsNumeric,distFx);
+							numeric[curThread]=Distributions.evaluate(word,argsNumeric,distFx, language);
 						}
 					}
 				}
@@ -228,39 +234,39 @@ public class Token{
 				}
 			}
 			else if(objectType==ObjectType.TABLE_LOOKUP){
-				Numeric index=Interpreter.evaluateTokens(args[0],curThread,sample);
-				numeric[curThread]=new Numeric(curTable.getLookupValue(index.getDouble(), strArgs[1]));
+				Numeric index=Interpreter.evaluateTokens(args[0],curThread,sample,language);
+				numeric[curThread]=new Numeric(curTable.getLookupValue(index.getDouble(language), strArgs[1]));
 			}
 			else if(objectType==ObjectType.MATRIX_ELEMENT){
-				numeric[curThread]=matrix.getMatrixValue(strArgs, myModel);
+				numeric[curThread]=matrix.getMatrixValue(strArgs, myModel, language);
 			}
 			else if(objectType==ObjectType.TRACE){
 				numeric[curThread]=myModel.traceMarkov.getValue(strArgs[0],strArgs[1]);
 			}
 			else if(objectType==ObjectType.PARAM_MATRIX){
 				if(curParam.locked==false){
-					curParam.parsedTokens=Interpreter.parse(curParam.expression, myModel);
-					curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens,curThread,sample);
+					curParam.parsedTokens=Interpreter.parse(curParam.expression, myModel, language);
+					curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens,curThread,sample,language);
 					if(sample){curParam.locked=true;}
 				}
-				numeric[curThread]=curParam.value.getMatrixValue(strArgs,myModel);
+				numeric[curThread]=curParam.value.getMatrixValue(strArgs, myModel, language);
 			}
 			else if(objectType==ObjectType.VAR_MATRIX){
 				if(curVar.value==null){ //not initialized
-					curVar.parsedTokens=Interpreter.parse(curVar.expression, myModel);
-					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample);
+					curVar.parsedTokens=Interpreter.parse(curVar.expression, myModel, language);
+					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample,language);
 				}
 				else if(curVar.locked[curThread]==false && curVar.independent==false) {
-					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample);
+					curVar.value[curThread]=Interpreter.evaluateTokens(curVar.parsedTokens,curThread,sample,language);
 					curVar.locked[curThread]=true;
 				}
-				numeric[curThread]=curVar.value[curThread].getMatrixValue(strArgs,myModel);
+				numeric[curThread]=curVar.value[curThread].getMatrixValue(strArgs, myModel, language);
 			}
 			else if(objectType==ObjectType.MATRIX_DYNAMIC){
 				double matrix[][]=new double[nrow][ncol];
 				for(int i=0; i<nrow; i++){
 					for(int j=0; j<ncol; j++){
-						matrix[i][j]=Interpreter.evaluateTokens(matrixTokens[i][j],curThread,sample).getDouble();
+						matrix[i][j]=Interpreter.evaluateTokens(matrixTokens[i][j],curThread,sample,language).getDouble(language);
 					}
 				}
 				numeric[curThread]=new Numeric(matrix);
@@ -275,7 +281,7 @@ public class Token{
 	private Numeric[] evalArgs(int curThread, boolean sample) throws Exception{
 		Numeric argsNumeric[]=new Numeric[args.length];
 		for(int i=0; i<args.length; i++){
-			argsNumeric[i]=Interpreter.evaluateTokens(args[i],curThread,sample);
+			argsNumeric[i]=Interpreter.evaluateTokens(args[i],curThread,sample,language);
 		}
 		return(argsNumeric);
 	}

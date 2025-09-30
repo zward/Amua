@@ -36,7 +36,7 @@ public class ClusterPSA{
 	//Constructor
 	public ClusterPSA(AmuaModel myModel, ClusterInputs inputs, String outpath, int iteration){
 		try {
-			System.out.println("Running PSA...");
+			System.out.println(myModel.language.message.getString("info.running_PSA")+"..."); //Running PSA
 			
 			myModel.sampleParam=true;
 			myModel.generatorParam=new MersenneTwisterFast();
@@ -73,7 +73,7 @@ public class ClusterPSA{
 			}
 			
 			//Sample parameters
-			System.out.println("Sampling parameters...");
+			System.out.println(myModel.language.message.getString("info.sampling_parameters")+"..."); //Sampling parameters
 			
 			myModel.curGenerator[0]=myModel.generatorParam;
 			boolean validParams=false;
@@ -87,7 +87,7 @@ public class ClusterPSA{
 				for(int v=0; v<numParams; v++){ //sample all parameters
 					Parameter curParam=myModel.parameters.get(v);
 					if(curParam.locked==false) {
-						curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+						curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true, myModel.language);
 						curParam.locked=true;
 					}
 				}
@@ -110,15 +110,15 @@ public class ClusterPSA{
 				int curSet=myModel.generatorParam.nextInt(numSets);
 				myModel.parameterSets[curSet].setParameters(myModel);
 			}
-			System.out.println("done");
+			System.out.println(myModel.language.message.getString("info.done")); //done
 			
 			//Run model
 			myModel.curGenerator=myModel.generatorVar;
 			RunReport report=myModel.runModel(null, false);
 			
-			System.out.println("done");
+			System.out.println(myModel.language.message.getString("info.done")); //done
 			
-			System.out.println("Writing output...");
+			System.out.println(myModel.language.message.getString("info.writing_output")+"..."); //Writing output
 			
 			//get results
 			report.getResults(true);
@@ -140,7 +140,7 @@ public class ClusterPSA{
 			outP.newLine();
 			outP.close();
 			
-			System.out.println("done");
+			System.out.println(myModel.language.message.getString("info.done")); //done
 			
 			
 		}catch(Exception e){

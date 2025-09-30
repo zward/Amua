@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import lang.Language;
 import math.MathUtils;
 
 public class TreeReportSummary{
@@ -76,15 +77,15 @@ public class TreeReportSummary{
 		}
 	}
 	
-	public void write(String filepath) throws IOException{
+	public void write(String filepath, Language language) throws IOException{
 		FileWriter fstream = new FileWriter(filepath); //Create new file
 		BufferedWriter out = new BufferedWriter(fstream);
 
 		//Headers
-		for(int i=0; i<maxLevels; i++){out.write("Level "+i+",");}
-		out.write("Mean,95% LB,95% UB");
+		for(int i=0; i<maxLevels; i++){out.write(language.base.getString("title.level")+" "+i+",");} //Level
+		out.write(language.math.getString("sum.mean")+","+language.math.getString("sum.95_lb")+","+language.math.getString("sum.95_ub")); //Mean,95% LB,95% UB
 		for(int g=0; g<numSubgroups; g++){
-			out.write(","+groupNames.get(g)+",95% LB,95% UB");
+			out.write(","+groupNames.get(g)+","+language.math.getString("sum.95_lb")+","+language.math.getString("sum.95_ub")); //95% LB,95% UB
 		}
 		out.newLine();
 		

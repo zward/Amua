@@ -85,7 +85,7 @@ public class frmTestExpressions {
 					try {
 						JFileChooser fc=new JFileChooser();
 						fc.resetChoosableFileFilters();
-						fc.addChoosableFileFilter(new TXTFilter());
+						fc.addChoosableFileFilter(new TXTFilter(myModel.language));
 						fc.setAcceptAllFileFilterUsed(false);
 
 						fc.setDialogTitle("Select Expression File");
@@ -122,8 +122,8 @@ public class frmTestExpressions {
 							//get expression
 							numExpr++;
 							String curLine[]=strLine.split(";");
-							Numeric curTest=Interpreter.evaluate(curLine[0],null,false);
-							Numeric curAnswer=Interpreter.evaluate(curLine[1],null,false);
+							Numeric curTest=Interpreter.evaluate(curLine[0],null,false,myModel.language);
+							Numeric curAnswer=Interpreter.evaluate(curLine[1],null,false,myModel.language);
 							
 							if(!curTest.isEqual(curAnswer)){ //not equal
 								numErr++;

@@ -89,7 +89,7 @@ public class Table{
 		}
 		else{ //Try evaluate as integer
 			try{
-				col=Interpreter.evaluate(colText,myModel,false).getInt();
+				col=Interpreter.evaluate(colText,myModel,false,myModel.language).getInt(myModel.language);
 			}
 			catch(Exception  e){
 				col=-1;
@@ -173,21 +173,21 @@ public class Table{
 		if(params.length==2){ //(p,~)
 			if(df==-1 || df==3){ //Sample, Mean
 				int col=getColumnIndex(params[0]);
-				if(col<1 || col>(numCols-1)){throw new NumericException("Invalid column index: "+col+" ("+params[0]+")",name);} //Throw error
+				if(col<1 || col>(numCols-1)){throw new NumericException(myModel.language.message.getString("err.invalid_column_index")+": "+col+" ("+params[0]+")",name,myModel.language);} //Invalid column index
 				return(new Numeric(calcEV(col)));
 			} 
 			else if(df==4){ //Variance
 				int col=getColumnIndex(params[0]);
-				if(col<1 || col>(numCols-1)){throw new NumericException("Invalid column index: "+col+" ("+params[0]+")",name);} //Throw error
+				if(col<1 || col>(numCols-1)){throw new NumericException(myModel.language.message.getString("err.invalid_column_index")+": "+col+" ("+params[0]+")",name,myModel.language);} //Invalid column index
 				return(new Numeric(calcVariance(col)));
 			} 
-			else{throw new NumericException("Invalid parameters",name);}
+			else{throw new NumericException(myModel.language.message.getString("err.invalid_params"),name,myModel.language);} //Invalid parameters
 		}
 		else if(params.length==3){ //(k,n,f): PMF/CDF
 			int col=getColumnIndex(params[1]);
-			if(col<1 || col>(numCols-1)){throw new NumericException("Invalid column index: "+col+" ("+params[1]+")",name);} //Throw error
+			if(col<1 || col>(numCols-1)){throw new NumericException(myModel.language.message.getString("err.invalid_column_index")+": "+col+" ("+params[1]+")",name,myModel.language);} //Invalid column index
 			if(df==0){ //PMF
-				double k=Interpreter.evaluate(params[0], myModel,false).getDouble();
+				double k=Interpreter.evaluate(params[0], myModel,false,myModel.language).getDouble(myModel.language);
 				int row=-1;
 				boolean found=false;
 				double val=0;
@@ -201,7 +201,7 @@ public class Table{
 				return(new Numeric(val));
 			} 
 			else if(df==1){ //CDF
-				double k=Interpreter.evaluate(params[0], myModel,false).getDouble();
+				double k=Interpreter.evaluate(params[0], myModel,false,myModel.language).getDouble(myModel.language);
 				double CDF=0;
 				if(k<data[0][col]){CDF=0;}
 				else if(k>=data[numRows-1][col]){CDF=1;}
@@ -215,7 +215,7 @@ public class Table{
 				return(new Numeric(CDF));
 			}
 			else if(df==2){ //Quantile
-				double x=Interpreter.evaluate(params[0], myModel,false).getProb(), CDF=0;
+				double x=Interpreter.evaluate(params[0], myModel,false,myModel.language).getProb(myModel.language), CDF=0;
 				int row=0;
 				while(x>CDF){
 					CDF+=data[row][0];
@@ -223,9 +223,9 @@ public class Table{
 				}
 				return(new Numeric(data[row][col]));
 			}
-			else{throw new NumericException("Invalid parameters",name);}
+			else{throw new NumericException(myModel.language.message.getString("err.invalid_params"),name,myModel.language);} //Invalid parameters
 		}
-		else{throw new NumericException("Incorrect number of parameters",name);}
+		else{throw new NumericException(myModel.language.message.getString("err.incorrect_num_params"),name,myModel.language);} //Incorrect number of parameters
 	}
 
 	public double calcEV(int col){

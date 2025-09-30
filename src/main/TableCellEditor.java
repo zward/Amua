@@ -35,7 +35,7 @@ public class TableCellEditor extends DefaultCellEditor {
 	public TableCellEditor(AmuaModel myModel) {
 		super(new JCheckBox());
 		//scrollpane = new JScrollPane();
-		textPane = new StyledTextPane(myModel); 
+		textPane = new StyledTextPane(myModel, myModel.language); 
 		textPane.setBorder(BorderFactory.createMatteBorder(1,1,1,1, Color.BLUE));
 		
 		//textPane.setLineWrap(true);

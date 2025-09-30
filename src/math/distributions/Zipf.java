@@ -22,24 +22,27 @@ import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
 
+import java.text.MessageFormat;
+
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
+import lang.Language;
 import main.MersenneTwisterFast;
 
 public final class Zipf{
 	
-	public static Numeric pmf(Numeric params[]) throws NumericException{
+	public static Numeric pmf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			double s=params[1].getDouble(); int n=params[2].getInt();
-			if(s<=0){throw new NumericException("s should be >0","Zipf");}
-			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			int k=params[0].getInt(language);
+			double s=params[1].getDouble(language); int n=params[2].getInt(language);
+			if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+			if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 			return(new Numeric(zipf.probability(k)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and s should be the same size","Zipf");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "s"),"Zipf",language);} //k and s should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "s", "n"),"Zipf",language);} //s and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -47,8 +50,8 @@ public final class Zipf{
 					int k=(int)params[0].matrix[i][j];
 					double s=params[1].matrix[i][j];
 					int n=(int)params[2].matrix[i][j];
-					if(s<=0){throw new NumericException("s should be >0","Zipf");}
-					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+					if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 					vals.matrix[i][j]=zipf.probability(k);
 				}
@@ -57,18 +60,18 @@ public final class Zipf{
 		}
 	}
 
-	public static Numeric cdf(Numeric params[]) throws NumericException{
+	public static Numeric cdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			int k=params[0].getInt();
-			double s=params[1].getDouble(); int n=params[2].getInt();
-			if(s<=0){throw new NumericException("s should be >0","Zipf");}
-			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			int k=params[0].getInt(language);
+			double s=params[1].getDouble(language); int n=params[2].getInt(language);
+			if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+			if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 			return(new Numeric(zipf.cumulativeProbability(k)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and s should be the same size","Zipf");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "s"),"Zipf",language);} //k and s should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "s", "n"),"Zipf",language);} //s and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -76,8 +79,8 @@ public final class Zipf{
 					int k=(int)params[0].matrix[i][j];
 					double s=params[1].matrix[i][j];
 					int n=(int)params[2].matrix[i][j];
-					if(s<=0){throw new NumericException("s should be >0","Zipf");}
-					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+					if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 					vals.matrix[i][j]=zipf.cumulativeProbability(k);
 				}
@@ -86,27 +89,27 @@ public final class Zipf{
 		}
 	}	
 	
-	public static Numeric quantile(Numeric params[]) throws NumericException{
+	public static Numeric quantile(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			double x=params[0].getProb();
-			double s=params[1].getDouble(); int n=params[2].getInt();
-			if(s<=0){throw new NumericException("s should be >0","Zipf");}
-			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			double x=params[0].getProb(language);
+			double s=params[1].getDouble(language); int n=params[2].getInt(language);
+			if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+			if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 			return(new Numeric(zipf.inverseCumulativeProbability(x)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and s should be the same size","Zipf");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "s"),"Zipf",language);} //k and s should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "s", "n"),"Zipf",language);} //s and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double x=params[0].getMatrixProb(i, j);
+					double x=params[0].getMatrixProb(i, j, language);
 					double s=params[1].matrix[i][j];
 					int n=(int)params[2].matrix[i][j];
-					if(s<=0){throw new NumericException("s should be >0","Zipf");}
-					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+					if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 					vals.matrix[i][j]=zipf.inverseCumulativeProbability(x);
 				}
@@ -115,24 +118,24 @@ public final class Zipf{
 		}
 	}
 	
-	public static Numeric mean(Numeric params[]) throws NumericException{
+	public static Numeric mean(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			double s=params[0].getDouble(); int n=params[1].getInt();
-			if(s<=0){throw new NumericException("s should be >0","Zipf");}
-			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			double s=params[0].getDouble(language); int n=params[1].getInt(language);
+			if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+			if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 			return(new Numeric(zipf.getNumericalMean()));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "s", "n"),"Zipf",language);} //s and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					double s=params[0].matrix[i][j];
 					int n=(int)params[1].matrix[i][j];
-					if(s<=0){throw new NumericException("s should be >0","Zipf");}
-					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+					if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 					vals.matrix[i][j]=zipf.getNumericalMean();
 				}
@@ -141,24 +144,24 @@ public final class Zipf{
 		}
 	}
 	
-	public static Numeric variance(Numeric params[]) throws NumericException{
+	public static Numeric variance(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			double s=params[0].getDouble(); int n=params[1].getInt();
-			if(s<=0){throw new NumericException("s should be >0","Zipf");}
-			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			double s=params[0].getDouble(language); int n=params[1].getInt(language);
+			if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+			if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 			return(new Numeric(zipf.getNumericalVariance()));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "s", "n"),"Zipf",language);} //s and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					double s=params[0].matrix[i][j];
 					int n=(int)params[1].matrix[i][j];
-					if(s<=0){throw new NumericException("s should be >0","Zipf");}
-					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+					if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 					vals.matrix[i][j]=zipf.getNumericalVariance();
 				}
@@ -167,28 +170,28 @@ public final class Zipf{
 		}
 	}
 	
-	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator, Language language) throws NumericException{
 		if(params.length!=2){
-			throw new NumericException("Incorrect number of parameters","Zipf");
+			throw new NumericException(language.message.getString("err.incorrect_num_params"),"Zipf",language); //Incorrect number of parameters
 		}
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			double s=params[0].getDouble(); int n=params[1].getInt();
-			if(s<=0){throw new NumericException("s should be >0","Zipf");}
-			if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+			double s=params[0].getDouble(language); int n=params[1].getInt(language);
+			if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+			if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 			ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 			double rand=generator.nextDouble();
 			return(new Numeric(zipf.inverseCumulativeProbability(rand)));
 		}
 		else{ //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("s and n should be the same size","Zipf");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "s", "n"),"Zipf",language);} //s and n should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					double s=params[0].matrix[i][j];
 					int n=(int)params[1].matrix[i][j];
-					if(s<=0){throw new NumericException("s should be >0","Zipf");}
-					if(n<1){throw new NumericException("n should be ≥1","Zipf");}
+					if(s<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "s"),"Zipf",language);} //s should be >0
+					if(n<1){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gte1"), "n"),"Zipf",language);} //n should be ≥1
 					ZipfDistribution zipf=new ZipfDistribution(null,n,s);
 					double rand=generator.nextDouble();
 					vals.matrix[i][j]=zipf.inverseCumulativeProbability(rand);
@@ -198,21 +201,21 @@ public final class Zipf{
 		}
 	}
 	
-	public static String description(){
-		String des="<html><b>Zipf Distribution</b><br>";
-		des+="Used to model discrete power law distributions<br>";
-		des+="<br><i>Parameters</i><br>";
-		des+=MathUtils.consoleFont("s")+": Exponent (real number "+MathUtils.consoleFont(">0")+") <br>";
-		des+=MathUtils.consoleFont("n")+": Number of elements (integer "+MathUtils.consoleFont("≥1")+") <br>";
-		des+="<br><i>Sample</i><br>";
-		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(s,n,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the Zipf distribution. Integer in "+MathUtils.consoleFont("{1,2,...,n}")+"<br>";
-		des+="<br><i>Distribution Functions</i><br>";
-		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(k,s,n,<b><i>f</i></b>)")+": Returns the value of the Zipf PMF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(k,s,n,<b><i>F</i></b>)")+": Returns the value of the Zipf CDF at "+MathUtils.consoleFont("k")+"<br>";
-		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(x,s,n,<b><i>Q</i></b>)")+": Returns the quantile (inverse CDF) of the Zipf distribution at "+MathUtils.consoleFont("x")+"<br>";
-		des+="<br><i>Moments</i><br>";
-		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(s,n,<b><i>E</i></b>)")+": Returns the mean of the Zipf distribution<br>";
-		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(s,n,<b><i>V</i></b>)")+": Returns the variance of the Zipf distribution<br>";
+	public static String description(Language language){
+		String des="<html><b>"+language.dist.getString("zipf.name")+"</b><br>"; //Zipf Distribution
+		des+=language.dist.getString("zipf.desc")+"<br><br>"; //Used to model discrete power law distributions
+		des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
+		des+=MathUtils.consoleFont("s")+": "+language.dist.getString("zipf.s")+"<br>"; //Exponent (real number >0)
+		des+=MathUtils.consoleFont("n")+": "+language.dist.getString("zipf.n")+"<br>"; //Number of elements (integer ≥1)
+		des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
+		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(s,n,<b><i>~</i></b>)")+": "+language.dist.getString("desc.sample")+". "+language.dist.getString("zipf.support")+"<br>"; //Returns a random variable (mean in base case) from the Zipf distribution. Integer in {1,2,...,n}
+		des+="<i><br>"+language.dist.getString("gen.distribution_functions")+"</i><br>"; //Distribution Functions
+		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(k,s,n,<b><i>f</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.pmf"), "k")+"<br>"; //Returns the value of the Zipf PMF at k
+		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(k,s,n,<b><i>F</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.cdf"), "k")+"<br>"; //Returns the value of the Zipf CDF at k
+		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(x,s,n,<b><i>Q</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.quantile"), "x")+"<br>"; //Returns the quantile (inverse CDF) of the Zipf distribution at x
+		des+="<i><br>"+language.dist.getString("gen.moments")+"</i><br>"; //Moments
+		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(s,n,<b><i>E</i></b>)")+": "+language.dist.getString("desc.mean")+"<br>"; //Returns the mean of the Zipf distribution
+		des+=MathUtils.consoleFont("<b>Zipf</b>","green")+MathUtils.consoleFont("(s,n,<b><i>V</i></b>)")+": "+language.dist.getString("desc.var")+"<br>"; //Returns the variance of the Zipf distribution
 		des+="</html>";
 		return(des);
 	}

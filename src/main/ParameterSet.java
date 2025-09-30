@@ -65,7 +65,7 @@ public class ParameterSet{
 		strValues=new String[numParams];
 		for(int p=0; p<numParams; p++) {
 			String datum=data[p+2].replaceAll("\"", ""); //strip quotes
-			values[p]=Interpreter.evaluate(datum, myModel, false);
+			values[p]=Interpreter.evaluate(datum, myModel, false, myModel.language);
 			strValues[p]=values[p].saveAsXMLString(); //for writing to xml
 		}
 	}

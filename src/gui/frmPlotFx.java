@@ -32,7 +32,6 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -57,6 +56,7 @@ import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import base.AmuaModel;
+import lang.Language;
 import main.Parameter;
 import main.ScaledIcon;
 import main.StyledTextPane;
@@ -72,6 +72,7 @@ public class frmPlotFx {
 
 	public JFrame frmPlotFx;
 	AmuaModel myModel;
+	Language language;
 	StyledTextPane paneFunction;
 	DefaultXYDataset chartDataCont, chartDataDis;
 	XYSeriesCollection colCont, colDis; //Continuous/Discrete
@@ -89,8 +90,9 @@ public class frmPlotFx {
 	/**
 	 *  Default Constructor
 	 */
-	public frmPlotFx(AmuaModel myModel) {
+	public frmPlotFx(AmuaModel myModel, Language language) {
 		this.myModel=myModel;
+		this.language=language;
 		initialize();
 	}
 
@@ -100,12 +102,12 @@ public class frmPlotFx {
 	private void initialize() {
 		try{
 			frmPlotFx = new JFrame();
-			frmPlotFx.setTitle("Amua - Plot Function");
+			frmPlotFx.setTitle("Amua - "+language.base.getString("menu.plot_function")); //Plot Function
 			frmPlotFx.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotFx.class.getResource("/images/plotFx_128.png")));
 			frmPlotFx.setBounds(100, 100, 1000, 600);
 			frmPlotFx.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			GridBagLayout gridBagLayout = new GridBagLayout();
-			gridBagLayout.columnWidths = new int[]{316, 0, 0};
+			gridBagLayout.columnWidths = new int[]{354, 0, 0};
 			gridBagLayout.rowHeights = new int[]{514, 61, 0};
 			gridBagLayout.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 			gridBagLayout.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
@@ -145,20 +147,20 @@ public class frmPlotFx {
 			gbc_panel_1.gridy = 1;
 			frmPlotFx.getContentPane().add(panel_1, gbc_panel_1);
 
-			JButton btnPlot = new JButton("Plot");
+			JButton btnPlot = new JButton(language.base.getString("button.plot")); //Plot
 			btnPlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					plot();
 				}
 			});
-			btnPlot.setBounds(225, 26, 86, 28);
+			btnPlot.setBounds(235, 26, 86, 28);
 			panel_1.add(btnPlot);
 			
 			JToolBar toolBar = new JToolBar();
 			toolBar.setBorderPainted(false);
 			toolBar.setFloatable(false);
 			toolBar.setRollover(true);
-			toolBar.setBounds(281, 0, 36, 24);
+			toolBar.setBounds(319, 0, 36, 24);
 			panel_1.add(toolBar);
 			
 			JButton btnFx = new JButton("");
@@ -168,7 +170,7 @@ public class frmPlotFx {
 					window.frmExpressionBuilder.setVisible(true);
 				}
 			});
-			btnFx.setToolTipText("Build Expression");
+			btnFx.setToolTipText(language.base.getString("button.build_expression")); //Build Expression
 			btnFx.setFocusPainted(false);
 			btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
 			toolBar.add(btnFx);
@@ -178,9 +180,9 @@ public class frmPlotFx {
 			table.setRowSelectionAllowed(false);
 			table.setModel(new DefaultTableModel(
 				new Object[][] {
-					{"Min x", "0"},
-					{"Max x", "1"},
-					{"Intervals", "1000"},
+					{language.math.getString("sum.min")+" x", "0"}, //Min x
+					{language.math.getString("sum.max")+" x", "1"}, //Max x
+					{language.base.getString("plot.intervals"), "1000"}, //Intervals
 				},
 				new String[] {
 					"New column", "New column"
@@ -193,23 +195,23 @@ public class frmPlotFx {
 					return columnEditables[column];
 				}
 			});
-			table.setBounds(6, 6, 120, 48);
+			table.setBounds(6, 6, 131, 48);
 			panel_1.add(table);
 			
-			chckbxMultiplot = new JCheckBox("Multi-plot");
-			chckbxMultiplot.setBounds(203, 5, 81, 18);
+			chckbxMultiplot = new JCheckBox(language.base.getString("plot.multi_plot")); //Multi-plot
+			chckbxMultiplot.setBounds(212, 5, 114, 18);
 			panel_1.add(chckbxMultiplot);
 			
-			JButton btnClear = new JButton("Clear");
+			JButton btnClear = new JButton(language.base.getString("button.clear")); //Clear
 			btnClear.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					clearPlot();
 				}
 			});
-			btnClear.setBounds(127, 26, 86, 28);
+			btnClear.setBounds(137, 26, 86, 28);
 			panel_1.add(btnClear);
 			
-			chckbxDiscrete = new JCheckBox("Discrete");
+			chckbxDiscrete = new JCheckBox(language.dist.getString("gen.discrete")); //Discrete
 			chckbxDiscrete.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(chckbxDiscrete.isSelected()){
@@ -222,7 +224,7 @@ public class frmPlotFx {
 					}
 				}
 			});
-			chckbxDiscrete.setBounds(127, 5, 104, 18);
+			chckbxDiscrete.setBounds(138, 5, 93, 18);
 			panel_1.add(chckbxDiscrete);
 			
 			supplierVars = new DefaultDrawingSupplier();
@@ -236,7 +238,7 @@ public class frmPlotFx {
 			gbc_scrollPane.gridy = 1;
 			frmPlotFx.getContentPane().add(scrollPane, gbc_scrollPane);
 
-			paneFunction = new StyledTextPane(myModel);
+			paneFunction = new StyledTextPane(myModel, language);
 			paneFunction.setFont(new Font("Consolas", Font.PLAIN, 15));
 			scrollPane.setViewportView(paneFunction);
 			paneFunction.addKeyListener(new KeyAdapter() {
@@ -272,7 +274,7 @@ public class frmPlotFx {
 	}
 
 	private void plot(){
-		final ProgressMonitor progress=new ProgressMonitor(frmPlotFx, "Plot Function", "Calculating", 0, 100);
+		final ProgressMonitor progress=new ProgressMonitor(frmPlotFx, language.base.getString("menu.plot_function"), language.message.getString("info.calculating"), 0, 100); //Plot Function, Calculating
 
 		Thread SimThread = new Thread(){ //Non-UI
 			public void run(){
@@ -287,7 +289,7 @@ public class frmPlotFx {
 						if(discrete==false){numIntervals=Integer.parseInt((String)table.getValueAt(2, 1));}
 						else{numIntervals=(int)maxX-(int)minX;}
 					}catch(Exception n){
-						JOptionPane.showMessageDialog(frmPlotFx,"Invalid plot specification!");
+						JOptionPane.showMessageDialog(frmPlotFx,language.message.getString("err.invalid_plot_spec")); //Invalid plot specification
 						ok=false;
 					}
 
@@ -336,7 +338,7 @@ public class frmPlotFx {
 							
 							double curY;
 							try{
-								curY=Interpreter.evaluate(fx, myModel,false).getDouble();
+								curY=Interpreter.evaluate(fx, myModel,false,language).getDouble(language);
 							}catch(Exception e1){
 								curY=Double.NaN;
 								e1.printStackTrace();

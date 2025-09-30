@@ -85,7 +85,7 @@ public class frmScratch {
 			gbc_scrollPane.gridy = 0;
 			frmScratch.getContentPane().add(scrollPane, gbc_scrollPane);
 			
-			textConsole = new StyledTextPane(myModel);
+			textConsole = new StyledTextPane(myModel, myModel.language);
 			textConsole.setFont(new Font("Consolas", Font.PLAIN, 15));
 			textConsole.addMouseListener(new MouseAdapter() {
 				@Override
@@ -140,7 +140,7 @@ public class frmScratch {
 							Document doc = textConsole.getDocument();
 							if(!cmd.isEmpty()){
 								cmdHistory.add(cmd);
-								Numeric result=Interpreter.evaluate(cmd, myModel,false);
+								Numeric result=Interpreter.evaluate(cmd, myModel,false,myModel.language);
 								doc.insertString(doc.getLength(), " \n: "+result.toString(), null);
 							}
 							doc.insertString(doc.getLength(), "\n> ", null);

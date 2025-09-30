@@ -26,6 +26,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JTextArea;
 
+import lang.Language;
 import main.ErrorLog;
 
 import java.awt.event.ActionListener;
@@ -41,12 +42,14 @@ public class frmErrorLog {
 	String version;
 	JTextArea txtLog;
 	ErrorLog log;
+	Language language;
 	
 	/**
 	 *  Default Constructor
 	 */
-	public frmErrorLog(ErrorLog log) {
+	public frmErrorLog(ErrorLog log, Language language) {
 		this.log=log;
+		this.language=language;
 		initialize();
 	}
 
@@ -58,13 +61,13 @@ public class frmErrorLog {
 			frmErrorLog = new JDialog();
 			frmErrorLog.setIconImage(Toolkit.getDefaultToolkit().getImage(frmErrorLog.class.getResource("/images/errorLog_128.png")));
 			frmErrorLog.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmErrorLog.setTitle("Amua - Error Log");
+			frmErrorLog.setTitle("Amua - "+language.base.getString("menu.error_log")); //Error Log
 			frmErrorLog.setResizable(false);
 			frmErrorLog.setBounds(100, 100, 800, 600);
 			frmErrorLog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmErrorLog.getContentPane().setLayout(null);
 									
-			JButton btnOk = new JButton("OK");
+			JButton btnOk = new JButton(language.base.getString("button.ok")); //OK
 			btnOk.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmErrorLog.dispose();
@@ -84,20 +87,21 @@ public class frmErrorLog {
 			scrollPane_1.setViewportView(txtLog);
 			
 			//Display log
-			txtLog.append("Version: "+log.version+"\n\n");
+			txtLog.append(language.message.getString("info.version")+": "+log.version+"\n\n"); //Version
 			int numErrors=log.errors.size();
-			txtLog.append("Errors ("+numErrors+"):\n");
+			txtLog.append(language.message.getString("errors")+" ("+numErrors+"):\n"); //Errors
 			for(int i=0; i<numErrors; i++){
 				txtLog.append(log.errors.get(i)+"\n");
 			}
 			txtLog.append("\n\n");
 			txtLog.append("---------------------------------------------------------------------------------------------------\n");
-			txtLog.append("System properties\n");
+			txtLog.append(language.base.getString("system.system_properties")+"\n"); //System properties
 			for(int i=0; i<log.systemInfo.length; i++){
 				txtLog.append(log.systemInfo[i][0]+": "+log.systemInfo[i][1]+"\n");
 			}
-			txtLog.append("Screen Resolution: "+Toolkit.getDefaultToolkit().getScreenResolution()+"\n");
-			txtLog.append("Screen Size: "+Toolkit.getDefaultToolkit().getScreenSize().toString()+"\n");
+			txtLog.append(language.base.getString("system.screen_resolution")+": "+Toolkit.getDefaultToolkit().getScreenResolution()+"\n"); //Screen Resolution
+			txtLog.append(language.base.getString("system.screen_size")+": "+Toolkit.getDefaultToolkit().getScreenSize().toString()+"\n"); //Screen Size
+			txtLog.append("Locale: "+language.locale.toString());
 			
 			txtLog.setCaretPosition(0);
 			

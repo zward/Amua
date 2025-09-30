@@ -44,6 +44,7 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
 import base.AmuaModel;
+import lang.Language;
 import main.Parameter;
 import main.ScaledIcon;
 import main.StyledTextPane;
@@ -62,6 +63,7 @@ public class frmPlotSurface {
 
 	public JFrame frmPlotSurface;
 	AmuaModel myModel;
+	Language language;
 	StyledTextPane paneFunction;
 
 	private JTable table;
@@ -72,8 +74,9 @@ public class frmPlotSurface {
 	/**
 	 *  Default Constructor
 	 */
-	public frmPlotSurface(AmuaModel myModel) {
+	public frmPlotSurface(AmuaModel myModel, Language language) {
 		this.myModel=myModel;
+		this.language=language;
 		initialize();
 	}
 
@@ -83,7 +86,7 @@ public class frmPlotSurface {
 	private void initialize() {
 		try{
 			frmPlotSurface = new JFrame();
-			frmPlotSurface.setTitle("Amua - Plot Surface");
+			frmPlotSurface.setTitle("Amua - "+language.base.getString("menu.plot_surface")); //Plot Surface
 			frmPlotSurface.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotSurface.class.getResource("/images/plotSurface_128.png")));
 			frmPlotSurface.setBounds(100, 100, 1000, 600);
 			frmPlotSurface.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -113,7 +116,7 @@ public class frmPlotSurface {
 			gbc_panel_1.gridy = 1;
 			frmPlotSurface.getContentPane().add(panel_1, gbc_panel_1);
 
-			JButton btnPlot = new JButton("Plot");
+			JButton btnPlot = new JButton(language.base.getString("button.plot")); //Plot
 			btnPlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					plot();
@@ -136,7 +139,7 @@ public class frmPlotSurface {
 					window.frmExpressionBuilder.setVisible(true);
 				}
 			});
-			btnFx.setToolTipText("Build Expression");
+			btnFx.setToolTipText(language.base.getString("button.build_expression")); //Build Expression
 			btnFx.setFocusPainted(false);
 			btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
 			toolBar.add(btnFx);
@@ -152,8 +155,8 @@ public class frmPlotSurface {
 			table.getTableHeader().setReorderingAllowed(false);
 			table.setModel(new DefaultTableModel(
 				new Object[][] {
-					{"Min", "0", "0"},
-					{"Max", "1", "1"},
+					{language.math.getString("sum.min"), "0", "0"}, //Min
+					{language.math.getString("sum.max"), "1", "1"}, //Max
 				},
 				new String[] {
 					"", "x", "y"
@@ -167,7 +170,7 @@ public class frmPlotSurface {
 				}
 			});
 			
-			JLabel lblIntervals = new JLabel("# intervals:");
+			JLabel lblIntervals = new JLabel(language.base.getString("plot.intervals")+":"); //Intervals
 			lblIntervals.setBounds(172, 61, 65, 16);
 			panel_1.add(lblIntervals);
 			
@@ -186,7 +189,7 @@ public class frmPlotSurface {
 			gbc_scrollPane.gridy = 1;
 			frmPlotSurface.getContentPane().add(scrollPane, gbc_scrollPane);
 
-			paneFunction = new StyledTextPane(myModel);
+			paneFunction = new StyledTextPane(myModel, language);
 			paneFunction.setFont(new Font("Consolas", Font.PLAIN, 15));
 			scrollPane.setViewportView(paneFunction);
 			paneFunction.addKeyListener(new KeyAdapter() {
@@ -206,7 +209,7 @@ public class frmPlotSurface {
 	}
 
 	private void plot(){
-		final ProgressMonitor progress=new ProgressMonitor(frmPlotSurface, "Plot Function", "Calculating", 0, 100);
+		final ProgressMonitor progress=new ProgressMonitor(frmPlotSurface, language.base.getString("menu.plot_surface"), language.message.getString("info.calculating"), 0, 100); //Plot Surface, Calculating
 
 		Thread SimThread = new Thread(){ //Non-UI
 			public void run(){
@@ -222,7 +225,7 @@ public class frmPlotSurface {
 						maxY=Double.parseDouble((String)table.getValueAt(1, 2));
 						numIntervals=Integer.parseInt(textNumIntervals.getText());
 					}catch(Exception n){
-						JOptionPane.showMessageDialog(frmPlotSurface,"Invalid plot specification!");
+						JOptionPane.showMessageDialog(frmPlotSurface,language.message.getString("err.invalid_plot_spec")); //Invalid plot specification
 						ok=false;
 					}
 
@@ -283,7 +286,7 @@ public class frmPlotSurface {
 								
 								double curVal;
 								try{
-									curVal=Interpreter.evaluate(fx, myModel,false).getDouble();
+									curVal=Interpreter.evaluate(fx, myModel,false,language).getDouble(language);
 								}catch(Exception e1){
 									curVal=Double.NaN;
 									e1.printStackTrace();

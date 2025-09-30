@@ -94,7 +94,7 @@ public class Variable{
 			Variable curDep=dependents.get(d);
 			if(curDep.locked[curThread]==false){
 				curDep.locked[curThread]=true;
-				curDep.value[curThread]=Interpreter.evaluateTokens(curDep.parsedTokens, curThread, false);
+				curDep.value[curThread]=Interpreter.evaluateTokens(curDep.parsedTokens, curThread, false, myModel.language);
 				curDep.updateDependents(myModel, curThread);
 			}
 		}

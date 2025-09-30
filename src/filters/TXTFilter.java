@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class TXTFilter extends javax.swing.filechooser.FileFilter {
+	Language language;
+	
+	public TXTFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
     public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".txt");
     }
     
     public String getDescription() {
-        return "Text file";
+        return language.base.getString("file.text"); //Text file"
     }
 }

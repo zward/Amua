@@ -51,11 +51,14 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -76,6 +79,7 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
@@ -93,6 +97,7 @@ import filters.GIFFilter;
 import filters.JPEGFilter;
 import filters.PNGFilter;
 import filters.TXTFilter;
+import lang.Language;
 import main.Console;
 import main.Constraint;
 import main.ErrorLog;
@@ -106,6 +111,7 @@ import markov.PanelMarkov;
 import tree.PanelTree;
 import java.awt.BorderLayout;
 import javax.swing.border.LineBorder;
+import javax.swing.JRadioButtonMenuItem;
 
 public class frmMain {
 
@@ -129,7 +135,7 @@ public class frmMain {
 	Console console;
 	//JTextArea console;
 	JFileChooser fc=new JFileChooser();
-	public String version="0.3.1-test";
+	public String version="0.3.4-test";
 	public main.Clipboard clipboard; //Clipboard
 
 	//Menu items to enable once a model is opened
@@ -173,16 +179,26 @@ public class frmMain {
 
 	ErrorLog errorLog;
 
+	public Language language;
+	
+	//menus
+	JMenu mnModel, mnNew, mnOpenRecent, mnSensitivityAnalysis, mnValueOfInformation, mnTools, mnLanguage, mnHelp;
+	JMenuItem mntmDecisionTree, mntmMarkovModel, mntmOpenModel, mntmExit, mntmFindreplace;
+	JMenuItem mntmOneway, mntmTornadoDiagram, mntmThresholdAnalysis, mntmTwoway, mntmOnewayBest, mntmProbabilisticpsa;
+	JMenuItem mntmBatchRuns, mntmEVPI, mntmEVPPI, mntmScenarios, mntmPlotFunction, mntmPlotSurface, mntmSaveConsole;
+	JRadioButtonMenuItem rdbtnmntmLang_English, rdbtnmntmLang_French, rdbtnmntmLang_Spanish;
+	JMenuItem mntmHelpContents, mntmReportBugrequest, mntmErrorLog, mntmAboutAmua;
+	JButton btnDeleteVariable, btnEdit, btnHighlightUse, btnImport, btnExportParamSets, btnClearParamSets;
+	
 	/**
 	 * Create the application.
 	 */
 	public frmMain(String version) {
 		main=this;
 		this.version=version;
+		language=new Language();
 		initialize();
 		checkAnyModels();
-		//check for Amua updates
-		//checkUpdates();
 	}
 
 	/**
@@ -203,9 +219,9 @@ public class frmMain {
 		frmMain.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frmMain.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-		errorLog=new ErrorLog(version);
+		errorLog=new ErrorLog(version, language);
 		clipboard=new main.Clipboard();
-		console=new Console(version);
+		console=new Console(version, language);
 
 		//Initialize model lists
 		modelTypes=new ArrayList<Integer>();
@@ -215,13 +231,13 @@ public class frmMain {
 		JMenuBar menuBar = new JMenuBar();
 		frmMain.setJMenuBar(menuBar);
 
-		JMenu mnModel = new JMenu("Model");
+		mnModel = new JMenu(language.base.getString("menu.model")); //Model
 		menuBar.add(mnModel);
 
-		JMenu mnNew = new JMenu("New");
+		mnNew = new JMenu(language.base.getString("menu.new")); //New
 		mnModel.add(mnNew);
 
-		JMenuItem mntmDecisionTree = new JMenuItem("Decision Tree");
+		mntmDecisionTree = new JMenuItem(language.base.getString("menu.decision_tree")); //Decision tree
 		mntmDecisionTree.setIcon(new ScaledIcon("/images/modelTree",16,16,16,true));
 		mntmDecisionTree.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -231,7 +247,7 @@ public class frmMain {
 				scrollPane.setViewportView(newModel.getPanel());
 				modelTypes.add(0);
 				//add tab
-				addTab(0,scrollPane,"(New)");
+				addTab(0,scrollPane,"("+language.base.getString("menu.new")+")"); //(New)
 				tabbedPaneCanvas.setSelectedIndex(tabbedPaneCanvas.getTabCount()-1);
 				switchTabs();
 				checkAnyModels();
@@ -239,7 +255,7 @@ public class frmMain {
 		});
 		mnNew.add(mntmDecisionTree);
 
-		JMenuItem mntmMarkovModel = new JMenuItem("Markov Model");
+		mntmMarkovModel = new JMenuItem(language.base.getString("menu.markov_model")); //Markov Model
 		mntmMarkovModel.setIcon(new ScaledIcon("/images/markovChain",16,16,16,true));
 		mntmMarkovModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -249,7 +265,7 @@ public class frmMain {
 				scrollPane.setViewportView(newModel.getPanel());
 				modelTypes.add(1);
 				//add tab
-				addTab(1,scrollPane,"(New)");
+				addTab(1,scrollPane,"("+language.base.getString("menu.new")+")"); //(New)
 				tabbedPaneCanvas.setSelectedIndex(tabbedPaneCanvas.getTabCount()-1);
 				switchTabs();
 				checkAnyModels();
@@ -257,16 +273,16 @@ public class frmMain {
 		});
 		mnNew.add(mntmMarkovModel);
 
-		JMenuItem mntmOpenModel = new JMenuItem("Open Model...");
+		mntmOpenModel = new JMenuItem(language.base.getString("menu.open_model")+"..."); //Open Model
 		mntmOpenModel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
 					fc.resetChoosableFileFilters();
-					fc.addChoosableFileFilter(new AmuaModelFilter());
+					fc.addChoosableFileFilter(new AmuaModelFilter(language));
 					fc.setAcceptAllFileFilterUsed(false);
 
-					fc.setDialogTitle("Open Model");
-					fc.setApproveButtonText("Open");
+					fc.setDialogTitle(language.base.getString("menu.open_model")); //Open Model
+					fc.setApproveButtonText(language.base.getString("button.open")); //Open
 
 					int returnVal = fc.showOpenDialog(frmMain);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -275,14 +291,14 @@ public class frmMain {
 					}
 
 				}catch(Exception e){
-					console.print("Error: "+e.getMessage()); console.newLine();
+					console.print(language.message.getString("error")+": "+e.getMessage()); console.newLine(); //Error
 					errorLog.recordError(e);
 				}
 			}
 		});
 		mnModel.add(mntmOpenModel);
 
-		final JMenu mnOpenRecent = new JMenu("Open Recent");
+		mnOpenRecent = new JMenu(language.base.getString("menu.open_recent")); //Open Recent
 		mnOpenRecent.addMenuListener(new MenuListener() {
 			public void menuCanceled(MenuEvent arg0) {
 			}
@@ -297,7 +313,7 @@ public class frmMain {
 		JSeparator separator_2 = new JSeparator();
 		mnModel.add(separator_2);
 
-		mntmSave = new JMenuItem("Save");
+		mntmSave = new JMenuItem(language.base.getString("menu.save")); //Save
 		KeyStroke ctrlS = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 		mntmSave.setAccelerator(ctrlS);
 		mntmSave.setIcon(new ScaledIcon("/images/save",16,16,16,true));
@@ -309,21 +325,21 @@ public class frmMain {
 		});
 		mnModel.add(mntmSave);
 
-		mntmSaveAs = new JMenuItem("Save As...");
+		mntmSaveAs = new JMenuItem(language.base.getString("menu.save_as")+"..."); //Save As
 		mntmSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					JFileChooser fc=null;
 					fc=new JFileChooser(curModel.filepath);
-					fc.setFileFilter(new AmuaModelFilter());
+					fc.setFileFilter(new AmuaModelFilter(language));
 					fc.setAcceptAllFileFilterUsed(false);
 
-					fc.addChoosableFileFilter(new PNGFilter());
-					fc.addChoosableFileFilter(new GIFFilter());
-					fc.addChoosableFileFilter(new JPEGFilter());
+					fc.addChoosableFileFilter(new PNGFilter(language));
+					fc.addChoosableFileFilter(new GIFFilter(language));
+					fc.addChoosableFileFilter(new JPEGFilter(language));
 
-					fc.setDialogTitle("Save Model");
-					fc.setApproveButtonText("Save");
+					fc.setDialogTitle(language.base.getString("menu.save_model")); //Save Model
+					fc.setApproveButtonText(language.base.getString("menu.save")); //Save
 
 					int returnVal = fc.showSaveDialog(frmMain);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -376,13 +392,13 @@ public class frmMain {
 		JSeparator separator_6 = new JSeparator();
 		mnModel.add(separator_6);
 
-		mntmDocument = new JMenuItem("Document...");
+		mntmDocument = new JMenuItem(language.base.getString("menu.document")+"..."); //Document
 		mntmDocument.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//check model
 				boolean valid=curModel.checkModel(console, true);
 				if(valid==false){
-					JOptionPane.showMessageDialog(frmMain, "Errors found!");
+					JOptionPane.showMessageDialog(frmMain, language.message.getString("err.found")); //Errors found!
 				}
 				else{
 					frmDocument window=new frmDocument(curModel);
@@ -395,8 +411,7 @@ public class frmMain {
 		mnModel.add(mntmDocument);
 
 
-
-		mntmExport = new JMenuItem("Export...");
+		mntmExport = new JMenuItem(language.base.getString("menu.export")+"..."); //Export
 		mntmExport.setIcon(new ScaledIcon("/images/export",16,16,16,true));
 		mntmExport.setDisabledIcon(new ScaledIcon("/images/export",16,16,16,false));
 		mntmExport.addActionListener(new ActionListener() {
@@ -404,7 +419,7 @@ public class frmMain {
 				//check model
 				boolean valid=curModel.checkModel(console, true);
 				if(valid==false){
-					JOptionPane.showMessageDialog(frmMain, "Errors found!");
+					JOptionPane.showMessageDialog(frmMain, language.message.getString("err.found")); //Errors found!
 				}
 				else{
 					frmExport window=new frmExport(curModel);
@@ -414,7 +429,7 @@ public class frmMain {
 		});
 		mnModel.add(mntmExport);
 
-		mntmImport = new JMenuItem("Import...");
+		mntmImport = new JMenuItem(language.base.getString("menu.import")+"..."); //Import
 		mntmImport.setIcon(new ScaledIcon("/images/import",16,16,16,true));
 		mntmImport.setDisabledIcon(new ScaledIcon("/images/import",16,16,16,false));
 		mntmImport.addActionListener(new ActionListener() {
@@ -429,7 +444,7 @@ public class frmMain {
 		JSeparator separator_5 = new JSeparator();
 		mnModel.add(separator_5);
 
-		mntmProperties = new JMenuItem("Properties");
+		mntmProperties = new JMenuItem(language.base.getString("menu.properties")); //Properties
 		mntmProperties.setIcon(new ScaledIcon("/images/properties",16,16,16,true));
 		mntmProperties.setDisabledIcon(new ScaledIcon("/images/properties",16,16,16,false));
 		mntmProperties.addActionListener(new ActionListener() {
@@ -443,7 +458,7 @@ public class frmMain {
 		JSeparator separator_7 = new JSeparator();
 		mnModel.add(separator_7);
 
-		JMenuItem mntmExit = new JMenuItem("Exit");
+		mntmExit = new JMenuItem(language.base.getString("menu.exit")); //Exit
 		mntmExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				exit();
@@ -451,10 +466,10 @@ public class frmMain {
 		});
 		mnModel.add(mntmExit);
 
-		mnEdit = new JMenu("Edit");
+		mnEdit = new JMenu(language.base.getString("menu.edit")); //Edit
 		menuBar.add(mnEdit);
 
-		mntmUndo = new JMenuItem("Undo");
+		mntmUndo = new JMenuItem(language.base.getString("menu.undo")); //Undo
 		mntmUndo.setIcon(new ScaledIcon("/images/undo",16,16,16,true));
 		mntmUndo.setDisabledIcon(new ScaledIcon("/images/undo",16,16,16,false));
 		mntmUndo.addActionListener(new ActionListener() {
@@ -466,7 +481,7 @@ public class frmMain {
 		mntmUndo.setEnabled(false);
 		mnEdit.add(mntmUndo);
 
-		mntmRedo = new JMenuItem("Redo");
+		mntmRedo = new JMenuItem(language.base.getString("menu.redo")); //Redo
 		mntmRedo.setIcon(new ScaledIcon("/images/redo",16,16,16,true));
 		mntmRedo.setDisabledIcon(new ScaledIcon("/images/redo",16,16,16,false));
 		mntmRedo.addActionListener(new ActionListener() {
@@ -481,7 +496,7 @@ public class frmMain {
 		JSeparator separator_3 = new JSeparator();
 		mnEdit.add(separator_3);
 
-		mntmCut = new JMenuItem("Cut");
+		mntmCut = new JMenuItem(language.base.getString("menu.cut")); //Cut
 		mntmCut.setIcon(new ScaledIcon("/images/cut",16,16,16,true));
 		mntmCut.setDisabledIcon(new ScaledIcon("/images/cut",16,16,16,false));
 		mntmCut.addActionListener(new ActionListener() {
@@ -493,7 +508,7 @@ public class frmMain {
 		mntmCut.setEnabled(false);
 		mnEdit.add(mntmCut);
 
-		mntmCopy = new JMenuItem("Copy");
+		mntmCopy = new JMenuItem(language.base.getString("menu.copy")); //Copy
 		mntmCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
 		mntmCopy.setDisabledIcon(new ScaledIcon("/images/copy",16,16,16,false));
 		mntmCopy.addActionListener(new ActionListener() {
@@ -505,7 +520,7 @@ public class frmMain {
 		mntmCopy.setEnabled(false);
 		mnEdit.add(mntmCopy);
 
-		mntmPaste = new JMenuItem("Paste");
+		mntmPaste = new JMenuItem(language.base.getString("menu.paste")); //Paste
 		mntmPaste.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
 		mntmPaste.setDisabledIcon(new ScaledIcon("/images/paste",16,16,16,false));
 		mntmPaste.addActionListener(new ActionListener() {
@@ -517,7 +532,7 @@ public class frmMain {
 		mntmPaste.setEnabled(false);
 		mnEdit.add(mntmPaste);
 
-		JMenuItem mntmFindreplace = new JMenuItem("Find/Replace");
+		mntmFindreplace = new JMenuItem(language.base.getString("menu.find_replace")); //Find/Replace
 		mntmFindreplace.setIcon(new ScaledIcon("/images/find",16,16,16,true));
 		mntmFindreplace.setDisabledIcon(new ScaledIcon("/images/find",16,16,16,false));
 		mntmFindreplace.addActionListener(new ActionListener() {
@@ -533,10 +548,10 @@ public class frmMain {
 
 		mnEdit.add(mntmFindreplace);
 
-		mnRun = new JMenu("Run");
+		mnRun = new JMenu(language.base.getString("menu.run")); //Run
 		menuBar.add(mnRun);
 
-		mntmRunModel = new JMenuItem("Run Model");
+		mntmRunModel = new JMenuItem(language.base.getString("menu.run_model")); //Run Model
 		mntmRunModel.setIcon(new ScaledIcon("/images/runModel",16,16,16,true));
 		mntmRunModel.setDisabledIcon(new ScaledIcon("/images/runModel",16,16,16,false));
 		mntmRunModel.addActionListener(new ActionListener() {
@@ -552,10 +567,10 @@ public class frmMain {
 		});
 		mnRun.add(mntmRunModel);
 
-		JMenu mnSensitivityAnalysis = new JMenu("Sensitivity Analysis");
+		mnSensitivityAnalysis = new JMenu(language.base.getString("menu.sens_analysis")); //Sensitivity Analysis
 		mnRun.add(mnSensitivityAnalysis);
 
-		JMenuItem mntmOneway = new JMenuItem("One-way");
+		mntmOneway = new JMenuItem(language.base.getString("menu.one_way")); //One-way
 		mntmOneway.setIcon(new ScaledIcon("/images/oneWay",16,16,16,true));
 		mntmOneway.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -565,7 +580,7 @@ public class frmMain {
 		});
 		mnSensitivityAnalysis.add(mntmOneway);
 
-		JMenuItem mntmTornadoDiagram = new JMenuItem("Tornado Diagram");
+		mntmTornadoDiagram = new JMenuItem(language.base.getString("menu.tornado_diagram")); //Tornado Diagram
 		mntmTornadoDiagram.setIcon(new ScaledIcon("/images/tornado",16,16,16,true));
 		mntmTornadoDiagram.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -575,7 +590,7 @@ public class frmMain {
 		});
 		mnSensitivityAnalysis.add(mntmTornadoDiagram);
 
-		JMenuItem mntmThresholdAnalysis = new JMenuItem("Threshold Analysis");
+		mntmThresholdAnalysis = new JMenuItem(language.base.getString("menu.threshold_analysis")); //Threshold Analysis
 		mntmThresholdAnalysis.setIcon(new ScaledIcon("/images/threshold",16,16,16,true));
 		mntmThresholdAnalysis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -585,7 +600,7 @@ public class frmMain {
 		});
 		mnSensitivityAnalysis.add(mntmThresholdAnalysis);
 
-		JMenuItem mntmTwoway = new JMenuItem("Two-way");
+		mntmTwoway = new JMenuItem(language.base.getString("menu.two_way")); //Two-way
 		mntmTwoway.setIcon(new ScaledIcon("/images/twoWay",16,16,16,true));
 		mntmTwoway.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -594,7 +609,7 @@ public class frmMain {
 			}
 		});
 
-		JMenuItem mntmOnewayBest = new JMenuItem("Stacked One-way");
+		mntmOnewayBest = new JMenuItem(language.base.getString("menu.stacked_one_way")); //Stacked One-way
 		mntmOnewayBest.setIcon(new ScaledIcon("/images/oneWayStacked",16,16,16,true));
 		mntmOnewayBest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -605,7 +620,7 @@ public class frmMain {
 		mnSensitivityAnalysis.add(mntmOnewayBest);
 		mnSensitivityAnalysis.add(mntmTwoway);
 
-		JMenuItem mntmProbabilisticpsa = new JMenuItem("Probabilistic (PSA)");
+		mntmProbabilisticpsa = new JMenuItem(language.base.getString("menu.prob_PSA")); //Probabilistic (PSA)
 		mntmProbabilisticpsa.setIcon(new ScaledIcon("/images/psa",16,16,16,true));
 		mntmProbabilisticpsa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -615,7 +630,7 @@ public class frmMain {
 		});
 		mnSensitivityAnalysis.add(mntmProbabilisticpsa);
 
-		JMenuItem mntmBatchRuns = new JMenuItem("Batch Runs");
+		mntmBatchRuns = new JMenuItem(language.base.getString("menu.batch_runs")); //Batch Runs
 		mntmBatchRuns.setIcon(new ScaledIcon("/images/runBatch",16,16,16,true));
 		mntmBatchRuns.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -624,10 +639,10 @@ public class frmMain {
 			}
 		});
 
-		JMenu mnValueOfInformation = new JMenu("Value of Information");
+		mnValueOfInformation = new JMenu(language.base.getString("menu.value_information")); //Value of Information
 		mnRun.add(mnValueOfInformation);
 
-		JMenuItem mntmEVPI = new JMenuItem("Perfect Information (EVPI)");
+		mntmEVPI = new JMenuItem(language.base.getString("menu.perfect_info_EVPI")); //Perfect Information (EVPI)
 		mntmEVPI.setIcon(new ScaledIcon("/images/evpi",16,16,16,true));
 		mntmEVPI.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -637,7 +652,7 @@ public class frmMain {
 		});
 		mnValueOfInformation.add(mntmEVPI);
 		
-		JMenuItem mntmEVPPI = new JMenuItem("Partial Perfect Information (EVPPI)");
+		mntmEVPPI = new JMenuItem(language.base.getString("menu.partial_info_EVPPI")); //Partial Perfect Information (EVPPI)
 		mntmEVPPI.setIcon(new ScaledIcon("/images/evppi",16,16,16,true));
 		mntmEVPPI.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -650,7 +665,7 @@ public class frmMain {
 
 		mnRun.add(mntmBatchRuns);
 
-		JMenuItem mntmScenarios = new JMenuItem("Scenarios");
+		mntmScenarios = new JMenuItem(language.base.getString("menu.scenarios")); //Scenarios
 		mntmScenarios.setIcon(new ScaledIcon("/images/scenario",16,16,16,true));
 		mntmScenarios.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -663,7 +678,7 @@ public class frmMain {
 		JSeparator separator_10 = new JSeparator();
 		mnRun.add(separator_10);
 
-		mntmCalibrateModel = new JMenuItem("Calibrate Model");
+		mntmCalibrateModel = new JMenuItem(language.base.getString("menu.calibrate_model")); //Calibrate Model
 		mntmCalibrateModel.setIcon(new ScaledIcon("/images/calibrate",16,16,16,true));
 		mntmCalibrateModel.setDisabledIcon(new ScaledIcon("/images/calibrate",16,16,16,false));
 		mntmCalibrateModel.addActionListener(new ActionListener() {
@@ -680,7 +695,7 @@ public class frmMain {
 		JSeparator separator_12 = new JSeparator();
 		mnRun.add(separator_12);
 		
-		mntmClusterRun = new JMenuItem("Cluster Run");
+		mntmClusterRun = new JMenuItem(language.base.getString("menu.cluster_run")); //Cluster Run
 		mntmClusterRun.setIcon(new ScaledIcon("/images/cluster",16,16,16,true));
 		mntmClusterRun.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -690,39 +705,39 @@ public class frmMain {
 		});
 		mnRun.add(mntmClusterRun);
 		
-		JMenu mnTools = new JMenu("Tools");
+		mnTools = new JMenu(language.base.getString("menu.tools")); //Tools
 		menuBar.add(mnTools);
 
-		JMenuItem mntmPlotFunction = new JMenuItem("Plot Function");
+		mntmPlotFunction = new JMenuItem(language.base.getString("menu.plot_function")); //Plot Function
 		mntmPlotFunction.setIcon(new ScaledIcon("/images/plotFx",16,16,16,true));
 		mntmPlotFunction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frmPlotFx window=new frmPlotFx(curModel);
+				frmPlotFx window=new frmPlotFx(curModel, language);
 				window.frmPlotFx.setVisible(true);
 			}
 		});
 		mnTools.add(mntmPlotFunction);
 
-		JMenuItem mntmPlotSurface = new JMenuItem("Plot Surface");
+		mntmPlotSurface = new JMenuItem(language.base.getString("menu.plot_surface")); //Plot Surface
 		mntmPlotSurface.setIcon(new ScaledIcon("/images/plotSurface",16,16,16,true));
 		mntmPlotSurface.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				frmPlotSurface window=new frmPlotSurface(curModel);
+				frmPlotSurface window=new frmPlotSurface(curModel, language);
 				window.frmPlotSurface.setVisible(true);
 			}
 		});
 		mnTools.add(mntmPlotSurface);
 		
-		JMenuItem mntmSaveConsole= new JMenuItem("Save Console");
+		mntmSaveConsole= new JMenuItem(language.base.getString("menu.save_console")); //Save Console
 		mntmSaveConsole.setIcon(new ScaledIcon("/images/console",16,16,16,true));
 		mntmSaveConsole.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					JFileChooser fc=new JFileChooser(curModel.filepath);
 					fc.setAcceptAllFileFilterUsed(false);
-					fc.setFileFilter(new TXTFilter());
-					fc.setDialogTitle("Save Console");
-					fc.setApproveButtonText("Save");
+					fc.setFileFilter(new TXTFilter(language));
+					fc.setDialogTitle(language.base.getString("menu.save_console")); //Save Console
+					fc.setApproveButtonText(language.base.getString("menu.save")); //Save
 
 					int returnVal = fc.showSaveDialog(frmMain);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -732,7 +747,7 @@ public class frmMain {
 						
 						console.export(path);
 						
-						JOptionPane.showMessageDialog(frmMain, "Console saved!");
+						JOptionPane.showMessageDialog(frmMain, language.message.getString("info.console_saved")); //Console saved!
 					}
 
 				} catch(Exception e1) {
@@ -751,11 +766,56 @@ public class frmMain {
 			}
 		});
 		//mnTools.add(mntmTestExpressions); //for debugging interpreter
-
-		JMenu mnHelp = new JMenu("Help");
+		
+		mnLanguage = new JMenu(language.base.getString("menu.language"));
+		menuBar.add(mnLanguage);
+		
+		ButtonGroup groupLanguage = new ButtonGroup();
+		
+		rdbtnmntmLang_English = new JRadioButtonMenuItem(language.base.getString("menu.english"));
+		mnLanguage.add(rdbtnmntmLang_English);
+		groupLanguage.add(rdbtnmntmLang_English);
+		
+		rdbtnmntmLang_French = new JRadioButtonMenuItem(language.base.getString("menu.french"));
+		mnLanguage.add(rdbtnmntmLang_French);
+		groupLanguage.add(rdbtnmntmLang_French);
+		
+		rdbtnmntmLang_Spanish = new JRadioButtonMenuItem(language.base.getString("menu.spanish"));
+		mnLanguage.add(rdbtnmntmLang_Spanish);
+		groupLanguage.add(rdbtnmntmLang_Spanish);
+		
+		//get current language
+		String curLanguage=language.locale.getLanguage();
+		if(curLanguage.matches("fr")) {rdbtnmntmLang_French.setSelected(true);}
+		else if(curLanguage.matches("es")) {rdbtnmntmLang_Spanish.setSelected(true);}
+		else {rdbtnmntmLang_English.setSelected(true);}
+		
+		rdbtnmntmLang_English.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				language.setLocale(language.locale.ENGLISH);
+				updateLanguage();
+			}
+		});
+		
+		rdbtnmntmLang_French.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				language.setLocale(language.locale.FRENCH);
+				updateLanguage();
+			}
+		});
+		
+		rdbtnmntmLang_Spanish.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Locale locale=new Locale("es", "ES");
+				language.setLocale(locale);
+				updateLanguage();
+			}
+		});
+		
+		mnHelp = new JMenu(language.base.getString("menu.help")); //Help
 		menuBar.add(mnHelp);
 
-		JMenuItem mntmHelpContents = new JMenuItem("Help Contents");
+		mntmHelpContents = new JMenuItem(language.base.getString("menu.help_contents")); //Help Contents
 		mntmHelpContents.setIcon(new ScaledIcon("/images/help",16,16,16,true));
 		mntmHelpContents.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -770,7 +830,7 @@ public class frmMain {
 		});
 		mnHelp.add(mntmHelpContents);
 
-		JMenuItem mntmReportBugrequest = new JMenuItem("Report Bug/Request");
+		mntmReportBugrequest = new JMenuItem(language.base.getString("menu.report_bug_request")); //Report Bug/Request
 		mntmReportBugrequest.setIcon(new ScaledIcon("/images/bug",16,16,16,true));
 		mntmReportBugrequest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -785,12 +845,12 @@ public class frmMain {
 		});
 		mnHelp.add(mntmReportBugrequest);
 
-		JMenuItem mntmErrorLog = new JMenuItem("Error Log");
+		mntmErrorLog = new JMenuItem(language.base.getString("menu.error_log")); //Error Log
 		mntmErrorLog.setIcon(new ScaledIcon("/images/errorLog",16,16,16,true));
 
 		mntmErrorLog.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frmErrorLog window=new frmErrorLog(errorLog);
+				frmErrorLog window=new frmErrorLog(errorLog, language);
 				window.frmErrorLog.setVisible(true);
 			}
 		});
@@ -799,11 +859,11 @@ public class frmMain {
 		JSeparator separator_11 = new JSeparator();
 		mnHelp.add(separator_11);
 
-		JMenuItem mntmAboutAmua = new JMenuItem("About Amua");
+		mntmAboutAmua = new JMenuItem(language.base.getString("menu.about_amua")); //About Amua
 		mntmAboutAmua.setIcon(new ScaledIcon("/images/logo",16,16,16,true));
 		mntmAboutAmua.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frmAboutAmua window=new frmAboutAmua(version,errorLog);
+				frmAboutAmua window=new frmAboutAmua(version,errorLog,language);
 				window.frmAboutAmua.setVisible(true);
 			}
 		});
@@ -867,7 +927,7 @@ public class frmMain {
 
 		btnAddVariable = new JButton();
 		btnAddVariable.setEnabled(false);
-		btnAddVariable.setToolTipText("Add");
+		btnAddVariable.setToolTipText(language.base.getString("button.add")); //Add
 		btnAddVariable.setIcon(new ScaledIcon("/images/add",16,16,16,true));
 		btnAddVariable.setDisabledIcon(new ScaledIcon("/images/add",16,16,16,false));
 		btnAddVariable.addActionListener(new ActionListener() {
@@ -892,8 +952,8 @@ public class frmMain {
 		});
 		toolBar_1.add(btnAddVariable);
 
-		final JButton btnDeleteVariable = new JButton();
-		btnDeleteVariable.setToolTipText("Delete");
+		btnDeleteVariable = new JButton();
+		btnDeleteVariable.setToolTipText(language.base.getString("button.delete")); //Delete
 		btnDeleteVariable.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
 		btnDeleteVariable.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -931,8 +991,8 @@ public class frmMain {
 			}
 		});
 
-		final JButton btnEdit = new JButton();
-		btnEdit.setToolTipText("Edit");
+		btnEdit = new JButton();
+		btnEdit.setToolTipText(language.base.getString("menu.edit")); //Edit
 		btnEdit.setIcon(new ScaledIcon("/images/edit",16,16,16,true));
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -973,8 +1033,8 @@ public class frmMain {
 		toolBar_1.add(btnEdit);
 		toolBar_1.add(btnDeleteVariable);
 
-		JButton btnHighlightUse = new JButton();
-		btnHighlightUse.setToolTipText("Highlight Use");
+		btnHighlightUse = new JButton();
+		btnHighlightUse.setToolTipText(language.base.getString("button.highlight_use")); //Highlight Use
 		btnHighlightUse.setIcon(new ScaledIcon("/images/highlight",16,16,16,true));
 		btnHighlightUse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -1006,24 +1066,24 @@ public class frmMain {
 		tabbedPaneRight.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
 				if(tabbedPaneRight.getSelectedIndex()==0){ //Parameters
-					btnAddVariable.setToolTipText("Add Parameter");
-					btnDeleteVariable.setToolTipText("Delete Parameter");
-					btnEdit.setToolTipText("Edit Parameter");
+					btnAddVariable.setToolTipText(language.base.getString("button.add_parameter")); //Add Parameter
+					btnDeleteVariable.setToolTipText(language.base.getString("button.delete_parameter")); //Delete Parameter
+					btnEdit.setToolTipText(language.base.getString("button.edit_parameter")); //Edit Parameter
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==1){ //Variables
-					btnAddVariable.setToolTipText("Add Variable");
-					btnDeleteVariable.setToolTipText("Delete Variable");
-					btnEdit.setToolTipText("Edit Variable");
+					btnAddVariable.setToolTipText(language.base.getString("button.add_variable")); //Add Variable
+					btnDeleteVariable.setToolTipText(language.base.getString("button.delete_variable")); //Delete Variable
+					btnEdit.setToolTipText(language.base.getString("button.edit_variable")); //Edit Variable
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==2){ //Tables
-					btnAddVariable.setToolTipText("Add Table");
-					btnDeleteVariable.setToolTipText("Delete Table");
-					btnEdit.setToolTipText("Edit Table");
+					btnAddVariable.setToolTipText(language.base.getString("button.add_table")); //Add Table
+					btnDeleteVariable.setToolTipText(language.base.getString("button.delete_table")); //Delete Table
+					btnEdit.setToolTipText(language.base.getString("button.edit_table")); //Edit Table
 				}
 				else if(tabbedPaneRight.getSelectedIndex()==3){ //Constraints
-					btnAddVariable.setToolTipText("Add Constraint");
-					btnDeleteVariable.setToolTipText("Delete Constraint");
-					btnEdit.setToolTipText("Edit Constraint");
+					btnAddVariable.setToolTipText(language.base.getString("button.add_constraint")); //Add Constraint
+					btnDeleteVariable.setToolTipText(language.base.getString("button.delete_constraint")); //Delete Constraint
+					btnEdit.setToolTipText(language.base.getString("button.edit_constraint")); //Edit Constraint
 				}
 			}
 		});
@@ -1031,10 +1091,10 @@ public class frmMain {
 		//Parameters
 		JPanel panelParams = new JPanel();
 		panelParams.setLayout(new BoxLayout(panelParams, BoxLayout.X_AXIS));
-		JLabel lblParam=new JLabel("Parameters");
+		JLabel lblParam=new JLabel(language.base.getString("object.parameters")); //Parameters
 		lblParam.setIcon(new ScaledIcon("/images/parameter",16,16,16,true));
 		lblParam.setHorizontalTextPosition(SwingConstants.RIGHT);
-		tabbedPaneRight.addTab("Parameters", null, panelParams, null);
+		tabbedPaneRight.addTab(language.base.getString("object.parameters"), null, panelParams, null); //Parameters
 		tabbedPaneRight.setTabComponentAt(0, lblParam);
 
 		JScrollPane scrollPaneParameters = new JScrollPane();
@@ -1044,7 +1104,8 @@ public class frmMain {
 		gbc_scrollPaneParameters.gridy = 1;
 		panelParams.add(scrollPaneParameters);
 
-		modelParameters=new DefaultTableModel(new Object[][] {},	new String[] {"Name", "Expression"})
+		modelParameters=new DefaultTableModel(new Object[][] {},	
+				new String[] {language.base.getString("object.name"), language.base.getString("object.expression")}) //Name, Expression
 		{boolean[] columnEditables = new boolean[] {false, false};
 		public boolean isCellEditable(int row, int column) {
 			return columnEditables[column];
@@ -1108,10 +1169,10 @@ public class frmMain {
 		//Variables
 		JPanel panelVars = new JPanel();
 		panelVars.setLayout(new BoxLayout(panelVars, BoxLayout.X_AXIS));
-		JLabel lblVar=new JLabel("Variables");
+		JLabel lblVar=new JLabel(language.base.getString("object.variables")); //Variables
 		lblVar.setIcon(new ScaledIcon("/images/variable",16,16,16,true));
 		lblVar.setHorizontalTextPosition(SwingConstants.RIGHT);
-		tabbedPaneRight.addTab("Variables", null, panelVars, null);
+		tabbedPaneRight.addTab(language.base.getString("object.variables"), null, panelVars, null); //Variables
 		tabbedPaneRight.setTabComponentAt(1, lblVar);
 
 		JScrollPane scrollPaneVariables = new JScrollPane();
@@ -1121,7 +1182,8 @@ public class frmMain {
 		gbc_scrollPaneVariables.gridy = 1;
 		panelVars.add(scrollPaneVariables);
 
-		modelVariables=new DefaultTableModel(new Object[][] {},	new String[] {"Name", "Expression"})
+		modelVariables=new DefaultTableModel(new Object[][] {},	
+				new String[] {language.base.getString("object.name"), language.base.getString("object.expression")}) //Name, Expression
 		{boolean[] columnEditables = new boolean[] {false, false};
 		public boolean isCellEditable(int row, int column) {
 			return columnEditables[column];
@@ -1186,16 +1248,17 @@ public class frmMain {
 		JPanel panelTables = new JPanel();
 		panelTables.setLayout(new BoxLayout(panelTables, BoxLayout.X_AXIS));
 
-		JLabel lblTables=new JLabel("Tables");
+		JLabel lblTables=new JLabel(language.base.getString("object.tables")); //Tables
 		lblTables.setIcon(new ScaledIcon("/images/table",16,16,16,true));
 		lblTables.setHorizontalTextPosition(SwingConstants.RIGHT);
-		tabbedPaneRight.addTab("Tables", null, panelTables, null);
+		tabbedPaneRight.addTab(language.base.getString("object.tables"), null, panelTables, null); //Tables
 		tabbedPaneRight.setTabComponentAt(2, lblTables);
 
 		JScrollPane scrollPaneTables = new JScrollPane();
 		panelTables.add(scrollPaneTables);
 
-		modelTables=new DefaultTableModel(new Object[][] {},	new String[] {"Name","Type","Size"})
+		modelTables=new DefaultTableModel(new Object[][] {},	
+				new String[] {language.base.getString("object.name"),language.base.getString("object.type"),language.base.getString("object.size")}) //Name, Type, Size
 		{boolean[] columnEditables = new boolean[] {false, false, false};
 		public boolean isCellEditable(int row, int column) {
 			return columnEditables[column];
@@ -1248,10 +1311,10 @@ public class frmMain {
 		//Constraints
 		JPanel panelConst = new JPanel();
 		panelConst.setLayout(new BoxLayout(panelConst, BoxLayout.X_AXIS));
-		JLabel lblConst=new JLabel("Constraints");
+		JLabel lblConst=new JLabel(language.base.getString("object.constraints")); //Constraints
 		lblConst.setIcon(new ScaledIcon("/images/constraint",16,16,16,true));
 		lblConst.setHorizontalTextPosition(SwingConstants.RIGHT);
-		tabbedPaneRight.addTab("Constraints", null, panelConst, null);
+		tabbedPaneRight.addTab(language.base.getString("object.constraints"), null, panelConst, null); //Constraints
 		tabbedPaneRight.setTabComponentAt(3, lblConst);
 
 		JScrollPane scrollPaneConst = new JScrollPane();
@@ -1261,7 +1324,8 @@ public class frmMain {
 		gbc_scrollPaneConst.gridy = 1;
 		panelConst.add(scrollPaneConst);
 
-		modelConstraints=new DefaultTableModel(new Object[][] {},	new String[] {"Name", "Expression"})
+		modelConstraints=new DefaultTableModel(new Object[][] {},	
+				new String[] {language.base.getString("object.name"), language.base.getString("object.expression")}) //Name, Expression
 		{boolean[] columnEditables = new boolean[] {false, false};
 		public boolean isCellEditable(int row, int column) {
 			return columnEditables[column];
@@ -1323,7 +1387,8 @@ public class frmMain {
 		scrollPaneConst.setViewportView(tableConstraints);
 
 		//Parameter sets
-		modelParamSets=new DefaultTableModel(new Object[][] {}, new String[] {"Set", "Score"}); 
+		modelParamSets=new DefaultTableModel(new Object[][] {}, 
+				new String[] {language.base.getString("object.set"), language.base.getString("object.score")}); //Set, Score 
 		tableParamSets = new JTable();
 		tableParamSets.setModel(modelParamSets);
 		tableParamSets.setShowVerticalLines(true);
@@ -1391,7 +1456,7 @@ public class frmMain {
 		btnFx.setFocusPainted(false);
 		btnFx.setIcon(new ScaledIcon("/images/formula",24,24,24,true));
 		btnFx.setDisabledIcon(new ScaledIcon("/images/formula",24,24,24,false));
-		btnFx.setToolTipText("Build Expression");
+		btnFx.setToolTipText(language.base.getString("button.build_expression")); //Build Expression
 		btnFx.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0){
 				curFxPane.requestFocus();
@@ -1417,19 +1482,19 @@ public class frmMain {
 		splitPaneLeft.setRightComponent(tabbedPaneBottom);
 
 		JScrollPane scrollPaneConsole = new JScrollPane();
-		JLabel lblConsole=new JLabel("Console");
+		JLabel lblConsole=new JLabel(language.base.getString("menu.console")); //Console
 		lblConsole.setIcon(new ScaledIcon("/images/console",16,16,16,true));
 		lblConsole.setHorizontalTextPosition(SwingConstants.RIGHT);
-		tabbedPaneBottom.addTab("Console", null, scrollPaneConsole, null);
+		tabbedPaneBottom.addTab(language.base.getString("menu.console"), null, scrollPaneConsole, null); //Console
 		tabbedPaneBottom.setTabComponentAt(0, lblConsole);
 
 		scrollPaneConsole.setViewportView(console.textConsole);
 
 		scrollPaneNotes = new JScrollPane();
-		JLabel lblNotes=new JLabel("Notes");
+		JLabel lblNotes=new JLabel(language.base.getString("menu.notes")); //Notes
 		lblNotes.setIcon(new ScaledIcon("/images/notes",16,16,16,true));
 		lblNotes.setHorizontalTextPosition(SwingConstants.RIGHT);
-		tabbedPaneBottom.addTab("Notes", (Icon) null, scrollPaneNotes, null);
+		tabbedPaneBottom.addTab(language.base.getString("menu.notes"), (Icon) null, scrollPaneNotes, null); //Notes
 		tabbedPaneBottom.setTabComponentAt(1, lblNotes);
 
 		//Parameter Sets Panel
@@ -1442,7 +1507,7 @@ public class frmMain {
 		gbl_panel_paramSets.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 		panelParamSets.setLayout(gbl_panel_paramSets);
 
-		chckbxUseParamSets = new JCheckBox("Use Parameter Sets");
+		chckbxUseParamSets = new JCheckBox(language.analysis.getString("sim.use_param_sets")); //Use Parameter Sets
 		chckbxUseParamSets.setEnabled(false);
 		chckbxUseParamSets.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1455,16 +1520,16 @@ public class frmMain {
 		gbc_chckbxUseParamSets.gridy = 0;
 		panelParamSets.add(chckbxUseParamSets, gbc_chckbxUseParamSets);
 
-		JButton btnImport = new JButton("Import...");
+		btnImport = new JButton(language.base.getString("menu.import")+"..."); //Import
 		btnImport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//Import parameter sets
 				try {
 					JFileChooser fc=null;
 					fc=new JFileChooser(curModel.filepath);
-					fc.setFileFilter(new CSVFilter());
-					fc.setDialogTitle("Import Parameter Sets");
-					int returnVal = fc.showDialog(frmMain, "Import");
+					fc.setFileFilter(new CSVFilter(language));
+					fc.setDialogTitle(language.base.getString("title.import_param_sets")); //Import Parameter Sets
+					int returnVal = fc.showDialog(frmMain, language.base.getString("menu.import")); //Import
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
 						File file = fc.getSelectedFile();
 						FileInputStream fstream = new FileInputStream(file);
@@ -1477,7 +1542,9 @@ public class frmMain {
 						boolean ok=true;
 						int numParams=headers.length-2;
 						if(numParams != curModel.parameters.size()) {
-							JOptionPane.showMessageDialog(frmMain,"Warning: Expected "+curModel.parameters.size()+" parameters, but got "+numParams);
+							String pattern = language.message.getString("warn.import_params"); //Warning: Expected {0} parameters, but got {1}
+							String warning = MessageFormat.format(pattern, curModel.parameters.size(), numParams);
+							JOptionPane.showMessageDialog(frmMain, warning);
 							//ok=false;
 						}
 						//else {
@@ -1486,7 +1553,10 @@ public class frmMain {
 								String curStr=headers[p+2];
 								int index=curModel.getParameterIndex(curStr);
 								if(index==-1) {
-									JOptionPane.showMessageDialog(frmMain,"Error: Parameter not found: "+curStr);
+									//Error: Parameter not found: + curStr
+									String errorTitle=language.message.getString("error");
+									String errorMsg=language.message.getString("err.param_not_found")+": "+curStr;
+									JOptionPane.showMessageDialog(frmMain, errorMsg, errorTitle, JOptionPane.ERROR_MESSAGE);
 									ok=false;
 								}
 								else {
@@ -1506,7 +1576,7 @@ public class frmMain {
 							}
 
 							//add to model
-							curModel.saveSnapshot("Import Parameter Sets");
+							curModel.saveSnapshot(language.base.getString("title.import_param_sets")); //Import Parameter Sets
 							curModel.parameterNames=paramNames;
 							int numSets=sets.size();
 							curModel.parameterSets=new ParameterSet[numSets];
@@ -1520,7 +1590,9 @@ public class frmMain {
 					}
 
 				}catch(Exception e1){
-					JOptionPane.showMessageDialog(frmMain, "Error: "+e1.toString());
+					String errorTitle=language.message.getString("error");
+					String errorMsg=e1.toString();
+					JOptionPane.showMessageDialog(frmMain, errorMsg, errorTitle, JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
 					errorLog.recordError(e1);
 				}
@@ -1532,7 +1604,7 @@ public class frmMain {
 		gbc_btnImport.gridy = 0;
 		panelParamSets.add(btnImport, gbc_btnImport);
 
-		JButton btnExportParamSets = new JButton("Export...");
+		btnExportParamSets = new JButton(language.base.getString("menu.export")+"..."); //Export
 		btnExportParamSets.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(curModel.parameterNames!=null){
@@ -1540,9 +1612,9 @@ public class frmMain {
 					try {
 						JFileChooser fc=null;
 						fc=new JFileChooser(curModel.filepath);
-						fc.setFileFilter(new CSVFilter());
-						fc.setDialogTitle("Export Parameter Sets");
-						fc.setApproveButtonText("Export");
+						fc.setFileFilter(new CSVFilter(language));
+						fc.setDialogTitle(language.base.getString("title.export_param_sets")); //Export Parameter Sets
+						fc.setApproveButtonText(language.base.getString("menu.export")); //Export
 
 						int returnVal = fc.showSaveDialog(frmMain);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1554,7 +1626,7 @@ public class frmMain {
 							BufferedWriter out = new BufferedWriter(fstream);
 							int numParams=curModel.parameterNames.length;
 							//Headers
-							out.write("Set,Score");
+							out.write(language.base.getString("object.set")+","+language.base.getString("object.score")); //Set, Score
 							for(int i=0; i<numParams; i++){out.write(","+curModel.parameterNames[i]);}
 							out.newLine();
 							//Sets
@@ -1567,7 +1639,7 @@ public class frmMain {
 							}
 							out.close();
 
-							JOptionPane.showMessageDialog(frmMain, "Exported!");
+							JOptionPane.showMessageDialog(frmMain, language.message.getString("info.exported")); //Exported!
 						}
 
 					}catch(Exception e1){
@@ -1583,12 +1655,12 @@ public class frmMain {
 		gbc_btnExportParamSets.gridy = 0;
 		panelParamSets.add(btnExportParamSets, gbc_btnExportParamSets);
 
-		JButton btnClearParamSets = new JButton("Clear All");
+		btnClearParamSets = new JButton(language.base.getString("button.clear_all")); //Clear All
 		btnClearParamSets.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(curModel.parameterNames!=null){
 					//remove parameter sets
-					curModel.saveSnapshot("Clear Parameter Sets");
+					curModel.saveSnapshot(language.base.getString("title.clear_param_sets")); //Clear Parameter Sets
 					curModel.parameterNames=null;
 					curModel.parameterSets=null;
 					modelParamSets.setRowCount(0);
@@ -1613,17 +1685,17 @@ public class frmMain {
 		panelParamSets.add(scrollPaneParamSets, gbc_scrollPane);
 		scrollPaneParamSets.setViewportView(tableParamSets);
 
-		JLabel lblParamSets=new JLabel("Parameter Sets");
+		JLabel lblParamSets=new JLabel(language.base.getString("menu.param_sets")); //Parameter Sets
 		lblParamSets.setIcon(new ScaledIcon("/images/parameterSets",16,16,16,true));
 		lblParamSets.setHorizontalTextPosition(SwingConstants.RIGHT);
-		tabbedPaneBottom.addTab("Parameter Sets", (Icon) null, panelParamSets, null);
+		tabbedPaneBottom.addTab(language.base.getString("menu.param_sets"), (Icon) null, panelParamSets, null); //Parameter Sets
 		tabbedPaneBottom.setTabComponentAt(2, lblParamSets);
 
 		scrollPaneProperties = new JScrollPane();
 
 
 		btnDecisionNode=new JButton();
-		btnDecisionNode.setToolTipText("Decision Node");
+		btnDecisionNode.setToolTipText(language.base.getString("node.decision")); //Decision Node
 		btnDecisionNode.setIcon(new ScaledIcon("/images/decisionNode",24,24,24,true));
 		btnDecisionNode.setDisabledIcon(new ScaledIcon("/images/decisionNode",24,24,24,false));
 		btnDecisionNode.setEnabled(false);
@@ -1636,7 +1708,7 @@ public class frmMain {
 
 		btnMarkovChain=new JButton();
 		btnMarkovChain.setEnabled(false);
-		btnMarkovChain.setToolTipText("Markov Chain");
+		btnMarkovChain.setToolTipText(language.base.getString("node.markov_chain")); //Markov Chain
 		btnMarkovChain.setIcon(new ScaledIcon("/images/markovChain",24,24,24,true));
 		btnMarkovChain.setDisabledIcon(new ScaledIcon("/images/markovChain",24,24,24,false));
 		btnMarkovChain.addActionListener(new ActionListener() {
@@ -1649,7 +1721,7 @@ public class frmMain {
 
 		btnMarkovState=new JButton();
 		btnMarkovState.setEnabled(false);
-		btnMarkovState.setToolTipText("Markov State");
+		btnMarkovState.setToolTipText(language.base.getString("node.markov_state")); //Markov State
 		btnMarkovState.setIcon(new ScaledIcon("/images/markovState",24,24,24,true));
 		btnMarkovState.setDisabledIcon(new ScaledIcon("/images/markovState",24,24,24,false));
 		btnMarkovState.addActionListener(new ActionListener() {
@@ -1662,7 +1734,7 @@ public class frmMain {
 
 		btnChanceNode=new JButton();
 		btnChanceNode.setEnabled(false);
-		btnChanceNode.setToolTipText("Chance Node");
+		btnChanceNode.setToolTipText(language.base.getString("node.chance")); //Chance Node
 		btnChanceNode.setIcon(new ScaledIcon("/images/chanceNode",24,24,24,true));
 		btnChanceNode.setDisabledIcon(new ScaledIcon("/images/chanceNode",24,24,24,false));
 		toolBar.add(btnChanceNode);
@@ -1680,7 +1752,7 @@ public class frmMain {
 
 		btnTerminalNode=new JButton();
 		btnTerminalNode.setEnabled(false);
-		btnTerminalNode.setToolTipText("Terminal Node");
+		btnTerminalNode.setToolTipText(language.base.getString("node.terminal")); //Terminal Node
 		btnTerminalNode.setIcon(new ScaledIcon("/images/terminalNode",24,24,24,true));
 		btnTerminalNode.setDisabledIcon(new ScaledIcon("/images/terminalNode",24,24,24,false));
 		toolBar.add(btnTerminalNode);
@@ -1694,7 +1766,7 @@ public class frmMain {
 
 		btnStateTransition=new JButton();
 		btnStateTransition.setEnabled(false);
-		btnStateTransition.setToolTipText("State Transition");
+		btnStateTransition.setToolTipText(language.base.getString("node.state_transition")); //State Transition
 		btnStateTransition.setIcon(new ScaledIcon("/images/stateTransition",24,24,24,true));
 		btnStateTransition.setDisabledIcon(new ScaledIcon("/images/stateTransition",24,24,24,false));
 		btnStateTransition.addActionListener(new ActionListener(){
@@ -1707,7 +1779,7 @@ public class frmMain {
 
 		btnChangeNodeType=new JButton();
 		btnChangeNodeType.setEnabled(false);
-		btnChangeNodeType.setToolTipText("Change Node Type");
+		btnChangeNodeType.setToolTipText(language.base.getString("button.change_node_type")); //Change Node Type
 		btnChangeNodeType.setIcon(new ScaledIcon("/images/changeType",24,24,24,true));
 		btnChangeNodeType.setDisabledIcon(new ScaledIcon("/images/changeType",24,24,24,false));
 		toolBar.add(btnChangeNodeType);
@@ -1719,7 +1791,7 @@ public class frmMain {
 
 		btnUpdateVariable=new JButton();
 		btnUpdateVariable.setEnabled(false);;
-		btnUpdateVariable.setToolTipText("Add/Remove Variable Updates");
+		btnUpdateVariable.setToolTipText(language.base.getString("button.add_remove_var_updates")); //Add/Remove Variable Updates
 		btnUpdateVariable.setIcon(new ScaledIcon("/images/updateVariable",24,24,24,true));
 		btnUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",24,24,24,false));
 		btnUpdateVariable.addActionListener(new ActionListener(){
@@ -1731,7 +1803,7 @@ public class frmMain {
 
 		btnShowCost = new JButton();
 		btnShowCost.setEnabled(false);
-		btnShowCost.setToolTipText("Add/Remove Cost (One-time Event)");
+		btnShowCost.setToolTipText(language.base.getString("button.add_remove_cost")); //Add/Remove Cost (One-time Event)
 		btnShowCost.setIcon(new ScaledIcon("/images/cost",24,24,24,true));
 		btnShowCost.setDisabledIcon(new ScaledIcon("/images/cost",24,24,24,false));
 		btnShowCost.addActionListener(new ActionListener() {
@@ -1745,13 +1817,13 @@ public class frmMain {
 		separator.setOrientation(SwingConstants.VERTICAL);
 		toolBar.add(separator);
 
-		btnOCD = new JButton("OCD");
+		btnOCD = new JButton(language.base.getString("button.ocd")); //OCD
 		btnOCD.setFont(new Font("SansSerif", Font.PLAIN, 12));
-		btnOCD.setToolTipText("Optimize Current Display");
+		btnOCD.setToolTipText(language.base.getString("button.opt_cur_display")); //Optimize Current Display
 		btnOCD.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				curModel.ocd("OCD");
+				curModel.ocd(language.base.getString("button.ocd")); //OCD
 				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
@@ -1759,7 +1831,7 @@ public class frmMain {
 
 		btnEqualY = new JButton();
 		btnEqualY.setEnabled(false);
-		btnEqualY.setToolTipText("Vertical Spacing");
+		btnEqualY.setToolTipText(language.base.getString("button.vertical_spacing")); //Vertical Spacing
 		btnEqualY.setIcon(new ScaledIcon("/images/equalY",24,24,24,true));
 		btnEqualY.setDisabledIcon(new ScaledIcon("/images/equalY",24,24,24,false));
 		btnEqualY.addActionListener(new ActionListener() {
@@ -1773,7 +1845,7 @@ public class frmMain {
 
 		btnCollapse = new JButton();
 		btnCollapse.setEnabled(false);
-		btnCollapse.setToolTipText("Collapse/Expand Branch");
+		btnCollapse.setToolTipText(language.base.getString("button.collapse_expand_branch")); //Collapse/Expand Branch
 		btnCollapse.setIcon(new ScaledIcon("/images/collapse",24,24,24,true));
 		btnCollapse.setDisabledIcon(new ScaledIcon("/images/collapse",24,24,24,false));
 		btnCollapse.addActionListener(new ActionListener() {
@@ -1786,14 +1858,14 @@ public class frmMain {
 		btnAlignLeft = new JButton();
 		btnAlignRight = new JButton();
 
-		btnAlignLeft.setToolTipText("Align Left");
+		btnAlignLeft.setToolTipText(language.base.getString("button.align_left")); //Align Left
 		btnAlignLeft.setIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,true));
 		btnAlignLeft.setDisabledIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,false));
 		btnAlignLeft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.alignRight=false;
-				curModel.ocd("Align Left");
+				curModel.ocd(language.base.getString("button.align_left")); //Align Left
 
 				btnAlignLeft.setIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,true));
 				btnAlignLeft.setDisabledIcon(new ScaledIcon("/images/alignLeftSelected",24,24,24,false));
@@ -1806,14 +1878,14 @@ public class frmMain {
 		});
 		toolBar.add(btnAlignLeft);
 
-		btnAlignRight.setToolTipText("Align Right");
+		btnAlignRight.setToolTipText(language.base.getString("button.align_right")); //Align Right
 		btnAlignRight.setIcon(new ScaledIcon("/images/alignRight",24,24,24,true));
 		btnAlignRight.setDisabledIcon(new ScaledIcon("/images/alignRight",24,24,24,false));
 		btnAlignRight.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frmMain.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				curModel.alignRight=true;
-				curModel.ocd("Align Right");
+				curModel.ocd(language.base.getString("button.align_right")); //Align Right
 
 				btnAlignRight.setIcon(new ScaledIcon("/images/alignRightSelected",24,24,24,true));
 				btnAlignRight.setDisabledIcon(new ScaledIcon("/images/alignRightSelected",24,24,24,false));
@@ -1831,7 +1903,7 @@ public class frmMain {
 		toolBar.add(separator_1);
 
 		btnCheckModel=new JButton();
-		btnCheckModel.setToolTipText("Check Model");
+		btnCheckModel.setToolTipText(language.base.getString("button.check_model")); //Check Model
 		btnCheckModel.setIcon(new ScaledIcon("/images/checkModel",24,24,24,true));
 		btnCheckModel.setDisabledIcon(new ScaledIcon("/images/checkModel",24,24,24,false));
 		toolBar.add(btnCheckModel);
@@ -1844,7 +1916,7 @@ public class frmMain {
 		});
 
 		btnRunModel=new JButton();
-		btnRunModel.setToolTipText("Run Model");
+		btnRunModel.setToolTipText(language.base.getString("menu.run_model")); //Run Model
 		btnRunModel.setIcon(new ScaledIcon("/images/runModel",24,24,24,true));
 		btnRunModel.setDisabledIcon(new ScaledIcon("/images/runModel",24,24,24,false));
 		toolBar.add(btnRunModel);
@@ -1866,7 +1938,7 @@ public class frmMain {
 		});
 
 		btnClearAnnotations=new JButton();
-		btnClearAnnotations.setToolTipText("Clear");
+		btnClearAnnotations.setToolTipText(language.base.getString("button.clear")); //Clear
 		btnClearAnnotations.setIcon(new ScaledIcon("/images/clear",24,24,24,true));
 		btnClearAnnotations.setDisabledIcon(new ScaledIcon("/images/clear",24,24,24,false));
 		toolBar.add(btnClearAnnotations);
@@ -1915,10 +1987,10 @@ public class frmMain {
 				frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
-		btnZoomOut.setToolTipText("Zoom Out");
+		btnZoomOut.setToolTipText(language.base.getString("button.zoom_out")); //Zoom Out
 		btnZoomOut.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		toolBar.add(btnZoomOut);
-		sliderZoom.setToolTipText("Zoom");
+		sliderZoom.setToolTipText(language.base.getString("button.zoom")); //Zoom
 		toolBar.add(sliderZoom);
 
 		btnZoomIn = new JButton(" + ");
@@ -1937,7 +2009,7 @@ public class frmMain {
 			}
 		});
 		btnZoomIn.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		btnZoomIn.setToolTipText("Zoom In");
+		btnZoomIn.setToolTipText(language.base.getString("button.zoom_in")); //Zoom In
 		toolBar.add(btnZoomIn);
 		toolBar.add(lblZoom);
 
@@ -1946,7 +2018,7 @@ public class frmMain {
 		toolBar.add(separator_8);
 
 		btnSnapshot=new JButton();
-		btnSnapshot.setToolTipText("Screenshot");
+		btnSnapshot.setToolTipText(language.base.getString("button.screenshot")); //Screenshot
 		btnSnapshot.setIcon(new ScaledIcon("/images/screenshot",24,24,24,true));
 		btnSnapshot.setDisabledIcon(new ScaledIcon("/images/screenshot",24,24,24,false));
 		toolBar.add(btnSnapshot);
@@ -2101,10 +2173,10 @@ public class frmMain {
 			toolBar.revalidate();
 			mntmCalibrateModel.setEnabled(true);
 
-			JLabel lblProperties=new JLabel("Properties");
+			JLabel lblProperties=new JLabel(language.base.getString("menu.properties")); //Properties
 			lblProperties.setIcon(new ScaledIcon("/images/propertiesMarkov",16,16,16,true));
 			lblProperties.setHorizontalTextPosition(SwingConstants.RIGHT);
-			tabbedPaneBottom.addTab("Properties", (Icon) null, scrollPaneProperties, null);
+			tabbedPaneBottom.addTab(language.base.getString("menu.properties"), (Icon) null, scrollPaneProperties, null); //Properties
 			tabbedPaneBottom.setTabComponentAt(3, lblProperties);
 		}
 
@@ -2118,7 +2190,10 @@ public class frmMain {
 	private void closeTab(int index){
 		boolean proceed=true;
 		if(curModel.unsavedChanges){
-			int choice=JOptionPane.showConfirmDialog(frmMain, curModel.name+" has unsaved changes that will be lost.  Do you want to save now?");
+			//curModel.name+" has unsaved changes that will be lost.  Do you want to save now?"
+			String message=language.message.getString("ask.unsaved_changes");
+			String formatted=MessageFormat.format(message, curModel.name);
+			int choice=JOptionPane.showConfirmDialog(frmMain, formatted);
 			if(choice==JOptionPane.YES_OPTION){saveModel();}
 			else if(choice==JOptionPane.CANCEL_OPTION || choice==JOptionPane.CLOSED_OPTION){
 				proceed=false;
@@ -2201,10 +2276,10 @@ public class frmMain {
 		try {
 			if(curModel.filepath==null){
 				fc.resetChoosableFileFilters();
-				fc.addChoosableFileFilter(new AmuaModelFilter());
+				fc.addChoosableFileFilter(new AmuaModelFilter(language));
 				fc.setAcceptAllFileFilterUsed(false);
-				fc.setDialogTitle("Save Model");
-				fc.setApproveButtonText("Save");
+				fc.setDialogTitle(language.base.getString("menu.save_model")); //Save Model
+				fc.setApproveButtonText(language.base.getString("menu.save")); //Save
 
 				int returnVal = fc.showSaveDialog(frmMain);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -2241,7 +2316,11 @@ public class frmMain {
 				String openPath=modelList.get(m).filepath;
 				if(openPath!=null && openPath.equals(filepath)){ //Open, go to tab
 					isOpen=true;
-					JOptionPane.showMessageDialog(frmMain, filepath+" is already open!");
+					//filepath is already open!
+					String errorTitle=language.message.getString("error");
+					String errorMsg=MessageFormat.format(language.message.getString("err.already_open"), filepath);
+					JOptionPane.showMessageDialog(frmMain, errorMsg, errorTitle, JOptionPane.ERROR_MESSAGE);
+					
 					tabbedPaneCanvas.setSelectedIndex(m);
 					switchTabs();
 				}
@@ -2278,7 +2357,7 @@ public class frmMain {
 			}
 		}catch(Exception e){
 			frmMain.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			console.print("Error: "+e.getMessage()); console.newLine();
+			console.print(language.message.getString("error")+": "+e.getMessage()); console.newLine(); //Error
 			errorLog.recordError(e);
 		}
 	}
@@ -2307,15 +2386,13 @@ public class frmMain {
 			br.close();
 
 			if(!gitVersion.equals(version)) { //different git version
-				int choice=JOptionPane.showConfirmDialog(null, 
-						"A newer version of Amua is available ("+gitVersion+"). Would you like to download it?",
-						"Amua Update", JOptionPane.YES_NO_OPTION);
+				String curTitle=language.base.getString("title.amua_update"); //Amua Update
+				String message=language.message.getString("ask.new_version"); //A newer version of Amua is available ("+gitVersion+"). Would you like to download it?
+				String formatted=MessageFormat.format(message, gitVersion);
+				int choice=JOptionPane.showConfirmDialog(null, formatted, curTitle, JOptionPane.YES_NO_OPTION);
 				if(choice==JOptionPane.YES_OPTION) {
 					//go to wiki
 					Desktop.getDesktop().browse(new URI("https://github.com/zward/Amua/wiki/Getting-Started"));
-				}
-				else {
-					//do nothing
 				}
 			}
 
@@ -2338,7 +2415,10 @@ public class frmMain {
 			}
 
 			if(savePrompt==true){
-				int choice=JOptionPane.showConfirmDialog(frmMain, name+" has unsaved changes that will be lost.  Do you want to save now?");
+				//name+" has unsaved changes that will be lost.  Do you want to save now?"
+				String message=language.message.getString("ask.unsaved_changes");
+				String formatted=MessageFormat.format(message, curModel.name);
+				int choice=JOptionPane.showConfirmDialog(frmMain, formatted);
 				if(choice==JOptionPane.YES_OPTION){saveModel();}
 				else if(choice==JOptionPane.CANCEL_OPTION || choice==JOptionPane.CLOSED_OPTION){
 					proceed=false;
@@ -2351,6 +2431,169 @@ public class frmMain {
 			System.exit(0);
 		}
 
+	}
+	
+	private void updateLanguage() {
+		//menu
+		mnModel.setText(language.base.getString("menu.model")); //Model
+		mnNew.setText(language.base.getString("menu.new")); //New
+		mntmDecisionTree.setText(language.base.getString("menu.decision_tree")); 
+		mntmMarkovModel.setText(language.base.getString("menu.markov_model")); //Markov Model
+		mntmOpenModel.setText(language.base.getString("menu.open_model")+"..."); //Open Model
+		mnOpenRecent.setText(language.base.getString("menu.open_recent")); //Open Recent
+		mntmSave.setText(language.base.getString("menu.save")); //Save
+		mntmSaveAs.setText(language.base.getString("menu.save_as")+"..."); //Save As
+		mntmDocument.setText(language.base.getString("menu.document")+"..."); //Document
+		mntmExport.setText(language.base.getString("menu.export")+"..."); //Export
+		mntmImport.setText(language.base.getString("menu.import")+"..."); //Import
+		mntmProperties.setText(language.base.getString("menu.properties")); //Properties
+		mntmExit.setText(language.base.getString("menu.exit")); //Exit
+		mnEdit.setText(language.base.getString("menu.edit")); //Edit
+		mntmUndo.setText(language.base.getString("menu.undo")); //Undo
+		mntmRedo.setText(language.base.getString("menu.redo")); //Redo
+		mntmCut.setText(language.base.getString("menu.cut")); //Cut
+		mntmCopy.setText(language.base.getString("menu.copy")); //Copy
+		mntmPaste.setText(language.base.getString("menu.paste")); //Paste
+		mntmFindreplace.setText(language.base.getString("menu.find_replace")); //Find/Replace
+		mnRun.setText(language.base.getString("menu.run")); //Run
+		mntmRunModel.setText(language.base.getString("menu.run_model")); //Run Model
+		mnSensitivityAnalysis.setText(language.base.getString("menu.sens_analysis")); //Sensitivity Analysis
+		mntmOneway.setText(language.base.getString("menu.one_way")); //One-way
+		mntmTornadoDiagram.setText(language.base.getString("menu.tornado_diagram")); //Tornado Diagram
+		mntmThresholdAnalysis.setText(language.base.getString("menu.threshold_analysis")); //Threshold Analysis
+		mntmTwoway.setText(language.base.getString("menu.two_way")); //Two-way
+		mntmOnewayBest.setText(language.base.getString("menu.stacked_one_way")); //Stacked One-way
+		mntmProbabilisticpsa.setText(language.base.getString("menu.prob_PSA")); //Probabilistic (PSA)
+		mntmBatchRuns.setText(language.base.getString("menu.batch_runs")); //Batch Runs
+		mnValueOfInformation.setText(language.base.getString("menu.value_information")); //Value of Information
+		mntmEVPI.setText(language.base.getString("menu.perfect_info_EVPI")); //Perfect Information (EVPI)
+		mntmEVPPI.setText(language.base.getString("menu.partial_info_EVPPI")); //Partial Perfect Information (EVPPI)
+		mntmScenarios.setText(language.base.getString("menu.scenarios")); //Scenarios
+		mntmCalibrateModel.setText(language.base.getString("menu.calibrate_model")); //Calibrate Model
+		mntmClusterRun.setText(language.base.getString("menu.cluster_run")); //Cluster Run
+		mnTools.setText(language.base.getString("menu.tools")); //Tools
+		mntmPlotFunction.setText(language.base.getString("menu.plot_function")); //Plot Function
+		mntmPlotSurface.setText(language.base.getString("menu.plot_surface")); //Plot Surface
+		mntmSaveConsole.setText(language.base.getString("menu.save_console")); //Save Console
+		mnLanguage.setText(language.base.getString("menu.language"));
+		rdbtnmntmLang_English.setText(language.base.getString("menu.english"));
+		rdbtnmntmLang_French.setText(language.base.getString("menu.french"));
+		rdbtnmntmLang_Spanish.setText(language.base.getString("menu.spanish"));
+		mnHelp.setText(language.base.getString("menu.help")); //Help
+		mntmHelpContents.setText(language.base.getString("menu.help_contents")); //Help Contents
+		mntmReportBugrequest.setText(language.base.getString("menu.report_bug_request")); //Report Bug/Request
+		mntmErrorLog.setText(language.base.getString("menu.error_log")); //Error Log
+		mntmAboutAmua.setText(language.base.getString("menu.about_amua")); //About Amua
+		
+		//objects
+		btnAddVariable.setToolTipText(language.base.getString("button.add")); //Add
+		btnDeleteVariable.setToolTipText(language.base.getString("button.delete")); //Delete
+		btnEdit.setToolTipText(language.base.getString("menu.edit")); //Edit
+		btnHighlightUse.setToolTipText(language.base.getString("button.highlight_use")); //Highlight Use
+		
+		//Parameters
+		JLabel lblParam=new JLabel(language.base.getString("object.parameters")); //Parameters
+		lblParam.setIcon(new ScaledIcon("/images/parameter",16,16,16,true));
+		lblParam.setHorizontalTextPosition(SwingConstants.RIGHT);
+		tabbedPaneRight.setTabComponentAt(0, lblParam);
+		modelParameters.setColumnIdentifiers(new String[] {language.base.getString("object.name"), language.base.getString("object.expression")}); //Name, Expression
+	
+		//Variables
+		JLabel lblVar=new JLabel(language.base.getString("object.variables")); //Variables
+		lblVar.setIcon(new ScaledIcon("/images/variable",16,16,16,true));
+		lblVar.setHorizontalTextPosition(SwingConstants.RIGHT);
+		tabbedPaneRight.setTabComponentAt(1, lblVar);
+		modelVariables.setColumnIdentifiers(new String[] {language.base.getString("object.name"), language.base.getString("object.expression")}); //Name, Expression
+
+		//Tables
+		JLabel lblTables=new JLabel(language.base.getString("object.tables")); //Tables
+		lblTables.setIcon(new ScaledIcon("/images/table",16,16,16,true));
+		lblTables.setHorizontalTextPosition(SwingConstants.RIGHT);
+		tabbedPaneRight.setTabComponentAt(2, lblTables);
+		modelTables.setColumnIdentifiers(new String[] {language.base.getString("object.name"),language.base.getString("object.type"),language.base.getString("object.size")}); //Name, Type, Size
+
+		//Constraints
+		JLabel lblConst=new JLabel(language.base.getString("object.constraints")); //Constraints
+		lblConst.setIcon(new ScaledIcon("/images/constraint",16,16,16,true));
+		lblConst.setHorizontalTextPosition(SwingConstants.RIGHT);
+		tabbedPaneRight.setTabComponentAt(3, lblConst);
+		modelConstraints.setColumnIdentifiers(new String[] {language.base.getString("object.name"), language.base.getString("object.expression")}); //Name, Expression
+
+		//Console
+		JLabel lblConsole=new JLabel(language.base.getString("menu.console")); //Console
+		lblConsole.setIcon(new ScaledIcon("/images/console",16,16,16,true));
+		lblConsole.setHorizontalTextPosition(SwingConstants.RIGHT);
+		tabbedPaneBottom.setTabComponentAt(0, lblConsole);
+
+		//Notes
+		JLabel lblNotes=new JLabel(language.base.getString("menu.notes")); //Notes
+		lblNotes.setIcon(new ScaledIcon("/images/notes",16,16,16,true));
+		lblNotes.setHorizontalTextPosition(SwingConstants.RIGHT);
+		tabbedPaneBottom.setTabComponentAt(1, lblNotes);
+		
+		//Parameter sets
+		JLabel lblParamSets=new JLabel(language.base.getString("menu.param_sets")); //Parameter Sets
+		lblParamSets.setIcon(new ScaledIcon("/images/parameterSets",16,16,16,true));
+		lblParamSets.setHorizontalTextPosition(SwingConstants.RIGHT);
+		tabbedPaneBottom.setTabComponentAt(2, lblParamSets);
+		modelParamSets.setColumnIdentifiers(new String[] {language.base.getString("object.set"), language.base.getString("object.score")}); //Set, Score
+		chckbxUseParamSets.setText(language.analysis.getString("sim.use_param_sets")); //Use Parameter Sets
+		btnImport.setText(language.base.getString("menu.import")+"..."); //Import
+		btnExportParamSets.setText(language.base.getString("menu.export")+"..."); //Export
+		btnClearParamSets.setText(language.base.getString("button.clear_all")); //Clear All
+		
+		//Markov Properties
+		if(curModel.type==1) {
+			JLabel lblProperties=new JLabel(language.base.getString("menu.properties")); //Properties
+			lblProperties.setIcon(new ScaledIcon("/images/propertiesMarkov",16,16,16,true));
+			lblProperties.setHorizontalTextPosition(SwingConstants.RIGHT);
+			tabbedPaneBottom.setTabComponentAt(3, lblProperties);
+			
+			DefaultTableModel tableModel=(DefaultTableModel) curModel.panelMarkov.tableProperties.getModel();
+			tableModel.setColumnIdentifiers(new String[] {language.base.getString("object.name"), language.analysis.getString("result.value")}); //Name, Value
+		}
+		
+		//toolbar
+		btnFx.setToolTipText(language.base.getString("button.build_expression")); //Build Expression
+		btnDecisionNode.setToolTipText(language.base.getString("node.decision")); //Decision Node
+		btnMarkovChain.setToolTipText(language.base.getString("node.markov_chain")); //Markov Chain
+		btnMarkovState.setToolTipText(language.base.getString("node.markov_state")); //Markov State
+		btnChanceNode.setToolTipText(language.base.getString("node.chance")); //Chance Node
+		btnTerminalNode.setToolTipText(language.base.getString("node.terminal")); //Terminal Node
+		btnStateTransition.setToolTipText(language.base.getString("node.state_transition")); //State Transition
+		btnChangeNodeType.setToolTipText(language.base.getString("button.change_node_type")); //Change Node Type
+		btnUpdateVariable.setToolTipText(language.base.getString("button.add_remove_var_updates")); //Add/Remove Variable Updates
+		btnShowCost.setToolTipText(language.base.getString("button.add_remove_cost")); //Add/Remove Cost (One-time Event)
+		//btnOCD = new JButton(language.base.getString("button.ocd")); //OCD //dont' change text
+		btnOCD.setToolTipText(language.base.getString("button.opt_cur_display")); //Optimize Current Display
+		btnEqualY.setToolTipText(language.base.getString("button.vertical_spacing")); //Vertical Spacing
+		btnCollapse.setToolTipText(language.base.getString("button.collapse_expand_branch")); //Collapse/Expand Branch
+		btnAlignLeft.setToolTipText(language.base.getString("button.align_left")); //Align Left
+		btnAlignRight.setToolTipText(language.base.getString("button.align_right")); //Align Right
+		btnCheckModel.setToolTipText(language.base.getString("button.check_model")); //Check Model
+		btnRunModel.setToolTipText(language.base.getString("menu.run_model")); //Run Model
+		btnClearAnnotations.setToolTipText(language.base.getString("button.clear")); //Clear
+		btnZoomOut.setToolTipText(language.base.getString("button.zoom_out")); //Zoom Out
+		sliderZoom.setToolTipText(language.base.getString("button.zoom")); //Zoom
+		btnZoomIn.setToolTipText(language.base.getString("button.zoom_in")); //Zoom In
+		btnSnapshot.setToolTipText(language.base.getString("button.screenshot")); //Screenshot
+		
+		//filechooser
+		UIManager.put("FileChooser.lookInLabelText",language.base.getString("title.look_in")+":"); //Look in
+		UIManager.put("FileChooser.fileNameLabelText",language.base.getString("title.file_name")+":"); //File name          
+		UIManager.put("FileChooser.filesOfTypeLabelText",language.base.getString("title.files_of_type")+":"); //Files of type
+		UIManager.put("FileChooser.cancelButtonText", language.base.getString("button.cancel")); //Cancel
+	    UIManager.put("FileChooser.acceptAllFileFilterText",language.base.getString("title.all_files")); //All Files   
+	    UIManager.put("FileChooser.saveInLabelText",language.base.getString("title.save_in")+":"); //Save in
+	    UIManager.put("FileChooser.saveDialogTitleText",language.base.getString("menu.save_as")); //Save as
+	    UIManager.put("FileChooser.saveButtonText",language.base.getString("menu.save")); //Save
+	    UIManager.put("FileChooser.upFolderToolTipText",language.base.getString("title.up_one_level")); //Up One Level
+	    UIManager.put("FileChooser.homeFolderToolTipText",language.base.getString("title.home")); //Home
+	    UIManager.put("FileChooser.newFolderToolTipText",language.base.getString("title.create_new_folder")); //Create New Folder
+	    UIManager.put("FileChooser.listViewButtonToolTipText",language.base.getString("title.list")); //List
+	    UIManager.put("FileChooser.detailsViewButtonToolTipText",language.base.getString("title.details")); //Details
+	    
+		fc=new JFileChooser();
 	}
 
 	class ImageTransferable implements Transferable

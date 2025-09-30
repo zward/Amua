@@ -34,6 +34,7 @@ import main.ScaledIcon;
 import main.Table;
 import main.Variable;
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.awt.event.ActionEvent;
 import java.awt.Toolkit;
 import javax.swing.JTabbedPane;
@@ -69,7 +70,11 @@ public class frmImport {
 			frmImport = new JDialog();
 			frmImport.setIconImage(Toolkit.getDefaultToolkit().getImage(frmImport.class.getResource("/images/import_128.png")));
 			frmImport.setModalityType(ModalityType.APPLICATION_MODAL);
-			frmImport.setTitle("Amua - Import Model Objects from "+donorModel.name);
+			
+			
+			//Import Model Objects from [name]
+			String title = MessageFormat.format(myModel.language.base.getString("title.import_model_objects_from"), donorModel.name);
+			frmImport.setTitle("Amua - "+title);
 			frmImport.setResizable(false);
 			frmImport.setBounds(100, 100, 600, 500);
 			frmImport.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -82,15 +87,15 @@ public class frmImport {
 
 			//parameters
 			JScrollPane scrollPaneParams = new JScrollPane();
-			JLabel lblParams=new JLabel("Parameters");
+			JLabel lblParams=new JLabel(myModel.language.base.getString("object.parameters")); //Parameters
 			lblParams.setIcon(new ScaledIcon("/images/parameter",16,16,16,true));
 			lblParams.setHorizontalTextPosition(SwingConstants.RIGHT);
-			tabbedPane.addTab("Parameters", null, scrollPaneParams, null);
+			tabbedPane.addTab(myModel.language.base.getString("object.parameters"), null, scrollPaneParams, null); //Parameters
 			tabbedPane.setTabComponentAt(0, lblParams);
 
 			modelParams=new DefaultTableModel(
 					new Object[][] {},
-					new String[] {"Name", "Expression"}
+					new String[] {myModel.language.base.getString("object.name"), myModel.language.base.getString("object.expression")} //Name, Expression
 					) {
 				boolean[] columnEditables = new boolean[] {false, false};
 				public boolean isCellEditable(int row, int column) {return columnEditables[column];}
@@ -115,15 +120,15 @@ public class frmImport {
 
 			//variables
 			JScrollPane scrollPaneVars = new JScrollPane();
-			JLabel lblVars=new JLabel("Variables");
+			JLabel lblVars=new JLabel(myModel.language.base.getString("object.variables")); //Variables
 			lblVars.setIcon(new ScaledIcon("/images/variable",16,16,16,true));
 			lblVars.setHorizontalTextPosition(SwingConstants.RIGHT);
-			tabbedPane.addTab("Variables", null, scrollPaneVars, null);
+			tabbedPane.addTab(myModel.language.base.getString("object.variables"), null, scrollPaneVars, null);
 			tabbedPane.setTabComponentAt(1, lblVars);
 
 			modelVars=new DefaultTableModel(
 					new Object[][] {},
-					new String[] {"Name", "Expression"}
+					new String[] {myModel.language.base.getString("object.name"), myModel.language.base.getString("object.expression")} //Name, Expression
 					) {
 				boolean[] columnEditables = new boolean[] {false, false};
 				public boolean isCellEditable(int row, int column) {return columnEditables[column];}
@@ -148,15 +153,15 @@ public class frmImport {
 
 			//tables
 			JScrollPane scrollPaneTables = new JScrollPane();
-			JLabel lblTables=new JLabel("Tables");
+			JLabel lblTables=new JLabel(myModel.language.base.getString("object.tables")); //Tables
 			lblTables.setIcon(new ScaledIcon("/images/table",16,16,16,true));
 			lblTables.setHorizontalTextPosition(SwingConstants.RIGHT);
-			tabbedPane.addTab("Tables", null, scrollPaneTables, null);
+			tabbedPane.addTab(myModel.language.base.getString("object.tables"), null, scrollPaneTables, null); //Tables
 			tabbedPane.setTabComponentAt(2, lblTables);
 
 			modelTables=new DefaultTableModel(
 					new Object[][] {},
-					new String[] {"Name","Type","Size"}
+					new String[] {myModel.language.base.getString("object.name"),myModel.language.base.getString("object.type"),myModel.language.base.getString("object.size")} //Name, Type, Size
 					) {
 				boolean[] columnEditables = new boolean[] {false, false, false};
 				public boolean isCellEditable(int row, int column) {return columnEditables[column];}
@@ -183,15 +188,15 @@ public class frmImport {
 
 			//constraints
 			JScrollPane scrollPaneConstraints = new JScrollPane();
-			JLabel lblConstraints=new JLabel("Constraints");
+			JLabel lblConstraints=new JLabel(myModel.language.base.getString("object.constraints")); //Constraints
 			lblConstraints.setIcon(new ScaledIcon("/images/constraint",16,16,16,true));
 			lblConstraints.setHorizontalTextPosition(SwingConstants.RIGHT);
-			tabbedPane.addTab("Constraints", null, scrollPaneConstraints, null);
+			tabbedPane.addTab(myModel.language.base.getString("object.constraints"), null, scrollPaneConstraints, null); //Constraints
 			tabbedPane.setTabComponentAt(3, lblConstraints);
 
 			modelConstraints=new DefaultTableModel(
 					new Object[][] {},
-					new String[] {"Name","Expression"}
+					new String[] {myModel.language.base.getString("object.name"), myModel.language.base.getString("object.expression")} //Name, Expression
 					) {
 				boolean[] columnEditables = new boolean[] {false, false};
 				public boolean isCellEditable(int row, int column) {return columnEditables[column];}
@@ -215,7 +220,7 @@ public class frmImport {
 			scrollPaneConstraints.setViewportView(tableConstraints);
 
 
-			JButton btnClearSelection = new JButton("Clear Selection");
+			JButton btnClearSelection = new JButton(myModel.language.base.getString("button.clear_selection")); //Clear Selection
 			btnClearSelection.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int index=tabbedPane.getSelectedIndex();
@@ -233,19 +238,19 @@ public class frmImport {
 					}
 				}
 			});
-			btnClearSelection.setBounds(6, 432, 118, 28);
+			btnClearSelection.setBounds(6, 432, 138, 28);
 			frmImport.getContentPane().add(btnClearSelection);
 			
-			JCheckBox chckbxOverwrite = new JCheckBox("Overwrite current objects");
-			chckbxOverwrite.setBounds(206, 437, 167, 18);
+			JCheckBox chckbxOverwrite = new JCheckBox(myModel.language.base.getString("object.overwrite_current")); //Overwrite current objects
+			chckbxOverwrite.setBounds(187, 437, 186, 18);
 			frmImport.getContentPane().add(chckbxOverwrite);
 
-			JButton btnImport = new JButton("Import");
+			JButton btnImport = new JButton(myModel.language.base.getString("menu.import")); //Import
 			btnImport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 
 					boolean overwrite=chckbxOverwrite.isSelected();
-					myModel.saveSnapshot("Import Objects"); //Add to undo stack
+					myModel.saveSnapshot(myModel.language.base.getString("title.import_objects")); //Add to undo stack (Import Objects)
 					
 					//parameters
 					int indexParams[]=tableParams.getSelectedRows();
@@ -334,7 +339,7 @@ public class frmImport {
 			btnImport.setBounds(385, 432, 90, 28);
 			frmImport.getContentPane().add(btnImport);
 
-			JButton btnCancel = new JButton("Cancel");
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmImport.dispose();

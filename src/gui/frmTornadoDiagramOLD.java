@@ -215,7 +215,7 @@ public class frmTornadoDiagramOLD {
 						//Show save as dialog
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setAcceptAllFileFilterUsed(false);
-						fc.setFileFilter(new CSVFilter());
+						fc.setFileFilter(new CSVFilter(myModel.language));
 
 						fc.setDialogTitle("Export Graph Data");
 						fc.setApproveButtonText("Export");

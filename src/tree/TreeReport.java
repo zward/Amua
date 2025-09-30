@@ -112,7 +112,7 @@ public class TreeReport{
 		BufferedWriter out = new BufferedWriter(fstream);
 
 		//Headers
-		for(int i=0; i<maxLevels; i++){out.write("Level "+i+",");}
+		for(int i=0; i<maxLevels; i++){out.write(tree.myModel.language.base.getString("title.level")+" "+i+",");} //Level
 		out.write("#");
 		for(int g=0; g<numSubgroups; g++){out.write(","+tree.myModel.subgroupNames.get(g));}
 		out.newLine();

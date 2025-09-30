@@ -59,8 +59,8 @@ public class Constraint{
 		boolean valid=true;
 		int c=0;
 		while(valid==true && c<numConst){
-			Numeric test=Interpreter.evaluate(constraints[c], myModel, false);
-			if(test.getBool()==false){
+			Numeric test=Interpreter.evaluate(constraints[c], myModel, false, myModel.language);
+			if(test.getBool(myModel.language)==false){
 				valid=false;
 			}
 			c++;

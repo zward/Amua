@@ -21,6 +21,8 @@ package math;
 
 import org.apache.commons.math3.special.Gamma;
 
+import lang.Language;
+
 public final class MathUtils{
 	
 	/**
@@ -107,13 +109,13 @@ public final class MathUtils{
 	 * @return
 	 * @throws NumericException 
 	 */
-	public static double var(Numeric...args) throws NumericException{
+	public static double var(Language language, Numeric...args) throws NumericException{
 		int numArgs=args.length;
 		double eX=0, eX2=0;
 		int count=0;
 		for(int i=0; i<numArgs; i++){
 			if(args[i].format!=Format.MATRIX){
-				double x=args[i].getDouble();
+				double x=args[i].getDouble(language);
 				count++;
 				eX+=x;
 				eX2+=x*x;

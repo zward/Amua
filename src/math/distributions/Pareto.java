@@ -22,23 +22,26 @@ import math.MathUtils;
 import math.Numeric;
 import math.NumericException;
 
+import java.text.MessageFormat;
+
 import org.apache.commons.math3.distribution.ParetoDistribution;
 
+import lang.Language;
 import main.MersenneTwisterFast;
 
 public final class Pareto{
 	
-	public static Numeric pdf(Numeric params[]) throws NumericException{
+	public static Numeric pdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			double x=params[0].getDouble(), k=params[1].getDouble(), alpha=params[2].getDouble();
-			if(k<=0){throw new NumericException("k should be >0","Pareto");}
-			if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+			double x=params[0].getDouble(language), k=params[1].getDouble(language), alpha=params[2].getDouble(language);
+			if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+			if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 			ParetoDistribution par=new ParetoDistribution(null,k,alpha);
 			return(new Numeric(par.density(x)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and k should be the same size","Pareto");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("k and α should be the same size","Pareto");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "k"),"Pareto",language);} //x and k should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "α"),"Pareto",language);} //k and α should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -46,8 +49,8 @@ public final class Pareto{
 					double x=params[0].matrix[i][j];
 					double k=params[1].matrix[i][j];
 					double alpha=params[2].matrix[i][j];
-					if(k<=0){throw new NumericException("k should be >0","Pareto");}
-					if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+					if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+					if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 					ParetoDistribution par=new ParetoDistribution(null,k,alpha);
 					vals.matrix[i][j]=par.density(x);
 				}
@@ -56,17 +59,17 @@ public final class Pareto{
 		}
 	}
 
-	public static Numeric cdf(Numeric params[]) throws NumericException{
+	public static Numeric cdf(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			double x=params[0].getDouble(), k=params[1].getDouble(), alpha=params[2].getDouble();
-			if(k<=0){throw new NumericException("k should be >0","Pareto");}
-			if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+			double x=params[0].getDouble(language), k=params[1].getDouble(language), alpha=params[2].getDouble(language);
+			if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+			if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 			ParetoDistribution par=new ParetoDistribution(null,k,alpha);
 			return(new Numeric(par.cumulativeProbability(x)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and k should be the same size","Pareto");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("k and α should be the same size","Pareto");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "k"),"Pareto",language);} //x and k should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "α"),"Pareto",language);} //k and α should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
@@ -74,8 +77,8 @@ public final class Pareto{
 					double x=params[0].matrix[i][j];
 					double k=params[1].matrix[i][j];
 					double alpha=params[2].matrix[i][j];
-					if(k<=0){throw new NumericException("k should be >0","Pareto");}
-					if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+					if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+					if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 					ParetoDistribution par=new ParetoDistribution(null,k,alpha);
 					vals.matrix[i][j]=par.cumulativeProbability(x);
 				}
@@ -84,26 +87,26 @@ public final class Pareto{
 		}
 	}	
 	
-	public static Numeric quantile(Numeric params[]) throws NumericException{
+	public static Numeric quantile(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false && params[2].isMatrix()==false) { //real number
-			double x=params[0].getProb(), k=params[1].getDouble(), alpha=params[2].getDouble();
-			if(k<=0){throw new NumericException("k should be >0","Pareto");}
-			if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+			double x=params[0].getProb(language), k=params[1].getDouble(language), alpha=params[2].getDouble(language);
+			if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+			if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 			ParetoDistribution par=new ParetoDistribution(null,k,alpha);
 			return(new Numeric(par.inverseCumulativeProbability(x)));
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("x and k should be the same size","Pareto");}
-			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException("k and α should be the same size","Pareto");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "x", "k"),"Pareto",language);} //x and k should be the same size
+			if(params[1].nrow!=params[2].nrow || params[1].ncol!=params[2].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "α"),"Pareto",language);} //k and α should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
-					double x=params[0].getMatrixProb(i,j);
+					double x=params[0].getMatrixProb(i,j,language);
 					double k=params[1].matrix[i][j];
 					double alpha=params[2].matrix[i][j];
-					if(k<=0){throw new NumericException("k should be >0","Pareto");}
-					if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+					if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+					if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 					ParetoDistribution par=new ParetoDistribution(null,k,alpha);
 					vals.matrix[i][j]=par.inverseCumulativeProbability(x);
 				}
@@ -112,24 +115,24 @@ public final class Pareto{
 		}
 	}
 	
-	public static Numeric mean(Numeric params[]) throws NumericException{
+	public static Numeric mean(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			double k=params[0].getDouble(), alpha=params[1].getDouble(); 
-			if(k<=0){throw new NumericException("k should be >0","Pareto");}
-			if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+			double k=params[0].getDouble(language), alpha=params[1].getDouble(language); 
+			if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+			if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 			if(alpha<=1){return(new Numeric(Double.POSITIVE_INFINITY));}
 			else{return(new Numeric((alpha*k)/(alpha-1)));}
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and α should be the same size","Pareto");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "α"),"Pareto",language);} //k and α should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					double k=params[0].matrix[i][j];
 					double alpha=params[1].matrix[i][j];
-					if(k<=0){throw new NumericException("k should be >0","Pareto");}
-					if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+					if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+					if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 					if(alpha<=1) {vals.matrix[i][j]=Double.POSITIVE_INFINITY;}
 					else {vals.matrix[i][j]=(alpha*k)/(alpha-1);}
 				}
@@ -138,11 +141,11 @@ public final class Pareto{
 		}
 	}
 	
-	public static Numeric variance(Numeric params[]) throws NumericException{
+	public static Numeric variance(Numeric params[], Language language) throws NumericException{
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			double k=params[0].getDouble(), alpha=params[1].getDouble(); 
-			if(k<=0){throw new NumericException("k should be >0","Pareto");}
-			if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+			double k=params[0].getDouble(language), alpha=params[1].getDouble(language); 
+			if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+			if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 			if(alpha<=2){return(new Numeric(Double.POSITIVE_INFINITY));}
 			else{
 				double num=k*k*alpha;
@@ -151,15 +154,15 @@ public final class Pareto{
 			}
 		}
 		else { //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and α should be the same size","Pareto");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "α"),"Pareto",language);} //k and α should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					double k=params[0].matrix[i][j];
 					double alpha=params[1].matrix[i][j];
-					if(k<=0){throw new NumericException("k should be >0","Pareto");}
-					if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+					if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+					if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 					if(alpha<=2) {vals.matrix[i][j]=Double.POSITIVE_INFINITY;}
 					else {
 						double num=k*k*alpha;
@@ -172,28 +175,28 @@ public final class Pareto{
 		}
 	}
 
-	public static Numeric sample(Numeric params[], MersenneTwisterFast generator) throws NumericException{
+	public static Numeric sample(Numeric params[], MersenneTwisterFast generator, Language language) throws NumericException{
 		if(params.length!=2){
-			throw new NumericException("Incorrect number of parameters","Pareto");
+			throw new NumericException(language.message.getString("err.incorrect_num_params"),"Pareto",language); //Incorrect number of parameters
 		}
 		if(params[0].isMatrix()==false && params[1].isMatrix()==false) { //real number
-			double k=params[0].getDouble(), alpha=params[1].getDouble(); 
-			if(k<=0){throw new NumericException("k should be >0","Pareto");}
-			if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+			double k=params[0].getDouble(language), alpha=params[1].getDouble(language); 
+			if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+			if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 			ParetoDistribution par=new ParetoDistribution(null,k,alpha);
 			double rand=generator.nextDouble();
 			return(new Numeric(par.inverseCumulativeProbability(rand)));
 		}
 		else{ //matrix
-			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException("k and α should be the same size","Pareto");}
+			if(params[0].nrow!=params[1].nrow || params[0].ncol!=params[1].ncol) {throw new NumericException(MessageFormat.format(language.message.getString("err.val_val_same_size"), "k", "α"),"Pareto",language);} //k and α should be the same size
 			int nrow=params[0].nrow; int ncol=params[0].ncol;
 			Numeric vals=new Numeric(nrow,ncol); //create result matrix
 			for(int i=0; i<nrow; i++) {
 				for(int j=0; j<ncol; j++) {
 					double k=params[0].matrix[i][j];
 					double alpha=params[1].matrix[i][j];
-					if(k<=0){throw new NumericException("k should be >0","Pareto");}
-					if(alpha<=0){throw new NumericException("α should be >0","Pareto");}
+					if(k<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "k"),"Pareto",language);} //k should be >0
+					if(alpha<=0){throw new NumericException(MessageFormat.format(language.message.getString("err.val_should_be_gt0"), "α"),"Pareto",language);} //α should be >0
 					ParetoDistribution par=new ParetoDistribution(null,k,alpha);
 					double rand=generator.nextDouble();
 					vals.matrix[i][j]=par.inverseCumulativeProbability(rand);
@@ -203,21 +206,21 @@ public final class Pareto{
 		}
 	}
 	
-	public static String description(){
-		String des="<html><b>Pareto Distribution</b><br>";
-		des+="A power law probability distribution<br><br>";
-		des+="<i>Parameters</i><br>";
-		des+=MathUtils.consoleFont("k")+": Scale ("+MathUtils.consoleFont(">0")+") minimum possible value of "+MathUtils.consoleFont("x")+"<br>";
-		des+=MathUtils.consoleFont("α")+": Shape ("+MathUtils.consoleFont(">0")+") Pareto index<br>";
-		des+="<br><i>Sample</i><br>";
-		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(k,α,<b><i>~</i></b>)")+": Returns a random variable (mean in base case) from the Pareto distribution. Positive real number <br>";
-		des+="<br><i>Distribution Functions</i><br>";
-		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(x,k,α,<b><i>f</i></b>)")+": Returns the value of the Pareto PDF at "+MathUtils.consoleFont("x")+"<br>";
-		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(x,k,α,<b><i>F</i></b>)")+": Returns the value of the Pareto CDF at "+MathUtils.consoleFont("x")+"<br>";
-		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(x,k,α,<b><i>Q</i></b>)")+": Returns the quantile (inverse CDF) of the Pareto distribution at "+MathUtils.consoleFont("x")+"<br>";
-		des+="<i><br>Moments</i><br>";
-		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(k,α,<b><i>E</i></b>)")+": Returns the mean of the Pareto distribution<br>";
-		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(k,α,<b><i>V</i></b>)")+": Returns the variance of the Pareto distribution<br>";
+	public static String description(Language language){
+		String des="<html><b>"+language.dist.getString("pareto.name")+"</b><br>"; //Pareto Distribution
+		des+=language.dist.getString("pareto.desc")+"<br><br>"; //A power law probability distribution
+		des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
+		des+=MathUtils.consoleFont("k")+": "+language.dist.getString("pareto.scale")+"<br>"; //Scale (>0) minimum possible value of x
+		des+=MathUtils.consoleFont("α")+": "+language.dist.getString("pareto.shape")+"<br>"; //Shape (>0) Pareto index
+		des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
+		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(k,α,<b><i>~</i></b>)")+": "+language.dist.getString("desc.sample")+". "+language.dist.getString("gen.pos_real_num")+"<br>"; //Returns a random variable (mean in base case) from the Pareto distribution. Positive real number
+		des+="<i><br>"+language.dist.getString("gen.distribution_functions")+"</i><br>"; //Distribution Functions
+		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(x,k,α,<b><i>f</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.pdf"), "x")+"<br>"; //Returns the value of the Pareto PDF at x
+		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(x,k,α,<b><i>F</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.cdf"), "x")+"<br>"; //Returns the value of the Pareto CDF at x
+		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(x,k,α,<b><i>Q</i></b>)")+": "+MessageFormat.format(language.dist.getString("desc.quantile"), "x")+"<br>"; //Returns the quantile (inverse CDF) of the Pareto distribution at x
+		des+="<i><br>"+language.dist.getString("gen.moments")+"</i><br>"; //Moments
+		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(k,α,<b><i>E</i></b>)")+": "+language.dist.getString("desc.mean")+"<br>"; //Returns the mean of the Pareto distribution
+		des+=MathUtils.consoleFont("<b>Pareto</b>","green")+MathUtils.consoleFont("(k,α,<b><i>V</i></b>)")+": "+language.dist.getString("desc.var")+"<br>"; //Returns the variance of the Pareto distribution
 		des+="</html>";
 		return(des);
 	}

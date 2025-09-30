@@ -20,6 +20,7 @@
 package math;
 
 import base.AmuaModel;
+import lang.Language;
 
 enum Format{INTEGER,DOUBLE,BOOL,MATRIX};
 public class Numeric{
@@ -118,58 +119,58 @@ public class Numeric{
 		else{return(false);}
 	}
 	
-	public int getInt() throws NumericException{
+	public int getInt(Language language) throws NumericException{
 		if(format==Format.INTEGER){return(intNum);}
 		else{
-			throw(new NumericException("Invalid integer: "+toString(),"Numeric"));
+			throw(new NumericException(language.message.getString("err.invalid_integer")+": "+toString(),"Numeric",language)); //Invalid integer
 		}
 	}
 	
-	public double getDouble() throws NumericException{
+	public double getDouble(Language language) throws NumericException{
 		if(format==Format.DOUBLE){return(doubleNum);}
 		else if(format==Format.INTEGER){return(intNum);}
 		else{
-			throw(new NumericException("Matrix type, not real number","Numeric"));
+			throw(new NumericException(language.message.getString("err.matrix_not_real"),"Numeric",language)); //Matrix type, not real number
 		}
 	}
 	
-	public double getProb() throws NumericException{
+	public double getProb(Language language) throws NumericException{
 		double prob=doubleNum;
 		if(format==Format.INTEGER){prob=intNum;}
 		else if(format==Format.MATRIX) {
-			throw(new NumericException("Matrix type, not real number","Numeric"));
+			throw(new NumericException(language.message.getString("err.matrix_not_real"),"Numeric",language)); //Matrix type, not real number
 		}
 		
 		if(prob<0 || prob>1){
-			throw(new NumericException("Invalid probability: "+prob,"Numeric"));
+			throw(new NumericException(language.message.getString("err.invalid_prob")+": "+prob,"Numeric",language)); //Invalid probability
 		}
 		else{
 			return(prob);
 		}
 	}
 	
-	public double getMatrixProb(int i, int j) throws NumericException{
+	public double getMatrixProb(int i, int j, Language language) throws NumericException{
 		if(format!=Format.MATRIX) {
-			throw(new NumericException("Not Matrix type","Numeric"));
+			throw(new NumericException(language.message.getString("err.not_matrix_type"),"Numeric",language)); //Not Matrix type
 		}
 		double prob=matrix[i][j];
 		if(prob<0 || prob>1){
-			throw(new NumericException("Invalid probability: "+prob,"Numeric"));
+			throw(new NumericException(language.message.getString("err.invalid_prob")+": "+prob,"Numeric",language)); //Invalid probability
 		}
 		else{
 			return(prob);
 		}
 	}
 	
-	public Numeric getMatrixValue(String args[], AmuaModel myModel) throws Exception{
+	public Numeric getMatrixValue(String args[], AmuaModel myModel, Language language) throws Exception{
 		double subMatrix[][];
 		if(args.length==1){ //vector
 			if(nrow==1 || ncol==1){ //is vector
 				String index=args[0];
 				if(index.contains(":")){ //Multiple indices
 					int pos=index.indexOf(":");
-					int startIndex=Interpreter.evaluate(index.substring(0, pos),myModel,false).getInt();
-					int endIndex=Interpreter.evaluate(index.substring(pos+1),myModel,false).getInt();
+					int startIndex=Interpreter.evaluate(index.substring(0, pos),myModel,false,language).getInt(language);
+					int endIndex=Interpreter.evaluate(index.substring(pos+1),myModel,false,language).getInt(language);
 					if(nrow==1){ //row vector
 						subMatrix=new double[1][endIndex-startIndex+1];
 						for(int i=startIndex; i<=endIndex; i++){
@@ -185,8 +186,8 @@ public class Numeric{
 					return(new Numeric(subMatrix));
 				}
 				else{ //one index
-					int curIndex=Interpreter.evaluate(index,myModel,false).getInt();
-					if(curIndex<0){throw new NumericException("Invalid index: -1","Numeric.getMatrixValue()");}
+					int curIndex=Interpreter.evaluate(index,myModel,false,language).getInt(language);
+					if(curIndex<0){throw new NumericException(language.message.getString("err.invalid_index")+": -1","Numeric.getMatrixValue()",language);} //Invalid index
 					if(nrow==1){ //row vector
 						return(new Numeric(matrix[0][curIndex]));
 					}
@@ -196,7 +197,7 @@ public class Numeric{
 				}
 			}
 			else{ //not vector
-				throw new NumericException("Not a vector","Numeric.getMatrixValue()");
+				throw new NumericException(language.message.getString("err.not_vector"),"Numeric.getMatrixValue()",language); //Not a vector
 			}
 		}
 		else if(args.length==2){ //matrix
@@ -209,12 +210,12 @@ public class Numeric{
 				}
 				else{ //"x:y" Sequence of rows
 					int index=row.indexOf(":");
-					startRow=Interpreter.evaluate(row.substring(0, index),myModel,false).getInt();
-					endRow=Interpreter.evaluate(row.substring(index+1),myModel,false).getInt();
+					startRow=Interpreter.evaluate(row.substring(0, index),myModel,false,language).getInt(language);
+					endRow=Interpreter.evaluate(row.substring(index+1),myModel,false,language).getInt(language);
 				}
 			}
 			else{
-				startRow=Interpreter.evaluate(row,myModel,false).getInt();
+				startRow=Interpreter.evaluate(row,myModel,false,language).getInt(language);
 				endRow=startRow;
 			}
 
@@ -224,12 +225,12 @@ public class Numeric{
 				}
 				else{ //"x:y" Sequence of cols
 					int index=col.indexOf(":");
-					startCol=Interpreter.evaluate(col.substring(0, index),myModel,false).getInt();
-					endCol=Interpreter.evaluate(col.substring(index+1),myModel,false).getInt();
+					startCol=Interpreter.evaluate(col.substring(0, index),myModel,false,language).getInt(language);
+					endCol=Interpreter.evaluate(col.substring(index+1),myModel,false,language).getInt(language);
 				}
 			}
 			else{
-				startCol=Interpreter.evaluate(col,myModel,false).getInt();
+				startCol=Interpreter.evaluate(col,myModel,false,language).getInt(language);
 				endCol=startCol;
 			}
 
@@ -247,10 +248,10 @@ public class Numeric{
 		}
 	}
 	
-	public boolean getBool() throws NumericException{
+	public boolean getBool(Language language) throws NumericException{
 		if(format==Format.BOOL){return(bool);}
 		else{
-			throw new NumericException("Not a Boolean type","Numeric");
+			throw new NumericException(language.message.getString("err.not_boolean_type"),"Numeric",language); //Not a Boolean type
 		}
 	}
 	

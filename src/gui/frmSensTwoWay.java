@@ -38,6 +38,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 
 import javax.swing.DefaultComboBoxModel;
@@ -138,7 +139,7 @@ public class frmSensTwoWay {
 	private void initialize() {
 		try{
 			frmSensTwoWay = new JFrame();
-			frmSensTwoWay.setTitle("Amua - Two-way Sensitivity Analysis");
+			frmSensTwoWay.setTitle("Amua - "+myModel.language.analysis.getString("sens.two_way_sens_analysis")); //Two-way Sensitivity Analysis
 			frmSensTwoWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensTwoWay.class.getResource("/images/twoWay_128.png")));
 			frmSensTwoWay.setBounds(100, 100, 1000, 500);
 			frmSensTwoWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -165,7 +166,11 @@ public class frmSensTwoWay {
 
 			modelParams=new DefaultTableModel(
 					new Object[][] {,},
-					new String[] {"Parameter","Expression","Min","Max"}) {
+					new String[] {
+							myModel.language.base.getString("object.parameter"), //Parameter
+							myModel.language.base.getString("object.expression"), //Expression
+							myModel.language.math.getString("sum.min"), //Min
+							myModel.language.math.getString("sum.max")}) { //Max
 				boolean[] columnEditables = new boolean[] {false, false,true,true};
 				public boolean isCellEditable(int row, int column) {return columnEditables[column];}
 			};
@@ -206,7 +211,7 @@ public class frmSensTwoWay {
 			gbc_panel_2.gridy = 1;
 			panel_1.add(panel_2, gbc_panel_2);
 
-			final JLabel lblOutcome = new JLabel("Outcome:");
+			final JLabel lblOutcome = new JLabel(myModel.language.analysis.getString("result.outcome")+":"); //Outcome
 			lblOutcome.setBounds(12, 69, 81, 16);
 			panel_2.add(lblOutcome);
 
@@ -224,10 +229,10 @@ public class frmSensTwoWay {
 					outcomes[d]=info.dimNames[d];
 				}
 				if(info.analysisType==1){ //CEA
-					outcomes[info.dimNames.length]="ICER ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("cea.icer")+" ("+info.dimNames[info.costDim]+"/"+info.dimNames[info.effectDim]+")"; //ICER
 				}
 				else if(info.analysisType==2){ //BCA
-					outcomes[info.dimNames.length]="NMB ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")";
+					outcomes[info.dimNames.length]=myModel.language.analysis.getString("bca.nmb")+" ("+info.dimNames[info.effectDim]+"-"+info.dimNames[info.costDim]+")"; //NMB
 				}
 			}
 
@@ -251,11 +256,11 @@ public class frmSensTwoWay {
 			comboDimensions.setBounds(94, 64, 227, 26);
 			panel_2.add(comboDimensions);
 
-			JButton btnRun = new JButton("Run");
+			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
 			btnRun.setBounds(353, 27, 90, 28);
 			panel_2.add(btnRun);
 
-			final JButton btnExport = new JButton("Export");
+			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -263,10 +268,10 @@ public class frmSensTwoWay {
 						//Show save as dialog
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setAcceptAllFileFilterUsed(false);
-						fc.setFileFilter(new CSVFilter());
+						fc.setFileFilter(new CSVFilter(myModel.language));
 
-						fc.setDialogTitle("Export Graph Data");
-						fc.setApproveButtonText("Export");
+						fc.setDialogTitle(myModel.language.base.getString("title.export_graph_data")); //Export Graph Data
+						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
 
 						int returnVal = fc.showSaveDialog(frmSensTwoWay);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -297,7 +302,7 @@ public class frmSensTwoWay {
 							}
 							out.close();
 
-							JOptionPane.showMessageDialog(frmSensTwoWay, "Exported!");
+							JOptionPane.showMessageDialog(frmSensTwoWay, myModel.language.message.getString("info.exported")); //Exported!
 						}
 
 
@@ -311,7 +316,7 @@ public class frmSensTwoWay {
 			btnExport.setBounds(353, 125, 90, 28);
 			panel_2.add(btnExport);
 
-			JLabel lblParameter = new JLabel("Parameter 1:");
+			JLabel lblParameter = new JLabel(myModel.language.base.getString("object.parameter")+" 1:"); //Parameter 1
 			lblParameter.setBounds(12, 9, 81, 16);
 			panel_2.add(lblParameter);
 
@@ -320,7 +325,7 @@ public class frmSensTwoWay {
 			panel_2.add(comboParam1);
 			if(paramNames.length>0){comboParam1.setSelectedIndex(0);}
 
-			JLabel lblParameter_1 = new JLabel("Parameter 2:");
+			JLabel lblParameter_1 = new JLabel(myModel.language.base.getString("object.parameter")+" 2:"); //Parameter 2
 			lblParameter_1.setBounds(12, 39, 81, 16);
 			panel_2.add(lblParameter_1);
 
@@ -330,13 +335,16 @@ public class frmSensTwoWay {
 			if(paramNames.length>1){comboParam2.setSelectedIndex(1);}
 
 			comboMinMax = new JComboBox<String>();
-			comboMinMax.setModel(new DefaultComboBoxModel<String>(new String[] {"Min", "Max"}));
+			comboMinMax.setModel(new DefaultComboBoxModel<String>(new String[] {
+					myModel.language.math.getString("sum.min"), //Min
+					myModel.language.math.getString("sum.max")})); //Max
 			comboMinMax.setSelectedIndex(1);
 			comboMinMax.setBounds(353, 64, 90, 26);
 			panel_2.add(comboMinMax);
 
-			JLabel lblIntervals = new JLabel("Intervals:");
-			lblIntervals.setBounds(333, 100, 55, 16);
+			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
+			lblIntervals.setBounds(313, 100, 73, 16);
 			panel_2.add(lblIntervals);
 
 			textIntervals = new JTextField();
@@ -346,7 +354,7 @@ public class frmSensTwoWay {
 			panel_2.add(textIntervals);
 			textIntervals.setColumns(10);
 
-			lblCEThresh = new JLabel("Cost-Effectiveness Threshold:");
+			lblCEThresh = new JLabel(myModel.language.analysis.getString("cea.cea_threshold")+":"); //Cost-Effectiveness Threshold
 			lblCEThresh.setEnabled(false);
 			lblCEThresh.setBounds(12, 100, 171, 16);
 			panel_2.add(lblCEThresh);
@@ -357,12 +365,12 @@ public class frmSensTwoWay {
 			panel_2.add(textCEThresh);
 			textCEThresh.setColumns(10);
 
-			JLabel lblGroup = new JLabel("Group:");
+			JLabel lblGroup = new JLabel(myModel.language.analysis.getString("result.group")+":"); //Group
 			lblGroup.setEnabled(false);
 			lblGroup.setBounds(12, 131, 55, 16);
 			panel_2.add(lblGroup);
 
-			comboGroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{"Overall"}));
+			comboGroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{myModel.language.analysis.getString("result.overall")})); //Overall
 			comboGroup.setEnabled(false);
 			comboGroup.setBounds(94, 126, 227, 26);
 			panel_2.add(comboGroup);
@@ -370,7 +378,7 @@ public class frmSensTwoWay {
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				int numGroups=myModel.subgroupNames.size();
 				String groups[]=new String[numGroups+1];
-				groups[0]="Overall";
+				groups[0]=myModel.language.analysis.getString("result.overall"); //Overall
 				for(int i=0; i<numGroups; i++){groups[i+1]=myModel.subgroupNames.get(i);}
 				comboGroup.setModel(new DefaultComboBoxModel(groups));
 				comboGroup.setEnabled(true);
@@ -381,7 +389,7 @@ public class frmSensTwoWay {
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmSensTwoWay, "Two-way", "Analyzing...", 0, 100);
+					final ProgressMonitor progress=new ProgressMonitor(frmSensTwoWay, myModel.language.base.getString("menu.two_way"), myModel.language.message.getString("info.running")+"...", 0, 100); //Two-way, Running
 
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -391,7 +399,7 @@ public class frmSensTwoWay {
 								boolean proceed=true;
 								if(row1==row2){
 									proceed=false;
-									JOptionPane.showMessageDialog(frmSensTwoWay, "Please select two different parameters!");
+									JOptionPane.showMessageDialog(frmSensTwoWay, myModel.language.message.getString("err.select_two_diff_params")); //Please select two different parameters!
 								}
 								else { //check bounds
 									String strMin1=(String)tableParams.getValueAt(row1,2);
@@ -400,26 +408,34 @@ public class frmSensTwoWay {
 									String strMax2=(String)tableParams.getValueAt(row2,3);
 									if(strMin1==null || strMin1.isEmpty()) {
 										proceed=false;
-										JOptionPane.showMessageDialog(frmSensTwoWay, "Error: Min value 1 is missing!");
+										//Error: Min value [num] is missing!
+										String msg = MessageFormat.format(myModel.language.message.getString("err.min_val_num_missing"), 1);
+										JOptionPane.showMessageDialog(frmSensTwoWay, msg);
 									}
 									if(proceed==true && (strMax1==null || strMax1.isEmpty())) {
 										proceed=false;
-										JOptionPane.showMessageDialog(frmSensTwoWay, "Error: Max value 1 is missing!");
+										//Error: Max value [num] is missing!
+										String msg = MessageFormat.format(myModel.language.message.getString("err.max_val_num_missing"), 1);
+										JOptionPane.showMessageDialog(frmSensTwoWay, msg);
 									}
 									if(proceed==true && (strMin2==null || strMin2.isEmpty())) {
 										proceed=false;
-										JOptionPane.showMessageDialog(frmSensTwoWay, "Error: Min value 2 is missing!");
+										//Error: Min value [num] is missing!
+										String msg = MessageFormat.format(myModel.language.message.getString("err.min_val_num_missing"), 2);
+										JOptionPane.showMessageDialog(frmSensTwoWay, msg);
 									}
 									if(proceed==true && (strMax2==null || strMax2.isEmpty())) {
 										proceed=false;
-										JOptionPane.showMessageDialog(frmSensTwoWay, "Error: Max value 2 is missing!");
+										//Error: Max value [num] is missing!
+										String msg = MessageFormat.format(myModel.language.message.getString("err.max_val_num_missing"), 2);
+										JOptionPane.showMessageDialog(frmSensTwoWay, msg);
 									}
 								}
 
 
 								if(proceed==true && myModel.parseModel().size()>0){ //Check model
 									proceed=false;
-									JOptionPane.showMessageDialog(frmSensTwoWay, "Errors in base case model!");
+									JOptionPane.showMessageDialog(frmSensTwoWay, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 								}
 
 								if(proceed==true) {
@@ -469,12 +485,12 @@ public class frmSensTwoWay {
 									else{	
 										if(dim==comboDimensions.getItemCount()-1){ //ICER or NMB selected
 											if(info.analysisType==1){
-												lblOutcome="ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")";
+												lblOutcome=myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")"; //ICER
 												ceThresh=Double.parseDouble(textCEThresh.getText().replaceAll(",", ""));
 												analysisType=1;
 											}
 											else if(info.analysisType==2){
-												lblOutcome="NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")";
+												lblOutcome=myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")"; //NMB
 												analysisType=2;
 											}
 										}
@@ -498,13 +514,13 @@ public class frmSensTwoWay {
 										error=true;
 										curParam1.locked=false; curParam2.locked=false;
 										myModel.validateModelObjects();
-										JOptionPane.showMessageDialog(frmSensTwoWay, "Error: Min value");
+										JOptionPane.showMessageDialog(frmSensTwoWay, myModel.language.message.getString("err.min_value")); //Error: Min value
 									}
 									if(errorsMax.size()>0){
 										error=true;
 										curParam1.locked=false; curParam2.locked=false;
 										myModel.validateModelObjects();
-										JOptionPane.showMessageDialog(frmSensTwoWay, "Error: Max value");
+										JOptionPane.showMessageDialog(frmSensTwoWay, myModel.language.message.getString("err.max_value")); //Error: Max value
 									}
 
 									if(error==false){
@@ -550,7 +566,7 @@ public class frmSensTwoWay {
 												if(minutes.length()<2){minutes="0"+minutes;}
 												progress.setProgress(count);
 												if(count>0) {
-													progress.setNote("Time left: "+minutes+":"+seconds);
+													progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 												}
 												
 												double curVal2=min2+(step2*j);
@@ -757,7 +773,8 @@ public class frmSensTwoWay {
 			});
 
 			chartData = new DefaultXYDataset();
-			chart = ChartFactory.createScatterPlot(null, "Param 1", "Param 2", chartData, PlotOrientation.VERTICAL, true, false, false);
+			chart = ChartFactory.createScatterPlot(null, myModel.language.base.getString("object.parameter")+" 1", myModel.language.base.getString("object.parameter")+" 2", //Parameter 1, Parameter 2
+					chartData, PlotOrientation.VERTICAL, true, false, false);
 			chart.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 
 			//Draw axes
@@ -774,7 +791,7 @@ public class frmSensTwoWay {
 			frmSensTwoWay.getContentPane().add(tabbedPane, gbc_tabbedPane);
 
 			ChartPanel panelChart = new ChartPanel(chart,false);
-			tabbedPane.addTab("Area Chart", null, panelChart, null);
+			tabbedPane.addTab(myModel.language.base.getString("plot.area_chart"), null, panelChart, null); //Area Chart
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
 
 			int numStrat=myModel.getStrategies();
@@ -786,10 +803,10 @@ public class frmSensTwoWay {
 			
 			//pop-up menu
 			JPopupMenu popup = panelChart.getPopupMenu();
-			JMenuItem mntmChangeColor = new JMenuItem("Change Series Colors...");
+			JMenuItem mntmChangeColor = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
 			mntmChangeColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints, frmThis);
+					frmChangeSeriesColors window=new frmChangeSeriesColors(chart, chartData, seriesPaints, frmThis, myModel.language);
 					window.frmChangeSeriesColors.setVisible(true);
 				}
 			});
@@ -798,7 +815,7 @@ public class frmSensTwoWay {
 			
 			JPanel panelSurface = new JPanel();
 			panelSurface.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-			tabbedPane.addTab("Surface Chart", null, panelSurface, null);
+			tabbedPane.addTab(myModel.language.base.getString("plot.surface_chart"), null, panelSurface, null); //Surface Chart
 			tabbedPane.setEnabledAt(1, false);
 			GridBagLayout gbl_panelSurface = new GridBagLayout();
 			gbl_panelSurface.columnWidths = new int[]{71, 196, 1, 0};
@@ -818,7 +835,7 @@ public class frmSensTwoWay {
 			surfacePanel.setLayout(new BorderLayout(0, 0));
 
 
-			JLabel lblStrategy = new JLabel("Strategy");
+			JLabel lblStrategy = new JLabel(myModel.language.analysis.getString("gen.strategy")); //Strategy
 			GridBagConstraints gbc_lblStrategy = new GridBagConstraints();
 			gbc_lblStrategy.anchor = GridBagConstraints.WEST;
 			gbc_lblStrategy.insets = new Insets(0, 0, 0, 5);

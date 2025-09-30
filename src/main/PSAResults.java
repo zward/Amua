@@ -147,7 +147,7 @@ public class PSAResults{
 		ArrayList<String> errorsBase=myModel.parseModel();
 
 		if(errorsBase.size()>0){
-			JOptionPane.showMessageDialog(curFrm, "Errors in base case model!");
+			JOptionPane.showMessageDialog(curFrm, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 		}
 		else{
 
@@ -199,7 +199,7 @@ public class PSAResults{
 				if(minutes.length()<2){minutes="0"+minutes;}
 				progress.setProgress(n);
 				if(n>0) {
-					progress.setNote("Time left: "+minutes+":"+seconds);
+					progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 				}
 
 				//Sample parameters
@@ -215,7 +215,7 @@ public class PSAResults{
 					for(int v=0; v<numParams; v++){ //sample all parameters
 						Parameter curParam=myModel.parameters.get(v);
 						if(curParam.locked==false) {
-							curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true);
+							curParam.value=Interpreter.evaluateTokens(curParam.parsedTokens, 0, true, myModel.language);
 							curParam.locked=true;
 						}
 					}
@@ -237,7 +237,7 @@ public class PSAResults{
 					if(curDim==1) { //scalar
 						dataParamsIter[v][0][0][n]=n; dataParamsVal[v][0][0][n]=n;
 						try{
-							dataParamsIter[v][0][1][n]=myModel.parameters.get(v).value.getDouble();
+							dataParamsIter[v][0][1][n]=myModel.parameters.get(v).value.getDouble(myModel.language);
 						} catch(Exception e){
 							dataParamsIter[v][0][1][n]=Double.NaN;
 						}
@@ -411,8 +411,8 @@ public class PSAResults{
 		int numDim=info.dimNames.length;
 		int analysisType=info.analysisType;
 		int numStrat=myModel.strategyNames.length;
-		out.write("Iteration");
-		out.write(",Parameters");
+		out.write(myModel.language.base.getString("plot.iteration")); //Iteration
+		out.write(","+myModel.language.base.getString("object.parameters")); //Parameters
 		for(int p=0; p<numParams; p++) {
 			int curDim=paramDims[p];
 			if(curDim==1) { //scalar
@@ -430,8 +430,8 @@ public class PSAResults{
 			for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
 		}
 		if(analysisType>0){ //CEA or BCA
-			if(analysisType==1){out.write(",ICER ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");}
-			else if(analysisType==2){out.write(",NMB ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");}
+			if(analysisType==1){out.write(","+myModel.language.analysis.getString("cea.icer")+" ("+info.dimSymbols[info.costDim]+"/"+info.dimSymbols[info.effectDim]+")");} //ICER
+			else if(analysisType==2){out.write(","+myModel.language.analysis.getString("bca.nmb")+" ("+info.dimSymbols[info.effectDim]+"-"+info.dimSymbols[info.costDim]+")");} //NMB
 			for(int s=0; s<numStrat; s++){out.write(","+myModel.strategyNames[s]);}
 		}
 		out.newLine();
@@ -475,7 +475,7 @@ public class PSAResults{
 		valid=true;
 		
 		progress.setMaximum(numIterations);
-		progress.setNote("Importing PSA Results");
+		progress.setNote(myModel.language.message.getString("info.importing_psa_results")); //Importing PSA Results
 		
 		FileInputStream fstream = new FileInputStream(path);
 		DataInputStream in = new DataInputStream(fstream);
@@ -497,7 +497,7 @@ public class PSAResults{
 				int index=listNames.indexOf(paramNames[p]);
 				if(index==-1) {
 					valid=false;
-					JOptionPane.showMessageDialog(curFrm, "Parameter not found: "+paramNames[p]);
+					JOptionPane.showMessageDialog(curFrm, myModel.language.message.getString("err.param_not_found")+": "+paramNames[p]); //Parameter not found
 				}
 				else {
 					paramIndex[p]=index;
@@ -513,7 +513,7 @@ public class PSAResults{
 				int index=listNames.indexOf(paramNames[p]+suffix); //first index
 				if(index==-1) {
 					valid=false;
-					JOptionPane.showMessageDialog(curFrm, "Parameter not found: "+paramNames[p]+suffix);
+					JOptionPane.showMessageDialog(curFrm, myModel.language.message.getString("err.param_not_found")+": "+paramNames[p]+suffix); //Parameter not found
 				}
 				else {
 					paramIndex[p]=index;
@@ -523,7 +523,7 @@ public class PSAResults{
 						String strCol=colNames[index+z].replaceAll("\"", ""); //strip quotes
 						if(!strCol.equals(curLbl)) {
 							valid=false;
-							JOptionPane.showMessageDialog(curFrm, "Parameter not found: "+curLbl);
+							JOptionPane.showMessageDialog(curFrm, myModel.language.message.getString("err.param_not_found")+": "+curLbl); //Parameter not found
 						}
 					}
 				}
@@ -536,7 +536,7 @@ public class PSAResults{
 			int index=listNames.indexOf(myModel.dimInfo.dimNames[d]);
 			if(index==-1) {
 				valid=false;
-				JOptionPane.showMessageDialog(curFrm, "Outcome not found: "+myModel.dimInfo.dimNames[d]);
+				JOptionPane.showMessageDialog(curFrm, myModel.language.message.getString("err.outcome_not_found")+": "+myModel.dimInfo.dimNames[d]); //Outcome not found
 			}
 			else {
 				dimIndex[d]=index;
@@ -546,7 +546,7 @@ public class PSAResults{
 					String strCol=colNames[index+s+1].replaceAll("\"",""); //strip quotes
 					if(!strCol.equals(curLbl)) {
 						valid=false;
-						JOptionPane.showMessageDialog(curFrm, myModel.dimInfo.dimNames[d]+" strategy not found: "+curLbl);
+						JOptionPane.showMessageDialog(curFrm, myModel.dimInfo.dimNames[d]+" "+myModel.language.message.getString("err.strategy_not_found").toLowerCase(myModel.language.locale)+": "+curLbl); //strategy not found
 					}
 				}
 			}
@@ -570,7 +570,7 @@ public class PSAResults{
 				if(seconds.length()<2){seconds="0"+seconds;}
 				if(minutes.length()<2){minutes="0"+minutes;}
 				progress.setProgress(n+1);
-				progress.setNote("Time left: "+minutes+":"+seconds);
+				progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 
 				strLine=br.readLine();
 				String data[]=strLine.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");

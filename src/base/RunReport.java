@@ -246,10 +246,17 @@ public class RunReport{
 	
 	private void printCEAResults(Console console){
 		//Print results
-		console.print("\nCEA Results:\n");
+		console.print("\n"+myModel.language.analysis.getString("cea.cea_results")+":\n"); //CEA Results
 		boolean colTypes[]=new boolean[]{false,true,true,true,false}; //is column number (true), or text (false)
 		ConsoleTable curTable=new ConsoleTable(console,colTypes);
-		String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.costDim],dimInfo.dimNames[dimInfo.effectDim],"ICER","Notes"};
+		//String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.costDim],dimInfo.dimNames[dimInfo.effectDim],"ICER","Notes"};
+		String headers[]=new String[5];
+		headers[0]=myModel.language.analysis.getString("gen.strategy"); //Strategy
+		headers[1]=dimInfo.dimNames[dimInfo.costDim]; //costDim
+		headers[2]=dimInfo.dimNames[dimInfo.effectDim]; //effectDim
+		headers[3]=myModel.language.analysis.getString("cea.icer"); //ICER
+		headers[4]=myModel.language.base.getString("menu.notes"); //Notes
+		
 		curTable.addRow(headers);
 		for(int s=0; s<numStrat; s++){
 			String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+"",table[s][5]+""};
@@ -259,7 +266,8 @@ public class RunReport{
 		
 		if(numSubgroups>0){
 			for(int g=0; g<numSubgroups; g++){
-				console.print("\nSubgroup Results: "+subgroupNames[g]+" (n="+subgroupSizes[g]+")\n");
+				String curLbl=myModel.language.analysis.getString("result.subgroup_results"); //Subgroup Results
+				console.print("\n"+curLbl+": "+subgroupNames[g]+" (n="+subgroupSizes[g]+")\n");
 				ConsoleTable curTableGroup=new ConsoleTable(console,colTypes);
 				curTableGroup.addRow(headers);
 				for(int s=0; s<numStrat; s++){
@@ -279,7 +287,14 @@ public class RunReport{
 		
 		//Print results
 		//headers
-		out.write("Strategy,"+dimInfo.dimNames[dimInfo.costDim]+","+dimInfo.dimNames[dimInfo.effectDim]+",ICER,Notes"); out.newLine();
+		//out.write("Strategy,"+dimInfo.dimNames[dimInfo.costDim]+","+dimInfo.dimNames[dimInfo.effectDim]+",ICER,Notes"); out.newLine();
+		out.write(myModel.language.analysis.getString("gen.strategy")+","); //Strategy
+		out.write(dimInfo.dimNames[dimInfo.costDim]+","); //costDim
+		out.write(dimInfo.dimNames[dimInfo.effectDim]+","); //effectDim
+		out.write(myModel.language.analysis.getString("cea.icer")+","); //ICER
+		out.write(myModel.language.base.getString("menu.notes")+""); //Notes
+		out.newLine();
+		
 		for(int s=0; s<numStrat; s++){
 			out.write(table[s][1]+","+table[s][2]+","+table[s][3]+","+table[s][4]+","+table[s][5]); out.newLine();
 		}
@@ -287,8 +302,16 @@ public class RunReport{
 		
 		if(numSubgroups>0){
 			for(int g=0; g<numSubgroups; g++){
-				out.write("Subgroup Results:,"+subgroupNames[g]+",n=,"+subgroupSizes[g]); out.newLine();
-				out.write("Strategy,"+dimInfo.dimNames[dimInfo.costDim]+","+dimInfo.dimNames[dimInfo.effectDim]+",ICER,Notes"); out.newLine();
+				String curLbl=myModel.language.analysis.getString("result.subgroup_results"); //Subgroup Results
+				out.write(curLbl+":,"+subgroupNames[g]+",n=,"+subgroupSizes[g]); out.newLine();
+				//out.write("Strategy,"+dimInfo.dimNames[dimInfo.costDim]+","+dimInfo.dimNames[dimInfo.effectDim]+",ICER,Notes"); out.newLine();
+				out.write(myModel.language.analysis.getString("gen.strategy")+","); //Strategy
+				out.write(dimInfo.dimNames[dimInfo.costDim]+","); //costDim
+				out.write(dimInfo.dimNames[dimInfo.effectDim]+","); //effectDim
+				out.write(myModel.language.analysis.getString("cea.icer")+","); //ICER
+				out.write(myModel.language.base.getString("menu.notes")+""); //Notes
+				out.newLine();
+				
 				for(int s=0; s<numStrat; s++){
 					out.write(tableGroup[g][s][1]+","+tableGroup[g][s][2]+","+tableGroup[g][s][3]+","+tableGroup[g][s][4]+","+tableGroup[g][s][5]); 
 					out.newLine();
@@ -300,10 +323,16 @@ public class RunReport{
 	}
 
 	private void printBCAResults(Console console){
-		console.print("\nBCA Results:\n");
+		console.print("\n"+myModel.language.analysis.getString("bca.bca_results")+":\n"); //BCA Results
 		boolean colTypes[]=new boolean[]{false,true,true,true}; //is column number (true), or text (false)
 		ConsoleTable curTable=new ConsoleTable(console,colTypes);
-		String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB"};
+		//String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB"};
+		String headers[]=new String[4];
+		headers[0]=myModel.language.analysis.getString("gen.strategy"); //Strategy
+		headers[1]=dimInfo.dimNames[dimInfo.effectDim]; //effectDim
+		headers[2]=dimInfo.dimNames[dimInfo.costDim]; //costDim
+		headers[3]=myModel.language.analysis.getString("bca.nmb"); //NMB
+		
 		curTable.addRow(headers);
 		for(int s=0; s<numStrat; s++){
 			String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+""};
@@ -313,7 +342,8 @@ public class RunReport{
 		
 		if(numSubgroups>0){
 			for(int g=0; g<numSubgroups; g++){
-				console.print("\nSubgroup Results: "+subgroupNames[g]+" (n="+subgroupSizes[g]+")\n");
+				String curLbl=myModel.language.analysis.getString("result.subgroup_results"); //Subgroup Results
+				console.print("\n"+curLbl+": "+subgroupNames[g]+" (n="+subgroupSizes[g]+")\n");
 				ConsoleTable curTableGroup=new ConsoleTable(console,colTypes);
 				curTableGroup.addRow(headers);
 				for(int s=0; s<numStrat; s++){
@@ -332,7 +362,13 @@ public class RunReport{
 		BufferedWriter out = new BufferedWriter(fstream);
 		
 		//headers
-		out.write("Strategy,"+dimInfo.dimNames[dimInfo.effectDim]+","+dimInfo.dimNames[dimInfo.costDim]+",NMB"); out.newLine();
+		//out.write("Strategy,"+dimInfo.dimNames[dimInfo.effectDim]+","+dimInfo.dimNames[dimInfo.costDim]+",NMB"); out.newLine();
+		out.write(myModel.language.analysis.getString("gen.strategy")+","); //Strategy
+		out.write(dimInfo.dimNames[dimInfo.effectDim]+","); //effectDim
+		out.write(dimInfo.dimNames[dimInfo.costDim]+","); //costDim
+		out.write(myModel.language.analysis.getString("bca.nmb")+""); //NMB
+		out.newLine();
+		
 		for(int s=0; s<numStrat; s++){
 			out.write(table[s][1]+","+table[s][2]+","+table[s][3]+","+table[s][4]); out.newLine();
 		}
@@ -340,7 +376,8 @@ public class RunReport{
 		
 		if(numSubgroups>0){
 			for(int g=0; g<numSubgroups; g++){
-				out.write("Subgroup Results:,"+subgroupNames[g]+",n=,"+subgroupSizes[g]); out.newLine();
+				String curLbl=myModel.language.analysis.getString("result.subgroup_results"); //Subgroup Results
+				out.write(curLbl+":,"+subgroupNames[g]+",n=,"+subgroupSizes[g]); out.newLine();
 				for(int s=0; s<numStrat; s++){
 					out.write(tableGroup[g][s][1]+","+tableGroup[g][s][2]+","+tableGroup[g][s][3]+","+tableGroup[g][s][4]);
 					out.newLine();
@@ -353,10 +390,17 @@ public class RunReport{
 	}
 
 	private void printECEAResults(Console console){
-		console.print("\nECEA Results:\n");
+		console.print("\n"+myModel.language.analysis.getString("cea.ecea_results")+":\n"); //ECEA Results
 		boolean colTypes[]=new boolean[]{false,true,true,true,true}; //is column number (true), or text (false)
 		ConsoleTable curTable=new ConsoleTable(console,colTypes);
-		String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB",dimInfo.dimNames[dimInfo.extendedDim]};
+		//String headers[]=new String[]{"Strategy",dimInfo.dimNames[dimInfo.effectDim],dimInfo.dimNames[dimInfo.costDim],"NMB",dimInfo.dimNames[dimInfo.extendedDim]};
+		String headers[]=new String[5];
+		headers[0]=myModel.language.analysis.getString("gen.strategy"); //Strategy
+		headers[1]=dimInfo.dimNames[dimInfo.effectDim]; //effectDim
+		headers[2]=dimInfo.dimNames[dimInfo.costDim]; //costDim
+		headers[3]=myModel.language.analysis.getString("bca.nmb"); //NMB
+		headers[4]=dimInfo.dimNames[dimInfo.extendedDim]; //extendedDim
+				
 		curTable.addRow(headers);
 		for(int s=0; s<numStrat; s++){
 			String row[]=new String[]{table[s][1]+"",table[s][2]+"",table[s][3]+"",table[s][4]+"",table[s][5]+""};
@@ -366,7 +410,8 @@ public class RunReport{
 		
 		if(numSubgroups>0){
 			for(int g=0; g<numSubgroups; g++){
-				console.print("\nSubgroup Results: "+subgroupNames[g]+" (n="+subgroupSizes[g]+")\n");
+				String curLbl=myModel.language.analysis.getString("result.subgroup_results"); //Subgroup Results
+				console.print("\n"+curLbl+": "+subgroupNames[g]+" (n="+subgroupSizes[g]+")\n");
 				ConsoleTable curTableGroup=new ConsoleTable(console,colTypes);
 				curTableGroup.addRow(headers);
 				for(int s=0; s<numStrat; s++){
@@ -385,7 +430,12 @@ public class RunReport{
 		BufferedWriter out = new BufferedWriter(fstream);
 		
 		//headers
-		out.write("Strategy,"+dimInfo.dimNames[dimInfo.effectDim]+","+dimInfo.dimNames[dimInfo.costDim]+",NMB,"+dimInfo.dimNames[dimInfo.extendedDim]);
+		//out.write("Strategy,"+dimInfo.dimNames[dimInfo.effectDim]+","+dimInfo.dimNames[dimInfo.costDim]+",NMB,"+dimInfo.dimNames[dimInfo.extendedDim]);
+		out.write(myModel.language.analysis.getString("gen.strategy")+","); //Strategy
+		out.write(dimInfo.dimNames[dimInfo.effectDim]+","); //effectDim
+		out.write(dimInfo.dimNames[dimInfo.costDim]+","); //costDim
+		out.write(myModel.language.analysis.getString("bca.nmb")+","); //NMB
+		out.write(dimInfo.dimNames[dimInfo.extendedDim]+""); //extendedDim
 		out.newLine();
 		for(int s=0; s<numStrat; s++){
 			out.write(table[s][1]+","+table[s][2]+","+table[s][3]+","+table[s][4]+","+table[s][5]); out.newLine();
@@ -394,8 +444,14 @@ public class RunReport{
 		
 		if(numSubgroups>0){
 			for(int g=0; g<numSubgroups; g++){
-				out.write("Subgroup Results:,"+subgroupNames[g]+",n=,"+subgroupSizes[g]); out.newLine();
-				out.write("Strategy,"+dimInfo.dimNames[dimInfo.effectDim]+","+dimInfo.dimNames[dimInfo.costDim]+",NMB,"+dimInfo.dimNames[dimInfo.extendedDim]);
+				String curLbl=myModel.language.analysis.getString("result.subgroup_results"); //Subgroup Results
+				out.write(curLbl+":,"+subgroupNames[g]+",n=,"+subgroupSizes[g]); out.newLine();
+				//out.write("Strategy,"+dimInfo.dimNames[dimInfo.effectDim]+","+dimInfo.dimNames[dimInfo.costDim]+",NMB,"+dimInfo.dimNames[dimInfo.extendedDim]);
+				out.write(myModel.language.analysis.getString("gen.strategy")+","); //Strategy
+				out.write(dimInfo.dimNames[dimInfo.effectDim]+","); //effectDim
+				out.write(dimInfo.dimNames[dimInfo.costDim]+","); //costDim
+				out.write(myModel.language.analysis.getString("bca.nmb")+","); //NMB
+				out.write(dimInfo.dimNames[dimInfo.extendedDim]+""); //extendedDim
 				out.newLine();
 				for(int s=0; s<numStrat; s++){
 					out.write(tableGroup[g][s][1]+","+tableGroup[g][s][2]+","+tableGroup[g][s][3]+","+tableGroup[g][s][4]+","+tableGroup[g][s][5]);
@@ -409,11 +465,11 @@ public class RunReport{
 	}
 	
 	private void printMicroResults(Console console){
-		console.print("\nIndividual-level Results:\n");
+		console.print("\n"+myModel.language.analysis.getString("result.individual_level_results")+":\n"); //Individual-level Results
 		int numMicro=microStats.size();
 		for(int s=0; s<numMicro; s++){
-			String nameType="Strategy"; //Decision tree
-			if(type==1){nameType="Chain";} //Markov model
+			String nameType=myModel.language.analysis.getString("gen.strategy"); //"Strategy" (Decision tree)
+			if(type==1){nameType=myModel.language.base.getString("node.chain");} //"Chain" (Markov model)
 			console.print(nameType+": "+names.get(s)+"\n");
 			microStats.get(s).printSummary(console);
 		}
@@ -421,10 +477,11 @@ public class RunReport{
 		//subgroup
 		if(numSubgroups>0){
 			for(int g=0; g<numSubgroups; g++){
-				console.print("\nSubgroup: "+subgroupNames[g]+"\n");
+				String curLbl=myModel.language.analysis.getString("result.subgroup_results"); //Subgroup Results
+				console.print("\n"+curLbl+": "+subgroupNames[g]+"\n");
 				for(int s=0; s<numMicro; s++){
-					String nameType="Strategy"; //Decision tree
-					if(type==1){nameType="Chain";} //Markov model
+					String nameType=myModel.language.analysis.getString("gen.strategy"); //"Strategy" (Decision tree)
+					if(type==1){nameType=myModel.language.base.getString("node.chain");} //"Chain" (Markov model)
 					console.print(nameType+": "+names.get(s)+"\n");
 					microStatsGroup[g].get(s).printSummary(console);
 				}
@@ -435,45 +492,53 @@ public class RunReport{
 	}
 	
 	public void writeSummary(String file, int iteration) throws IOException {
+		String curLbl=myModel.language.analysis.getString("result.results"); //Results
+		curLbl=curLbl.toLowerCase(myModel.language.locale);
 		if(dimInfo.analysisType==0) { //EV
 			if(myModel.type==0) { //decision tree
-				myModel.tree.writeEVResults(file+"results_"+iteration+".csv",this);
+				myModel.tree.writeEVResults(file+curLbl+"_"+iteration+".csv",this);
 			}
 			else if(myModel.type==1) { //markov
-				myModel.markov.writeModelResults(file+"results_"+iteration+".csv",this);
+				myModel.markov.writeModelResults(file+curLbl+"_"+iteration+".csv",this);
 			}
 		}
-		else if(dimInfo.analysisType==1){writeCEAResults(file+"results_"+iteration+".csv");}
-		else if(dimInfo.analysisType==2){writeBCAResults(file+"results_"+iteration+".csv");}
-		else if(dimInfo.analysisType==3){writeECEAResults(file+"results_"+iteration+".csv");}
+		else if(dimInfo.analysisType==1){writeCEAResults(file+curLbl+"_"+iteration+".csv");}
+		else if(dimInfo.analysisType==2){writeBCAResults(file+curLbl+"_"+iteration+".csv");}
+		else if(dimInfo.analysisType==3){writeECEAResults(file+curLbl+"_"+iteration+".csv");}
 	}
 	
 	public void write(String filepath, int iteration) throws IOException{
-		if(type==0){treeReport.write(filepath+"_TreeReport"+iteration+".csv");} //decision tree
+		if(type==0){ //TreeReport (decision tree)
+			String curLbl=myModel.language.analysis.getString("result.TreeReport");
+			treeReport.write(filepath+"_"+curLbl+iteration+".csv");
+		} 
 		else if(type==1){ //markov
+			String curLbl=myModel.language.analysis.getString("result.trace");
+			curLbl=curLbl.toLowerCase(myModel.language.locale);
 			int numTrace=markovTraces.size();
 			for(int i=0; i<numTrace; i++){
-				markovTraces.get(i).write(filepath+"trace_",iteration);
+				markovTraces.get(i).write(filepath+curLbl+"_",iteration);
 			}
 			if(numSubgroups>0) {
 				for(int g=0; g<numSubgroups; g++) {
 					for(int i=0; i<numTrace; i++) {
-						markovTracesGroup[g].get(i).write(filepath+"trace_"+subgroupNames[g], iteration);
+						markovTracesGroup[g].get(i).write(filepath+curLbl+"_"+subgroupNames[g], iteration);
 					}
 				}
 			}
 		}
 		
 		if(myModel.simType==1 && myModel.displayIndResults==true){
+			String curLbl=myModel.language.analysis.getString("result.Ind"); //Ind
 			int numMicro=microStats.size();
 			for(int s=0; s<numMicro; s++){
-				microStats.get(s).write(filepath+names.get(s)+"_Ind.csv");
+				microStats.get(s).write(filepath+names.get(s)+"_"+curLbl+".csv");
 			}
 			
 			if(numSubgroups>0){
 				for(int g=0; g<numSubgroups; g++){
 					for(int s=0; s<numMicro; s++){
-						microStatsGroup[g].get(s).write(filepath+names.get(s)+"_Ind_"+subgroupNames[g]+".csv");
+						microStatsGroup[g].get(s).write(filepath+names.get(s)+"_"+curLbl+"_"+subgroupNames[g]+".csv");
 					}
 				}
 			}

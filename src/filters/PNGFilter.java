@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class PNGFilter extends javax.swing.filechooser.FileFilter {
+	Language language;
+	
+	public PNGFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
     public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".png");
     }
     
     public String getDescription() {
-        return "PNG Portable Network Graphics Format";
+        return language.base.getString("file.png"); //PNG Portable Network Graphics Format
     }
 }

@@ -19,13 +19,22 @@
 package filters;
 import java.io.File;
 
+import lang.Language;
+
 
 public class XMLFilter extends javax.swing.filechooser.FileFilter {
+	Language language;
+	
+	public XMLFilter(Language language) { //overload constructor
+		super();      // Call superclass constructor
+		this.language = language;
+	}
+	
     public boolean accept(File f) {
         return f.isDirectory() || f.getName().toLowerCase().endsWith(".xml");
     }
     
     public String getDescription() {
-        return "XML Spreadsheet";
+        return language.base.getString("file.xml"); //XML Spreadsheet
     }
 }

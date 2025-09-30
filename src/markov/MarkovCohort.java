@@ -18,6 +18,8 @@
 
 package markov;
 
+import java.text.MessageFormat;
+
 import base.AmuaModel;
 import main.Variable;
 import math.Interpreter;
@@ -83,7 +85,7 @@ public class MarkovCohort{
 		//Initialize variables
 		myModel.unlockVarsAll(curThread);
 		for(int c=0; c<numVariables; c++){
-			variables[c].value[curThread]=Interpreter.evaluateTokens(variables[c].parsedTokens, curThread, false);
+			variables[c].value[curThread]=Interpreter.evaluateTokens(variables[c].parsedTokens, curThread, false, myModel.language);
 			variables[c].locked[curThread]=true;
 		}
 		
@@ -108,18 +110,22 @@ public class MarkovCohort{
 				indexCompProb=s;
 			}
 			else{ //Evaluate text
-				states[s].curProb[0]=Interpreter.evaluateTokens(states[s].curProbTokens, curThread, false).getDouble();
+				states[s].curProb[0]=Interpreter.evaluateTokens(states[s].curProbTokens, curThread, false, myModel.language).getDouble(myModel.language);
 				sumProb+=states[s].curProb[0];
 			}
 		}
 		if(indexCompProb==-1){
 			if(Math.abs(1.0-sumProb)>MathUtils.tolerance){ //throw error
-				throw new Exception("Error: Probabilities sum to "+sumProb+" ("+chainRoot.name+")");
+				// Probabilities sum to [sumProb]
+				String msg = MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb);
+				throw new Exception(myModel.language.message.getString("error")+": "+msg+" ("+chainRoot.name+")");
 			}
 		}
 		else{
 			if(sumProb>1.0 || sumProb<0.0){ //throw error
-				throw new Exception("Error: Probabilities sum to "+sumProb+" ("+chainRoot.name+")");
+				// Probabilities sum to [sumProb]
+				String msg = MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb);
+				throw new Exception(myModel.language.message.getString("error")+": "+msg+" ("+chainRoot.name+")");
 			}
 			else{
 				states[indexCompProb].curProb[0]=1.0-sumProb;
@@ -158,7 +164,7 @@ public class MarkovCohort{
 			
 			for(int s=0; s<numStates; s++){ //Update each state
 				for(int d=0; d<numDim; d++){ //Update state rewards
-					double curReward=Interpreter.evaluateTokens(states[s].curRewardTokens[d], curThread, false).getDouble();
+					double curReward=Interpreter.evaluateTokens(states[s].curRewardTokens[d], curThread, false, myModel.language).getDouble(myModel.language);
 					cycleRewards[d]+=curReward*curPrev[s];
 				}
 				traverseNode(states[s],curPrev[s]);
@@ -189,7 +195,7 @@ public class MarkovCohort{
 		}
 		if(chainRoot.hasCost) {
 			for(int d=0; d<numDim; d++){
-				double curCost=Interpreter.evaluateTokens(chainRoot.curCostTokens[d],curThread,false).getDouble();
+				double curCost=Interpreter.evaluateTokens(chainRoot.curCostTokens[d],curThread,false, myModel.language).getDouble(myModel.language);
 				curCost*=myModel.cohortSize;
 				chainRoot.expectedValues[d]+=curCost;
 				chainRoot.expectedValuesDis[d]+=curCost;
@@ -204,8 +210,8 @@ public class MarkovCohort{
 	private boolean checkTerminationCondition(){
 		boolean terminate=false;
 		try{
-			Numeric check=Interpreter.evaluateTokens(chainRoot.curTerminationTokens, curThread, false);
-			if(check.getBool()){ //termination condition true
+			Numeric check=Interpreter.evaluateTokens(chainRoot.curTerminationTokens, curThread, false, myModel.language);
+			if(check.getBool(myModel.language)){ //termination condition true
 				terminate=true;
 			}
 		}catch(Exception e){
@@ -231,7 +237,7 @@ public class MarkovCohort{
 		//Update costs
 		if(node.hasCost){
 			for(int d=0; d<numDim; d++){
-				double curCost=Interpreter.evaluateTokens(node.curCostTokens[d],curThread,false).getDouble();
+				double curCost=Interpreter.evaluateTokens(node.curCostTokens[d],curThread,false, myModel.language).getDouble(myModel.language);
 				cycleRewards[d]+=curCost*nodePrev;
 			}
 		}
@@ -259,18 +265,22 @@ public class MarkovCohort{
 					indexCompProb=c;
 				}
 				else{ //Evaluate text
-					curChild.curProb[0]=Interpreter.evaluateTokens(curChild.curProbTokens, curThread, false).getDouble();
+					curChild.curProb[0]=Interpreter.evaluateTokens(curChild.curProbTokens, curThread, false, myModel.language).getDouble(myModel.language);
 					sumProb+=curChild.curProb[0];
 				}
 			}
 			if(indexCompProb==-1){
 				if(Math.abs(1.0-sumProb)>MathUtils.tolerance){ //throw error
-					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
+					// Probabilities sum to [sumProb]
+					String msg = MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb);
+					throw new Exception(myModel.language.message.getString("error")+": "+msg+" ("+node.chain.name+": "+node.name+")");
 				}
 			}
 			else{
 				if(sumProb>1.0 || sumProb<0.0){ //throw error
-					throw new Exception("Error: Probabilities sum to "+sumProb+" ("+node.chain.name+": "+node.name+")");
+					// Probabilities sum to [sumProb]
+					String msg = MessageFormat.format(myModel.language.message.getString("err.prob_sum"), sumProb);
+					throw new Exception(myModel.language.message.getString("error")+": "+msg+" ("+node.chain.name+": "+node.name+")");
 				}
 				else{
 					MarkovNode curChild=node.children[indexCompProb];
@@ -312,7 +322,7 @@ public class MarkovCohort{
 			trace.cycleRewards[d].add(cycleRewards[d]);
 			trace.cumRewards[d].add(cumRewards[d]);
 			if(markovTree.discountRewards){
-				Numeric curVal=Interpreter.evaluate(markovTree.discountRates[d], myModel, false);
+				Numeric curVal=Interpreter.evaluate(markovTree.discountRates[d], myModel, false, myModel.language);
 				double discountRate=curVal.getValue()/100.0;
 				double discountFactor=1.0;
 				if(t<markovTree.discountStartCycle) { //don't discount yet
@@ -335,7 +345,7 @@ public class MarkovCohort{
 		}
 		//Update variables
 		for(int c=0; c<numVariables; c++){
-			cycleVariables[c]=variables[c].value[curThread].getDouble();
+			cycleVariables[c]=variables[c].value[curThread].getDouble(myModel.language);
 			trace.cycleVariables[c].add(cycleVariables[c]);
 		}
 		
