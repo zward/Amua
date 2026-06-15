@@ -71,12 +71,14 @@ public class frmDocument {
 			frmDocument.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDocument.class.getResource("/images/document_128.png")));
 			frmDocument.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDocument.setTitle("Amua - "+myModel.language.base.getString("title.document_model")); //Document Model
+			frmDocument.setFont(myModel.language.font);
 			frmDocument.setResizable(false);
 			frmDocument.setBounds(100, 100, 500, 300);
 			frmDocument.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmDocument.getContentPane().setLayout(null);
 			
 			JLabel lblSelectAnExport = new JLabel(myModel.language.message.getString("ask.select_format")+":"); //Select a format
+			lblSelectAnExport.setFont(myModel.language.font);
 			lblSelectAnExport.setBounds(12, 23, 188, 16);
 			frmDocument.getContentPane().add(lblSelectAnExport);
 			
@@ -92,6 +94,7 @@ public class frmDocument {
 			logos[0]="/images/rMarkdownIcon";
 			
 			final JList<String> list = new JList<String>();
+			list.setFont(myModel.language.font);
 			list.addListSelectionListener(new ListSelectionListener() {
 				public void valueChanged(ListSelectionEvent e) {
 					int selected=list.getSelectedIndex();
@@ -113,10 +116,12 @@ public class frmDocument {
 			scrollPane.setViewportView(list);
 			
 			JLabel lblDescription = new JLabel(myModel.language.base.getString("title.description")+":"); //Description
+			lblDescription.setFont(myModel.language.font);
 			lblDescription.setBounds(232, 23, 256, 16);
 			frmDocument.getContentPane().add(lblDescription);
 			
 			btnDocument = new JButton(myModel.language.base.getString("menu.document")); //Document
+			btnDocument.setFont(myModel.language.font);
 			btnDocument.setEnabled(false);
 			btnDocument.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -128,6 +133,7 @@ public class frmDocument {
 						
 						fc.setDialogTitle(myModel.language.base.getString("title.select_documentation_folder")); //Select Documentation Folder
 						fc.setApproveButtonText(myModel.language.base.getString("menu.document"));
+						myModel.language.setFontRecursively(fc); //set font
 
 						int returnVal = fc.showDialog(frmDocument, myModel.language.base.getString("button.select")); //Select
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -149,6 +155,7 @@ public class frmDocument {
 			frmDocument.getContentPane().add(btnDocument);
 			
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmDocument.dispose();
@@ -162,6 +169,7 @@ public class frmDocument {
 			frmDocument.getContentPane().add(scrollPane_1);
 			
 			textArea = new JTextArea();
+			textArea.setFont(myModel.language.font);
 			textArea.setWrapStyleWord(true);
 			textArea.setLineWrap(true);
 			textArea.setEditable(false);

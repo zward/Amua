@@ -78,6 +78,7 @@ import javax.swing.border.LineBorder;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -86,6 +87,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -162,6 +164,7 @@ public class frmSensOneWayStacked {
 		try{
 			frmSensOneWayStacked = new JFrame();
 			frmSensOneWayStacked.setTitle("Amua - "+myModel.language.analysis.getString("sens.stacked_one_way")); //Stacked One-way Sensitivity Analyses
+			frmSensOneWayStacked.setFont(myModel.language.font);
 			frmSensOneWayStacked.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensOneWayStacked.class.getResource("/images/oneWayStacked_128.png")));
 			frmSensOneWayStacked.setBounds(100, 100, 1070, 499);
 			frmSensOneWayStacked.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -197,6 +200,7 @@ public class frmSensOneWayStacked {
 			comboChartType = new JComboBox<String>(new DefaultComboBoxModel<String>(new String[] {
 					myModel.language.analysis.getString("calib.parameter_values"), //Parameter Values
 					myModel.language.analysis.getString("result.outcomes")})); //Outcomes
+			comboChartType.setFont(myModel.language.font);
 			comboChartType.setEnabled(false);
 			comboChartType.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -257,6 +261,8 @@ public class frmSensOneWayStacked {
 			tableParams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableParams.setShowVerticalLines(true);
 			tableParams.getTableHeader().setReorderingAllowed(false);
+			tableParams.getTableHeader().setFont(myModel.language.font);
+			tableParams.setFont(myModel.language.font);
 			tableParams.setModel(modelParams);
 			scrollPaneParams.setViewportView(tableParams);
 
@@ -270,10 +276,12 @@ public class frmSensOneWayStacked {
 			panel_1.add(panel_2, gbc_panel_2);
 
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
+			btnRun.setFont(myModel.language.font);
 			btnRun.setBounds(184, 5, 90, 28);
 			panel_2.add(btnRun);
 
 			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
+			btnExport.setFont(myModel.language.font);
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -282,7 +290,7 @@ public class frmSensOneWayStacked {
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setAcceptAllFileFilterUsed(false);
 						fc.setFileFilter(new CSVFilter(myModel.language));
-
+						
 						int group=0; //overall
 						if(numSubgroups>0){
 							group=comboGroup.getSelectedIndex();
@@ -294,6 +302,7 @@ public class frmSensOneWayStacked {
 							fc.setDialogTitle(myModel.language.base.getString("title.export_subgroup_data")); //Export Subgroup Data
 						}
 						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
+						myModel.language.setFontRecursively(fc); //set font
 
 						int returnVal = fc.showSaveDialog(frmSensOneWayStacked);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -378,6 +387,7 @@ public class frmSensOneWayStacked {
 			panel_2.add(btnExport);
 
 			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setFont(myModel.language.font);
 			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblIntervals.setBounds(6, 11, 65, 16);
 			panel_2.add(lblIntervals);
@@ -392,8 +402,10 @@ public class frmSensOneWayStacked {
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmSensOneWayStacked, myModel.language.analysis.getString("sens.stacked_one_way"), myModel.language.message.getString("info.running"), 0, 100); //Stacked One-way Sensitivity Analyses, Running
-
+					//final ProgressMonitor progress=new ProgressMonitor(frmSensOneWayStacked, myModel.language.analysis.getString("sens.stacked_one_way"), myModel.language.message.getString("info.running"), 0, 100); //Stacked One-way Sensitivity Analyses, Running
+					final frmProgressMonitor progress=new frmProgressMonitor(frmSensOneWayStacked, myModel.language.analysis.getString("sens.stacked_one_way"), myModel.language.message.getString("info.running"), 0, 100, myModel.language); //Stacked One-way Sensitivity Analyses, Running
+					SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
+					
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
@@ -416,8 +428,8 @@ public class frmSensOneWayStacked {
 									
 									long startTime=System.currentTimeMillis();
 									progress.setMaximum(100);
-									progress.setMillisToDecideToPopup(0);
-									progress.setMillisToPopup(0);
+									//progress.setMillisToDecideToPopup(0);
+									//progress.setMillisToPopup(0);
 									progress.setProgress(0);
 									
 									//Get baseline results
@@ -681,6 +693,7 @@ public class frmSensOneWayStacked {
 								curParam.locked=false;
 								myModel.validateModelObjects();
 								e.printStackTrace();
+								progress.close();
 								JOptionPane.showMessageDialog(frmSensOneWayStacked, e.getMessage());
 								myModel.errorLog.recordError(e);
 								frmSensOneWayStacked.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -694,6 +707,7 @@ public class frmSensOneWayStacked {
 
 			
 			comboGroup = new JComboBox<String>();
+			comboGroup.setFont(myModel.language.font);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateChart();
@@ -721,6 +735,7 @@ public class frmSensOneWayStacked {
 			frmSensOneWayStacked.getContentPane().add(comboGroup, gbc_comboGroup);
 			
 			lblParameterLabels = new JLabel(myModel.language.base.getString("plot.parameter_labels")+":"); //Parameter Labels
+			lblParameterLabels.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblParameterLabels = new GridBagConstraints();
 			gbc_lblParameterLabels.insets = new Insets(0, 0, 5, 5);
 			gbc_lblParameterLabels.anchor = GridBagConstraints.EAST;
@@ -729,6 +744,7 @@ public class frmSensOneWayStacked {
 			frmSensOneWayStacked.getContentPane().add(lblParameterLabels, gbc_lblParameterLabels);
 			
 			comboParamVals = new JComboBox();
+			comboParamVals.setFont(myModel.language.font);
 			comboParamVals.setModel(new DefaultComboBoxModel(new String[] {
 					myModel.language.base.getString("plot.none"), //None
 					myModel.language.math.getString("sum.range"), //Range
@@ -774,6 +790,8 @@ public class frmSensOneWayStacked {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -1151,8 +1169,12 @@ public class frmSensOneWayStacked {
 		chart = new JFreeChart(plot);
 		plot.setBackgroundPaint(new Color(1,1,1,1));
 		plot.getDomainAxis().setInverted(true);
+		chart.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+		chart.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+		chart.getLegend().setItemFont(myModel.language.font);
 		
 		TextTitle legendText = new TextTitle(myModel.language.analysis.getString("sens.best_strategy")); //Best Strategy
+		legendText.setFont(myModel.language.font);
 		legendText.setPosition(RectangleEdge.BOTTOM);
 		chart.addSubtitle(legendText);
 				

@@ -182,12 +182,14 @@ public class frmProperties {
 			frmProperties.getContentPane().setBackground(SystemColor.control);
 			frmProperties.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmProperties.setTitle("Amua - "+myModel.language.base.getString("menu.properties")); //Properties
+			frmProperties.setFont(myModel.language.font);
 			frmProperties.setResizable(false);
 			frmProperties.setBounds(100, 100, 466, 332);
 			frmProperties.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmProperties.getContentPane().setLayout(null);
 
 			JButton btnOk = new JButton(myModel.language.base.getString("button.ok")); //OK
+			btnOk.setFont(myModel.language.font);
 			btnOk.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(applyChanges()){
@@ -199,6 +201,7 @@ public class frmProperties {
 			frmProperties.getContentPane().add(btnOk);
 
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmProperties.dispose();
@@ -208,6 +211,7 @@ public class frmProperties {
 			frmProperties.getContentPane().add(btnCancel);
 
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			tabbedPane.setFont(myModel.language.font);
 			tabbedPane.setBounds(6, 6, 448, 251);
 			frmProperties.getContentPane().add(tabbedPane);
 
@@ -220,66 +224,82 @@ public class frmProperties {
 			panelGeneral.setLayout(null);
 
 			JLabel lblModelName = new JLabel(myModel.language.base.getString("meta.model_name")+":"); //Model Name
+			lblModelName.setFont(myModel.language.font);
 			lblModelName.setBounds(6, 8, 115, 16);
 			panelGeneral.add(lblModelName);
 			
 			lblName = new JLabel("[Name]");
+			lblName.setFont(myModel.language.font);
 			lblName.setBounds(130, 8, 315, 16);
 			panelGeneral.add(lblName);
 			
 			JLabel lblAuthor = new JLabel(myModel.language.base.getString("meta.created_by")+":"); //Created by
+			lblAuthor.setFont(myModel.language.font);
 			lblAuthor.setBounds(6, 56, 115, 16);
 			panelGeneral.add(lblAuthor);
 
 			lblDispAuthor = new JLabel("[Author]");
+			lblDispAuthor.setFont(myModel.language.font);
 			lblDispAuthor.setBounds(130, 56, 315, 16);
 			panelGeneral.add(lblDispAuthor);
 
 			JLabel lblCreated = new JLabel(myModel.language.base.getString("meta.created")+":"); //Created
+			lblCreated.setFont(myModel.language.font);
 			lblCreated.setBounds(6, 80, 115, 16);
 			panelGeneral.add(lblCreated);
 
 			lblDispCreated = new JLabel("[Date created]");
+			lblDispCreated.setFont(myModel.language.font);
 			lblDispCreated.setBounds(130, 80, 315, 16);
 			panelGeneral.add(lblDispCreated);
 
 			JLabel lblVersionCreated = new JLabel(myModel.language.base.getString("meta.version_created")+":"); //Version created
+			lblVersionCreated.setFont(myModel.language.font);
 			lblVersionCreated.setBounds(6, 104, 115, 16);
 			panelGeneral.add(lblVersionCreated);
 
 			JLabel lblModifiedBy = new JLabel(myModel.language.base.getString("meta.modified_by")+":"); //Modified by
+			lblModifiedBy.setFont(myModel.language.font);
 			lblModifiedBy.setBounds(6, 128, 115, 16);
 			panelGeneral.add(lblModifiedBy);
 
 			JLabel lblModelType = new JLabel(myModel.language.base.getString("meta.model_type")+":"); //Model Type
+			lblModelType.setFont(myModel.language.font);
 			lblModelType.setBounds(6, 32, 105, 16);
 			panelGeneral.add(lblModelType);
 
 			JLabel lblModified = new JLabel(myModel.language.base.getString("meta.modified")+":"); //Modified
+			lblModified.setFont(myModel.language.font);
 			lblModified.setBounds(6, 152, 115, 16);
 			panelGeneral.add(lblModified);
 
 			JLabel lblVersionModified = new JLabel(myModel.language.base.getString("meta.version_modified")+":"); //Version modified
+			lblVersionModified.setFont(myModel.language.font);
 			lblVersionModified.setBounds(6, 176, 115, 16);
 			panelGeneral.add(lblVersionModified);
 
 			lblDispVCreated = new JLabel("[Version]");
+			lblDispVCreated.setFont(myModel.language.font);
 			lblDispVCreated.setBounds(130, 104, 315, 16);
 			panelGeneral.add(lblDispVCreated);
 
 			lblDispModifer = new JLabel("[Modifier]");
+			lblDispModifer.setFont(myModel.language.font);
 			lblDispModifer.setBounds(130, 128, 315, 16);
 			panelGeneral.add(lblDispModifer);
 
 			lblDispModified = new JLabel("[Date modified]");
+			lblDispModified.setFont(myModel.language.font);
 			lblDispModified.setBounds(130, 152, 315, 16);
 			panelGeneral.add(lblDispModified);
 
 			lblVModified = new JLabel("[Version]");
+			lblVModified.setFont(myModel.language.font);
 			lblVModified.setBounds(130, 176, 315, 16);
 			panelGeneral.add(lblVModified);
 
 			lblModel = new JLabel("[Model]");
+			lblModel.setFont(myModel.language.font);
 			lblModel.setBounds(130, 32, 315, 16);
 			panelGeneral.add(lblModel);
 
@@ -314,6 +334,8 @@ public class frmProperties {
 			tableDimensions = new JTable();
 			tableDimensions.setRowSelectionAllowed(false);
 			tableDimensions.getTableHeader().setReorderingAllowed(false);
+			tableDimensions.getTableHeader().setFont(myModel.language.font);
+			tableDimensions.setFont(myModel.language.font);
 			tableDimensions.setModel(modelDimensions);
 			tableDimensions.putClientProperty("terminateEditOnFocusLost", true);
 			scrollPane.setViewportView(tableDimensions);
@@ -355,11 +377,13 @@ public class frmProperties {
 			panelAnalysis.add(btnRemoveDimension);
 			
 			JLabel lblAnalysisType = new JLabel(myModel.language.analysis.getString("gen.analysis_type")+":"); //Analysis type
+			lblAnalysisType.setFont(myModel.language.font);
 			lblAnalysisType.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblAnalysisType.setBounds(6, 98, 95, 16);
 			panelAnalysis.add(lblAnalysisType);
 			
 			comboAnalysis = new JComboBox<String>();
+			comboAnalysis.setFont(myModel.language.font);
 			comboAnalysis.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					setAnalysisType(comboAnalysis.getSelectedIndex());
@@ -398,6 +422,8 @@ public class frmProperties {
 			tableAnalysis.myModel=myModel;
 			tableAnalysis.tempDimInfo=tempDimInfo;
 			tableAnalysis.getTableHeader().setReorderingAllowed(false);
+			tableAnalysis.getTableHeader().setFont(myModel.language.font);
+			tableAnalysis.setFont(myModel.language.font);
 			tableAnalysis.setModel(modelAnalysis);
 			tableAnalysis.getColumnModel().getColumn(0).setPreferredWidth(170);
 			tableAnalysis.getColumnModel().getColumn(1).setPreferredWidth(170);
@@ -407,6 +433,7 @@ public class frmProperties {
 			scrollPane_2.setViewportView(tableAnalysis);
 			
 			JButton btnRefreshDim = new JButton(myModel.language.base.getString("button.refresh")); //Refresh
+			btnRefreshDim.setFont(myModel.language.font);
 			btnRefreshDim.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					//Update dimensions
@@ -464,11 +491,13 @@ public class frmProperties {
 			panelSimulation.setLayout(null);
 			
 			JLabel label = new JLabel(myModel.language.analysis.getString("sim.simulation_type")+":"); //Simulation type
+			label.setFont(myModel.language.font);
 			label.setHorizontalAlignment(SwingConstants.RIGHT);
 			label.setBounds(4, 11, 110, 16);
 			panelSimulation.add(label);
 			
 			comboSimType = new JComboBox();
+			comboSimType.setFont(myModel.language.font);
 			comboSimType.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int selected=comboSimType.getSelectedIndex();
@@ -496,6 +525,7 @@ public class frmProperties {
 			panelSimulation.add(comboSimType);
 			
 			lblCohortSize = new JLabel(myModel.language.analysis.getString("sim.cohort_size")+":"); //Cohort size
+			lblCohortSize.setFont(myModel.language.font);
 			lblCohortSize.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblCohortSize.setBounds(6, 45, 108, 16);
 			panelSimulation.add(lblCohortSize);
@@ -506,6 +536,7 @@ public class frmProperties {
 			panelSimulation.add(textCohortSize);
 			
 			chckbxCRN = new JCheckBox(myModel.language.analysis.getString("sim.seed_rng")); //Seed RNG
+			chckbxCRN.setFont(myModel.language.font);
 			chckbxCRN.setEnabled(false);
 			chckbxCRN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -517,6 +548,7 @@ public class frmProperties {
 			panelSimulation.add(chckbxCRN);
 			
 			JLabel lblSeed = new JLabel(myModel.language.analysis.getString("sim.seed")+":"); //Seed
+			lblSeed.setFont(myModel.language.font);
 			lblSeed.setBounds(204, 79, 43, 16);
 			panelSimulation.add(lblSeed);
 			
@@ -528,22 +560,26 @@ public class frmProperties {
 			textCRNSeed.setColumns(10);
 			
 			JLabel lblstOrder = new JLabel(myModel.language.analysis.getString("sim.1st_order_uncertainty")); //1st-order uncertainty
+			//lblstOrder.setFont(new Font("SansSerif", Font.PLAIN, 9));
+			lblstOrder.setFont(myModel.language.font.deriveFont(9f));
 			lblstOrder.setHorizontalAlignment(SwingConstants.LEFT);
-			lblstOrder.setFont(new Font("SansSerif", Font.PLAIN, 9));
 			lblstOrder.setBounds(298, 11, 144, 16);
 			panelSimulation.add(lblstOrder);
 			
 			chckbxDisplayIndResults = new JCheckBox(myModel.language.analysis.getString("result.display_ind_results")); //Display individual-level results
+			chckbxDisplayIndResults.setFont(myModel.language.font);
 			chckbxDisplayIndResults.setEnabled(false);
 			chckbxDisplayIndResults.setBounds(15, 107, 281, 18);
 			panelSimulation.add(chckbxDisplayIndResults);
 						
 			lblThreads = new JLabel(myModel.language.analysis.getString("sim.threads").toLowerCase(myModel.language.locale)); //threads
+			lblThreads.setFont(myModel.language.font);
 			lblThreads.setEnabled(false);
 			lblThreads.setBounds(92, 161, 55, 16);
 			panelSimulation.add(lblThreads);
 			
 			btnSetToMax = new JButton(myModel.language.analysis.getString("sim.set_to_max")); //Set to max
+			btnSetToMax.setFont(myModel.language.font);
 			btnSetToMax.setEnabled(false);
 			btnSetToMax.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -551,10 +587,11 @@ public class frmProperties {
 					textNumThreads.setText(threads+"");
 				}
 			});
-			btnSetToMax.setBounds(142, 155, 144, 28);
+			btnSetToMax.setBounds(148, 155, 144, 28);
 			panelSimulation.add(btnSetToMax);
 			
 			chckbxMultithread = new JCheckBox(myModel.language.analysis.getString("sim.multi_thread")); //Multi-thread simulation
+			chckbxMultithread.setFont(myModel.language.font);
 			chckbxMultithread.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(chckbxMultithread.isSelected()){
@@ -591,6 +628,7 @@ public class frmProperties {
 			panelMarkov.setLayout(null);
 			
 			JLabel lblMaxCycles = new JLabel(myModel.language.analysis.getString("sim.max_cycles")+":"); //Max cycles
+			lblMaxCycles.setFont(myModel.language.font);
 			lblMaxCycles.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblMaxCycles.setBounds(6, 23, 104, 16);
 			panelMarkov.add(lblMaxCycles);
@@ -601,10 +639,12 @@ public class frmProperties {
 			textMarkovMaxCycles.setColumns(10);
 			
 			chckbxHalfcycleCorrection = new JCheckBox(myModel.language.analysis.getString("gen.half_cycle_correction")); //Half-cycle correction
+			chckbxHalfcycleCorrection.setFont(myModel.language.font);
 			chckbxHalfcycleCorrection.setBounds(6, 57, 195, 18);
 			panelMarkov.add(chckbxHalfcycleCorrection);
 			
 			lblDiscountStartCycle = new JLabel(myModel.language.analysis.getString("gen.discount_start_cycle")+":"); //Discount start cycle
+			lblDiscountStartCycle.setFont(myModel.language.font);
 			lblDiscountStartCycle.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblDiscountStartCycle.setEnabled(false);
 			lblDiscountStartCycle.setBounds(235, 121, 168, 16);
@@ -617,6 +657,7 @@ public class frmProperties {
 			textDiscountStartCycle.setColumns(10);
 			
 			chckbxDiscount = new JCheckBox(myModel.language.analysis.getString("gen.discount_rewards")); //Discount Rewards
+			chckbxDiscount.setFont(myModel.language.font);
 			chckbxDiscount.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					if(chckbxDiscount.isSelected()){
@@ -657,11 +698,14 @@ public class frmProperties {
 			tableDiscountRates.setModel(modelDiscountRates);
 			tableDiscountRates.setRowSelectionAllowed(false);
 			tableDiscountRates.getTableHeader().setReorderingAllowed(false);
+			tableDiscountRates.getTableHeader().setFont(myModel.language.font);
+			tableDiscountRates.setFont(myModel.language.font);
 			tableDiscountRates.setEnabled(false);
 			tableDiscountRates.putClientProperty("terminateEditOnFocusLost", true);
 			scrollPane_1.setViewportView(tableDiscountRates);
 			
 			JLabel lblStatePrevalenceDecimals = new JLabel(myModel.language.analysis.getString("gen.state_prev_decimals")+":"); //State Prevalence Decimals
+			lblStatePrevalenceDecimals.setFont(myModel.language.font);
 			lblStatePrevalenceDecimals.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblStatePrevalenceDecimals.setBounds(201, 70, 202, 16);
 			panelMarkov.add(lblStatePrevalenceDecimals);
@@ -672,14 +716,17 @@ public class frmProperties {
 			textMarkovStateDecimals.setColumns(10);
 			
 			chckbxShowMarkovTrace = new JCheckBox(myModel.language.analysis.getString("result.show_trace")); //Show trace
+			chckbxShowMarkovTrace.setFont(myModel.language.font);
 			chckbxShowMarkovTrace.setBounds(274, 11, 168, 18);
 			panelMarkov.add(chckbxShowMarkovTrace);
 			
 			chckbxCompileTraces = new JCheckBox(myModel.language.analysis.getString("result.compile_traces")); //Compile traces
+			chckbxCompileTraces.setFont(myModel.language.font);
 			chckbxCompileTraces.setBounds(274, 38, 168, 18);
 			panelMarkov.add(chckbxCompileTraces);
 			
 			lblCyclesPerYear = new JLabel(myModel.language.analysis.getString("sim.cycles_per_year")+":"); //Cycles per year
+			lblCyclesPerYear.setFont(myModel.language.font);
 			lblCyclesPerYear.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblCyclesPerYear.setEnabled(false);
 			lblCyclesPerYear.setBounds(235, 148, 168, 16);
@@ -702,6 +749,7 @@ public class frmProperties {
 			panelSubgroups.setLayout(null);
 			
 			chckbxSubgroups = new JCheckBox(myModel.language.analysis.getString("result.report_subgroup_outcomes")); //Report subgroup-specific outcomes
+			chckbxSubgroups.setFont(myModel.language.font);
 			chckbxSubgroups.setBounds(6, 11, 326, 18);
 			panelSubgroups.add(chckbxSubgroups);
 			
@@ -725,6 +773,8 @@ public class frmProperties {
 			tableSubgroups.setRowSelectionAllowed(false);
 			tableSubgroups.setShowVerticalLines(true);
 			tableSubgroups.getTableHeader().setReorderingAllowed(false);
+			tableSubgroups.getTableHeader().setFont(myModel.language.font);
+			tableSubgroups.setFont(myModel.language.font);
 			tableSubgroups.setModel(modelSubgroups);
 			scrollPaneSubgroups.setViewportView(tableSubgroups);
 			
@@ -1342,7 +1392,7 @@ public class frmProperties {
 		tableAnalysis.analysisType=analysisType;
 		if(analysisType==0){ //EV
 			modelAnalysis.setRowCount(0);
-			modelAnalysis.addRow(new Object[]{"Objective",null}); tableAnalysis.enabled[0]=true;
+			modelAnalysis.addRow(new Object[]{myModel.language.analysis.getString("gen.objective"),null}); tableAnalysis.enabled[0]=true;
 			if(tempDimInfo.objective==0) {tableAnalysis.setValueAt(myModel.language.analysis.getString("gen.maximize"), 0, 1);} //Maximize
 			else {tableAnalysis.setValueAt(myModel.language.analysis.getString("gen.minimize"), 0, 1);} //Minimize
 			modelAnalysis.addRow(new Object[]{myModel.language.analysis.getString("result.outcome"),null}); tableAnalysis.enabled[1]=true; //Outcome
@@ -1435,10 +1485,12 @@ class analysisTable extends JTable{
 					JComboBox<String> comboRule = new JComboBox<String>(new DefaultComboBoxModel(new String[]{
 							myModel.language.analysis.getString("gen.maximize"), //Maximize
 							myModel.language.analysis.getString("gen.minimize")})); //Minimize
+					comboRule.setFont(myModel.language.font);
 					return(new DefaultCellEditor(comboRule));
 				}
 				else if(column==1){ //dimension
 					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(tempDimInfo.dimNames));
+					comboDim.setFont(myModel.language.font);
 					return(new DefaultCellEditor(comboDim));
 				}
 			}
@@ -1447,18 +1499,21 @@ class analysisTable extends JTable{
 			if(column==1){
 				if(row==0 || row==1){ //Cost/Effect
 					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(tempDimInfo.dimNames));
+					comboDim.setFont(myModel.language.font);
 					return(new DefaultCellEditor(comboDim));
 				}
 				else if(row==2) { //Effect Objective
 					JComboBox<String> comboRule = new JComboBox<String>(new DefaultComboBoxModel(new String[]{
 							myModel.language.analysis.getString("gen.maximize"), //Maximize
 							myModel.language.analysis.getString("gen.minimize")})); //Minimize
+					comboRule.setFont(myModel.language.font);
 					return(new DefaultCellEditor(comboRule));
 				}
 				else if(row==3){ //Baseline scenario
 					myModel.getStrategies();
 					JComboBox<String> comboScen = new JComboBox<String>(new DefaultComboBoxModel(myModel.strategyNames));
 					comboScen.setEnabled(enabled[3]);
+					comboScen.setFont(myModel.language.font);
 					return(new DefaultCellEditor(comboScen));
 				}
 				else if(row==4){ //Willingness to pay
@@ -1466,6 +1521,7 @@ class analysisTable extends JTable{
 				}
 				else if(row==5){ //Additional Dimension
 					JComboBox<String> comboDim = new JComboBox<String>(new DefaultComboBoxModel(tempDimInfo.dimNames));
+					comboDim.setFont(myModel.language.font);
 					return(new DefaultCellEditor(comboDim));
 				}
 			}

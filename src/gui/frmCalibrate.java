@@ -48,6 +48,7 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableModel;
 
@@ -119,6 +120,7 @@ public class frmCalibrate {
 		try{
 			frmCalibrate = new JFrame();
 			frmCalibrate.setTitle("Amua - "+myModel.language.base.getString("title.model_calibration")); //Model Calibration
+			frmCalibrate.setFont(myModel.language.font);
 			frmCalibrate.setIconImage(Toolkit.getDefaultToolkit().getImage(frmCalibrate.class.getResource("/images/calibrate_128.png")));
 			frmCalibrate.setBounds(100, 100, 1020, 545);
 			frmCalibrate.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -172,6 +174,7 @@ public class frmCalibrate {
 			toolBar.add(btnFx);
 
 			JLabel lblLikelihooddistanceScore = new JLabel(myModel.language.analysis.getString("calib.calib_score_expression")+":"); //Calibration Score Expression
+			lblLikelihooddistanceScore.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblLikelihooddistanceScore = new GridBagConstraints();
 			gbc_lblLikelihooddistanceScore.insets = new Insets(0, 0, 5, 5);
 			gbc_lblLikelihooddistanceScore.gridx = 1;
@@ -189,6 +192,7 @@ public class frmCalibrate {
 
 			JPanel panel = new JPanel();
 			tabbedPane.addTab(myModel.language.base.getString("object.sets"), null, panel, null); //Sets
+			tabbedPane.setFont(myModel.language.font);
 			GridBagLayout gbl_panel = new GridBagLayout();
 			gbl_panel.columnWidths = new int[]{522, 0};
 			gbl_panel.rowHeights = new int[]{263, 180, 0};
@@ -208,7 +212,7 @@ public class frmCalibrate {
 			for(int i=0; i<numParams; i++){
 				modelParamSets.addColumn(paramNames[i]);
 			}
-
+			
 			JScrollPane scrollPane_1 = new JScrollPane();
 			GridBagConstraints gbc_scrollPane_1 = new GridBagConstraints();
 			gbc_scrollPane_1.insets = new Insets(0, 0, 5, 0);
@@ -221,6 +225,8 @@ public class frmCalibrate {
 			tableParamSets.setEnabled(false);
 			tableParamSets.setShowVerticalLines(true);
 			tableParamSets.setModel(modelParamSets);
+			tableParamSets.getTableHeader().setFont(myModel.language.font);
+			tableParamSets.setFont(myModel.language.font);
 			tableParamSets.getTableHeader().setReorderingAllowed(false);
 			tableParamSets.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			tableParamSets.setAutoCreateRowSorter(true);
@@ -228,6 +234,7 @@ public class frmCalibrate {
 
 			JPanel panel_3 = new JPanel();
 			tabbedPane.addTab(myModel.language.base.getString("plot.plots"), null, panel_3, null); //Plots
+			tabbedPane.setFont(myModel.language.font);
 			GridBagLayout gbl_panel_3 = new GridBagLayout();
 			gbl_panel_3.columnWidths = new int[]{228, 0, 0};
 			gbl_panel_3.rowHeights = new int[]{0, 0};
@@ -275,6 +282,8 @@ public class frmCalibrate {
 			tableParams.setShowVerticalLines(true);
 			tableParams.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			tableParams.setModel(modelParams);
+			tableParams.getTableHeader().setFont(myModel.language.font);
+			tableParams.setFont(myModel.language.font);
 			scrollPane_3.setViewportView(tableParams);
 
 			JPanel panel_6 = new JPanel();
@@ -296,107 +305,110 @@ public class frmCalibrate {
 			plotType[2]=myModel.language.base.getString("plot.cumulative_distribution"); //Cumulative Distribution
 			plotType[3]=myModel.language.base.getString("plot.quantiles"); //Quantiles
 			plotType[4]=myModel.language.base.getString("plot.by_set"); //By Set
-			
-						JButton btnUpdatePlot = new JButton(myModel.language.base.getString("button.plot")); //Plot
-						btnUpdatePlot.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								while(chartData.getSeriesCount()>0){ //clear chart
-									chartData.removeSeries(chartData.getSeriesKey(0));
-								}
+
+			JButton btnUpdatePlot = new JButton(myModel.language.base.getString("button.plot")); //Plot
+			btnUpdatePlot.setFont(myModel.language.font);
+			btnUpdatePlot.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					while(chartData.getSeriesCount()>0){ //clear chart
+						chartData.removeSeries(chartData.getSeriesKey(0));
+					}
 
 
-								int plotType=comboPlot.getSelectedIndex();
-								int selected[]=tableParams.getSelectedRows();
-								int numSelected=selected.length;
+					int plotType=comboPlot.getSelectedIndex();
+					int selected[]=tableParams.getSelectedRows();
+					int numSelected=selected.length;
 
-								int numSeries=numSelected;
-								if(numSeries>0 && numSeries!=numSeries_Params) { //reset series colours
-									numSeries_Params=numSeries;
-									seriesPaints_Params=new Paint[numSeries];
-									DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
-									XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) chart.getXYPlot().getRenderer();
-									for(int s=0; s<numSeries; s++) {
-										seriesPaints_Params[s]=supplier.getNextPaint();
-										renderer.setSeriesPaint(s, seriesPaints_Params[s]);
-									}
-								}
+					int numSeries=numSelected;
+					if(numSeries>0 && numSeries!=numSeries_Params) { //reset series colours
+						numSeries_Params=numSeries;
+						seriesPaints_Params=new Paint[numSeries];
+						DefaultDrawingSupplier supplier = new DefaultDrawingSupplier();
+						XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) chart.getXYPlot().getRenderer();
+						for(int s=0; s<numSeries; s++) {
+							seriesPaints_Params[s]=supplier.getNextPaint();
+							renderer.setSeriesPaint(s, seriesPaints_Params[s]);
+						}
+					}
 
-								if(plotType==0){ //Density
-									chart.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("calib.parameter_value")); //Parameter Value
-									chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("calib.posterior_density")); //Posterior Density
-									for(int i=0; i<numSelected; i++){
-										int curIndex=selected[i];
-										double density[][]=KernelSmooth.density(paramVals[curIndex], 100);
-										chartData.addSeries(paramNames[curIndex], density);
-									}
-								}
-								else if(plotType==1){ //Histogram
-									chart.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("calib.parameter_value")); //Parameter Value
-									chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("calib.posterior_frequency")); //Posterior Frequency
-									for(int i=0; i<numSelected; i++){
-										int curIndex=selected[i];
-										double hist[][]=KernelSmooth.histogram(paramVals[curIndex], 100, 10);
-										chartData.addSeries(paramNames[curIndex], hist);
-									}
-								}
-								else if(plotType==2){ //CDF
-									chart.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("calib.parameter_value")); //Parameter Value
-									chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("calib.posterior_cdf")); //Posterior CDF
-									for(int i=0; i<numSelected; i++){
-										int curIndex=selected[i];
-										double cdf[][]=KernelSmooth.cdf(paramVals[curIndex]);
-										chartData.addSeries(paramNames[curIndex], cdf);
-									}
-								}
-								else if(plotType==3){ //Quantiles
-									chart.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("calib.posterior_quantile")); //Posterior Quantile
-									chart.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("object.parameter")); //Parameter
-									for(int i=0; i<numSelected; i++){
-										int curIndex=selected[i];
-										double cdf[][]=KernelSmooth.quantiles(paramVals[curIndex]);
-										chartData.addSeries(paramNames[curIndex], cdf);
-									}
-								}
-								else if(plotType==4){ //By Set
-									chart.getXYPlot().getDomainAxis().setLabel(myModel.language.base.getString("object.parameter_set")); //Parameter Set
-									chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("calib.parameter_value")); //Parameter Value
-									for(int i=0; i<numSelected; i++){
-										int curIndex=selected[i];
-										double vals[][]=new double[2][numSets];
-										for(int j=0; j<numSets; j++){
-											vals[0][j]=(j+1); //set
-											vals[1][j]=paramVals[curIndex][j];
-										}
-										chartData.addSeries(paramNames[curIndex], vals);
-									}
-
-								}
-
-								XYPlot plotResults = chart.getXYPlot();
-								XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,false);
-								//DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
-								for(int i=0; i<numSelected; i++){
-									rendererResults.setSeriesPaint(i, seriesPaints_Params[i]);
-								}
-								plotResults.setRenderer(rendererResults);
-
-
+					if(plotType==0){ //Density
+						chart.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("calib.parameter_value")); //Parameter Value
+						chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("calib.posterior_density")); //Posterior Density
+						for(int i=0; i<numSelected; i++){
+							int curIndex=selected[i];
+							double density[][]=KernelSmooth.density(paramVals[curIndex], 100);
+							chartData.addSeries(paramNames[curIndex], density);
+						}
+					}
+					else if(plotType==1){ //Histogram
+						chart.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("calib.parameter_value")); //Parameter Value
+						chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("calib.posterior_frequency")); //Posterior Frequency
+						for(int i=0; i<numSelected; i++){
+							int curIndex=selected[i];
+							double hist[][]=KernelSmooth.histogram(paramVals[curIndex], 100, 10);
+							chartData.addSeries(paramNames[curIndex], hist);
+						}
+					}
+					else if(plotType==2){ //CDF
+						chart.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("calib.parameter_value")); //Parameter Value
+						chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("calib.posterior_cdf")); //Posterior CDF
+						for(int i=0; i<numSelected; i++){
+							int curIndex=selected[i];
+							double cdf[][]=KernelSmooth.cdf(paramVals[curIndex]);
+							chartData.addSeries(paramNames[curIndex], cdf);
+						}
+					}
+					else if(plotType==3){ //Quantiles
+						chart.getXYPlot().getDomainAxis().setLabel(myModel.language.analysis.getString("calib.posterior_quantile")); //Posterior Quantile
+						chart.getXYPlot().getRangeAxis().setLabel(myModel.language.base.getString("object.parameter")); //Parameter
+						for(int i=0; i<numSelected; i++){
+							int curIndex=selected[i];
+							double cdf[][]=KernelSmooth.quantiles(paramVals[curIndex]);
+							chartData.addSeries(paramNames[curIndex], cdf);
+						}
+					}
+					else if(plotType==4){ //By Set
+						chart.getXYPlot().getDomainAxis().setLabel(myModel.language.base.getString("object.parameter_set")); //Parameter Set
+						chart.getXYPlot().getRangeAxis().setLabel(myModel.language.analysis.getString("calib.parameter_value")); //Parameter Value
+						for(int i=0; i<numSelected; i++){
+							int curIndex=selected[i];
+							double vals[][]=new double[2][numSets];
+							for(int j=0; j<numSets; j++){
+								vals[0][j]=(j+1); //set
+								vals[1][j]=paramVals[curIndex][j];
 							}
-						});
-						
-									comboPlot = new JComboBox();
-									comboPlot.setModel(new DefaultComboBoxModel<String>(plotType));
-									GridBagConstraints gbc_comboPlot = new GridBagConstraints();
-									gbc_comboPlot.fill = GridBagConstraints.BOTH;
-									gbc_comboPlot.insets = new Insets(0, 0, 0, 5);
-									gbc_comboPlot.gridx = 0;
-									gbc_comboPlot.gridy = 0;
-									panel_6.add(comboPlot, gbc_comboPlot);
-						GridBagConstraints gbc_btnUpdatePlot = new GridBagConstraints();
-						gbc_btnUpdatePlot.fill = GridBagConstraints.BOTH;
-						gbc_btnUpdatePlot.gridx = 1;
-						gbc_btnUpdatePlot.gridy = 0;
-						panel_6.add(btnUpdatePlot, gbc_btnUpdatePlot);
+							chartData.addSeries(paramNames[curIndex], vals);
+						}
+
+					}
+
+					XYPlot plotResults = chart.getXYPlot();
+					XYLineAndShapeRenderer rendererResults = new XYLineAndShapeRenderer(true,false);
+					//DefaultDrawingSupplier supplierResults = new DefaultDrawingSupplier();
+					for(int i=0; i<numSelected; i++){
+						rendererResults.setSeriesPaint(i, seriesPaints_Params[i]);
+					}
+					plotResults.setRenderer(rendererResults);
+
+
+				}
+			});
+
+			comboPlot = new JComboBox();
+			comboPlot.setModel(new DefaultComboBoxModel<String>(plotType));
+			comboPlot.setFont(myModel.language.font);
+			
+			GridBagConstraints gbc_comboPlot = new GridBagConstraints();
+			gbc_comboPlot.fill = GridBagConstraints.BOTH;
+			gbc_comboPlot.insets = new Insets(0, 0, 0, 5);
+			gbc_comboPlot.gridx = 0;
+			gbc_comboPlot.gridy = 0;
+			panel_6.add(comboPlot, gbc_comboPlot);
+			GridBagConstraints gbc_btnUpdatePlot = new GridBagConstraints();
+			gbc_btnUpdatePlot.fill = GridBagConstraints.BOTH;
+			gbc_btnUpdatePlot.gridx = 1;
+			gbc_btnUpdatePlot.gridy = 0;
+			panel_6.add(btnUpdatePlot, gbc_btnUpdatePlot);
 
 			chartData = new DefaultXYDataset();
 			chart = ChartFactory.createScatterPlot(null, myModel.language.analysis.getString("result.value"), myModel.language.base.getString("plot.density"), //Value, Density 
@@ -407,7 +419,10 @@ public class frmCalibrate {
 			marker.setPaint(Color.black);
 			chart.getXYPlot().addDomainMarker(marker);
 			chart.getXYPlot().addRangeMarker(marker);
-
+			//font
+			chart.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chart.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chart.getLegend().setItemFont(myModel.language.font);
 
 			chartDataScores = new DefaultXYDataset();
 			chartScores = ChartFactory.createScatterPlot(null, myModel.language.base.getString("plot.order"), myModel.language.base.getString("object.score"), //Order, Score 
@@ -418,6 +433,10 @@ public class frmCalibrate {
 			markerScore.setPaint(Color.black);
 			chartScores.getXYPlot().addDomainMarker(markerScore);
 			chartScores.getXYPlot().addRangeMarker(markerScore);
+			//font
+			chartScores.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartScores.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartScores.getLegend().setItemFont(myModel.language.font);
 
 			ChartPanel panelChart = new ChartPanel(chart,false);
 			GridBagConstraints gbc_panel_chart = new GridBagConstraints();
@@ -436,6 +455,8 @@ public class frmCalibrate {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 
 			ChartPanel panelChartScores = new ChartPanel(chartScores,false);
 			GridBagConstraints gbc_panel_scores = new GridBagConstraints();
@@ -454,6 +475,8 @@ public class frmCalibrate {
 				}
 			});
 			popup.insert(mntmChangeColorScores, 0);
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 
 			JPanel panel_1 = new JPanel();
 			GridBagConstraints gbc_panel_1 = new GridBagConstraints();
@@ -479,9 +502,10 @@ public class frmCalibrate {
 			panel_1.add(scrollPane, gbc_scrollPane);
 
 			textPaneExpression = new StyledTextPane(myModel, myModel.language);
-			textPaneExpression.setFont(new Font("Consolas", Font.PLAIN, 15));
+			//textPaneExpression.setFont(new Font("Consolas", Font.PLAIN, 15));
+			textPaneExpression.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
 			scrollPane.setViewportView(textPaneExpression);
-
+			
 			String outcomes[] = null;
 			DimInfo dimInfo=myModel.dimInfo;
 			if(dimInfo.analysisType==0){ //EV
@@ -549,6 +573,7 @@ public class frmCalibrate {
 			panel_5.setLayout(gbl_panel_5);
 
 			JLabel lblChain = new JLabel(myModel.language.base.getString("node.chain")+":");
+			lblChain.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblChain = new GridBagConstraints();
 			gbc_lblChain.anchor = GridBagConstraints.EAST;
 			gbc_lblChain.insets = new Insets(0, 0, 5, 5);
@@ -557,6 +582,7 @@ public class frmCalibrate {
 			panel_5.add(lblChain, gbc_lblChain);
 
 			final JComboBox comboChain = new JComboBox(new DefaultComboBoxModel(chainNames));
+			comboChain.setFont(myModel.language.font);
 			GridBagConstraints gbc_comboChain = new GridBagConstraints();
 			gbc_comboChain.fill = GridBagConstraints.HORIZONTAL;
 			gbc_comboChain.insets = new Insets(0, 0, 5, 5);
@@ -565,6 +591,7 @@ public class frmCalibrate {
 			panel_5.add(comboChain, gbc_comboChain);
 
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run"));
+			btnRun.setFont(myModel.language.font);
 			GridBagConstraints gbc_btnRun = new GridBagConstraints();
 			gbc_btnRun.gridwidth = 2;
 			gbc_btnRun.insets = new Insets(0, 0, 5, 0);
@@ -573,11 +600,16 @@ public class frmCalibrate {
 			panel_5.add(btnRun, gbc_btnRun);
 			
 			final JComboBox comboMethod = new JComboBox();
+			comboMethod.setFont(myModel.language.font);
+			
 			final JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
+			btnSave.setFont(myModel.language.font);
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmCalibrate, myModel.language.message.getString("info.calibrating"), myModel.language.message.getString("info.time_left")+": ??:??", 0, 100); //Calibrating, Time Left
+					//final ProgressMonitor progress=new ProgressMonitor(frmCalibrate, myModel.language.message.getString("info.calibrating"), myModel.language.message.getString("info.time_left")+": ??:??", 0, 100); //Calibrating, Time Left
+					final frmProgressMonitor progress=new frmProgressMonitor(frmCalibrate, myModel.language.message.getString("info.calibrating"), myModel.language.message.getString("info.running"), 0, 100, myModel.language); 
+					SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
 
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -619,7 +651,7 @@ public class frmCalibrate {
 
 									int method=comboMethod.getSelectedIndex();
 									numSets=Integer.parseInt(textNumSets.getText());
-									progress.setMaximum(numSets+1);
+									progress.setMaximum(numSets);
 									params=new ParameterSet[numSets];
 
 									modelParams.setRowCount(0);
@@ -667,10 +699,10 @@ public class frmCalibrate {
 									}
 									else if(method==1){ //ABC
 										double thresh=Double.parseDouble((String) tableCalibSettings.getValueAt(0,1));
-										progress.setMillisToPopup(0);
-										progress.setMillisToDecideToPopup(0);
-										progress.setProgress(0);
-										progress.setProgress(1);
+										//progress.setMillisToPopup(0);
+										//progress.setMillisToDecideToPopup(0);
+										//progress.setProgress(0);
+										//progress.setProgress(1);
 										progress.setNote(myModel.language.message.getString("info.sampling")+"..."); //Sampling
 
 										for(int i=0; i<numSets; i++){
@@ -779,6 +811,7 @@ public class frmCalibrate {
 			});
 
 			JLabel lblMethod = new JLabel(myModel.language.analysis.getString("calib.method")+":");
+			lblMethod.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblMethod = new GridBagConstraints();
 			gbc_lblMethod.anchor = GridBagConstraints.EAST;
 			gbc_lblMethod.insets = new Insets(0, 0, 5, 5);
@@ -818,6 +851,7 @@ public class frmCalibrate {
 			btnSave.setEnabled(false);
 
 			JLabel lblCalibrationSettings = new JLabel(myModel.language.analysis.getString("calib.calib_settings")); //Calibration Settings
+			lblCalibrationSettings.setFont(myModel.language.font.deriveFont(Font.ITALIC, 12f));
 			GridBagConstraints gbc_lblCalibrationSettings = new GridBagConstraints();
 			gbc_lblCalibrationSettings.anchor = GridBagConstraints.SOUTHWEST;
 			gbc_lblCalibrationSettings.gridwidth = 2;
@@ -825,9 +859,9 @@ public class frmCalibrate {
 			gbc_lblCalibrationSettings.gridx = 0;
 			gbc_lblCalibrationSettings.gridy = 2;
 			panel_5.add(lblCalibrationSettings, gbc_lblCalibrationSettings);
-			lblCalibrationSettings.setFont(new Font("SansSerif", Font.ITALIC, 12));
-
+			
 			JLabel lblIntervals = new JLabel(myModel.language.analysis.getString("calib.num_param_sets")+":");
+			lblIntervals.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblIntervals = new GridBagConstraints();
 			gbc_lblIntervals.insets = new Insets(0, 0, 5, 5);
 			gbc_lblIntervals.gridx = 2;
@@ -858,7 +892,9 @@ public class frmCalibrate {
 			tableCalibSettings.setRowSelectionAllowed(false);
 			tableCalibSettings.setShowVerticalLines(true);
 			tableCalibSettings.getTableHeader().setReorderingAllowed(false);
+			tableCalibSettings.getTableHeader().setFont(myModel.language.font);
 			tableCalibSettings.setModel(modelCalibSettings);
+			tableCalibSettings.setFont(myModel.language.font); //for cells
 			tableCalibSettings.getColumnModel().getColumn(0).setPreferredWidth(121);
 			tableCalibSettings.getColumnModel().getColumn(1).setPreferredWidth(121);
 			scrollPane_2.setViewportView(tableCalibSettings);

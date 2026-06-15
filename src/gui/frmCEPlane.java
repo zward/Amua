@@ -58,6 +58,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.JTextField;
@@ -120,6 +121,7 @@ public class frmCEPlane {
 		try{
 			frmCEPlane = new JFrame();
 			frmCEPlane.setTitle("Amua - "+myModel.name+" - "+myModel.language.analysis.getString("cea.ce_plane")); //C/E Plane
+			frmCEPlane.setFont(myModel.language.font);
 			frmCEPlane.setIconImage(Toolkit.getDefaultToolkit().getImage(frmCEPlane.class.getResource("/images/logo_128.png")));
 			frmCEPlane.setBounds(100, 100, 535, 550);
 			frmCEPlane.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -133,9 +135,11 @@ public class frmCEPlane {
 			dataXY = new DefaultXYDataset();
 			colSeries=new XYSeriesCollection();
 
-			String lblEffect="∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim];
-			String lblCost="∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.costDim];
-
+			//String lblEffect="∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim];
+			//String lblCost="∆ "+myModel.dimInfo.dimNames[myModel.dimInfo.costDim];
+			String lblEffect="\\u0394  "+myModel.dimInfo.dimNames[myModel.dimInfo.effectDim]; //delta
+			String lblCost="\\u0394 "+myModel.dimInfo.dimNames[myModel.dimInfo.costDim]; //delta
+			
 			chartPlane = ChartFactory.createScatterPlot(null, lblEffect, lblCost, dataXY, PlotOrientation.VERTICAL, false, false, false);
 			chartPlane.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
 			//draw axes
@@ -143,7 +147,10 @@ public class frmCEPlane {
 			marker.setPaint(Color.black);
 			chartPlane.getXYPlot().addDomainMarker(marker);
 			chartPlane.getXYPlot().addRangeMarker(marker);
-
+			//font
+			chartPlane.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartPlane.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			
 			/*if(numSubgroups>0){
 				String names[]=new String[numSubgroups+1];
 				names[0]="Overall";
@@ -164,6 +171,7 @@ public class frmCEPlane {
 			frmCEPlane.getContentPane().add(toolBar, gbc_toolBar);
 			
 			JButton btnFlipAxes = new JButton(myModel.language.base.getString("plot.flip_axes")); //Flip Axes
+			btnFlipAxes.setFont(myModel.language.font);
 			btnFlipAxes.setIcon(new ScaledIcon("/images/flipAxes",16,16,16,true));
 			btnFlipAxes.setFocusable(false);
 			btnFlipAxes.addActionListener(new ActionListener() {
@@ -181,6 +189,7 @@ public class frmCEPlane {
 			toolBar.add(btnFlipAxes);
 			
 			comboRelative = new JComboBox(new DefaultComboBoxModel(new String[] {myModel.language.base.getString("plot.relative"),myModel.language.base.getString("plot.absolute")})); //Relative, Absolute
+			comboRelative.setFont(myModel.language.font);
 			comboRelative.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateChart();
@@ -189,6 +198,7 @@ public class frmCEPlane {
 			toolBar.add(comboRelative);
 			
 			comboGroup = new JComboBox<String>();
+			comboGroup.setFont(myModel.language.font);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateChart();
@@ -208,6 +218,7 @@ public class frmCEPlane {
 			toolBar.add(comboGroup);
 			
 			chckbxWTP = new JCheckBox(myModel.language.analysis.getString("cea.plot_wtp")); //Plot WTP
+			chckbxWTP.setFont(myModel.language.font);
 			chckbxWTP.setSelected(true);
 			chckbxWTP.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
@@ -221,6 +232,7 @@ public class frmCEPlane {
 			toolBar.add(separator);
 			
 			lblLabelSize = new JLabel(" "+myModel.language.base.getString("plot.label_size")+":"); //Label size
+			lblLabelSize.setFont(myModel.language.font);
 			toolBar.add(lblLabelSize);
 			
 			textLblSize = new JTextField();
@@ -259,6 +271,7 @@ public class frmCEPlane {
 			toolBar.add(separator_1);
 			
 			lblMarkerSize = new JLabel(" "+myModel.language.base.getString("plot.marker_size")+":"); //Marker size
+			lblMarkerSize.setFont(myModel.language.font);
 			toolBar.add(lblMarkerSize);
 			
 			textMarkerSize = new JTextField();
@@ -298,6 +311,10 @@ public class frmCEPlane {
 			gbc_panelChart.gridy = 1;
 			frmCEPlane.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
+			//popup
+			JPopupMenu popup = panelChart.getPopupMenu();
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 0);
 
 			updateChart(); //show overall
 

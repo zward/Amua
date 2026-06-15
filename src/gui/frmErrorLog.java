@@ -62,12 +62,14 @@ public class frmErrorLog {
 			frmErrorLog.setIconImage(Toolkit.getDefaultToolkit().getImage(frmErrorLog.class.getResource("/images/errorLog_128.png")));
 			frmErrorLog.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmErrorLog.setTitle("Amua - "+language.base.getString("menu.error_log")); //Error Log
+			frmErrorLog.setFont(language.font);
 			frmErrorLog.setResizable(false);
 			frmErrorLog.setBounds(100, 100, 800, 600);
 			frmErrorLog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmErrorLog.getContentPane().setLayout(null);
 									
 			JButton btnOk = new JButton(language.base.getString("button.ok")); //OK
+			btnOk.setFont(language.font);
 			btnOk.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmErrorLog.dispose();
@@ -81,6 +83,7 @@ public class frmErrorLog {
 			frmErrorLog.getContentPane().add(scrollPane_1);
 			
 			txtLog = new JTextArea();
+			txtLog.setFont(language.font);
 			txtLog.setWrapStyleWord(true);
 			txtLog.setLineWrap(true);
 			txtLog.setEditable(false);

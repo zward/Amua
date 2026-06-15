@@ -1438,8 +1438,8 @@ public class AmuaModel{
 			if(curTable.notes!=null && !curTable.notes.isEmpty()){des+=language.base.getString("menu.notes")+": "+curTable.notes+"<br>";} //Notes
 			des+="<i>"+language.base.getString("object.parameters")+"</i><br>"; //Parameters
 			int maxCol=curTable.numCols-1;
-			if(maxCol==1){des+=MathUtils.consoleFont("n")+": "+language.base.getString("table.table_column")+" ("+MathUtils.consoleFont("1")+")<br>";} //Table column
-			else{des+=MathUtils.consoleFont("n")+": "+language.base.getString("table.table_column")+" "+MathUtils.consoleFont("{1,...,"+maxCol+"}")+"<br><";} //Table column
+			if(maxCol==1){des+=MathUtils.consoleFont("n")+": "+language.base.getString("table.column")+" ("+MathUtils.consoleFont("1")+")<br>";} //Table column
+			else{des+=MathUtils.consoleFont("n")+": "+language.base.getString("table.column")+" "+MathUtils.consoleFont("{1,...,"+maxCol+"}")+"<br><";} //Table column
 			des+="<i><br>"+language.dist.getString("gen.sample")+"</i><br>"; //Sample
 			//Returns a random variable (mean in base case) from the user-defined distribution
 			String msg=language.dist.getString("desc.sample");

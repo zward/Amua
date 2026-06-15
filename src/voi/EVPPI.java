@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
 import base.AmuaModel;
+import gui.frmProgressMonitor;
 import main.CEAHelper;
 import main.Constraint;
 import main.MersenneTwisterFast;
@@ -151,7 +152,7 @@ public class EVPPI{
 	
 	
 	//Calculates EVPI
-	public void runTwoLevelMonteCarlo(int numOuter, int numInner, boolean useSeed, int seed, ProgressMonitor progress, JFrame curFrm) throws NumericException, Exception {
+	public void runTwoLevelMonteCarlo(int numOuter, int numInner, boolean useSeed, int seed, frmProgressMonitor progress, JFrame curFrm) throws NumericException, Exception {
 		
 		valid=true;
 
@@ -196,8 +197,8 @@ public class EVPPI{
 			int n=0; //total iterations progress
 			int totalIterations=numOuter*numInner*numSelected;
 			progress.setMaximum(totalIterations);
-			progress.setMillisToDecideToPopup(0);
-			progress.setMillisToPopup(0);
+			//progress.setMillisToDecideToPopup(0);
+			//progress.setMillisToPopup(0);
 			
 			dataResultsIter=new double[1+numSubgroups][numOutcomes][numStrat][2][totalIterations];
 			dataResultsVal=new double[1+numSubgroups][numOutcomes][numStrat][2][totalIterations];
@@ -730,7 +731,7 @@ public class EVPPI{
 		
 	}
 	
-	private void updateProgress(int z, int numIterations, long startTime, ProgressMonitor progress) {
+	private void updateProgress(int z, int numIterations, long startTime, frmProgressMonitor progress) {
 		//Update progress
 		double prog=((z)/(numIterations*1.0))*100;
 		long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
@@ -740,7 +741,7 @@ public class EVPPI{
 		String minutes = Integer.toString((int)(remTime/60));
 		if(seconds.length()<2){seconds="0"+seconds;}
 		if(minutes.length()<2){minutes="0"+minutes;}
-		progress.setProgress(z);
+		progress.setProgress(z+1);
 		if(z>0) {
 			progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 		}

@@ -98,12 +98,14 @@ public class frmExport {
 			frmExport.setIconImage(Toolkit.getDefaultToolkit().getImage(frmExport.class.getResource("/images/export_128.png")));
 			frmExport.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmExport.setTitle("Amua - "+myModel.language.base.getString("title.export_model")); //Export Model
+			frmExport.setFont(myModel.language.font);
 			frmExport.setResizable(false);
 			frmExport.setBounds(100, 100, 500, 300);
 			frmExport.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmExport.getContentPane().setLayout(null);
 			
 			JLabel lblSelectAnExport = new JLabel(myModel.language.message.getString("ask.select_language")+":"); //Select a language
+			lblSelectAnExport.setFont(myModel.language.font);
 			lblSelectAnExport.setBounds(12, 23, 146, 16);
 			frmExport.getContentPane().add(lblSelectAnExport);
 			
@@ -144,10 +146,12 @@ public class frmExport {
 			scrollPane.setViewportView(list);
 			
 			JLabel lblDescription = new JLabel(myModel.language.base.getString("title.description")+":"); //Description
+			lblDescription.setFont(myModel.language.font);
 			lblDescription.setBounds(232, 23, 205, 16);
 			frmExport.getContentPane().add(lblDescription);
 			
 			JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
+			btnExport.setFont(myModel.language.font);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int selected=list.getSelectedIndex();
@@ -155,8 +159,8 @@ public class frmExport {
 						//Show save as dialog
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-						
 						fc.setDialogTitle(myModel.language.base.getString("title.select_export_folder")); //Select Export Folder
+						myModel.language.setFontRecursively(fc); //set font
 						
 						int returnVal = fc.showDialog(frmExport, myModel.language.base.getString("button.select")); //Select
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -214,6 +218,7 @@ public class frmExport {
 			frmExport.getContentPane().add(btnExport);
 			
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmExport.dispose();
@@ -227,6 +232,7 @@ public class frmExport {
 			frmExport.getContentPane().add(scrollPane_1);
 			
 			textArea = new JTextArea();
+			textArea.setFont(myModel.language.font);
 			textArea.setLineWrap(true);
 			textArea.setEditable(false);
 			scrollPane_1.setViewportView(textArea);
@@ -252,12 +258,14 @@ public class frmExport {
 			frmExport.getContentPane().add(lblModelType);
 			
 			lblTableFormat = new JLabel(myModel.language.base.getString("table.table_format")+":"); //Table format
+			lblTableFormat.setFont(myModel.language.font);
 			lblTableFormat.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblTableFormat.setEnabled(false);
 			lblTableFormat.setBounds(207, 195, 115, 16);
 			frmExport.getContentPane().add(lblTableFormat);
 			
 			comboTables = new JComboBox<String>();
+			comboTables.setFont(myModel.language.font);
 			comboTables.setEnabled(false);
 			comboTables.setModel(new DefaultComboBoxModel<String>(new String[] {myModel.language.base.getString("table.inline"), myModel.language.base.getString("table.separate_files")})); //In-line, Separate Files
 			comboTables.setBounds(326, 190, 162, 26);

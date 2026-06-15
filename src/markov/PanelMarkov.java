@@ -122,6 +122,8 @@ public class PanelMarkov extends ModelPanel{
 		tableProperties.getColumnModel().getColumn(0).setPreferredWidth(150);
 		tableProperties.getColumnModel().getColumn(1).setPreferredWidth(150);
 		tableProperties.getTableHeader().setReorderingAllowed(false);
+		tableProperties.getTableHeader().setFont(myModel.language.font);
+		tableProperties.setFont(myModel.language.font);
 		tableProperties.putClientProperty("terminateEditOnFocusLost", true);
 		
 		Action action = new AbstractAction(){
@@ -252,49 +254,58 @@ public class PanelMarkov extends ModelPanel{
 		popup = new JPopupMenu();
 
 		mnAdd = new JMenu(myModel.language.base.getString("button.add")); //Add
+		mnAdd.setFont(myModel.language.font);
 		popup.add(mnAdd);
 
 		mntmDecision = new JMenuItem(myModel.language.base.getString("node.decision")); //Decision Node
+		mntmDecision.setFont(myModel.language.font);
 		mntmDecision.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(0);}});
 		mntmDecision.setIcon(new ScaledIcon("/images/decisionNode",16,16,16,true));
 		mntmDecision.setDisabledIcon(new ScaledIcon("/images/decisionNode",16,16,16,false));
 		mnAdd.add(mntmDecision);
 
 		mntmMarkovChain = new JMenuItem(myModel.language.base.getString("node.markov_chain")); //Markov Chain
+		mntmMarkovChain.setFont(myModel.language.font);
 		mntmMarkovChain.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(1);}});
 		mntmMarkovChain.setIcon(new ScaledIcon("/images/markovChain",16,16,16,true));
 		mntmMarkovChain.setDisabledIcon(new ScaledIcon("/images/markovChain",16,16,16,false));
 		mnAdd.add(mntmMarkovChain);
 
 		mntmMarkovState = new JMenuItem(myModel.language.base.getString("node.markov_state")); //Markov State
+		mntmMarkovState.setFont(myModel.language.font);
 		mntmMarkovState.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(2);}});
 		mntmMarkovState.setIcon(new ScaledIcon("/images/markovState",16,16,16,true));
 		mntmMarkovState.setDisabledIcon(new ScaledIcon("/images/markovState",16,16,16,false));
 		mnAdd.add(mntmMarkovState);
 
 		mntmChance = new JMenuItem(myModel.language.base.getString("node.chance")); //Chance Node
+		mntmChance.setFont(myModel.language.font);
 		mntmChance.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(3);}});
 		mntmChance.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
 		mntmChance.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 		mnAdd.add(mntmChance);
 
 		mntmTransition = new JMenuItem(myModel.language.base.getString("node.state_transition")); //State Transition
+		mntmTransition.setFont(myModel.language.font);
 		mntmTransition.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(4);}});
 		mntmTransition.setIcon(new ScaledIcon("/images/stateTransition",16,16,16,true));
 		mntmTransition.setDisabledIcon(new ScaledIcon("/images/stateTransition",16,16,16,false));
 		mnAdd.add(mntmTransition);
 
 		mntmChangeType= new JMenuItem(myModel.language.base.getString("button.change_node_type")); //Change Node Type
+		mntmChangeType.setFont(myModel.language.font);
 		mntmChangeType.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {changeNodeType();}});
 		popup.add(mntmChangeType);
 
 		mntmUpdateVariable = new JMenuItem(myModel.language.base.getString("button.add_remove_var_updates")); //Add/Remove Variable Updates
+		mntmUpdateVariable.setFont(myModel.language.font);
 		mntmUpdateVariable.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveVarUpdates();}});
 		mntmUpdateVariable.setIcon(new ScaledIcon("/images/updateVariable",16,16,16,true));
 		mntmUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",16,16,16,false));
 		popup.add(mntmUpdateVariable);
 		
 		mntmShowCost= new JMenuItem(myModel.language.base.getString("button.add_remove_cost")); //Add/Remove Cost (One-time Event)
+		mntmShowCost.setFont(myModel.language.font);
 		mntmShowCost.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveCost();}});
 		mntmShowCost.setIcon(new ScaledIcon("/images/cost",16,16,16,true));
 		mntmShowCost.setDisabledIcon(new ScaledIcon("/images/cost",16,16,16,false));
@@ -303,18 +314,21 @@ public class PanelMarkov extends ModelPanel{
 		popup.addSeparator();
 
 		final JMenuItem mntmCut = new JMenuItem(myModel.language.base.getString("menu.cut")); //Cut
+		mntmCut.setFont(myModel.language.font);
 		mntmCut.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {cutSubtree();}});
 		mntmCut.setIcon(new ScaledIcon("/images/cut",16,16,16,true));
 		mntmCut.setDisabledIcon(new ScaledIcon("/images/cut",16,16,16,false));
 		popup.add(mntmCut);
 
 		final JMenuItem mntmCopy = new JMenuItem(myModel.language.base.getString("menu.copy")); //Copy
+		mntmCopy.setFont(myModel.language.font);
 		mntmCopy.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {copySubtree();}});
 		mntmCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
 		mntmCopy.setDisabledIcon(new ScaledIcon("/images/copy",16,16,16,false));
 		popup.add(mntmCopy);
 
 		mntmPaste = new JMenuItem(myModel.language.base.getString("menu.paste")); //Paste
+		mntmPaste.setFont(myModel.language.font);
 		mntmPaste.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {pasteSubtree();}});
 		mntmPaste.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
 		mntmPaste.setDisabledIcon(new ScaledIcon("/images/paste",16,16,16,false));
@@ -323,15 +337,16 @@ public class PanelMarkov extends ModelPanel{
 
 		popup.addSeparator();
 		mntmDelete= new JMenuItem(myModel.language.base.getString("button.delete")); //Delete
+		mntmDelete.setFont(myModel.language.font);
 		mntmDelete.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {deleteNode(true);}});
 		mntmDelete.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
 		mntmDelete.setDisabledIcon(new ScaledIcon("/images/delete",16,16,16,false));
 		popup.add(mntmDelete);
 
 		mntmCollapse=new JMenuItem(myModel.language.base.getString("button.collapse_branch")); //Collapse Branch
+		mntmCollapse.setFont(myModel.language.font);
 		mntmCollapse.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {collapseBranch();}});
 		popup.add(mntmCollapse);
-
 
 	}
 

@@ -85,12 +85,14 @@ public class frmDefineClusterRun {
 			frmDefineClusterRun.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineClusterRun.class.getResource("/images/cluster_128.png")));
 			frmDefineClusterRun.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineClusterRun.setTitle("Amua - "+myModel.language.base.getString("title.define_cluster_run")); //Define Cluster Run
+			frmDefineClusterRun.setFont(myModel.language.font);
 			frmDefineClusterRun.setResizable(false);
 			frmDefineClusterRun.setBounds(100, 100, 679, 371);
 			frmDefineClusterRun.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmDefineClusterRun.getContentPane().setLayout(null);
 
 			JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
+			btnSave.setFont(myModel.language.font);
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					ClusterInputs inputs=new ClusterInputs();
@@ -115,6 +117,7 @@ public class frmDefineClusterRun {
 					fc.resetChoosableFileFilters();
 					fc.addChoosableFileFilter(new XMLFilter(myModel.language));
 					fc.setAcceptAllFileFilterUsed(false);
+					myModel.language.setFontRecursively(fc); //set font
 					
 					int returnVal = fc.showSaveDialog(frmDefineClusterRun);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -149,6 +152,7 @@ public class frmDefineClusterRun {
 			frmDefineClusterRun.getContentPane().add(btnSave);
 
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmDefineClusterRun.dispose();
@@ -158,6 +162,7 @@ public class frmDefineClusterRun {
 			frmDefineClusterRun.getContentPane().add(btnCancel);
 											
 			JLabel lblRun = new JLabel(myModel.language.analysis.getString("gen.run_type")+":"); //Run Type
+			lblRun.setFont(myModel.language.font);
 			lblRun.setBounds(6, 6, 232, 16);
 			frmDefineClusterRun.getContentPane().add(lblRun);
 			
@@ -187,6 +192,7 @@ public class frmDefineClusterRun {
 			scrollPane.setViewportView(listRuns);
 			
 			chckbxSeedIteration = new JCheckBox(myModel.language.analysis.getString("sim.iteration_as_seed")); //Use iteration as RNG seed
+			chckbxSeedIteration.setFont(myModel.language.font);
 			chckbxSeedIteration.setSelected(true);
 			chckbxSeedIteration.setBounds(275, 29, 338, 18);
 			frmDefineClusterRun.getContentPane().add(chckbxSeedIteration);
@@ -201,9 +207,10 @@ public class frmDefineClusterRun {
 			JLabel lblPsa = new JLabel(myModel.language.analysis.getString("gen.psa")+":"); //PSA
 			lblPsa.setBounds(6, 6, 301, 16);
 			panel.add(lblPsa);
-			lblPsa.setFont(new Font("SansSerif", Font.BOLD, 12));
+			lblPsa.setFont(myModel.language.font.deriveFont(Font.BOLD, 12f));
 			
 			chckbxPSASeed = new JCheckBox(myModel.language.analysis.getString("sim.seed")); //Seed
+			chckbxPSASeed.setFont(myModel.language.font);
 			chckbxPSASeed.setBounds(6, 32, 87, 18);
 			panel.add(chckbxPSASeed);
 			
@@ -214,6 +221,7 @@ public class frmDefineClusterRun {
 			textPSASeed.setColumns(10);
 			
 			chckbxSampleParameterSets = new JCheckBox(myModel.language.analysis.getString("sim.sample_parameter_sets")); //Sample parameter sets
+			chckbxSampleParameterSets.setFont(myModel.language.font);
 			chckbxSampleParameterSets.setBounds(6, 62, 301, 18);
 			panel.add(chckbxSampleParameterSets);
 			chckbxSampleParameterSets.setEnabled(false);

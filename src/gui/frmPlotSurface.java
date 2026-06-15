@@ -41,6 +41,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import base.AmuaModel;
@@ -87,6 +88,7 @@ public class frmPlotSurface {
 		try{
 			frmPlotSurface = new JFrame();
 			frmPlotSurface.setTitle("Amua - "+language.base.getString("menu.plot_surface")); //Plot Surface
+			frmPlotSurface.setFont(language.font);
 			frmPlotSurface.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotSurface.class.getResource("/images/plotSurface_128.png")));
 			frmPlotSurface.setBounds(100, 100, 1000, 600);
 			frmPlotSurface.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -117,6 +119,7 @@ public class frmPlotSurface {
 			frmPlotSurface.getContentPane().add(panel_1, gbc_panel_1);
 
 			JButton btnPlot = new JButton(language.base.getString("button.plot")); //Plot
+			btnPlot.setFont(language.font);
 			btnPlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					plot();
@@ -153,6 +156,8 @@ public class frmPlotSurface {
 			table.setShowVerticalLines(true);
 			table.setRowSelectionAllowed(false);
 			table.getTableHeader().setReorderingAllowed(false);
+			table.getTableHeader().setFont(language.font);
+			table.setFont(language.font);
 			table.setModel(new DefaultTableModel(
 				new Object[][] {
 					{language.math.getString("sum.min"), "0", "0"}, //Min
@@ -171,6 +176,7 @@ public class frmPlotSurface {
 			});
 			
 			JLabel lblIntervals = new JLabel(language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setFont(language.font);
 			lblIntervals.setBounds(172, 61, 65, 16);
 			panel_1.add(lblIntervals);
 			
@@ -209,8 +215,10 @@ public class frmPlotSurface {
 	}
 
 	private void plot(){
-		final ProgressMonitor progress=new ProgressMonitor(frmPlotSurface, language.base.getString("menu.plot_surface"), language.message.getString("info.calculating"), 0, 100); //Plot Surface, Calculating
-
+		//final ProgressMonitor progress=new ProgressMonitor(frmPlotSurface, language.base.getString("menu.plot_surface"), language.message.getString("info.calculating"), 0, 100); //Plot Surface, Calculating
+		final frmProgressMonitor progress=new frmProgressMonitor(frmPlotSurface, language.base.getString("menu.plot_surface"), language.message.getString("info.calculating"), 0, 100, language); //Plot Surface, Calculating
+		SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
+		
 		Thread SimThread = new Thread(){ //Non-UI
 			public void run(){
 				try{

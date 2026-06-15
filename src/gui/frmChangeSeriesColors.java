@@ -179,6 +179,7 @@ public class frmChangeSeriesColors {
 			frmChangeSeriesColors = new JDialog();
 			frmChangeSeriesColors.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmChangeSeriesColors.setTitle("Amua - "+language.base.getString("plot.change_series_colors")); //Change Series Colors
+			frmChangeSeriesColors.setFont(language.font);
 			frmChangeSeriesColors.setResizable(false);
 			frmChangeSeriesColors.setBounds(100, 100, 316, 356);
 			frmChangeSeriesColors.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -276,6 +277,8 @@ public class frmChangeSeriesColors {
 				}
 			});
 			tableSeries.setModel(modelSeries);
+			tableSeries.getTableHeader().setFont(language.font);
+			tableSeries.setFont(language.font);
 			tableSeries.setRowHeight(20);
 			tableSeries.getColumnModel().getColumn(1).setCellRenderer(new ColorPatchRenderer());
 			
@@ -283,6 +286,7 @@ public class frmChangeSeriesColors {
 			
 			
 			JButton btnCancel = new JButton(language.base.getString("button.close")); //Close
+			btnCancel.setFont(language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmChangeSeriesColors.dispose();
@@ -291,6 +295,7 @@ public class frmChangeSeriesColors {
 			
 		
 			JButton btnSelectColor = new JButton(language.base.getString("plot.select_color")); //Select Color
+			btnSelectColor.setFont(language.font);
 			btnSelectColor.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					selectColor();
@@ -303,6 +308,7 @@ public class frmChangeSeriesColors {
 			gbc_btnSelectColor.gridx = 0;
 			gbc_btnSelectColor.gridy = 1;
 			frmChangeSeriesColors.getContentPane().add(btnSelectColor, gbc_btnSelectColor);
+			
 			GridBagConstraints gbc_btnCancel = new GridBagConstraints();
 			gbc_btnCancel.anchor = GridBagConstraints.NORTH;
 			gbc_btnCancel.fill = GridBagConstraints.HORIZONTAL;

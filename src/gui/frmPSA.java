@@ -22,6 +22,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -60,6 +61,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableModel;
 
@@ -198,6 +200,7 @@ public class frmPSA {
 		try{
 			frmPSA = new JFrame();
 			frmPSA.setTitle("Amua - "+myModel.language.analysis.getString("sens.prob_sens_analysis")); //Probabilistic Sensitivity Analysis
+			frmPSA.setFont(myModel.language.font);
 			frmPSA.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPSA.class.getResource("/images/psa_128.png")));
 			frmPSA.setBounds(100, 100, 1000, 600);
 			frmPSA.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -258,6 +261,8 @@ public class frmPSA {
 			tableParams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableParams.setShowVerticalLines(true);
 			tableParams.getTableHeader().setReorderingAllowed(false);
+			tableParams.getTableHeader().setFont(myModel.language.font);
+			tableParams.setFont(myModel.language.font);
 			tableParams.setModel(modelParams);
 			scrollPaneParams.setViewportView(tableParams);
 
@@ -292,10 +297,12 @@ public class frmPSA {
 			}
 
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
+			btnRun.setFont(myModel.language.font);
 			btnRun.setBounds(359, 6, 90, 28);
 			panel_2.add(btnRun);
 
 			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
+			btnExport.setFont(myModel.language.font);
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -304,7 +311,7 @@ public class frmPSA {
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setAcceptAllFileFilterUsed(false);
 						fc.setFileFilter(new CSVFilter(myModel.language));
-
+						
 						if(tabbedPane.getSelectedIndex()<3) { //Not CEAC or CEAF
 							fc.setDialogTitle(myModel.language.base.getString("title.export_psa_results")); //Export PSA Results
 						}
@@ -315,6 +322,7 @@ public class frmPSA {
 							fc.setDialogTitle(myModel.language.base.getString("title.export_ceaf_results")); //Export CEAF Results
 						}
 						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
+						myModel.language.setFontRecursively(fc); //set font
 
 						int returnVal = fc.showSaveDialog(frmPSA);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -451,35 +459,38 @@ public class frmPSA {
 			panel_2.add(btnExport);
 
 			JLabel lblIterations = new JLabel(myModel.language.analysis.getString("sim.num_iterations")+":"); //# Iterations
-			lblIterations.setBounds(6, 12, 69, 16);
+			lblIterations.setFont(myModel.language.font);
+			lblIterations.setBounds(6, 12, 74, 16);
 			panel_2.add(lblIterations);
 
 			textIterations = new JTextField();
 			textIterations.setHorizontalAlignment(SwingConstants.CENTER);
 			textIterations.setText("1000");
-			textIterations.setBounds(73, 6, 69, 28);
+			textIterations.setBounds(78, 6, 69, 28);
 			panel_2.add(textIterations);
 			textIterations.setColumns(10);
 
 			chckbxSeed = new JCheckBox(myModel.language.analysis.getString("sim.seed")); //Seed
+			chckbxSeed.setFont(myModel.language.font);
 			chckbxSeed.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(chckbxSeed.isSelected()){textSeed.setEnabled(true);}
 					else{textSeed.setEnabled(false);}
 				}
 			});
-			chckbxSeed.setBounds(145, 11, 76, 18);
+			chckbxSeed.setBounds(150, 11, 76, 18);
 			panel_2.add(chckbxSeed);
 
 			textSeed = new JTextField();
 			textSeed.setEnabled(false);
-			textSeed.setBounds(223, 6, 59, 28);
+			textSeed.setBounds(228, 6, 59, 28);
 			panel_2.add(textSeed);
 			textSeed.setColumns(10);
 			
 			chckbxSampleParameterSets = new JCheckBox(myModel.language.analysis.getString("sim.sample_parameter_sets")); //Sample parameter sets
+			chckbxSampleParameterSets.setFont(myModel.language.font);
 			chckbxSampleParameterSets.setEnabled(false);
-			chckbxSampleParameterSets.setBounds(73, 41, 274, 18);
+			chckbxSampleParameterSets.setBounds(78, 41, 274, 18);
 			panel_2.add(chckbxSampleParameterSets);
 			
 			if(myModel.parameterSets!=null) {
@@ -488,6 +499,7 @@ public class frmPSA {
 			
 
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			tabbedPane.setFont(myModel.language.font);
 			GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 			gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 			gbc_tabbedPane.gridx = 1;
@@ -512,6 +524,10 @@ public class frmPSA {
 			marker.setPaint(Color.black);
 			chartResults.getXYPlot().addDomainMarker(marker);
 			chartResults.getXYPlot().addRangeMarker(marker);
+			//font
+			chartResults.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartResults.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartResults.getLegend().setItemFont(myModel.language.font);
 			
 			//get default series colors
 			numStrat=myModel.getStrategies();
@@ -540,8 +556,11 @@ public class frmPSA {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 
 			comboResults = new JComboBox<String>();
+			comboResults.setFont(myModel.language.font);
 			comboResults.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateResultsChart();
@@ -549,6 +568,7 @@ public class frmPSA {
 			});
 			
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
+			comboDimensions.setFont(myModel.language.font);
 			comboDimensions.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateResultsChart();
@@ -577,6 +597,7 @@ public class frmPSA {
 			panelResults.add(comboResults, gbc_comboResults);
 			
 			comboGroup = new JComboBox<String>();
+			comboGroup.setFont(myModel.language.font);
 			comboGroup.setVisible(false);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -627,12 +648,14 @@ public class frmPSA {
 			for(int v=0; v<numParams; v++){listModelParams.addElement(paramNames[v]);}
 
 			listParams = new JList<String>(listModelParams);
+			listParams.setFont(myModel.language.font);
 			scrollPaneSelectParams.setViewportView(listParams);
 			int selectedIndices[]=new int[numParams];
 			for(int v=0; v<numParams; v++){selectedIndices[v]=v;}
 			listParams.setSelectedIndices(selectedIndices); //Select all
 
 			JButton btnUpdateChart = new JButton(myModel.language.base.getString("plot.update_plot")); //Update Plot
+			btnUpdateChart.setFont(myModel.language.font);
 			btnUpdateChart.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateParamChart();
@@ -645,6 +668,7 @@ public class frmPSA {
 			panel_3.add(btnUpdateChart, gbc_btnUpdateChart);
 
 			comboParams = new JComboBox<String>();
+			comboParams.setFont(myModel.language.font);
 			comboParams.setModel(new DefaultComboBoxModel<String>(plotType));
 			GridBagConstraints gbc_comboParams = new GridBagConstraints();
 			gbc_comboParams.fill = GridBagConstraints.HORIZONTAL;
@@ -659,6 +683,10 @@ public class frmPSA {
 			//Draw axes
 			chartParams.getXYPlot().addDomainMarker(marker);
 			chartParams.getXYPlot().addRangeMarker(marker);
+			//font
+			chartParams.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartParams.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartParams.getLegend().setItemFont(myModel.language.font);
 
 			ChartPanel panelChartParams = new ChartPanel(chartParams,false);
 			GridBagConstraints gbc_panelChartParams = new GridBagConstraints();
@@ -683,6 +711,8 @@ public class frmPSA {
 				}
 			});
 			popup.insert(mntmChangeColorParams, 0);
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 			
 			JPanel panelScatter = new JPanel();
 			tabbedPane.addTab(myModel.language.base.getString("plot.scatter"), null, panelScatter, null); //Scatter
@@ -694,6 +724,10 @@ public class frmPSA {
 			//Draw axes
 			chartScatter.getXYPlot().addDomainMarker(marker);
 			chartScatter.getXYPlot().addRangeMarker(marker);
+			//font
+			chartScatter.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartScatter.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartScatter.getLegend().setItemFont(myModel.language.font);
 
 			GridBagLayout gbl_panelScatter = new GridBagLayout();
 			gbl_panelScatter.columnWidths = new int[]{155, 111, 156, 680, 0};
@@ -703,6 +737,7 @@ public class frmPSA {
 			panelScatter.setLayout(gbl_panelScatter);
 			
 			comboScatterType = new JComboBox<String>();
+			comboScatterType.setFont(myModel.language.font);
 			comboScatterType.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					updateScatter();
@@ -719,6 +754,7 @@ public class frmPSA {
 			panelScatter.add(comboScatterType, gbc_comboScatterType);
 			
 			comboGroupScatter = new JComboBox<String>();
+			comboGroupScatter.setFont(myModel.language.font);
 			comboGroupScatter.setVisible(false);
 			comboGroupScatter.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
@@ -727,6 +763,7 @@ public class frmPSA {
 			});
 			
 			chckbxScatterMeans = new JCheckBox(myModel.language.base.getString("plot.display_means")); //Display Means
+			chckbxScatterMeans.setFont(myModel.language.font);
 			chckbxScatterMeans.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
 					updateScatter();
@@ -767,12 +804,14 @@ public class frmPSA {
 				}
 			});
 			popup.insert(mntmChangeColorScatter, 0);
-			
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
+
 			//CEAC *********************************
 			JPanel panelCEAC = new JPanel();
 			tabbedPane.addTab(myModel.language.analysis.getString("cea.ceac"), null, panelCEAC, myModel.language.analysis.getString("cea.ceac_full")); //CEAC, "Cost-Effectiveness Acceptability Curve"
 			tabbedPane.setEnabledAt(3, false);
-			
+
 			chartDataCEAC = new DefaultXYDataset();
 			String costDim=myModel.language.analysis.getString("cea.cost"), effectDim=myModel.language.analysis.getString("cea.effect"); //Cost, Effect
 			if(myModel.dimInfo.analysisType>0) {
@@ -792,14 +831,18 @@ public class frmPSA {
 				Stroke dashed = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
 				chartCEAC.getXYPlot().addDomainMarker(new ValueMarker(myModel.dimInfo.WTP, Color.BLACK,dashed));
 			}
-						
+			//font
+			chartCEAC.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartCEAC.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartCEAC.getLegend().setItemFont(myModel.language.font);
+
 			GridBagLayout gbl_panelCEAC = new GridBagLayout();
 			gbl_panelCEAC.columnWidths = new int[]{0, 0};
 			gbl_panelCEAC.rowHeights = new int[]{35, 41, 0};
 			gbl_panelCEAC.columnWeights = new double[]{1.0, Double.MIN_VALUE};
 			gbl_panelCEAC.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 			panelCEAC.setLayout(gbl_panelCEAC);
-			
+
 			JPanel panelCEACHeader = new JPanel();
 			panelCEACHeader.setLayout(null);
 			GridBagConstraints gbc_panelCEACHeader = new GridBagConstraints();
@@ -808,41 +851,45 @@ public class frmPSA {
 			gbc_panelCEACHeader.gridx = 0;
 			gbc_panelCEACHeader.gridy = 0;
 			panelCEAC.add(panelCEACHeader, gbc_panelCEACHeader);
-			
+
 			JLabel lblCEACMin = new JLabel(myModel.language.math.getString("sum.min")+":"); //Min
+			lblCEACMin.setFont(myModel.language.font.deriveFont(11f));
 			lblCEACMin.setHorizontalAlignment(SwingConstants.RIGHT);
-			lblCEACMin.setBounds(0, 6, 36, 16);
+			lblCEACMin.setBounds(0, 6, 43, 16);
 			panelCEACHeader.add(lblCEACMin);
-			
+
 			textCEACMin = new JTextField();
 			textCEACMin.setText("0");
-			textCEACMin.setBounds(37, 0, 58, 28);
+			textCEACMin.setBounds(44, 0, 58, 28);
 			panelCEACHeader.add(textCEACMin);
 			textCEACMin.setColumns(10);
-			
+
 			JLabel lblCEACMax = new JLabel(myModel.language.math.getString("sum.max")+":"); //Max
+			lblCEACMax.setFont(myModel.language.font.deriveFont(11f));
 			lblCEACMax.setHorizontalAlignment(SwingConstants.RIGHT);
-			lblCEACMax.setBounds(90, 6, 36, 16);
+			lblCEACMax.setBounds(100, 6, 43, 16);
 			panelCEACHeader.add(lblCEACMax);
-			
+
 			textCEACMax = new JTextField();
-			textCEACMax.setBounds(127, 0, 58, 28);
+			textCEACMax.setBounds(144, 0, 58, 28);
 			panelCEACHeader.add(textCEACMax);
 			textCEACMax.setColumns(10);
 			textCEACMax.setText((myModel.dimInfo.WTP*3)+"");
-			
+
 			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setFont(myModel.language.font.deriveFont(11f));
 			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblIntervals.setBounds(200, 6, 70, 16);
 			panelCEACHeader.add(lblIntervals);
-			
+
 			textCEACIntervals = new JTextField();
 			textCEACIntervals.setText("100");
 			textCEACIntervals.setBounds(270, 0, 50, 28);
 			panelCEACHeader.add(textCEACIntervals);
 			textCEACIntervals.setColumns(10);
-			
+
 			JButton btnUpdateCEAC = new JButton(myModel.language.base.getString("button.update")); //Update
+			btnUpdateCEAC.setFont(myModel.language.font);
 			btnUpdateCEAC.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int group=0;
@@ -852,19 +899,20 @@ public class frmPSA {
 			});
 			btnUpdateCEAC.setBounds(325, 0, 100, 28);
 			panelCEACHeader.add(btnUpdateCEAC);
-			
+
 			comboCEACGroup = new JComboBox();
+			comboCEACGroup.setFont(myModel.language.font);
 			comboCEACGroup.setVisible(false);
 			comboCEACGroup.setBounds(428, 1, 100, 26);
 			panelCEACHeader.add(comboCEACGroup);
-			
+
 			ChartPanel panelChartCEAC = new ChartPanel(chartCEAC,false);
 			GridBagConstraints gbc_panelChartCEAC = new GridBagConstraints();
 			gbc_panelChartCEAC.fill = GridBagConstraints.BOTH;
 			gbc_panelChartCEAC.gridx = 0;
 			gbc_panelChartCEAC.gridy = 1;
 			panelCEAC.add(panelChartCEAC, gbc_panelChartCEAC);
-			
+
 			//pop-up menu
 			popup = panelChartCEAC.getPopupMenu();
 			JMenuItem mntmChangeColorCEAC = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
@@ -875,12 +923,14 @@ public class frmPSA {
 				}
 			});
 			popup.insert(mntmChangeColorCEAC, 0);
-			
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
+
 			// CEAF ******************************************************
 			JPanel panelCEAF = new JPanel();
 			tabbedPane.addTab(myModel.language.analysis.getString("cea.ceaf"), null, panelCEAF, myModel.language.analysis.getString("cea.ceaf_full")); //CEAF, Cost-Effectiveness Acceptability Frontier
 			tabbedPane.setEnabledAt(4, false);
-			
+
 			chartDataCEAF = new DefaultXYDataset();
 			costDim=myModel.language.analysis.getString("cea.cost"); effectDim=myModel.language.analysis.getString("cea.effect"); //Cost, Effect
 			if(myModel.dimInfo.analysisType>0) {
@@ -900,14 +950,18 @@ public class frmPSA {
 				Stroke dashed = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10.0f, 10.0f}, 0);
 				chartCEAF.getXYPlot().addDomainMarker(new ValueMarker(myModel.dimInfo.WTP, Color.BLACK,dashed));
 			}
-			
+			//font
+			chartCEAF.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartCEAF.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartCEAF.getLegend().setItemFont(myModel.language.font);
+
 			GridBagLayout gbl_panelCEAF = new GridBagLayout();
 			gbl_panelCEAF.columnWidths = new int[]{0, 0};
 			gbl_panelCEAF.rowHeights = new int[]{35, 41, 0};
 			gbl_panelCEAF.columnWeights = new double[]{1.0, Double.MIN_VALUE};
 			gbl_panelCEAF.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 			panelCEAF.setLayout(gbl_panelCEAF);
-			
+
 			JPanel panelCEAFHeader = new JPanel();
 			panelCEAFHeader.setLayout(null);
 			GridBagConstraints gbc_panelCEAFHeader = new GridBagConstraints();
@@ -916,41 +970,45 @@ public class frmPSA {
 			gbc_panelCEAFHeader.gridx = 0;
 			gbc_panelCEAFHeader.gridy = 0;
 			panelCEAF.add(panelCEAFHeader, gbc_panelCEAFHeader);
-			
+
 			JLabel lblCEAFMin = new JLabel(myModel.language.math.getString("sum.min")+":"); //Min
+			lblCEAFMin.setFont(myModel.language.font.deriveFont(11f));
 			lblCEAFMin.setHorizontalAlignment(SwingConstants.RIGHT);
-			lblCEAFMin.setBounds(0, 6, 36, 16);
+			lblCEAFMin.setBounds(0, 6, 43, 16);
 			panelCEAFHeader.add(lblCEAFMin);
-			
+
 			textCEAFMin = new JTextField();
 			textCEAFMin.setText("0");
-			textCEAFMin.setBounds(37, 0, 58, 28);
+			textCEAFMin.setBounds(44, 0, 58, 28);
 			panelCEAFHeader.add(textCEAFMin);
 			textCEAFMin.setColumns(10);
-			
+
 			JLabel lblCEAFMax = new JLabel(myModel.language.math.getString("sum.max")+":"); //Max
+			lblCEAFMax.setFont(myModel.language.font.deriveFont(11f));
 			lblCEAFMax.setHorizontalAlignment(SwingConstants.RIGHT);
-			lblCEAFMax.setBounds(90, 6, 36, 16);
+			lblCEAFMax.setBounds(100, 6, 43, 16);
 			panelCEAFHeader.add(lblCEAFMax);
-			
+
 			textCEAFMax = new JTextField();
-			textCEAFMax.setBounds(127, 0, 58, 28);
+			textCEAFMax.setBounds(144, 0, 58, 28);
 			panelCEAFHeader.add(textCEAFMax);
 			textCEAFMax.setColumns(10);
 			textCEAFMax.setText((myModel.dimInfo.WTP*3)+"");
-			
+
 			JLabel lblIntervalsCEAF = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervalsCEAF.setFont(myModel.language.font.deriveFont(11f));
 			lblIntervalsCEAF.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblIntervalsCEAF.setBounds(200, 6, 70, 16);
 			panelCEAFHeader.add(lblIntervalsCEAF);
-			
+
 			textCEAFIntervals = new JTextField();
 			textCEAFIntervals.setText("100");
 			textCEAFIntervals.setBounds(270, 0, 50, 28);
 			panelCEAFHeader.add(textCEAFIntervals);
 			textCEAFIntervals.setColumns(10);
-			
+
 			JButton btnUpdateCEAF = new JButton(myModel.language.base.getString("button.update")); //Update
+			btnUpdateCEAF.setFont(myModel.language.font);
 			btnUpdateCEAF.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int group=0;
@@ -960,19 +1018,20 @@ public class frmPSA {
 			});
 			btnUpdateCEAF.setBounds(325, 0, 100, 28);
 			panelCEAFHeader.add(btnUpdateCEAF);
-			
+
 			comboCEAFGroup = new JComboBox();
+			comboCEAFGroup.setFont(myModel.language.font);
 			comboCEAFGroup.setVisible(false);
 			comboCEAFGroup.setBounds(428, 1, 100, 26);
 			panelCEAFHeader.add(comboCEAFGroup);
-			
+
 			ChartPanel panelChartCEAF = new ChartPanel(chartCEAF,false);
 			GridBagConstraints gbc_panelChartCEAF = new GridBagConstraints();
 			gbc_panelChartCEAF.fill = GridBagConstraints.BOTH;
 			gbc_panelChartCEAF.gridx = 0;
 			gbc_panelChartCEAF.gridy = 1;
 			panelCEAF.add(panelChartCEAF, gbc_panelChartCEAF);
-			
+
 			//pop-up menu
 			popup = panelChartCEAF.getPopupMenu();
 			JMenuItem mntmChangeColorCEAF = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
@@ -983,7 +1042,9 @@ public class frmPSA {
 				}
 			});
 			popup.insert(mntmChangeColorCEAF, 0);
-			
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
+
 			//subgroup combos **************
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				int numGroups=myModel.subgroupNames.size();
@@ -999,11 +1060,13 @@ public class frmPSA {
 				comboCEAFGroup.setModel(new DefaultComboBoxModel(subgroupNames));
 				comboCEAFGroup.setVisible(true);
 			}
-			
+
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmPSA, myModel.language.analysis.getString("gen.psa"), myModel.language.message.getString("info.sampling"), 0, 100); //PSA, Sampling
+					//final ProgressMonitor progress=new ProgressMonitor(frmPSA, myModel.language.analysis.getString("gen.psa"), myModel.language.message.getString("info.sampling"), 0, 100); //PSA, Sampling
+					final frmProgressMonitor progress=new frmProgressMonitor(frmPSA, myModel.language.analysis.getString("gen.psa"), myModel.language.message.getString("info.sampling"), 0, 100, myModel.language); ///PSA, Sampling
+					SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
 
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -1016,7 +1079,7 @@ public class frmPSA {
 
 								//Check model first
 								ArrayList<String> errorsBase=myModel.parseModel();
-								
+
 								if(errorsBase.size()>0){
 									JOptionPane.showMessageDialog(frmPSA, myModel.language.message.getString("err.base_case")); //Errors in base case model!
 								}
@@ -1039,22 +1102,22 @@ public class frmPSA {
 									if(sampleParamSets) {
 										numSets=myModel.parameterSets.length;
 									}
-																		
+
 									numIterations=Integer.parseInt(textIterations.getText().replaceAll(",", ""));
 									progress.setMaximum(numIterations);
-									progress.setMillisToDecideToPopup(0);
-									progress.setMillisToPopup(0);
+									//progress.setMillisToDecideToPopup(0);
+									//progress.setMillisToPopup(0);
 
 									numStrat=myModel.getStrategies();
 									int numOutcomes=comboDimensions.getItemCount();
 									int numDim=myModel.dimInfo.dimNames.length;
-									
+
 									if(myModel.simType==1 && myModel.reportSubgroups){numSubgroups=myModel.subgroupNames.size();}
-									
+
 									int analysisType=myModel.dimInfo.analysisType;
 									if(analysisType==1){CEAnotes=new String[1+numSubgroups][numStrat][numIterations];} //CEA
 									else{CEAnotes=null;}
-									
+
 									dataResultsIter=new double[1+numSubgroups][numOutcomes][numStrat][2][numIterations];
 									dataResultsVal=new double[1+numSubgroups][numOutcomes][numStrat][2][numIterations];
 									dataResultsCumDens=new double[1+numSubgroups][numOutcomes][numStrat][2][numIterations];
@@ -1068,26 +1131,26 @@ public class frmPSA {
 										dataParamsVal[p]=new double[curDim][2][numIterations];
 										dataParamsCumDens[p]=new double[curDim][2][numIterations];
 									}
-									
+
 									dataScatterAbs=new double[1+numSubgroups][numStrat][2][numIterations];
 									dataScatterRel=new double[1+numSubgroups][numStrat][2][numIterations];
 									meanScatterAbs=new double[1+numSubgroups][numStrat][2][1];
 									meanScatterRel=new double[1+numSubgroups][numStrat][2][1];
-									
+
 									dataCEAC=new double[numStrat][][];
 									dataCEAF=new double[numStrat][][];
-									
+
 									//Get orig values for all parameters
 									Numeric origValues[]=new Numeric[numParams];
 									for(int v=0; v<numParams; v++){ //Reset 'fixed' for all parameters
 										origValues[v]=myModel.parameters.get(v).value.copy();
 									}
-									
+
 									//Parse constraints
 									for(int c=0; c<numConstraints; c++){
 										myModel.constraints.get(c).parseConstraints();
 									}
-									
+
 									MarkovTrace traces[][][]=null;
 									ArrayList<MarkovNode> chainRoots=null;
 									int numChains = 0;
@@ -1104,11 +1167,11 @@ public class frmPSA {
 										origShowTrace=myModel.markov.showTrace;
 										myModel.markov.showTrace=false;
 									}
-									
+
 									long startTime=System.currentTimeMillis();
-									
+
 									reports=new RunReport[numIterations];
-									
+
 									for(int n=0; n<numIterations; n++){
 										//Update progress
 										double prog=((n)/(numIterations*1.0))*100;
@@ -1119,11 +1182,11 @@ public class frmPSA {
 										String minutes = Integer.toString((int)(remTime/60));
 										if(seconds.length()<2){seconds="0"+seconds;}
 										if(minutes.length()<2){minutes="0"+minutes;}
-										progress.setProgress(n);
+										progress.setProgress(n+1);
 										if(n>0) {
 											progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 										}
-										
+
 										//Sample parameters
 										myModel.curGenerator[0]=myModel.generatorParam;
 										boolean validParams=false;
@@ -1133,7 +1196,7 @@ public class frmPSA {
 												curParam.locked=false;
 												curParam.value=origValues[v];
 											}
-									
+
 											for(int v=0; v<numParams; v++){ //sample all parameters
 												Parameter curParam=myModel.parameters.get(v);
 												if(curParam.locked==false) {
@@ -1160,7 +1223,7 @@ public class frmPSA {
 											int curSet=myModel.generatorParam.nextInt(numSets);
 											myModel.parameterSets[curSet].setParameters(myModel);
 										}
-										
+
 										for(int v=0; v<numParams; v++){ //Record value
 											int curDim=paramDims[v];
 											if(curDim==1) { //scalar
@@ -1189,7 +1252,7 @@ public class frmPSA {
 										//Run model
 										myModel.curGenerator=myModel.generatorVar;
 										reports[n]=myModel.runModel(null, false);
-										
+
 										if(myModel.type==1){ //Markov model
 											for(int c=0; c<numChains; c++){
 												traces[c][0][n]=reports[n].markovTraces.get(c); //overall
@@ -1198,7 +1261,7 @@ public class frmPSA {
 												}
 											}
 										}
-																																								
+
 										//Get EVs
 										for(int d=0; d<numDim; d++){
 											for(int s=0; s<numStrat; s++){
@@ -1293,7 +1356,7 @@ public class frmPSA {
 												}
 											}
 										}
-								
+
 										if(progress.isCanceled()){  //End loop
 											n=numIterations;
 											cancelled=true;
@@ -1308,18 +1371,18 @@ public class frmPSA {
 										curParam.value=origValues[v];
 									}
 									myModel.validateModelObjects();
-									
+
 									if(myModel.type==1){
 										myModel.markov.showTrace=origShowTrace;
 									}
-									
+
 									if(cancelled==false){
 										double meanResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];
 										double lbResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];
 										double ubResults[][][]=new double[numSubgroups+1][numOutcomes][numStrat];
 										int bounds[]=MathUtils.getBoundIndices(numIterations);
 										int indexLB=bounds[0], indexUB=bounds[1];
-										
+
 										//Sort ordered arrays
 										for(int d=0; d<numOutcomes; d++){
 											for(int s=0; s<numStrat; s++){
@@ -1373,7 +1436,7 @@ public class frmPSA {
 													}
 												}
 											}
-											
+
 											tabbedPane.setEnabledAt(2, true);
 											XYPlot plotScatter = chartScatter.getXYPlot();
 											XYLineAndShapeRenderer rendererScatter = new XYLineAndShapeRenderer(false,true);
@@ -1407,24 +1470,24 @@ public class frmPSA {
 												rendererScatter.setSeriesOutlineStroke(numStrat+s, new BasicStroke(1.5f));
 												rendererScatter.setSeriesVisibleInLegend(numStrat+s, Boolean.FALSE);
 											}
-											
+
 											plotScatter.setRenderer(rendererScatter);
 											plotScatter.setSeriesRenderingOrder(SeriesRenderingOrder.FORWARD);
 											updateScatter();
-											
+
 											//CEAC
 											tabbedPane.setEnabledAt(3, true);
 											if(comboCEACGroup.isVisible()){comboCEACGroup.setSelectedIndex(0);}
 											updateCEAC(0);
-											
+
 											//CEAF
 											tabbedPane.setEnabledAt(4, true);
 											if(comboCEAFGroup.isVisible()){comboCEAFGroup.setSelectedIndex(0);}
 											updateCEAF(0);
-											
+
 										}
 										btnExport.setEnabled(true);
-										
+
 										//Get trace summary
 										if(myModel.type==1 && myModel.markov.showTrace){
 											if(myModel.markov.compileTraces==false) {
@@ -1444,7 +1507,7 @@ public class frmPSA {
 												window.frmTraceSummaryMulti.setVisible(true);
 											}
 										}
-										
+
 										//Print results summary to console
 										Console console=myModel.mainForm.console;
 										myModel.printSimInfo(console);
@@ -1472,14 +1535,14 @@ public class frmPSA {
 											}
 										}
 										curTable.print();
-										
+
 										if(myModel.dimInfo.analysisType==1) { //CEA - get mean ICERS
 											printCEAResults(console, 0);
 										}
 										else if(myModel.dimInfo.analysisType==2) { //BCA - get mean NMB
 											printBCAResults(console, 0);
 										}
-										
+
 										//subgroups
 										for(int g=0; g<numSubgroups; g++){
 											console.print("\n"+myModel.language.analysis.getString("result.subgroup_results")+": "+myModel.subgroupNames.get(g)+"\n"); //Subgroup Results
@@ -1498,17 +1561,17 @@ public class frmPSA {
 												}
 											}
 											curTable.print();
-											
+
 											if(myModel.dimInfo.analysisType==1) { //CEA - get mean ICERS
 												printCEAResults(console, g+1);
 											}
 											else if(myModel.dimInfo.analysisType==2) { //BCA - get mean NMB
 												printBCAResults(console, g+1);
 											}
-											
-											
+
+
 										}
-										
+
 										if(myModel.simType==1 && myModel.displayIndResults==true){
 											console.print("\n"+myModel.language.analysis.getString("result.individual_level_results")+":\n"); //Individual-level Results
 											RunReportSummary summary=new RunReportSummary(reports);
@@ -1516,11 +1579,11 @@ public class frmPSA {
 												console.print(myModel.language.analysis.getString("gen.strategy")+": "+myModel.strategyNames[s]+"\n"); //Strategy
 												summary.microStatsSummary[s].printSummary(console);
 											}
-											
+
 											//subgroups
-											
-											
-											
+
+
+
 										}
 										console.newLine();
 									}
@@ -1528,7 +1591,7 @@ public class frmPSA {
 								}
 								btnRun.setEnabled(true);
 								frmPSA.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-								
+
 							} catch (Exception e) {
 								e.printStackTrace();
 								btnRun.setEnabled(true);
@@ -1917,7 +1980,7 @@ public class frmPSA {
 					bestStrat=s;
 				}
 			}
-			//update disaply prob
+			//update display prob
 			for(int s=0; s<numStrat; s++) {
 				dataCEAF[s][0][w]=curWTP;
 				if(s==bestStrat) {

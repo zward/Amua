@@ -338,6 +338,7 @@ public class TreeNode extends ModelNode{
 
 	private void displayName(){
 		textName=new JTextField(myModel.language.base.getString("object.name")); //Name
+		textName.setFont(myModel.language.font);
 		if(name!=null){textName.setText(name);}
 		textName.setBorder(null);
 		textName.setHorizontalAlignment(JTextField.CENTER);
@@ -377,6 +378,7 @@ public class TreeNode extends ModelNode{
 		scaleFont(lblProb);
 		//Default
 		textProb=new TreeTextField(panel, this, 0);
+		textProb.setFont(myModel.language.font);
 		if(textHighlights[0]!=null){textProb.setBackground(textHighlights[0]);}
 		else{textProb.setBackground(new Color(0,0,0,0));}
 		textProb.setText(prob);
@@ -424,6 +426,7 @@ public class TreeNode extends ModelNode{
 		for(int i=0; i<numDimensions-1; i++){buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+cost[i]+"; ";}
 		buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+cost[numDimensions-1];
 		textCost=new TreeTextField(panel, this, 1);
+		textCost.setFont(myModel.language.font);
 		if(textHighlights[1]!=null){textCost.setBackground(textHighlights[1]);}
 		else{textCost.setBackground(new Color(0,0,0,0));}
 		textCost.setText(buildString);
@@ -467,6 +470,7 @@ public class TreeNode extends ModelNode{
 		for(int i=0; i<numDimensions-1; i++){buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+payoff[i]+"; ";}
 		buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+payoff[numDimensions-1];
 		textPayoff=new TreeTextField(panel, this, 2);
+		textPayoff.setFont(myModel.language.font);
 		if(textHighlights[2]!=null){textPayoff.setBackground(textHighlights[2]);}
 		else{textPayoff.setBackground(new Color(0,0,0,0));}
 		textPayoff.setText(buildString);
@@ -509,6 +513,7 @@ public class TreeNode extends ModelNode{
 		lblVarUpdates.setForeground(Color.GRAY);
 		scaleFont(lblVarUpdates);
 		textVarUpdates=new TreeTextField(panel, this, 3);
+		textVarUpdates.setFont(myModel.language.font);
 		if(textHighlights[3]!=null){textVarUpdates.setBackground(textHighlights[3]);}
 		else{textVarUpdates.setBackground(new Color(0,0,0,0));}
 		textVarUpdates.setText(varUpdates);
@@ -546,6 +551,7 @@ public class TreeNode extends ModelNode{
 	
 	public void displayEV(){
 		textEV=new JTextField();
+		textEV.setFont(myModel.language.font);
 		textEV.setBackground(new Color(0,0,0,0));
 		textEV.setBorder(null);
 		textEV.setEditable(false);
@@ -579,6 +585,7 @@ public class TreeNode extends ModelNode{
 	
 	public void displayICER(){
 		textICER=new JTextField();
+		textICER.setFont(myModel.language.font);
 		textICER.setBackground(new Color(0,0,0,0));
 		textICER.setHorizontalAlignment(JTextField.CENTER);
 		textICER.setBorder(null);

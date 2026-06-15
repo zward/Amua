@@ -23,6 +23,7 @@ import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -48,6 +49,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
@@ -128,6 +130,7 @@ public class frmMain {
 	JTabbedPane tabbedPaneCanvas;
 	JScrollPane scrollPaneFx;
 	public JTabbedPane tabbedPaneBottom, tabbedPaneRight;
+	JScrollPane scrollPaneConsole;
 	JScrollPane scrollPaneNotes;
 	JScrollPane scrollPaneProperties;
 	JPanel panelParamSets;
@@ -186,7 +189,7 @@ public class frmMain {
 	JMenuItem mntmDecisionTree, mntmMarkovModel, mntmOpenModel, mntmExit, mntmFindreplace;
 	JMenuItem mntmOneway, mntmTornadoDiagram, mntmThresholdAnalysis, mntmTwoway, mntmOnewayBest, mntmProbabilisticpsa;
 	JMenuItem mntmBatchRuns, mntmEVPI, mntmEVPPI, mntmScenarios, mntmPlotFunction, mntmPlotSurface, mntmSaveConsole;
-	JRadioButtonMenuItem rdbtnmntmLang_English, rdbtnmntmLang_French, rdbtnmntmLang_Spanish;
+	JRadioButtonMenuItem rdbtnmntmLang_English, rdbtnmntmLang_French, rdbtnmntmLang_Spanish, rdbtnmntmLang_Portuguese, rdbtnmntmLang_Khmer, rdbtnmntmLang_Chinese;
 	JMenuItem mntmHelpContents, mntmReportBugrequest, mntmErrorLog, mntmAboutAmua;
 	JButton btnDeleteVariable, btnEdit, btnHighlightUse, btnImport, btnExportParamSets, btnClearParamSets;
 	
@@ -198,6 +201,7 @@ public class frmMain {
 		this.version=version;
 		language=new Language();
 		initialize();
+		updateLanguage(); //updates UIManager
 		checkAnyModels();
 	}
 
@@ -283,6 +287,7 @@ public class frmMain {
 
 					fc.setDialogTitle(language.base.getString("menu.open_model")); //Open Model
 					fc.setApproveButtonText(language.base.getString("button.open")); //Open
+					language.setFontRecursively(fc); //set font
 
 					int returnVal = fc.showOpenDialog(frmMain);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -340,6 +345,8 @@ public class frmMain {
 
 					fc.setDialogTitle(language.base.getString("menu.save_model")); //Save Model
 					fc.setApproveButtonText(language.base.getString("menu.save")); //Save
+					language.setFontRecursively(fc); //set font
+
 
 					int returnVal = fc.showSaveDialog(frmMain);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -738,6 +745,7 @@ public class frmMain {
 					fc.setFileFilter(new TXTFilter(language));
 					fc.setDialogTitle(language.base.getString("menu.save_console")); //Save Console
 					fc.setApproveButtonText(language.base.getString("menu.save")); //Save
+					language.setFontRecursively(fc); //set font
 
 					int returnVal = fc.showSaveDialog(frmMain);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -784,10 +792,25 @@ public class frmMain {
 		mnLanguage.add(rdbtnmntmLang_Spanish);
 		groupLanguage.add(rdbtnmntmLang_Spanish);
 		
+		rdbtnmntmLang_Portuguese = new JRadioButtonMenuItem(language.base.getString("menu.portuguese"));
+		mnLanguage.add(rdbtnmntmLang_Portuguese);
+		groupLanguage.add(rdbtnmntmLang_Portuguese);
+		
+		rdbtnmntmLang_Khmer = new JRadioButtonMenuItem(language.base.getString("menu.khmer"));
+		mnLanguage.add(rdbtnmntmLang_Khmer);
+		groupLanguage.add(rdbtnmntmLang_Khmer);
+		
+		rdbtnmntmLang_Chinese = new JRadioButtonMenuItem(language.base.getString("menu.chinese"));
+		mnLanguage.add(rdbtnmntmLang_Chinese);
+		groupLanguage.add(rdbtnmntmLang_Chinese);
+		
 		//get current language
 		String curLanguage=language.locale.getLanguage();
 		if(curLanguage.matches("fr")) {rdbtnmntmLang_French.setSelected(true);}
 		else if(curLanguage.matches("es")) {rdbtnmntmLang_Spanish.setSelected(true);}
+		else if(curLanguage.matches("pt")) {rdbtnmntmLang_Portuguese.setSelected(true);}
+		else if(curLanguage.matches("km")) {rdbtnmntmLang_Khmer.setSelected(true);}
+		else if(curLanguage.matches("zh")){rdbtnmntmLang_Chinese.setSelected(true);}
 		else {rdbtnmntmLang_English.setSelected(true);}
 		
 		rdbtnmntmLang_English.addActionListener(new ActionListener() {
@@ -807,6 +830,30 @@ public class frmMain {
 		rdbtnmntmLang_Spanish.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Locale locale=new Locale("es", "ES");
+				language.setLocale(locale);
+				updateLanguage();
+			}
+		});
+		
+		rdbtnmntmLang_Portuguese.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Locale locale=new Locale("pt", "PT");
+				language.setLocale(locale);
+				updateLanguage();
+			}
+		});
+		
+		rdbtnmntmLang_Khmer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Locale locale=new Locale("km", "KH");
+				language.setLocale(locale);
+				updateLanguage();
+			}
+		});
+		
+		rdbtnmntmLang_Chinese.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Locale locale=new Locale("zh", "CN");
 				language.setLocale(locale);
 				updateLanguage();
 			}
@@ -1481,7 +1528,7 @@ public class frmMain {
 		tabbedPaneBottom = new JTabbedPane(JTabbedPane.TOP);
 		splitPaneLeft.setRightComponent(tabbedPaneBottom);
 
-		JScrollPane scrollPaneConsole = new JScrollPane();
+		scrollPaneConsole = new JScrollPane();
 		JLabel lblConsole=new JLabel(language.base.getString("menu.console")); //Console
 		lblConsole.setIcon(new ScaledIcon("/images/console",16,16,16,true));
 		lblConsole.setHorizontalTextPosition(SwingConstants.RIGHT);
@@ -1529,6 +1576,8 @@ public class frmMain {
 					fc=new JFileChooser(curModel.filepath);
 					fc.setFileFilter(new CSVFilter(language));
 					fc.setDialogTitle(language.base.getString("title.import_param_sets")); //Import Parameter Sets
+					language.setFontRecursively(fc); //set font
+
 					int returnVal = fc.showDialog(frmMain, language.base.getString("menu.import")); //Import
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
 						File file = fc.getSelectedFile();
@@ -1615,6 +1664,7 @@ public class frmMain {
 						fc.setFileFilter(new CSVFilter(language));
 						fc.setDialogTitle(language.base.getString("title.export_param_sets")); //Export Parameter Sets
 						fc.setApproveButtonText(language.base.getString("menu.export")); //Export
+						language.setFontRecursively(fc); //set font
 
 						int returnVal = fc.showSaveDialog(frmMain);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -2049,6 +2099,7 @@ public class frmMain {
 		final JPanel pnlTab = new JPanel(new GridBagLayout());
 		pnlTab.setOpaque(false);
 		JLabel lbl=new JLabel(name);
+		lbl.setFont(language.font);
 		ScaledIcon icon=null;
 		if(modelType==0){ //Decision tree
 			icon=new ScaledIcon("/images/modelTree",16,16,16,true);
@@ -2174,6 +2225,7 @@ public class frmMain {
 			mntmCalibrateModel.setEnabled(true);
 
 			JLabel lblProperties=new JLabel(language.base.getString("menu.properties")); //Properties
+			lblProperties.setFont(language.font);
 			lblProperties.setIcon(new ScaledIcon("/images/propertiesMarkov",16,16,16,true));
 			lblProperties.setHorizontalTextPosition(SwingConstants.RIGHT);
 			tabbedPaneBottom.addTab(language.base.getString("menu.properties"), (Icon) null, scrollPaneProperties, null); //Properties
@@ -2370,29 +2422,31 @@ public class frmMain {
 
 	public void checkUpdates() {
 		try {
-			URL url = new URL("https://raw.githubusercontent.com/zward/Amua/master/src/main/Amua.java");
-			HttpsURLConnection  conn = (HttpsURLConnection)url.openConnection();
+			if(version.contains("test")==false) { //not a test version
+				URL url = new URL("https://raw.githubusercontent.com/zward/Amua/master/src/main/Amua.java");
+				HttpsURLConnection  conn = (HttpsURLConnection)url.openConnection();
 
-			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			String gitVersion=null;
+				BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+				String gitVersion=null;
 
-			String input;
-			while (gitVersion==null && (input = br.readLine()) != null){
-				if(input.contains("String version=")) {
-					String data[]=input.split("\"");
-					gitVersion=data[1];
+				String input;
+				while (gitVersion==null && (input = br.readLine()) != null){
+					if(input.contains("String version=")) {
+						String data[]=input.split("\"");
+						gitVersion=data[1];
+					}
 				}
-			}
-			br.close();
+				br.close();
 
-			if(!gitVersion.equals(version)) { //different git version
-				String curTitle=language.base.getString("title.amua_update"); //Amua Update
-				String message=language.message.getString("ask.new_version"); //A newer version of Amua is available ("+gitVersion+"). Would you like to download it?
-				String formatted=MessageFormat.format(message, gitVersion);
-				int choice=JOptionPane.showConfirmDialog(null, formatted, curTitle, JOptionPane.YES_NO_OPTION);
-				if(choice==JOptionPane.YES_OPTION) {
-					//go to wiki
-					Desktop.getDesktop().browse(new URI("https://github.com/zward/Amua/wiki/Getting-Started"));
+				if(!gitVersion.equals(version)) { //different git version
+					String curTitle=language.base.getString("title.amua_update"); //Amua Update
+					String message=language.message.getString("ask.new_version"); //A newer version of Amua is available ("+gitVersion+"). Would you like to download it?
+					String formatted=MessageFormat.format(message, gitVersion);
+					int choice=JOptionPane.showConfirmDialog(null, formatted, curTitle, JOptionPane.YES_NO_OPTION);
+					if(choice==JOptionPane.YES_OPTION) {
+						//go to wiki
+						Desktop.getDesktop().browse(new URI("https://github.com/zward/Amua/wiki/Getting-Started"));
+					}
 				}
 			}
 
@@ -2435,55 +2489,79 @@ public class frmMain {
 	
 	private void updateLanguage() {
 		//menu
-		mnModel.setText(language.base.getString("menu.model")); //Model
-		mnNew.setText(language.base.getString("menu.new")); //New
-		mntmDecisionTree.setText(language.base.getString("menu.decision_tree")); 
-		mntmMarkovModel.setText(language.base.getString("menu.markov_model")); //Markov Model
-		mntmOpenModel.setText(language.base.getString("menu.open_model")+"..."); //Open Model
-		mnOpenRecent.setText(language.base.getString("menu.open_recent")); //Open Recent
-		mntmSave.setText(language.base.getString("menu.save")); //Save
-		mntmSaveAs.setText(language.base.getString("menu.save_as")+"..."); //Save As
-		mntmDocument.setText(language.base.getString("menu.document")+"..."); //Document
-		mntmExport.setText(language.base.getString("menu.export")+"..."); //Export
-		mntmImport.setText(language.base.getString("menu.import")+"..."); //Import
-		mntmProperties.setText(language.base.getString("menu.properties")); //Properties
-		mntmExit.setText(language.base.getString("menu.exit")); //Exit
-		mnEdit.setText(language.base.getString("menu.edit")); //Edit
-		mntmUndo.setText(language.base.getString("menu.undo")); //Undo
-		mntmRedo.setText(language.base.getString("menu.redo")); //Redo
-		mntmCut.setText(language.base.getString("menu.cut")); //Cut
-		mntmCopy.setText(language.base.getString("menu.copy")); //Copy
-		mntmPaste.setText(language.base.getString("menu.paste")); //Paste
-		mntmFindreplace.setText(language.base.getString("menu.find_replace")); //Find/Replace
-		mnRun.setText(language.base.getString("menu.run")); //Run
-		mntmRunModel.setText(language.base.getString("menu.run_model")); //Run Model
-		mnSensitivityAnalysis.setText(language.base.getString("menu.sens_analysis")); //Sensitivity Analysis
-		mntmOneway.setText(language.base.getString("menu.one_way")); //One-way
-		mntmTornadoDiagram.setText(language.base.getString("menu.tornado_diagram")); //Tornado Diagram
-		mntmThresholdAnalysis.setText(language.base.getString("menu.threshold_analysis")); //Threshold Analysis
-		mntmTwoway.setText(language.base.getString("menu.two_way")); //Two-way
-		mntmOnewayBest.setText(language.base.getString("menu.stacked_one_way")); //Stacked One-way
-		mntmProbabilisticpsa.setText(language.base.getString("menu.prob_PSA")); //Probabilistic (PSA)
-		mntmBatchRuns.setText(language.base.getString("menu.batch_runs")); //Batch Runs
-		mnValueOfInformation.setText(language.base.getString("menu.value_information")); //Value of Information
-		mntmEVPI.setText(language.base.getString("menu.perfect_info_EVPI")); //Perfect Information (EVPI)
-		mntmEVPPI.setText(language.base.getString("menu.partial_info_EVPPI")); //Partial Perfect Information (EVPPI)
-		mntmScenarios.setText(language.base.getString("menu.scenarios")); //Scenarios
-		mntmCalibrateModel.setText(language.base.getString("menu.calibrate_model")); //Calibrate Model
-		mntmClusterRun.setText(language.base.getString("menu.cluster_run")); //Cluster Run
-		mnTools.setText(language.base.getString("menu.tools")); //Tools
-		mntmPlotFunction.setText(language.base.getString("menu.plot_function")); //Plot Function
-		mntmPlotSurface.setText(language.base.getString("menu.plot_surface")); //Plot Surface
-		mntmSaveConsole.setText(language.base.getString("menu.save_console")); //Save Console
-		mnLanguage.setText(language.base.getString("menu.language"));
-		rdbtnmntmLang_English.setText(language.base.getString("menu.english"));
-		rdbtnmntmLang_French.setText(language.base.getString("menu.french"));
-		rdbtnmntmLang_Spanish.setText(language.base.getString("menu.spanish"));
-		mnHelp.setText(language.base.getString("menu.help")); //Help
-		mntmHelpContents.setText(language.base.getString("menu.help_contents")); //Help Contents
-		mntmReportBugrequest.setText(language.base.getString("menu.report_bug_request")); //Report Bug/Request
-		mntmErrorLog.setText(language.base.getString("menu.error_log")); //Error Log
-		mntmAboutAmua.setText(language.base.getString("menu.about_amua")); //About Amua
+		mnModel.setText(language.base.getString("menu.model")); mnModel.setFont(language.font); //Model
+		mnNew.setText(language.base.getString("menu.new")); mnNew.setFont(language.font); //New
+		mntmDecisionTree.setText(language.base.getString("menu.decision_tree")); mntmDecisionTree.setFont(language.font); //Decision Tree
+		mntmMarkovModel.setText(language.base.getString("menu.markov_model")); mntmMarkovModel.setFont(language.font); //Markov Model
+		mntmOpenModel.setText(language.base.getString("menu.open_model")+"..."); mntmOpenModel.setFont(language.font); //Open Model
+		mnOpenRecent.setText(language.base.getString("menu.open_recent")); mnOpenRecent.setFont(language.font); //Open Recent
+		mntmSave.setText(language.base.getString("menu.save")); mntmSave.setFont(language.font); //Save
+		mntmSaveAs.setText(language.base.getString("menu.save_as")+"..."); mntmSaveAs.setFont(language.font); //Save As
+		mntmDocument.setText(language.base.getString("menu.document")+"..."); mntmDocument.setFont(language.font); //Document
+		mntmExport.setText(language.base.getString("menu.export")+"..."); mntmExport.setFont(language.font); //Export
+		mntmImport.setText(language.base.getString("menu.import")+"..."); mntmImport.setFont(language.font);  //Import
+		mntmProperties.setText(language.base.getString("menu.properties")); mntmProperties.setFont(language.font);  //Properties
+		mntmExit.setText(language.base.getString("menu.exit")); mntmExit.setFont(language.font);  //Exit
+		mnEdit.setText(language.base.getString("menu.edit")); mnEdit.setFont(language.font); //Edit
+		mntmUndo.setText(language.base.getString("menu.undo")); mntmUndo.setFont(language.font); //Undo
+		mntmRedo.setText(language.base.getString("menu.redo")); mntmRedo.setFont(language.font); //Redo
+		mntmCut.setText(language.base.getString("menu.cut")); mntmCut.setFont(language.font); //Cut
+		mntmCopy.setText(language.base.getString("menu.copy")); mntmCopy.setFont(language.font); //Copy
+		mntmPaste.setText(language.base.getString("menu.paste")); mntmPaste.setFont(language.font); //Paste
+		mntmFindreplace.setText(language.base.getString("menu.find_replace")); mntmFindreplace.setFont(language.font);  //Find/Replace
+		mnRun.setText(language.base.getString("menu.run")); mnRun.setFont(language.font); //Run
+		mntmRunModel.setText(language.base.getString("menu.run_model")); mntmRunModel.setFont(language.font); //Run Model
+		mnSensitivityAnalysis.setText(language.base.getString("menu.sens_analysis")); mnSensitivityAnalysis.setFont(language.font); //Sensitivity Analysis
+		mntmOneway.setText(language.base.getString("menu.one_way")); mntmOneway.setFont(language.font); //One-way
+		mntmTornadoDiagram.setText(language.base.getString("menu.tornado_diagram")); mntmTornadoDiagram.setFont(language.font); //Tornado Diagram
+		mntmThresholdAnalysis.setText(language.base.getString("menu.threshold_analysis")); mntmThresholdAnalysis.setFont(language.font); //Threshold Analysis
+		mntmTwoway.setText(language.base.getString("menu.two_way")); mntmTwoway.setFont(language.font); //Two-way
+		mntmOnewayBest.setText(language.base.getString("menu.stacked_one_way")); mntmOnewayBest.setFont(language.font); //Stacked One-way
+		mntmProbabilisticpsa.setText(language.base.getString("menu.prob_PSA")); mntmProbabilisticpsa.setFont(language.font); //Probabilistic (PSA)
+		mntmBatchRuns.setText(language.base.getString("menu.batch_runs")); mntmBatchRuns.setFont(language.font);  //Batch Runs
+		mnValueOfInformation.setText(language.base.getString("menu.value_information")); mnValueOfInformation.setFont(language.font);  //Value of Information
+		mntmEVPI.setText(language.base.getString("menu.perfect_info_EVPI")); mntmEVPI.setFont(language.font); //Perfect Information (EVPI)
+		mntmEVPPI.setText(language.base.getString("menu.partial_info_EVPPI")); mntmEVPPI.setFont(language.font); //Partial Perfect Information (EVPPI)
+		mntmScenarios.setText(language.base.getString("menu.scenarios")); mntmScenarios.setFont(language.font); //Scenarios
+		mntmCalibrateModel.setText(language.base.getString("menu.calibrate_model")); mntmCalibrateModel.setFont(language.font); //Calibrate Model
+		mntmClusterRun.setText(language.base.getString("menu.cluster_run")); mntmClusterRun.setFont(language.font); //Cluster Run
+		mnTools.setText(language.base.getString("menu.tools")); mnTools.setFont(language.font); //Tools
+		mntmPlotFunction.setText(language.base.getString("menu.plot_function")); mntmPlotFunction.setFont(language.font); //Plot Function
+		mntmPlotSurface.setText(language.base.getString("menu.plot_surface")); mntmPlotSurface.setFont(language.font); //Plot Surface
+		mntmSaveConsole.setText(language.base.getString("menu.save_console")); mntmSaveConsole.setFont(language.font); //Save Console
+		mnLanguage.setText(language.base.getString("menu.language")); mnLanguage.setFont(language.font); //Language
+		rdbtnmntmLang_English.setText(language.base.getString("menu.english")); rdbtnmntmLang_English.setFont(language.font); //English
+		rdbtnmntmLang_French.setText(language.base.getString("menu.french")); rdbtnmntmLang_French.setFont(language.font); //French
+		rdbtnmntmLang_Spanish.setText(language.base.getString("menu.spanish")); rdbtnmntmLang_Spanish.setFont(language.font); //Spanish
+		rdbtnmntmLang_Portuguese.setText(language.base.getString("menu.portuguese")); rdbtnmntmLang_Portuguese.setFont(language.font); //Portuguese
+		rdbtnmntmLang_Khmer.setText(language.base.getString("menu.khmer")); rdbtnmntmLang_Khmer.setFont(language.font); //Khmer
+		rdbtnmntmLang_Chinese.setText(language.base.getString("menu.chinese")); rdbtnmntmLang_Chinese.setFont(language.font); //Chinese
+		mnHelp.setText(language.base.getString("menu.help")); mnHelp.setFont(language.font); //Help
+		mntmHelpContents.setText(language.base.getString("menu.help_contents")); mntmHelpContents.setFont(language.font); //Help Contents
+		mntmReportBugrequest.setText(language.base.getString("menu.report_bug_request")); mntmReportBugrequest.setFont(language.font); //Report Bug/Request
+		mntmErrorLog.setText(language.base.getString("menu.error_log")); mntmErrorLog.setFont(language.font); //Error Log
+		mntmAboutAmua.setText(language.base.getString("menu.about_amua")); mntmAboutAmua.setFont(language.font); //About Amua
+		
+		
+		//model
+		if(curModel!=null) {
+			curModel.rescale(curModel.scale); //updates font
+			
+			//formula bar + notes
+			if(curModel.type==0) {
+				curModel.panelTree.initFxPane(); //re-create pane with current font
+				scrollPaneFx.setViewportView(curModel.panelTree.paneFormula);
+				curFxPane=curModel.panelTree.paneFormula;
+				curModel.panelTree.textAreaNotes.setFont(curModel.language.font);
+			}
+			else if(curModel.type==1) {
+				curModel.panelMarkov.initFxPane(); //re-create pane with current font
+				scrollPaneFx.setViewportView(curModel.panelMarkov.paneFormula);
+				curFxPane=curModel.panelMarkov.paneFormula;
+				curModel.panelMarkov.textAreaNotes.setFont(curModel.language.font);
+			}
+		}
+		
 		
 		//objects
 		btnAddVariable.setToolTipText(language.base.getString("button.add")); //Add
@@ -2493,64 +2571,86 @@ public class frmMain {
 		
 		//Parameters
 		JLabel lblParam=new JLabel(language.base.getString("object.parameters")); //Parameters
+		lblParam.setFont(language.font);
 		lblParam.setIcon(new ScaledIcon("/images/parameter",16,16,16,true));
 		lblParam.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneRight.setTabComponentAt(0, lblParam);
 		modelParameters.setColumnIdentifiers(new String[] {language.base.getString("object.name"), language.base.getString("object.expression")}); //Name, Expression
+		tableParameters.getTableHeader().setFont(language.font);
+		tableParameters.setFont(language.font);
 	
 		//Variables
 		JLabel lblVar=new JLabel(language.base.getString("object.variables")); //Variables
+		lblVar.setFont(language.font);
 		lblVar.setIcon(new ScaledIcon("/images/variable",16,16,16,true));
 		lblVar.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneRight.setTabComponentAt(1, lblVar);
 		modelVariables.setColumnIdentifiers(new String[] {language.base.getString("object.name"), language.base.getString("object.expression")}); //Name, Expression
+		tableVariables.getTableHeader().setFont(language.font);
+		tableVariables.setFont(language.font);
 
 		//Tables
 		JLabel lblTables=new JLabel(language.base.getString("object.tables")); //Tables
+		lblTables.setFont(language.font);
 		lblTables.setIcon(new ScaledIcon("/images/table",16,16,16,true));
 		lblTables.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneRight.setTabComponentAt(2, lblTables);
 		modelTables.setColumnIdentifiers(new String[] {language.base.getString("object.name"),language.base.getString("object.type"),language.base.getString("object.size")}); //Name, Type, Size
-
+		tableTables.getTableHeader().setFont(language.font);
+		tableTables.setFont(language.font);
+		
 		//Constraints
 		JLabel lblConst=new JLabel(language.base.getString("object.constraints")); //Constraints
+		lblConst.setFont(language.font);
 		lblConst.setIcon(new ScaledIcon("/images/constraint",16,16,16,true));
 		lblConst.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneRight.setTabComponentAt(3, lblConst);
 		modelConstraints.setColumnIdentifiers(new String[] {language.base.getString("object.name"), language.base.getString("object.expression")}); //Name, Expression
-
+		tableConstraints.getTableHeader().setFont(language.font);
+		tableConstraints.setFont(language.font);
+		
 		//Console
 		JLabel lblConsole=new JLabel(language.base.getString("menu.console")); //Console
+		lblConsole.setFont(language.font);
 		lblConsole.setIcon(new ScaledIcon("/images/console",16,16,16,true));
 		lblConsole.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneBottom.setTabComponentAt(0, lblConsole);
-
+		console=new Console(version, language); //update console font
+		console.switchModel(curModel);
+		scrollPaneConsole.setViewportView(console.textConsole);
+		
 		//Notes
 		JLabel lblNotes=new JLabel(language.base.getString("menu.notes")); //Notes
+		lblNotes.setFont(language.font);
 		lblNotes.setIcon(new ScaledIcon("/images/notes",16,16,16,true));
 		lblNotes.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneBottom.setTabComponentAt(1, lblNotes);
 		
 		//Parameter sets
 		JLabel lblParamSets=new JLabel(language.base.getString("menu.param_sets")); //Parameter Sets
+		lblParamSets.setFont(language.font);
 		lblParamSets.setIcon(new ScaledIcon("/images/parameterSets",16,16,16,true));
 		lblParamSets.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tabbedPaneBottom.setTabComponentAt(2, lblParamSets);
 		modelParamSets.setColumnIdentifiers(new String[] {language.base.getString("object.set"), language.base.getString("object.score")}); //Set, Score
-		chckbxUseParamSets.setText(language.analysis.getString("sim.use_param_sets")); //Use Parameter Sets
-		btnImport.setText(language.base.getString("menu.import")+"..."); //Import
-		btnExportParamSets.setText(language.base.getString("menu.export")+"..."); //Export
-		btnClearParamSets.setText(language.base.getString("button.clear_all")); //Clear All
+		tableParamSets.getTableHeader().setFont(language.font);
+		chckbxUseParamSets.setText(language.analysis.getString("sim.use_param_sets")); chckbxUseParamSets.setFont(language.font); //Use Parameter Sets
+		btnImport.setText(language.base.getString("menu.import")+"..."); btnImport.setFont(language.font); //Import
+		btnExportParamSets.setText(language.base.getString("menu.export")+"..."); btnExportParamSets.setFont(language.font); //Export
+		btnClearParamSets.setText(language.base.getString("button.clear_all")); btnClearParamSets.setFont(language.font); //Clear All
 		
 		//Markov Properties
-		if(curModel.type==1) {
+		if(curModel!=null && curModel.type==1) {
 			JLabel lblProperties=new JLabel(language.base.getString("menu.properties")); //Properties
+			lblProperties.setFont(language.font);
 			lblProperties.setIcon(new ScaledIcon("/images/propertiesMarkov",16,16,16,true));
 			lblProperties.setHorizontalTextPosition(SwingConstants.RIGHT);
 			tabbedPaneBottom.setTabComponentAt(3, lblProperties);
 			
 			DefaultTableModel tableModel=(DefaultTableModel) curModel.panelMarkov.tableProperties.getModel();
 			tableModel.setColumnIdentifiers(new String[] {language.base.getString("object.name"), language.analysis.getString("result.value")}); //Name, Value
+			curModel.panelMarkov.tableProperties.getTableHeader().setFont(language.font);
+			curModel.panelMarkov.tableProperties.setFont(language.font);
 		}
 		
 		//toolbar
@@ -2578,6 +2678,8 @@ public class frmMain {
 		btnZoomIn.setToolTipText(language.base.getString("button.zoom_in")); //Zoom In
 		btnSnapshot.setToolTipText(language.base.getString("button.screenshot")); //Screenshot
 		
+		
+		//UI Manager *******************************************
 		//filechooser
 		UIManager.put("FileChooser.lookInLabelText",language.base.getString("title.look_in")+":"); //Look in
 		UIManager.put("FileChooser.fileNameLabelText",language.base.getString("title.file_name")+":"); //File name          
@@ -2592,10 +2694,19 @@ public class frmMain {
 	    UIManager.put("FileChooser.newFolderToolTipText",language.base.getString("title.create_new_folder")); //Create New Folder
 	    UIManager.put("FileChooser.listViewButtonToolTipText",language.base.getString("title.list")); //List
 	    UIManager.put("FileChooser.detailsViewButtonToolTipText",language.base.getString("title.details")); //Details
+	    UIManager.put("FileChooser.openButtonText",language.base.getString("button.open")); //Open
 	    
-		fc=new JFileChooser();
+	     
+	    //fonts
+	    UIManager.put("ToolTip.font", language.font);
+	    UIManager.put("TitledBorder.font", language.font); //jfreechart properties
+	    UIManager.put("OptionPane.messageFont", language.font);
+	    UIManager.put("OptionPane.buttonFont",  language.font);
+	    
+	    fc=new JFileChooser();
+	    language.setFontRecursively(fc); //updates buttons and labels
 	}
-
+	
 	class ImageTransferable implements Transferable
 	{
 		/**

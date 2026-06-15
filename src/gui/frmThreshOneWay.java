@@ -70,6 +70,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.JTextField;
 import java.awt.Font;
 
@@ -109,6 +110,7 @@ public class frmThreshOneWay {
 		try{
 			frmThreshOneWay = new JFrame();
 			frmThreshOneWay.setTitle("Amua - "+myModel.language.base.getString("menu.threshold_analysis")); //Threshold Analysis
+			frmThreshOneWay.setFont(myModel.language.font);
 			frmThreshOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmThreshOneWay.class.getResource("/images/threshold_128.png")));
 			frmThreshOneWay.setBounds(100, 100, 1000, 500);
 			frmThreshOneWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -160,10 +162,13 @@ public class frmThreshOneWay {
 			gbc_scrollPaneParams.gridx = 0;
 			gbc_scrollPaneParams.gridy = 0;
 			panel_1.add(scrollPaneParams, gbc_scrollPaneParams);
+			
 			tableParams = new JTable();
 			tableParams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableParams.setShowVerticalLines(true);
 			tableParams.getTableHeader().setReorderingAllowed(false);
+			tableParams.getTableHeader().setFont(myModel.language.font);
+			tableParams.setFont(myModel.language.font);
 			tableParams.setModel(modelParams);
 			scrollPaneParams.setViewportView(tableParams);
 
@@ -177,6 +182,7 @@ public class frmThreshOneWay {
 			panel_1.add(panel_2, gbc_panel_2);
 
 			final JLabel lblOutcome = new JLabel(myModel.language.analysis.getString("result.outcome")+":"); //Outcome
+			lblOutcome.setFont(myModel.language.font);
 			lblOutcome.setBounds(6, 73, 81, 16);
 			panel_2.add(lblOutcome);
 
@@ -202,33 +208,40 @@ public class frmThreshOneWay {
 			}
 			
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
+			comboDimensions.setFont(myModel.language.font);
 			comboDimensions.setBounds(88, 68, 227, 26);
 			panel_2.add(comboDimensions);
 			
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
+			btnRun.setFont(myModel.language.font);
 			btnRun.setBounds(345, 115, 90, 28);
 			panel_2.add(btnRun);
 
 			JLabel lblStrategy = new JLabel(myModel.language.analysis.getString("gen.strategy")+" 1:"); //Strategy 1
+			lblStrategy.setFont(myModel.language.font);
 			lblStrategy.setBounds(6, 13, 81, 16);
 			panel_2.add(lblStrategy);
 
 			final JComboBox<String> comboStrat1 = new JComboBox<String>(new DefaultComboBoxModel<String>(myModel.strategyNames));
+			comboStrat1.setFont(myModel.language.font);
 			comboStrat1.setBounds(88, 8, 227, 26);
 			panel_2.add(comboStrat1);
 			if(myModel.strategyNames.length>0){comboStrat1.setSelectedIndex(0);}
 
 			JLabel lblStrategy_1 = new JLabel(myModel.language.analysis.getString("gen.strategy")+" 2:"); //Strategy 2
+			lblStrategy_1.setFont(myModel.language.font);
 			lblStrategy_1.setBounds(6, 43, 81, 16);
 			panel_2.add(lblStrategy_1);
 
 			final JComboBox<String> comboStrat2 = new JComboBox<String>(new DefaultComboBoxModel<String>(myModel.strategyNames));
+			comboStrat2.setFont(myModel.language.font);
 			comboStrat2.setBounds(88, 38, 227, 26);
 			panel_2.add(comboStrat2);
 			if(myModel.strategyNames.length>1){comboStrat2.setSelectedIndex(1);}
 
 			JLabel lblThreshold = new JLabel(myModel.language.analysis.getString("sens.threshold")+":"); //Threshold
-			lblThreshold.setFont(new Font("SansSerif", Font.BOLD, 12));
+			//lblThreshold.setFont(new Font("SansSerif", Font.BOLD, 12));
+			lblThreshold.setFont(myModel.language.font.deriveFont(Font.BOLD, 12));
 			lblThreshold.setHorizontalAlignment(SwingConstants.CENTER);
 			lblThreshold.setBounds(327, 69, 117, 16);
 			panel_2.add(lblThreshold);
@@ -241,6 +254,7 @@ public class frmThreshOneWay {
 			textThresh.setColumns(10);
 			
 			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setFont(myModel.language.font);
 			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblIntervals.setBounds(318, 13, 74, 16);
 			panel_2.add(lblIntervals);
@@ -253,16 +267,19 @@ public class frmThreshOneWay {
 			textIntervals.setColumns(10);
 			
 			JLabel lblGroup = new JLabel(myModel.language.analysis.getString("result.group")+":"); //Group
+			lblGroup.setFont(myModel.language.font);
 			lblGroup.setEnabled(false);
 			lblGroup.setBounds(6, 103, 81, 16);
 			panel_2.add(lblGroup);
 			
 			final JComboBox<String> comboGroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{myModel.language.analysis.getString("result.overall")})); //Overall
+			comboGroup.setFont(myModel.language.font);
 			comboGroup.setEnabled(false);
 			comboGroup.setBounds(88, 98, 227, 26);
 			panel_2.add(comboGroup);
 			
 			JLabel lblTolerance = new JLabel(myModel.language.analysis.getString("sens.tolerance")+":"); //Tolerance
+			lblTolerance.setFont(myModel.language.font);
 			lblTolerance.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblTolerance.setBounds(318, 44, 74, 16);
 			panel_2.add(lblTolerance);
@@ -285,7 +302,10 @@ public class frmThreshOneWay {
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmThreshOneWay, myModel.language.base.getString("menu.threshold_analysis"), myModel.language.message.getString("info.running")+"...", 0, 100); //Threshold analysis, Running
+					//final ProgressMonitor progress=new ProgressMonitor(frmThreshOneWay, myModel.language.base.getString("menu.threshold_analysis"), myModel.language.message.getString("info.running")+"...", 0, 100); //Threshold analysis, Running
+					final frmProgressMonitor progress=new frmProgressMonitor(frmThreshOneWay, myModel.language.base.getString("menu.threshold_analysis"), myModel.language.message.getString("info.running"), 0, 100, myModel.language); //Threshold analysis, Running
+					SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
+					
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
@@ -427,8 +447,8 @@ public class frmThreshOneWay {
 										if(analysisType==1){CEAnotes=new String[numStrat][intervals+1];} //CEA
 										else{CEAnotes=null;}
 										
-										progress.setMillisToDecideToPopup(0);
-										progress.setMillisToPopup(0);
+										//progress.setMillisToDecideToPopup(0);
+										//progress.setMillisToPopup(0);
 										
 										long startTime=System.currentTimeMillis();
 										
@@ -675,6 +695,7 @@ public class frmThreshOneWay {
 								curParam.locked=false;
 								myModel.validateModelObjects();
 								e.printStackTrace();
+								progress.close();
 								JOptionPane.showMessageDialog(frmThreshOneWay, e.getMessage());
 								myModel.errorLog.recordError(e);
 								frmThreshOneWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -695,6 +716,10 @@ public class frmThreshOneWay {
 			marker.setPaint(Color.black);
 			chart.getXYPlot().addDomainMarker(marker);
 			chart.getXYPlot().addRangeMarker(marker);
+			//font
+			chart.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chart.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chart.getLegend().setItemFont(myModel.language.font);
 
 			ChartPanel panelChart = new ChartPanel(chart,false);
 			GridBagConstraints gbc_panelChart = new GridBagConstraints();
@@ -721,14 +746,16 @@ public class frmThreshOneWay {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
-
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
+			
 		} catch (Exception ex){
 			ex.printStackTrace();
 			myModel.errorLog.recordError(ex);
 		}
 	}
 	
-	private void updateProgress(ProgressMonitor progress, int curProg, int numRuns, long startTime) {
+	private void updateProgress(frmProgressMonitor progress, int curProg, int numRuns, long startTime) {
 		double prog=(curProg/(numRuns*1.0))*100;
 		long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
 		remTime=(long) (remTime*(100-prog));

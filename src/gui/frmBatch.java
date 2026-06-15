@@ -20,12 +20,14 @@ package gui;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Ellipse2D;
@@ -38,6 +40,7 @@ import java.util.Arrays;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -49,6 +52,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -120,6 +127,7 @@ public class frmBatch {
 		try{
 			frmBatch = new JFrame();
 			frmBatch.setTitle("Amua - "+myModel.language.base.getString("title.batch_runs")); //Batch Runs (1st-order uncertainty)
+			frmBatch.setFont(myModel.language.font);
 			frmBatch.setIconImage(Toolkit.getDefaultToolkit().getImage(frmBatch.class.getResource("/images/runBatch_128.png")));
 			frmBatch.setBounds(100, 100, 1000, 600);
 			frmBatch.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -160,6 +168,7 @@ public class frmBatch {
 
 			JPanel panelResults = new JPanel();
 			tabbedPane.addTab(myModel.language.analysis.getString("result.results"), null, panelResults, null); //Results
+			tabbedPane.setFont(myModel.language.font);
 			GridBagLayout gbl_panelResults = new GridBagLayout();
 			gbl_panelResults.columnWidths = new int[]{86, 50, 110, 207, 162, 0, 0};
 			gbl_panelResults.rowHeights = new int[]{0, 0, 0, 0};
@@ -171,6 +180,11 @@ public class frmBatch {
 			chartResults = ChartFactory.createScatterPlot(null, myModel.language.analysis.getString("result.value"), myModel.language.base.getString("plot.density"), 
 					chartDataResults, PlotOrientation.VERTICAL, true, false, false); //Value, Density
 			chartResults.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
+			//set font
+			chartResults.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartResults.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartResults.getLegend().setItemFont(myModel.language.font);
+			
 			//Draw axes
 			ValueMarker marker = new ValueMarker(0);  // position is the value on the axis
 			marker.setPaint(Color.black);
@@ -203,8 +217,11 @@ public class frmBatch {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
-
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
+			
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
+			comboDimensions.setFont(myModel.language.font);
 			GridBagConstraints gbc_comboDimensions = new GridBagConstraints();
 			gbc_comboDimensions.gridwidth = 3;
 			gbc_comboDimensions.fill = GridBagConstraints.HORIZONTAL;
@@ -239,9 +256,11 @@ public class frmBatch {
 				}
 			});
 			comboResults.setModel(new DefaultComboBoxModel<String>(plotTypes));
+			comboResults.setFont(myModel.language.font);
 
 
 			comboGroup = new JComboBox<String>();
+			comboGroup.setFont(myModel.language.font);
 			GridBagConstraints gbc_comboGroup = new GridBagConstraints();
 			gbc_comboGroup.fill = GridBagConstraints.HORIZONTAL;
 			gbc_comboGroup.insets = new Insets(0, 0, 5, 5);
@@ -257,6 +276,7 @@ public class frmBatch {
 			comboGroup.setVisible(false);
 
 			JLabel lblIterations = new JLabel(myModel.language.analysis.getString("sim.num_iterations")+":");
+			lblIterations.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblIterations = new GridBagConstraints();
 			gbc_lblIterations.anchor = GridBagConstraints.EAST;
 			gbc_lblIterations.insets = new Insets(0, 0, 0, 5);
@@ -275,6 +295,7 @@ public class frmBatch {
 			textIterations.setColumns(5);
 
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run"));
+			btnRun.setFont(myModel.language.font);
 			GridBagConstraints gbc_btnRun = new GridBagConstraints();
 			gbc_btnRun.insets = new Insets(0, 0, 0, 5);
 			gbc_btnRun.gridx = 2;
@@ -283,11 +304,14 @@ public class frmBatch {
 			
 			
 			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export"));
+			btnExport.setFont(myModel.language.font);
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmBatch, myModel.language.base.getString("menu.batch_runs"), myModel.language.message.getString("info.running"), 0, 100); //Batch Runs, Running
-
+					//final ProgressMonitor progress=new ProgressMonitor(frmBatch, myModel.language.base.getString("menu.batch_runs"), myModel.language.message.getString("info.running"), 0, 100); //Batch Runs, Running
+					final frmProgressMonitor progress=new frmProgressMonitor(frmBatch, myModel.language.base.getString("menu.batch_runs"), myModel.language.message.getString("info.running"), 0, 100, myModel.language); //Batch Runs, Running
+					SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
+					
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
@@ -304,7 +328,7 @@ public class frmBatch {
 
 									numIterations=Integer.parseInt(textIterations.getText().replaceAll(",", ""));
 									progress.setMaximum(numIterations);
-
+									
 									int numOutcomes=comboDimensions.getItemCount();
 									int numDim=myModel.dimInfo.dimNames.length;
 									int analysisType=myModel.dimInfo.analysisType;
@@ -608,6 +632,7 @@ public class frmBatch {
 					try{
 						//Show save as dialog
 						JFileChooser fc=new JFileChooser(myModel.filepath);
+						myModel.language.setFontRecursively(fc); //set font
 						fc.setAcceptAllFileFilterUsed(false);
 						fc.setFileFilter(new CSVFilter(myModel.language));
 
@@ -759,11 +784,16 @@ public class frmBatch {
 
 			JPanel panelScatter = new JPanel();
 			tabbedPane.addTab(myModel.language.base.getString("plot.scatter"), null, panelScatter, null); //Scatter
+			tabbedPane.setFont(myModel.language.font);
 			tabbedPane.setEnabledAt(1, false);
 
 			chartDataScatter = new DefaultXYDataset();
 			chartScatter = ChartFactory.createScatterPlot(null, "x", "y", chartDataScatter, PlotOrientation.VERTICAL, true, false, false);
 			chartScatter.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
+			//set font
+			chartScatter.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartScatter.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartScatter.getLegend().setItemFont(myModel.language.font);
 			//Draw axes
 			chartScatter.getXYPlot().addDomainMarker(marker);
 			chartScatter.getXYPlot().addRangeMarker(marker);
@@ -776,6 +806,7 @@ public class frmBatch {
 			panelScatter.setLayout(gbl_panelScatter);
 
 			comboScatterType = new JComboBox<String>();
+			comboScatterType.setFont(myModel.language.font);
 			comboScatterType.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					updateScatter();
@@ -805,6 +836,7 @@ public class frmBatch {
 			//pop-up menu
 			popup = panelChartScatter.getPopupMenu();
 			JMenuItem mntmChangeColorScatter = new JMenuItem(myModel.language.base.getString("plot.change_series_colors")+"..."); //Change Series Colors
+			mntmChangeColorScatter.setFont(myModel.language.font);
 			mntmChangeColorScatter.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					frmChangeSeriesColors window=new frmChangeSeriesColors(chartScatter, chartDataScatter, seriesPaints, frmThis, myModel.language);
@@ -812,6 +844,8 @@ public class frmBatch {
 				}
 			});
 			popup.insert(mntmChangeColorScatter, 0);
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 
 		} catch (Exception ex){
 			ex.printStackTrace();

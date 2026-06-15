@@ -37,6 +37,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 import base.AmuaModel;
 import main.Parameter;
@@ -84,6 +86,7 @@ public class frmDefineParameter {
 			frmDefineParameter.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineParameter.class.getResource("/images/parameter_128.png")));
 			frmDefineParameter.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineParameter.setTitle("Amua - "+myModel.language.base.getString("title.define_parameter")); //Define Parameter
+			frmDefineParameter.setFont(myModel.language.font);
 			frmDefineParameter.setResizable(false);
 			frmDefineParameter.setBounds(100, 100, 650, 350);
 			frmDefineParameter.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -95,6 +98,7 @@ public class frmDefineParameter {
 			frmDefineParameter.getContentPane().setLayout(gridBagLayout);
 
 			JLabel lblName = new JLabel(myModel.language.base.getString("object.name")+":");
+			lblName.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblName = new GridBagConstraints();
 			gbc_lblName.anchor = GridBagConstraints.EAST;
 			gbc_lblName.gridwidth = 2;
@@ -104,6 +108,7 @@ public class frmDefineParameter {
 			frmDefineParameter.getContentPane().add(lblName, gbc_lblName);
 
 			textName = new JTextField();
+			textName.setFont(myModel.language.font);
 			GridBagConstraints gbc_textName = new GridBagConstraints();
 			gbc_textName.gridwidth = 2;
 			gbc_textName.fill = GridBagConstraints.HORIZONTAL;
@@ -137,6 +142,7 @@ public class frmDefineParameter {
 			toolBar.add(btnFx);
 
 			JLabel lblExpression = new JLabel(myModel.language.base.getString("object.expression")+":");
+			lblExpression.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblExpression = new GridBagConstraints();
 			gbc_lblExpression.gridwidth = 2;
 			gbc_lblExpression.anchor = GridBagConstraints.SOUTHWEST;
@@ -155,7 +161,8 @@ public class frmDefineParameter {
 			frmDefineParameter.getContentPane().add(scrollPane, gbc_scrollPane);
 
 			paneExpression=new StyledTextPane(myModel, myModel.language);
-			paneExpression.setFont(new Font("Consolas", Font.PLAIN,15));
+			//paneExpression.setFont(new Font("Consolas", Font.PLAIN,15));
+			paneExpression.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
 			scrollPane.setViewportView(paneExpression);
 			paneExpression.addKeyListener(new KeyAdapter() {
 				@Override
@@ -167,6 +174,7 @@ public class frmDefineParameter {
 			});
 
 			JButton btnEvaluate = new JButton(myModel.language.base.getString("button.evaluate")); //Evaluate
+			btnEvaluate.setFont(myModel.language.font);
 			btnEvaluate.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					evaluate();
@@ -180,6 +188,7 @@ public class frmDefineParameter {
 			frmDefineParameter.getContentPane().add(btnEvaluate, gbc_btnEvaluate);
 
 			JLabel lblValue = new JLabel(myModel.language.math.getString("sum.expected_value")+":");
+			lblValue.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblValue = new GridBagConstraints();
 			gbc_lblValue.anchor = GridBagConstraints.NORTHWEST;
 			gbc_lblValue.insets = new Insets(0, 5, 0, 5);
@@ -198,10 +207,13 @@ public class frmDefineParameter {
 			frmDefineParameter.getContentPane().add(scrollPaneValue, gbc_scrollPaneValue);
 
 			paneValue = new JTextPane();
+			paneValue.setFont(myModel.language.font);
+			StyleConstants.setFontFamily(paneValue.getStyledDocument().getStyle(StyleContext.DEFAULT_STYLE), myModel.language.font.getFamily());
 			scrollPaneValue.setViewportView(paneValue);
 			paneValue.setEditable(false);
 
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmDefineParameter.dispose();
@@ -209,6 +221,7 @@ public class frmDefineParameter {
 			});
 
 			JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
+			btnSave.setFont(myModel.language.font);
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					boolean proceed=true;
@@ -335,6 +348,7 @@ public class frmDefineParameter {
 			frmDefineParameter.getContentPane().add(btnCancel, gbc_btnCancel);
 
 			JLabel lblNotes = new JLabel(myModel.language.base.getString("menu.notes")+":");
+			lblNotes.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblNotes = new GridBagConstraints();
 			gbc_lblNotes.anchor = GridBagConstraints.NORTHWEST;
 			gbc_lblNotes.insets = new Insets(0, 5, 0, 0);
@@ -353,6 +367,7 @@ public class frmDefineParameter {
 			frmDefineParameter.getContentPane().add(scrollPane_1, gbc_scrollPane_1);
 
 			textNotes = new JTextArea();
+			textNotes.setFont(myModel.language.font);
 			scrollPane_1.setViewportView(textNotes);
 
 		} catch (Exception ex){

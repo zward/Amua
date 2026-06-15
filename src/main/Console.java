@@ -31,6 +31,8 @@ import java.util.ArrayList;
 
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import base.AmuaModel;
 import lang.Language;
@@ -54,16 +56,17 @@ public class Console{
 		this.language=language;
 		
 		textConsole = new StyledTextPane(myModel, language);
-		textConsole.setFont(new Font("Consolas", Font.PLAIN, 15));
+		//textConsole.setFont(new Font("Consolas", Font.PLAIN, 15));
+		textConsole.setFont(language.fontCode.deriveFont(Font.PLAIN, 15f));
+		
 		//Start-up text
 		textConsole.setText(language.base.getString("system.amua_version")+" "+version+"\n"); //Amua version
-		print(language.base.getString("gpl.copyright")+" \u00A9 2017-2025 Zachary J. Ward (https://github.com/zward/Amua)\n\n"); //Copyright
+		print(language.base.getString("gpl.copyright")+" \u00A9 2017-2026 Zachary J. Ward (https://github.com/zward/Amua)\n\n"); //Copyright
 		//Amua is free software and is distributed in the hope that it will be useful, but comes with ABSOLUTELY NO WARRANTY.\n
 		print(language.base.getString("gpl.gpl_console")+"\n");
 		print(language.base.getString("gpl.gpl_see_help")+"\n"); //See Help -> About Amua for distribution details.\n
-		
+
 		newLine();
-		
 		
 		textConsole.addMouseListener(new MouseAdapter() {
 			@Override
@@ -230,11 +233,12 @@ public class Console{
 	public void print(String text){
 		try{
 			Document doc = textConsole.getDocument();
-			doc.insertString(doc.getLength(),text,null);
-
+			//doc.insertString(doc.getLength(),text,null);
+			doc.insertString(doc.getLength(), text, textConsole.getStyle("plain")); //ensure it is styled as plain font (to support non-Latin fonts)
+			
 			textConsole.setCaretPosition(doc.getLength());
 			prevCaretPos=textConsole.getCaretPosition();
-			textConsole.setStyleStart(prevCaretPos);
+			//textConsole.setStyleStart(prevCaretPos); //don't call
 			
 		}catch(Exception ex2){
 			ex2.printStackTrace();

@@ -24,10 +24,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
 
 import base.AmuaModel;
 import base.MicroStats;
 import base.RunReport;
+import gui.frmProgressMonitor;
 import main.MersenneTwisterFast;
 import main.Variable;
 import math.Interpreter;
@@ -68,7 +70,7 @@ public class MarkovMonteCarloPOOL{
 	Variable curT;
 	
 	MersenneTwisterFast generator[];
-	ProgressMonitor progress;
+	frmProgressMonitor progress=null;
 	double discountFactor[];
 	
 	
@@ -126,7 +128,7 @@ public class MarkovMonteCarloPOOL{
 			runChains(showProgress); //simulate each Markov chain
 		}
 		
-		if(myModel.cluster==false) {progress.close();}
+		if(progress!=null) {progress.close();}
 		endTime=System.currentTimeMillis();
 	}
 	
@@ -136,8 +138,10 @@ public class MarkovMonteCarloPOOL{
 		people=new MarkovPerson[numPeople];
 		
 		maxProg=numPeople; //initialize + simulate
-		if(myModel.cluster==false) { //desktop
-			progress=new ProgressMonitor(myModel.mainForm.frmMain, myModel.language.message.getString("info.init_simulants"), "", 0, (int) maxProg); //Initializing simulants
+		if(myModel.cluster==false && showProgress==true) { //desktop
+			//progress=new ProgressMonitor(myModel.mainForm.frmMain, myModel.language.message.getString("info.init_simulants"), "", 0, (int) maxProg); //Initializing simulants
+			progress=new frmProgressMonitor(myModel.mainForm.frmMain, myModel.language.message.getString("info.init_simulants"), "", 0, (int) maxProg, myModel.language); //Initializing simulants
+			SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
 		}
 		else { //cluster
 			System.out.println(myModel.language.message.getString("info.init_simulants")+"...");
@@ -210,7 +214,7 @@ public class MarkovMonteCarloPOOL{
 								}
 							}
 
-							if(finalN==0 && showProgress && myModel.cluster==false){ //update progress from thread 0
+							if(finalN==0 && progress!=null){ //update progress from thread 0
 								threadProg++;
 								int prog=threadProg*numThreads;
 								progress.setProgress(prog);
@@ -223,6 +227,9 @@ public class MarkovMonteCarloPOOL{
 
 						}
 					} catch(Exception e){
+						if(progress!=null)  {
+							progress.close();
+						}
 						threadError=e;
 					}
 				}
@@ -260,6 +267,10 @@ public class MarkovMonteCarloPOOL{
 		for(int g=0; g<numSubgroups; g++){
 			runReport.subgroupSizes[g]=subgroupSize[g];
 		}
+		
+		if(progress!=null)  {
+			progress.close();
+		}
 	}
 	
 	private void runChains(final boolean showProgress) throws NumericException, Exception{
@@ -273,8 +284,10 @@ public class MarkovMonteCarloPOOL{
 		
 		curProg=0;
 		maxProg=numChains*guessMaxCycles; //initialize + simulate
-		if(myModel.cluster==false) { //desktop
-			progress=new ProgressMonitor(myModel.mainForm.frmMain, myModel.language.analysis.getString("sim.monte_carlo_simulation"), "", 0, (int) maxProg); //Monte Carlo simulation
+		if(myModel.cluster==false && showProgress==true) { //desktop
+			//progress=new ProgressMonitor(myModel.mainForm.frmMain, myModel.language.analysis.getString("sim.monte_carlo_simulation"), "", 0, (int) maxProg); //Monte Carlo simulation
+			progress=new frmProgressMonitor(myModel.mainForm.frmMain, myModel.language.analysis.getString("sim.monte_carlo_simulation"), "", 0, (int) maxProg, myModel.language); //Monte Carlo simulation
+			SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
 		}
 		else { //cluster
 			System.out.println(myModel.language.analysis.getString("sim.monte_carlo_simulation")+"..."); //Monte Carlo simulation
@@ -377,7 +390,7 @@ public class MarkovMonteCarloPOOL{
 					guessMaxCycles=Integer.parseInt(cycles);
 					maxProg=numChains*guessMaxCycles;
 					curProg=c*guessMaxCycles;
-					if(myModel.cluster==false) {
+					if(progress!=null) {
 						progress.setMaximum((int) maxProg);
 					}
 				}
@@ -489,7 +502,7 @@ public class MarkovMonteCarloPOOL{
 					curT.value[n].setInt(t);
 				}
 				
-				if(myModel.cluster==false) {
+				if(progress!=null) {
 					if(progress.isCanceled()){
 						cancelled=true;
 						terminate=true;
@@ -503,7 +516,7 @@ public class MarkovMonteCarloPOOL{
 			//Update max cycle guess
 			guessMaxCycles=t;
 			maxProg=numChains*guessMaxCycles; //initialize + simulate
-			if(myModel.cluster==false) {
+			if(progress!=null) {
 				progress.setMaximum((int) maxProg);
 			}
 			
@@ -579,6 +592,9 @@ public class MarkovMonteCarloPOOL{
 										}
 									}
 								} catch(Exception e){
+									if(progress!=null)  {
+										progress.close();
+									}
 									threadError=e;
 								}
 							}
@@ -616,6 +632,10 @@ public class MarkovMonteCarloPOOL{
 				c=numChains; //end loop
 			}
 		} //end chain Loop
+		
+		if(progress!=null) {
+			progress.close();
+		}
 	}
 	
 	private void initializeChain(final MarkovNode curChain, final boolean showProgress, final int finalC) throws Exception{
@@ -806,7 +826,7 @@ public class MarkovMonteCarloPOOL{
 	}
 	
 	
-	private void updateProgress(int curProg, String note){
+	private void updateProgress(int curProg, String message){
 		//Update progress
 		double prog=((curProg+1)/maxProg)*100;
 		long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
@@ -816,9 +836,11 @@ public class MarkovMonteCarloPOOL{
 		String minutes = Integer.toString((int)(remTime/60));
 		if(seconds.length()<2){seconds="0"+seconds;}
 		if(minutes.length()<2){minutes="0"+minutes;}
-		if(myModel.cluster==false) { //desktop
+		if(progress!=null) { //desktop
 			progress.setProgress(curProg+1);
-			progress.setNote(note+" - "+myModel.language.message.getString("info.total_time_left")+": "+minutes+":"+seconds); //Total time left
+			//progress.setNote(note+" - "+myModel.language.message.getString("info.total_time_left")+": "+minutes+":"+seconds); //Total time left
+			progress.setMessage(message);
+			progress.setNote(myModel.language.message.getString("info.total_time_left")+": "+minutes+":"+seconds); //Total time left
 		}
 		else { //cluster
 			System.out.println(myModel.language.message.getString("info.progress")+": "+(curProg+1)); //Progress

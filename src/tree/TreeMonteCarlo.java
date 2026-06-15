@@ -19,8 +19,11 @@
 package tree;
 
 import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
+
 import base.AmuaModel;
 import base.MicroStats;
+import gui.frmProgressMonitor;
 import main.MersenneTwisterFast;
 import main.Variable;
 import math.Interpreter;
@@ -40,7 +43,7 @@ public class TreeMonteCarlo{
 	AmuaModel myModel;
 	//MersenneTwisterFast generator;
 	long startTime, endTime;
-	ProgressMonitor progress;
+	frmProgressMonitor progress;
 	double maxProg;
 	int curProg;
 	MicroStats microStats[];
@@ -62,7 +65,9 @@ public class TreeMonteCarlo{
 		//Individuals
 		numPeople=myModel.cohortSize;
 		if(myModel.cluster==false) { //desktop
-			progress=new ProgressMonitor(myModel.mainForm.frmMain, myModel.language.analysis.getString("sim.monte_carlo_simulation"), "", 0, 100); //Monte Carlo simulation
+			//progress=new ProgressMonitor(myModel.mainForm.frmMain, myModel.language.analysis.getString("sim.monte_carlo_simulation"), "", 0, 100); //Monte Carlo simulation
+			progress=new frmProgressMonitor(myModel.mainForm.frmMain, myModel.language.analysis.getString("sim.monte_carlo_simulation"), "", 0, 100, myModel.language); //Monte Carlo simulation
+			SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
 		}
 		else {
 			System.out.println(myModel.language.analysis.getString("sim.monte_carlo_simulation")+"..."); //Monte Carlo simulation
@@ -191,6 +196,9 @@ public class TreeMonteCarlo{
 
 					} catch(Exception e){
 						threadError=e;
+						if(progress!=null) {
+							progress.close();
+						}
 					}
 				}
 			};
@@ -299,6 +307,9 @@ public class TreeMonteCarlo{
 							} //end simulate loop
 						} catch(Exception e){
 							threadError=e;
+							if(progress!=null) {
+								progress.close();
+							}
 						}
 					}
 				};

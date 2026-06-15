@@ -35,12 +35,15 @@ import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
@@ -103,6 +106,7 @@ public class frmPlotFx {
 		try{
 			frmPlotFx = new JFrame();
 			frmPlotFx.setTitle("Amua - "+language.base.getString("menu.plot_function")); //Plot Function
+			frmPlotFx.setFont(language.font);
 			frmPlotFx.setIconImage(Toolkit.getDefaultToolkit().getImage(frmPlotFx.class.getResource("/images/plotFx_128.png")));
 			frmPlotFx.setBounds(100, 100, 1000, 600);
 			frmPlotFx.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -137,6 +141,11 @@ public class frmPlotFx {
 			gbc_panelChart.gridy = 0;
 			frmPlotFx.getContentPane().add(panelChart, gbc_panelChart);
 			panelChart.setBorder(new LineBorder(new Color(0, 0, 0)));
+			
+			//pop-up menu
+			JPopupMenu popup = panelChart.getPopupMenu();
+			language.installMenuFontUpdater(popup); //set font
+			language.setChartPropertiesFont(popup, 0);
 
 			JPanel panel_1 = new JPanel();
 			panel_1.setLayout(null);
@@ -148,6 +157,7 @@ public class frmPlotFx {
 			frmPlotFx.getContentPane().add(panel_1, gbc_panel_1);
 
 			JButton btnPlot = new JButton(language.base.getString("button.plot")); //Plot
+			btnPlot.setFont(language.font);
 			btnPlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					plot();
@@ -178,6 +188,8 @@ public class frmPlotFx {
 			table = new JTable();
 			table.setShowVerticalLines(true);
 			table.setRowSelectionAllowed(false);
+			table.getTableHeader().setFont(language.font);
+			table.setFont(language.font);
 			table.setModel(new DefaultTableModel(
 				new Object[][] {
 					{language.math.getString("sum.min")+" x", "0"}, //Min x
@@ -199,10 +211,12 @@ public class frmPlotFx {
 			panel_1.add(table);
 			
 			chckbxMultiplot = new JCheckBox(language.base.getString("plot.multi_plot")); //Multi-plot
+			chckbxMultiplot.setFont(language.font);
 			chckbxMultiplot.setBounds(212, 5, 114, 18);
 			panel_1.add(chckbxMultiplot);
 			
 			JButton btnClear = new JButton(language.base.getString("button.clear")); //Clear
+			btnClear.setFont(language.font);
 			btnClear.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					clearPlot();
@@ -212,6 +226,7 @@ public class frmPlotFx {
 			panel_1.add(btnClear);
 			
 			chckbxDiscrete = new JCheckBox(language.dist.getString("gen.discrete")); //Discrete
+			chckbxDiscrete.setFont(language.font);
 			chckbxDiscrete.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(chckbxDiscrete.isSelected()){
@@ -274,7 +289,9 @@ public class frmPlotFx {
 	}
 
 	private void plot(){
-		final ProgressMonitor progress=new ProgressMonitor(frmPlotFx, language.base.getString("menu.plot_function"), language.message.getString("info.calculating"), 0, 100); //Plot Function, Calculating
+		//final ProgressMonitor progress=new ProgressMonitor(frmPlotFx, language.base.getString("menu.plot_function"), language.message.getString("info.calculating"), 0, 100); //Plot Function, Calculating
+		final frmProgressMonitor progress=new frmProgressMonitor(frmPlotFx, language.base.getString("menu.plot_function"), language.message.getString("info.calculating"), 0, 100, language); //Plot Function, Calculating
+		SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
 
 		Thread SimThread = new Thread(){ //Non-UI
 			public void run(){
@@ -350,7 +367,7 @@ public class frmPlotFx {
 
 							progress.setProgress(i);
 						}
-
+						
 						//Remove var
 						index=myModel.getInnateVariableIndex("x");
 						if(index!=-1){myModel.innateVariables.remove(index);}
@@ -389,12 +406,15 @@ public class frmPlotFx {
 						
 						if(discrete==false){chartDataCont.addSeries(curSeriesCont+"", curData);}
 						else{chartDataDis.addSeries(curSeriesDis+"", curData);}
+						
+						progress.close();
 					}
 
 				} catch (Exception e) {
 					int index=myModel.getInnateVariableIndex("x");
 					if(index!=-1){myModel.innateVariables.remove(index);}
 					e.printStackTrace();
+					progress.close();
 					JOptionPane.showMessageDialog(frmPlotFx, e.getMessage());
 				}
 			}

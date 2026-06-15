@@ -80,9 +80,29 @@ public class ModelPanel extends JPanel{
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		this.setBackground(Color.WHITE);
 		
+		initFxPane();
+		
+		
+		textAreaNotes=new JTextArea();
+		textAreaNotes.setFont(myModel.language.font);
+		textAreaNotes.setEditable(false);
+		
+		textAreaNotes.getDocument().addDocumentListener(new DocumentListener(){
+			@Override public void insertUpdate(DocumentEvent e) {
+				if(notesFocus){tempNotes=textAreaNotes.getText();}
+			}
+			@Override public void removeUpdate(DocumentEvent e) {
+				if(notesFocus){tempNotes=textAreaNotes.getText();}
+			}
+			@Override public void changedUpdate(DocumentEvent e) {}
+		});
+	}
+	
+	public void initFxPane() {
 		paneFormula=new StyledTextPane(myModel, myModel.language);
 		paneFormula.setEditable(false);
-		paneFormula.setFont(new Font("Consolas", Font.PLAIN,15));
+		//paneFormula.setFont(new Font("Consolas", Font.PLAIN,15));
+		paneFormula.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
 		
 		paneFormula.addFocusListener(new FocusAdapter() {
 			@Override
@@ -125,22 +145,7 @@ public class ModelPanel extends JPanel{
 				}
 			}
 		});
-		
-		textAreaNotes=new JTextArea();
-		textAreaNotes.setEditable(false);
-		
-		textAreaNotes.getDocument().addDocumentListener(new DocumentListener(){
-			@Override public void insertUpdate(DocumentEvent e) {
-				if(notesFocus){tempNotes=textAreaNotes.getText();}
-			}
-			@Override public void removeUpdate(DocumentEvent e) {
-				if(notesFocus){tempNotes=textAreaNotes.getText();}
-			}
-			@Override public void changedUpdate(DocumentEvent e) {}
-		});
 	}
-	
-	
 	
 	/**
 	 * Returns the canvas size

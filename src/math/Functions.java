@@ -989,15 +989,15 @@ public final class Functions{
 			des="<html><b>"+language.math.getString("fx.log_name")+"</b><br>"; //Natural Log
 			des+=MathUtils.consoleFont("<b>log</b>","#800000")+MathUtils.consoleFont("(x)")+": "+language.math.getString("fx.log_desc")+"<br>"; //Returns the natural logarithm (base e of x)
 			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix) "+MathUtils.consoleFont(">0")+"<br>";
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat")+" "+MathUtils.consoleFont(">0")+"<br>"; //Real number (or matrix)
 			des+="</html>";
 			return(des);
 		case "logb": 
 			des="<html><b>"+language.math.getString("fx.logb_name")+"</b><br>"; //Base-b Log
 			des+=MathUtils.consoleFont("<b>logb</b>","#800000")+MathUtils.consoleFont("(x,b)")+": "+language.math.getString("fx.logb_desc")+"<br>"; //Returns the base-b logarithm of x
 			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
-			des+=MathUtils.consoleFont("x")+": Real number (or matrix) "+MathUtils.consoleFont(">0")+"<br>";
-			des+=MathUtils.consoleFont("b")+": Real number "+MathUtils.consoleFont(">0")+"<br>";
+			des+=MathUtils.consoleFont("x")+": "+language.math.getString("fx.real_num_mat_gt0")+"<br>"; //Real number (or matrix) >0
+			des+=MathUtils.consoleFont("b")+": "+language.math.getString("fx.real_num")+" "+MathUtils.consoleFont(">0")+"<br>"; //Real number >0
 			des+="</html>";
 			return(des);
 		case "logGamma": 
@@ -1032,8 +1032,8 @@ public final class Functions{
 			des="<html><b>"+language.math.getString("sum.maximum")+"</b><br>"; //Maximum
 			des+=MathUtils.consoleFont("<b>max</b>","#800000")+MathUtils.consoleFont("(a,b)")+": "+language.math.getString("fx.max_desc")+"<br>"; //Returns the maximum of a and b
 			des+="<br><i>"+language.math.getString("fx.arguments")+"</i><br>"; //Arguments
-			des+=MathUtils.consoleFont("a")+": Real number <br>";
-			des+=MathUtils.consoleFont("b")+": Real number <br>";
+			des+=MathUtils.consoleFont("a")+": "+language.math.getString("fx.real_num")+"<br>"; //Real number
+			des+=MathUtils.consoleFont("b")+": "+language.math.getString("fx.real_num")+"<br>"; //Real number
 			des+="</html>";
 			return(des);
 		case "min": 

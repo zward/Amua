@@ -535,6 +535,7 @@ public class MarkovNode extends ModelNode{
 
 	private void displayName(){
 		textName=new JTextField(myModel.language.base.getString("object.name")); //Name
+		textName.setFont(myModel.language.font);
 		if(name!=null){textName.setText(name);}
 		textName.setBorder(null);
 		textName.setHorizontalAlignment(JTextField.CENTER);
@@ -636,6 +637,7 @@ public class MarkovNode extends ModelNode{
 		scaleFont(lblProb);
 		//Default
 		textProb=new MarkovTextField(panel, this, 0);
+		textProb.setFont(myModel.language.font);
 		if(textHighlights[0]!=null){textProb.setBackground(textHighlights[0]);}
 		else{textProb.setBackground(new Color(0,0,0,0));}
 		textProb.setText(prob);
@@ -678,6 +680,7 @@ public class MarkovNode extends ModelNode{
 	
 	public void displayTermination(){
 		textTermination=new MarkovTextField(panel,this,2);
+		textTermination.setFont(myModel.language.font);
 		textTermination.setHorizontalAlignment(SwingConstants.RIGHT);
 		if(textHighlights[2]!=null){textTermination.setBackground(textHighlights[2]);}
 		else{textTermination.setBackground(new Color(0,0,0,0));}
@@ -727,6 +730,7 @@ public class MarkovNode extends ModelNode{
 		for(int i=0; i<numDimensions-1; i++){buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+cost[i]+"; ";}
 		buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+cost[numDimensions-1];
 		textCost=new MarkovTextField(panel, this, 1);
+		textCost.setFont(myModel.language.font);
 		if(textHighlights[1]!=null){textCost.setBackground(textHighlights[1]);}
 		else{textCost.setBackground(new Color(0,0,0,0));}
 		textCost.setText(buildString);
@@ -781,6 +785,7 @@ public class MarkovNode extends ModelNode{
 		
 		//textfield
 		textVarUpdates=new MarkovTextField(panel, this, 4);
+		textVarUpdates.setFont(myModel.language.font);
 		if(textHighlights[4]!=null){textVarUpdates.setBackground(textHighlights[4]);}
 		else{textVarUpdates.setBackground(new Color(0,0,0,0));}
 		textVarUpdates.setText(varUpdates);
@@ -819,6 +824,7 @@ public class MarkovNode extends ModelNode{
 			textVarUpdates.setHorizontalAlignment(SwingConstants.RIGHT);
 			
 			textVarUpdatesT0=new MarkovTextField(panel, this, 6);
+			textVarUpdatesT0.setFont(myModel.language.font);
 			textVarUpdatesT0.setHorizontalAlignment(SwingConstants.RIGHT);
 			if(textHighlights[6]!=null){textVarUpdatesT0.setBackground(textHighlights[6]);}
 			else{textVarUpdatesT0.setBackground(new Color(0,0,0,0));}
@@ -865,6 +871,7 @@ public class MarkovNode extends ModelNode{
 		for(int i=0; i<numDimensions-1; i++){buildString+="("+myModel.dimInfo.dimSymbols[i]+") "+rewards[i]+"; ";}
 		buildString+="("+myModel.dimInfo.dimSymbols[numDimensions-1]+") "+rewards[numDimensions-1];
 		textRewards=new MarkovTextField(panel, this, 3);
+		textRewards.setFont(myModel.language.font);
 		if(textHighlights[3]!=null){textRewards.setBackground(textHighlights[3]);}
 		else{textRewards.setBackground(new Color(0,0,0,0));}
 		textRewards.setText(buildString);
@@ -927,6 +934,7 @@ public class MarkovNode extends ModelNode{
 	
 	public void displayTransition(){
 		comboTransition=new JComboBox<String>();
+		comboTransition.setFont(myModel.language.font);
 		comboTransition.setBackground(new Color(0,0,0,0));
 		comboTransition.setBorder(null);
 		Font curFont=comboTransition.getFont();
@@ -964,6 +972,7 @@ public class MarkovNode extends ModelNode{
 
 	public void displayEV(){
 		textEV=new JTextField();
+		textEV.setFont(myModel.language.font);
 		textEV.setHorizontalAlignment(JTextField.CENTER);
 		if(type==0 || type==3){textEV.setHorizontalAlignment(JTextField.LEFT);}
 		textEV.setBackground(new Color(0,0,0,0));
@@ -995,6 +1004,7 @@ public class MarkovNode extends ModelNode{
 	
 	public void displayICER(){
 		textICER=new JTextField();
+		textICER.setFont(myModel.language.font);
 		textICER.setBackground(new Color(0,0,0,0));
 		textICER.setHorizontalAlignment(JTextField.CENTER);
 		textICER.setBorder(null);

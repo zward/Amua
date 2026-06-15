@@ -51,6 +51,8 @@ import markov.MarkovTrace;
 
 import javax.swing.border.LineBorder;
 import java.awt.Color;
+import java.awt.Font;
+
 import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -113,6 +115,7 @@ public class frmTraceMulti {
 		try{
 			frmTraceMulti = new JFrame();
 			frmTraceMulti.setTitle("Amua - "+language.base.getString("markov.markov_traces")); //Markov Traces
+			frmTraceMulti.setFont(language.font);
 			frmTraceMulti.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTraceMulti.class.getResource("/images/logo_128.png")));
 			frmTraceMulti.setBounds(100, 100, 1200, 600);
 			frmTraceMulti.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -129,6 +132,10 @@ public class frmTraceMulti {
 			chartTrace = ChartFactory.createScatterPlot(null, "t", language.analysis.getString("result.prev_t"), //Prev(t) 
 					dataTrace, PlotOrientation.VERTICAL, true, false, false);
 			chartTrace.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
+			//font
+			chartTrace.getXYPlot().getDomainAxis().setLabelFont(language.font.deriveFont(Font.BOLD, 14f));
+			chartTrace.getXYPlot().getRangeAxis().setLabelFont(language.font.deriveFont(Font.BOLD, 14f));
+			chartTrace.getLegend().setItemFont(language.font);
 			
 			JPanel panel = new JPanel();
 			panel.setLayout(null);
@@ -140,11 +147,13 @@ public class frmTraceMulti {
 			frmTraceMulti.getContentPane().add(panel, gbc_panel);
 			
 			JLabel lblChain = new JLabel(language.base.getString("node.chain")+":"); //Chain
+			lblChain.setFont(language.font);
 			lblChain.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblChain.setBounds(2, 5, 50, 16);
 			panel.add(lblChain);
 			
 			comboChain = new JComboBox();
+			comboChain.setFont(language.font);
 			comboChain.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					//get chain
@@ -161,11 +170,13 @@ public class frmTraceMulti {
 			panel.add(comboChain);
 			
 			JLabel lblNewLabel = new JLabel(language.base.getString("button.plot")+":"); //Plot
+			lblNewLabel.setFont(language.font);
 			lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblNewLabel.setBounds(197, 5, 50, 16);
 			panel.add(lblNewLabel);
 			
 			comboPlot = new JComboBox();
+			comboPlot.setFont(language.font);
 			comboPlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					updateChart(comboPlot.getSelectedIndex());
@@ -186,12 +197,14 @@ public class frmTraceMulti {
 			panel.add(comboPlot);
 			
 			JLabel lblGroup = new JLabel(language.analysis.getString("result.group")+":"); //Group
+			lblGroup.setFont(language.font);
 			lblGroup.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblGroup.setVisible(false);
 			lblGroup.setBounds(395, 5, 55, 16);
 			panel.add(lblGroup);
 			
 			comboGroup = new JComboBox();
+			comboGroup.setFont(language.font);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int chainIndex=comboChain.getSelectedIndex();
@@ -272,6 +285,8 @@ public class frmTraceMulti {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
+			language.installMenuFontUpdater(popup); //set font
+			language.setChartPropertiesFont(popup, 1);
 			
 			JToolBar toolBar = new JToolBar();
 			toolBar.setFloatable(false);
@@ -284,6 +299,7 @@ public class frmTraceMulti {
 			frmTraceMulti.getContentPane().add(toolBar, gbc_toolBar);
 			
 			JButton btnExport = new JButton(language.base.getString("menu.export")); //Export
+			btnExport.setFont(language.font);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
@@ -291,6 +307,7 @@ public class frmTraceMulti {
 						fc.setDialogTitle(language.base.getString("title.export_trace")); //Export Trace
 						fc.setApproveButtonText(language.base.getString("menu.export")); //Export
 						fc.setFileFilter(new CSVFilter(language));
+						language.setFontRecursively(fc); //set font
 
 						int returnVal = fc.showOpenDialog(frmTraceMulti);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -331,6 +348,7 @@ public class frmTraceMulti {
 			toolBar.add(btnExport);
 			
 			JButton btnCopy = new JButton(language.base.getString("menu.copy")); //Copy
+			btnCopy.setFont(language.font);
 			btnCopy.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int numCol=curTrace.modelTraceRounded.getColumnCount();
@@ -371,6 +389,7 @@ public class frmTraceMulti {
 			table.setModel(curTrace.modelTraceRounded);
 			table.setShowVerticalLines(true);
 			table.getTableHeader().setReorderingAllowed(false);
+			table.getTableHeader().setFont(language.font);
 			scrollPane.setViewportView(table);
 			
 			

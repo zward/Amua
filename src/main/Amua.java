@@ -32,7 +32,7 @@ public class Amua {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		String version="0.3.4";
+		String version="0.3.5";
 		
 		boolean gui=true;
 		if(args.length>0) {

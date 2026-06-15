@@ -52,6 +52,8 @@ import markov.MarkovTraceSummary;
 
 import javax.swing.border.LineBorder;
 import java.awt.Color;
+import java.awt.Font;
+
 import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -119,6 +121,7 @@ public class frmTraceSummaryMulti {
 		try{
 			frmTraceSummaryMulti = new JFrame();
 			frmTraceSummaryMulti.setTitle("Amua - "+language.base.getString("markov.markov_trace_summary")); //Markov Trace Summary
+			frmTraceSummaryMulti.setFont(language.font);
 			frmTraceSummaryMulti.setIconImage(Toolkit.getDefaultToolkit().getImage(frmMain.class.getResource("/images/logo_128.png")));
 			frmTraceSummaryMulti.setBounds(100, 100, 1200, 600);
 			frmTraceSummaryMulti.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -134,6 +137,10 @@ public class frmTraceSummaryMulti {
 			chartTrace = ChartFactory.createScatterPlot(null, "t", language.analysis.getString("result.prev_t"), //Prev(t) 
 					mean, PlotOrientation.VERTICAL, true, false, false);
 			chartTrace.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
+			//font
+			chartTrace.getXYPlot().getDomainAxis().setLabelFont(language.font.deriveFont(Font.BOLD, 14f));
+			chartTrace.getXYPlot().getRangeAxis().setLabelFont(language.font.deriveFont(Font.BOLD, 14f));
+			chartTrace.getLegend().setItemFont(language.font);
 			
 			JPanel panel = new JPanel();
 			panel.setLayout(null);
@@ -145,11 +152,13 @@ public class frmTraceSummaryMulti {
 			frmTraceSummaryMulti.getContentPane().add(panel, gbc_panel);
 			
 			JLabel lblChain = new JLabel(language.base.getString("node.chain")+":"); //Chain
+			lblChain.setFont(language.font);
 			lblChain.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblChain.setBounds(2, 5, 50, 16);
 			panel.add(lblChain);
 			
 			comboChain = new JComboBox();
+			comboChain.setFont(language.font);
 			comboChain.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					//get chain
@@ -166,11 +175,13 @@ public class frmTraceSummaryMulti {
 			panel.add(comboChain);
 			
 			JLabel lblNewLabel = new JLabel(language.base.getString("button.plot")+":"); //Plot
+			lblNewLabel.setFont(language.font);
 			lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblNewLabel.setBounds(197, 5, 50, 16);
 			panel.add(lblNewLabel);
 			
 			comboPlot = new JComboBox();
+			comboPlot.setFont(language.font);
 			comboPlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					updateChart(comboPlot.getSelectedIndex());
@@ -191,12 +202,14 @@ public class frmTraceSummaryMulti {
 			panel.add(comboPlot);
 			
 			JLabel lblGroup = new JLabel(language.analysis.getString("result.group")+":"); //Group
+			lblGroup.setFont(language.font);
 			lblGroup.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblGroup.setVisible(false);
 			lblGroup.setBounds(395, 5, 55, 16);
 			panel.add(lblGroup);
 			
 			comboGroup = new JComboBox();
+			comboGroup.setFont(language.font);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int chainIndex=comboChain.getSelectedIndex();
@@ -271,6 +284,8 @@ public class frmTraceSummaryMulti {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
+			language.installMenuFontUpdater(popup); //set font
+			language.setChartPropertiesFont(popup, 1);
 			
 			JToolBar toolBar = new JToolBar();
 			toolBar.setFloatable(false);
@@ -283,6 +298,7 @@ public class frmTraceSummaryMulti {
 			frmTraceSummaryMulti.getContentPane().add(toolBar, gbc_toolBar);
 			
 			JButton btnExport = new JButton(language.base.getString("menu.export")); //Export
+			btnExport.setFont(language.font);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
@@ -290,6 +306,7 @@ public class frmTraceSummaryMulti {
 						fc.setDialogTitle(language.base.getString("title.export_trace")); //Export Trace
 						fc.setApproveButtonText(language.base.getString("menu.export")); //Export
 						fc.setFileFilter(new CSVFilter(language));
+						language.setFontRecursively(fc); //set font
 
 						int returnVal = fc.showOpenDialog(frmTraceSummaryMulti);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -330,6 +347,7 @@ public class frmTraceSummaryMulti {
 			toolBar.add(btnExport);
 			
 			JButton btnCopy = new JButton(language.base.getString("menu.copy")); //Copy
+			btnCopy.setFont(language.font);
 			btnCopy.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int numCol=curTrace.modelTraceRounded.getColumnCount();
@@ -356,6 +374,7 @@ public class frmTraceSummaryMulti {
 			toolBar.add(btnCopy);
 			
 			JButton btnExportAll = new JButton(language.base.getString("button.export_all")); //Export all
+			btnExportAll.setFont(language.font);
 			btnExportAll.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
@@ -369,7 +388,8 @@ public class frmTraceSummaryMulti {
 							fc.setDialogTitle(language.base.getString("title.export_compiled_traces")); //Export Compiled Traces
 							fc.setApproveButtonText(language.base.getString("menu.export")); //Export
 							fc.setFileFilter(new CSVFilter(language));
-
+							language.setFontRecursively(fc); //set font
+							
 							int returnVal = fc.showDialog(frmTraceSummaryMulti, language.base.getString("menu.export")); //Export
 							if (returnVal == JFileChooser.APPROVE_OPTION) {
 								File file = fc.getSelectedFile();
@@ -403,6 +423,7 @@ public class frmTraceSummaryMulti {
 							fc.setApproveButtonText(language.base.getString("menu.export")); //Export
 							fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 							fc.setFileFilter(new CSVFilter(language));
+							language.setFontRecursively(fc); //set font
 
 							int returnVal = fc.showDialog(frmTraceSummaryMulti, language.base.getString("menu.export")); //Export
 							if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -440,6 +461,7 @@ public class frmTraceSummaryMulti {
 			table.setModel(curTrace.modelTraceRounded);
 			table.setShowVerticalLines(true);
 			table.getTableHeader().setReorderingAllowed(false);
+			table.getTableHeader().setFont(language.font);
 			scrollPane.setViewportView(table);
 			
 			

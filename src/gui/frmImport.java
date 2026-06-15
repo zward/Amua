@@ -75,12 +75,14 @@ public class frmImport {
 			//Import Model Objects from [name]
 			String title = MessageFormat.format(myModel.language.base.getString("title.import_model_objects_from"), donorModel.name);
 			frmImport.setTitle("Amua - "+title);
+			frmImport.setFont(myModel.language.font);
 			frmImport.setResizable(false);
 			frmImport.setBounds(100, 100, 600, 500);
 			frmImport.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmImport.getContentPane().setLayout(null);
 
 			JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			tabbedPane.setFont(myModel.language.font);
 			tabbedPane.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 			tabbedPane.setBounds(6, 6, 576, 420);
 			frmImport.getContentPane().add(tabbedPane);
@@ -88,6 +90,7 @@ public class frmImport {
 			//parameters
 			JScrollPane scrollPaneParams = new JScrollPane();
 			JLabel lblParams=new JLabel(myModel.language.base.getString("object.parameters")); //Parameters
+			lblParams.setFont(myModel.language.font);
 			lblParams.setIcon(new ScaledIcon("/images/parameter",16,16,16,true));
 			lblParams.setHorizontalTextPosition(SwingConstants.RIGHT);
 			tabbedPane.addTab(myModel.language.base.getString("object.parameters"), null, scrollPaneParams, null); //Parameters
@@ -114,6 +117,8 @@ public class frmImport {
 			tableParams.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			tableParams.setShowVerticalLines(true);
 			tableParams.getTableHeader().setReorderingAllowed(false);
+			tableParams.getTableHeader().setFont(myModel.language.font);
+			tableParams.setFont(myModel.language.font);
 			tableParams.setAutoCreateRowSorter(true);
 			tableParams.setModel(modelParams);
 			scrollPaneParams.setViewportView(tableParams);
@@ -121,6 +126,7 @@ public class frmImport {
 			//variables
 			JScrollPane scrollPaneVars = new JScrollPane();
 			JLabel lblVars=new JLabel(myModel.language.base.getString("object.variables")); //Variables
+			lblVars.setFont(myModel.language.font);
 			lblVars.setIcon(new ScaledIcon("/images/variable",16,16,16,true));
 			lblVars.setHorizontalTextPosition(SwingConstants.RIGHT);
 			tabbedPane.addTab(myModel.language.base.getString("object.variables"), null, scrollPaneVars, null);
@@ -147,6 +153,8 @@ public class frmImport {
 			tableVars.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			tableVars.setShowVerticalLines(true);
 			tableVars.getTableHeader().setReorderingAllowed(false);
+			tableVars.getTableHeader().setFont(myModel.language.font);
+			tableVars.setFont(myModel.language.font);
 			tableVars.setAutoCreateRowSorter(true);
 			tableVars.setModel(modelVars);
 			scrollPaneVars.setViewportView(tableVars);
@@ -154,6 +162,7 @@ public class frmImport {
 			//tables
 			JScrollPane scrollPaneTables = new JScrollPane();
 			JLabel lblTables=new JLabel(myModel.language.base.getString("object.tables")); //Tables
+			lblTables.setFont(myModel.language.font);
 			lblTables.setIcon(new ScaledIcon("/images/table",16,16,16,true));
 			lblTables.setHorizontalTextPosition(SwingConstants.RIGHT);
 			tabbedPane.addTab(myModel.language.base.getString("object.tables"), null, scrollPaneTables, null); //Tables
@@ -181,6 +190,8 @@ public class frmImport {
 			tableTables.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			tableTables.setShowVerticalLines(true);
 			tableTables.getTableHeader().setReorderingAllowed(false);
+			tableTables.getTableHeader().setFont(myModel.language.font);
+			tableTables.setFont(myModel.language.font);
 			tableTables.setAutoCreateRowSorter(true);
 			tableTables.setModel(modelTables);
 			scrollPaneTables.setViewportView(tableTables);
@@ -189,6 +200,7 @@ public class frmImport {
 			//constraints
 			JScrollPane scrollPaneConstraints = new JScrollPane();
 			JLabel lblConstraints=new JLabel(myModel.language.base.getString("object.constraints")); //Constraints
+			lblConstraints.setFont(myModel.language.font);
 			lblConstraints.setIcon(new ScaledIcon("/images/constraint",16,16,16,true));
 			lblConstraints.setHorizontalTextPosition(SwingConstants.RIGHT);
 			tabbedPane.addTab(myModel.language.base.getString("object.constraints"), null, scrollPaneConstraints, null); //Constraints
@@ -215,12 +227,15 @@ public class frmImport {
 			tableConstraints.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			tableConstraints.setShowVerticalLines(true);
 			tableConstraints.getTableHeader().setReorderingAllowed(false);
+			tableConstraints.getTableHeader().setFont(myModel.language.font);
+			tableConstraints.setFont(myModel.language.font);
 			tableConstraints.setAutoCreateRowSorter(true);
 			tableConstraints.setModel(modelConstraints);
 			scrollPaneConstraints.setViewportView(tableConstraints);
 
 
 			JButton btnClearSelection = new JButton(myModel.language.base.getString("button.clear_selection")); //Clear Selection
+			btnClearSelection.setFont(myModel.language.font);
 			btnClearSelection.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int index=tabbedPane.getSelectedIndex();
@@ -242,10 +257,12 @@ public class frmImport {
 			frmImport.getContentPane().add(btnClearSelection);
 			
 			JCheckBox chckbxOverwrite = new JCheckBox(myModel.language.base.getString("object.overwrite_current")); //Overwrite current objects
+			chckbxOverwrite.setFont(myModel.language.font);
 			chckbxOverwrite.setBounds(187, 437, 186, 18);
 			frmImport.getContentPane().add(chckbxOverwrite);
 
 			JButton btnImport = new JButton(myModel.language.base.getString("menu.import")); //Import
+			btnImport.setFont(myModel.language.font);
 			btnImport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 
@@ -340,6 +357,7 @@ public class frmImport {
 			frmImport.getContentPane().add(btnImport);
 
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmImport.dispose();

@@ -100,6 +100,7 @@ public class RecentFiles{
 			int index1=file.indexOf(".amua");
 			String name=file.substring(index0+1, index1);
 			final JMenuItem mntmNewMenuItem = new JMenuItem(name);
+			mntmNewMenuItem.setFont(mainForm.language.font);
 			mntmNewMenuItem.setToolTipText(file);
 			if(data.length>1){
 				if(data[1].matches("0")){

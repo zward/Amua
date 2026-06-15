@@ -22,6 +22,7 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -58,6 +59,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
@@ -140,6 +142,7 @@ public class frmSensTwoWay {
 		try{
 			frmSensTwoWay = new JFrame();
 			frmSensTwoWay.setTitle("Amua - "+myModel.language.analysis.getString("sens.two_way_sens_analysis")); //Two-way Sensitivity Analysis
+			frmSensTwoWay.setFont(myModel.language.font);
 			frmSensTwoWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensTwoWay.class.getResource("/images/twoWay_128.png")));
 			frmSensTwoWay.setBounds(100, 100, 1000, 500);
 			frmSensTwoWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -199,6 +202,8 @@ public class frmSensTwoWay {
 			tableParams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableParams.setShowVerticalLines(true);
 			tableParams.getTableHeader().setReorderingAllowed(false);
+			tableParams.getTableHeader().setFont(myModel.language.font);
+			tableParams.setFont(myModel.language.font);
 			tableParams.setModel(modelParams);
 			scrollPaneParams.setViewportView(tableParams);
 
@@ -212,6 +217,7 @@ public class frmSensTwoWay {
 			panel_1.add(panel_2, gbc_panel_2);
 
 			final JLabel lblOutcome = new JLabel(myModel.language.analysis.getString("result.outcome")+":"); //Outcome
+			lblOutcome.setFont(myModel.language.font);
 			lblOutcome.setBounds(12, 69, 81, 16);
 			panel_2.add(lblOutcome);
 
@@ -237,6 +243,7 @@ public class frmSensTwoWay {
 			}
 
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
+			comboDimensions.setFont(myModel.language.font);
 			comboDimensions.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(myModel.dimInfo.analysisType==1){ //CEA
@@ -257,10 +264,12 @@ public class frmSensTwoWay {
 			panel_2.add(comboDimensions);
 
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
+			btnRun.setFont(myModel.language.font);
 			btnRun.setBounds(353, 27, 90, 28);
 			panel_2.add(btnRun);
 
 			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
+			btnExport.setFont(myModel.language.font);
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -272,7 +281,8 @@ public class frmSensTwoWay {
 
 						fc.setDialogTitle(myModel.language.base.getString("title.export_graph_data")); //Export Graph Data
 						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
-
+						myModel.language.setFontRecursively(fc); //set font
+						
 						int returnVal = fc.showSaveDialog(frmSensTwoWay);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
@@ -317,24 +327,29 @@ public class frmSensTwoWay {
 			panel_2.add(btnExport);
 
 			JLabel lblParameter = new JLabel(myModel.language.base.getString("object.parameter")+" 1:"); //Parameter 1
+			lblParameter.setFont(myModel.language.font);
 			lblParameter.setBounds(12, 9, 81, 16);
 			panel_2.add(lblParameter);
 
 			final JComboBox<String> comboParam1 = new JComboBox<String>(new DefaultComboBoxModel<String>(paramNames));
+			comboParam1.setFont(myModel.language.font);
 			comboParam1.setBounds(94, 4, 227, 26);
 			panel_2.add(comboParam1);
 			if(paramNames.length>0){comboParam1.setSelectedIndex(0);}
 
 			JLabel lblParameter_1 = new JLabel(myModel.language.base.getString("object.parameter")+" 2:"); //Parameter 2
+			lblParameter_1.setFont(myModel.language.font);
 			lblParameter_1.setBounds(12, 39, 81, 16);
 			panel_2.add(lblParameter_1);
 
 			final JComboBox<String> comboParam2 = new JComboBox<String>(new DefaultComboBoxModel<String>(paramNames));
+			comboParam2.setFont(myModel.language.font);
 			comboParam2.setBounds(94, 34, 227, 26);
 			panel_2.add(comboParam2);
 			if(paramNames.length>1){comboParam2.setSelectedIndex(1);}
 
 			comboMinMax = new JComboBox<String>();
+			comboMinMax.setFont(myModel.language.font);
 			comboMinMax.setModel(new DefaultComboBoxModel<String>(new String[] {
 					myModel.language.math.getString("sum.min"), //Min
 					myModel.language.math.getString("sum.max")})); //Max
@@ -343,6 +358,7 @@ public class frmSensTwoWay {
 			panel_2.add(comboMinMax);
 
 			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setFont(myModel.language.font);
 			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblIntervals.setBounds(313, 100, 73, 16);
 			panel_2.add(lblIntervals);
@@ -355,6 +371,7 @@ public class frmSensTwoWay {
 			textIntervals.setColumns(10);
 
 			lblCEThresh = new JLabel(myModel.language.analysis.getString("cea.cea_threshold")+":"); //Cost-Effectiveness Threshold
+			lblCEThresh.setFont(myModel.language.font);
 			lblCEThresh.setEnabled(false);
 			lblCEThresh.setBounds(12, 100, 171, 16);
 			panel_2.add(lblCEThresh);
@@ -366,11 +383,13 @@ public class frmSensTwoWay {
 			textCEThresh.setColumns(10);
 
 			JLabel lblGroup = new JLabel(myModel.language.analysis.getString("result.group")+":"); //Group
+			lblGroup.setFont(myModel.language.font);
 			lblGroup.setEnabled(false);
 			lblGroup.setBounds(12, 131, 55, 16);
 			panel_2.add(lblGroup);
 
 			comboGroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{myModel.language.analysis.getString("result.overall")})); //Overall
+			comboGroup.setFont(myModel.language.font);
 			comboGroup.setEnabled(false);
 			comboGroup.setBounds(94, 126, 227, 26);
 			panel_2.add(comboGroup);
@@ -386,11 +405,14 @@ public class frmSensTwoWay {
 			}
 
 			final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			tabbedPane.setFont(myModel.language.font);
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmSensTwoWay, myModel.language.base.getString("menu.two_way"), myModel.language.message.getString("info.running")+"...", 0, 100); //Two-way, Running
-
+					//final ProgressMonitor progress=new ProgressMonitor(frmSensTwoWay, myModel.language.base.getString("menu.two_way"), myModel.language.message.getString("info.running")+"...", 0, 100); //Two-way, Running
+					final frmProgressMonitor progress=new frmProgressMonitor(frmSensTwoWay, myModel.language.base.getString("menu.two_way"), myModel.language.message.getString("info.running"), 0, 100, myModel.language); //Two-way, Running
+					SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
+					
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
@@ -546,8 +568,8 @@ public class frmSensTwoWay {
 										progress.setMaximum(numRuns);
 
 										long startTime=System.currentTimeMillis();
-										progress.setMillisToDecideToPopup(0);
-										progress.setMillisToPopup(0);
+										//progress.setMillisToDecideToPopup(0);
+										//progress.setMillisToPopup(0);
 										
 										int count=0;
 										for(int i=0; i<=intervals; i++){
@@ -761,6 +783,7 @@ public class frmSensTwoWay {
 								curParam1.locked=false; curParam2.locked=false;
 								myModel.validateModelObjects();
 								e.printStackTrace();
+								progress.close();
 								JOptionPane.showMessageDialog(frmSensTwoWay, e.getMessage());
 								myModel.errorLog.recordError(e);
 								frmSensTwoWay.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -782,7 +805,10 @@ public class frmSensTwoWay {
 			marker.setPaint(Color.black);
 			chart.getXYPlot().addDomainMarker(marker);
 			chart.getXYPlot().addRangeMarker(marker);
-
+			//font
+			chart.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chart.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chart.getLegend().setItemFont(myModel.language.font);
 
 			GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 			gbc_tabbedPane.fill = GridBagConstraints.BOTH;
@@ -811,7 +837,8 @@ public class frmSensTwoWay {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
-			
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 			
 			JPanel panelSurface = new JPanel();
 			panelSurface.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -836,6 +863,7 @@ public class frmSensTwoWay {
 
 
 			JLabel lblStrategy = new JLabel(myModel.language.analysis.getString("gen.strategy")); //Strategy
+			lblStrategy.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblStrategy = new GridBagConstraints();
 			gbc_lblStrategy.anchor = GridBagConstraints.WEST;
 			gbc_lblStrategy.insets = new Insets(0, 0, 0, 5);
@@ -844,6 +872,7 @@ public class frmSensTwoWay {
 			panelSurface.add(lblStrategy, gbc_lblStrategy);
 
 			comboStrategy = new JComboBox<String>(new DefaultComboBoxModel<String>(myModel.strategyNames));
+			comboStrategy.setFont(myModel.language.font);
 			comboStrategy.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					//Update surface chart

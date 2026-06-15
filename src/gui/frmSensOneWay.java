@@ -70,6 +70,7 @@ import javax.swing.border.LineBorder;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -78,6 +79,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -120,6 +122,7 @@ public class frmSensOneWay {
 		try{
 			frmSensOneWay = new JFrame();
 			frmSensOneWay.setTitle("Amua - "+myModel.language.analysis.getString("sens.one_way_sens_analysis")); //One-way Sensitivity Analysis
+			frmSensOneWay.setFont(myModel.language.font);
 			frmSensOneWay.setIconImage(Toolkit.getDefaultToolkit().getImage(frmSensOneWay.class.getResource("/images/oneWay_128.png")));
 			frmSensOneWay.setBounds(100, 100, 1000, 499);
 			frmSensOneWay.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -153,6 +156,7 @@ public class frmSensOneWay {
 			
 			
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
+			comboDimensions.setFont(myModel.language.font);
 			comboDimensions.setEnabled(false);
 			comboDimensions.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -208,10 +212,13 @@ public class frmSensOneWay {
 			gbc_scrollPaneParams.gridx = 0;
 			gbc_scrollPaneParams.gridy = 0;
 			panel_1.add(scrollPaneParams, gbc_scrollPaneParams);
+			
 			tableParams = new JTable();
 			tableParams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableParams.setShowVerticalLines(true);
 			tableParams.getTableHeader().setReorderingAllowed(false);
+			tableParams.getTableHeader().setFont(myModel.language.font);
+			tableParams.setFont(myModel.language.font);
 			tableParams.setModel(modelParams);
 			scrollPaneParams.setViewportView(tableParams);
 
@@ -225,10 +232,12 @@ public class frmSensOneWay {
 			panel_1.add(panel_2, gbc_panel_2);
 
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
+			btnRun.setFont(myModel.language.font);
 			btnRun.setBounds(184, 5, 90, 28);
 			panel_2.add(btnRun);
 
 			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
+			btnExport.setFont(myModel.language.font);
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -240,7 +249,8 @@ public class frmSensOneWay {
 
 						fc.setDialogTitle(myModel.language.base.getString("title.export_graph_data")); //Export Graph Data
 						fc.setApproveButtonText(myModel.language.base.getString("menu.run")); //Export
-
+						myModel.language.setFontRecursively(fc); //set font
+						
 						int returnVal = fc.showSaveDialog(frmSensOneWay);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
@@ -338,6 +348,7 @@ public class frmSensOneWay {
 			panel_2.add(btnExport);
 			
 			JLabel lblIntervals = new JLabel(myModel.language.base.getString("plot.intervals")+":"); //Intervals
+			lblIntervals.setFont(myModel.language.font);
 			lblIntervals.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblIntervals.setBounds(6, 11, 65, 16);
 			panel_2.add(lblIntervals);
@@ -352,7 +363,9 @@ public class frmSensOneWay {
 
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmSensOneWay, myModel.language.analysis.getString("sens.one_way_sens_analysis"), myModel.language.message.getString("info.running"), 0, 100); //One-way sensitivity analysis, Running
+					//final ProgressMonitor progress=new ProgressMonitor(frmSensOneWay, myModel.language.analysis.getString("sens.one_way_sens_analysis"), myModel.language.message.getString("info.running"), 0, 100); //One-way sensitivity analysis, Running
+					final frmProgressMonitor progress=new frmProgressMonitor(frmSensOneWay, myModel.language.analysis.getString("sens.one_way_sens_analysis"), myModel.language.message.getString("info.running"), 0, 100, myModel.language); //One-way sensitivity analysis, Running
+					SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
 					
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
@@ -454,8 +467,8 @@ public class frmSensOneWay {
 											myModel.markov.showTrace=false;
 										}
 										
-										progress.setMillisToDecideToPopup(0);
-										progress.setMillisToPopup(0);
+										//progress.setMillisToDecideToPopup(0);
+										//progress.setMillisToPopup(0);
 										
 										for(int i=0; i<=intervals; i++){
 											//Update progress
@@ -566,6 +579,7 @@ public class frmSensOneWay {
 								}
 							} catch (Exception e) {
 								myModel.errorLog.recordError(e);
+								progress.close();
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(frmSensOneWay, e.getMessage());
 								
@@ -590,8 +604,13 @@ public class frmSensOneWay {
 			marker.setPaint(Color.black);
 			chart.getXYPlot().addDomainMarker(marker);
 			chart.getXYPlot().addRangeMarker(marker);
+			//charts
+			chart.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chart.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chart.getLegend().setItemFont(myModel.language.font);
 			
 			comboGroup = new JComboBox<String>();
+			comboGroup.setFont(myModel.language.font);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateChart();
@@ -644,6 +663,8 @@ public class frmSensOneWay {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 			
 		} catch (Exception ex){
 			ex.printStackTrace();

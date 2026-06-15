@@ -76,6 +76,7 @@ import javax.swing.border.LineBorder;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -83,6 +84,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -150,6 +152,7 @@ public class frmTornadoDiagram {
 		try{
 			frmTornadoDiagram = new JFrame();
 			frmTornadoDiagram.setTitle("Amua - "+myModel.language.base.getString("menu.tornado_diagram")); //Tornado Diagram
+			frmTornadoDiagram.setFont(myModel.language.font);
 			frmTornadoDiagram.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTornadoDiagram.class.getResource("/images/tornado_128.png")));
 			frmTornadoDiagram.setBounds(100, 100, 1000, 500);
 			frmTornadoDiagram.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -201,10 +204,13 @@ public class frmTornadoDiagram {
 			gbc_scrollPaneParams.gridx = 0;
 			gbc_scrollPaneParams.gridy = 0;
 			panel_1.add(scrollPaneParams, gbc_scrollPaneParams);
+			
 			tableParams = new JTable();
 			tableParams.setRowSelectionAllowed(false);
 			tableParams.setShowVerticalLines(true);
 			tableParams.getTableHeader().setReorderingAllowed(false);
+			tableParams.getTableHeader().setFont(myModel.language.font);
+			tableParams.setFont(myModel.language.font);
 			tableParams.setModel(modelParams);
 			scrollPaneParams.setViewportView(tableParams);
 
@@ -218,6 +224,7 @@ public class frmTornadoDiagram {
 			panel_1.add(panel_2, gbc_panel_2);
 
 			lblOutcome = new JLabel(myModel.language.analysis.getString("result.outcome")+":"); //Outcome
+			lblOutcome.setFont(myModel.language.font);
 			lblOutcome.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblOutcome.setEnabled(false);
 			lblOutcome.setBounds(213, 51, 73, 16);
@@ -245,20 +252,24 @@ public class frmTornadoDiagram {
 			}
 			
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
+			comboDimensions.setFont(myModel.language.font);
 			comboDimensions.setEnabled(false);
 			comboDimensions.setBounds(288, 46, 161, 26);
 			panel_2.add(comboDimensions);
 
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
+			btnRun.setFont(myModel.language.font);
 			btnRun.setBounds(258, 6, 90, 28);
 			panel_2.add(btnRun);
 
 			lblStrategies = new JLabel(myModel.language.analysis.getString("gen.strategies")+":"); //Strategies
+			lblStrategies.setFont(myModel.language.font);
 			lblStrategies.setEnabled(false);
 			lblStrategies.setBounds(6, 12, 81, 16);
 			panel_2.add(lblStrategies);
 			
 			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
+			btnExport.setFont(myModel.language.font);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try{
@@ -269,6 +280,7 @@ public class frmTornadoDiagram {
 
 						fc.setDialogTitle(myModel.language.base.getString("title.export_graph_data")); //Export Graph Data
 						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
+						myModel.language.setFontRecursively(fc); //set font
 
 						int returnVal = fc.showSaveDialog(frmTornadoDiagram);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -321,12 +333,14 @@ public class frmTornadoDiagram {
 			panel_2.add(btnExport);
 			
 			lblSubgroup = new JLabel(myModel.language.analysis.getString("result.subgroup")+":"); //Subgroup
+			lblSubgroup.setFont(myModel.language.font);
 			lblSubgroup.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblSubgroup.setEnabled(false);
 			lblSubgroup.setBounds(213, 84, 73, 16);
 			panel_2.add(lblSubgroup);
 			
 			comboSubgroup = new JComboBox<String>(new DefaultComboBoxModel(new String[]{myModel.language.analysis.getString("result.overall")})); //Overall
+			comboSubgroup.setFont(myModel.language.font);
 			comboSubgroup.setEnabled(false);
 			comboSubgroup.setBounds(288, 79, 161, 26);
 			panel_2.add(comboSubgroup);
@@ -339,6 +353,7 @@ public class frmTornadoDiagram {
 			for(int s=0; s<numStrategies; s++){listModelStrategies.addElement(myModel.strategyNames[s]);}
 
 			listStrategies = new JList(listModelStrategies);
+			listStrategies.setFont(myModel.language.font);
 			listStrategies.setEnabled(false);
 			scrollPane.setViewportView(listStrategies);
 			
@@ -360,6 +375,7 @@ public class frmTornadoDiagram {
 			}
 			
 			btnUpdatePlot = new JButton(myModel.language.base.getString("plot.update_plot")); //Update Plot
+			btnUpdatePlot.setFont(myModel.language.font);
 			btnUpdatePlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(listStrategies.isSelectionEmpty()) {
@@ -474,6 +490,11 @@ public class frmTornadoDiagram {
 						}
 						
 						chart = new JFreeChart(plot);
+						//font
+						chart.getCategoryPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+						chart.getCategoryPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+						chart.getLegend().setItemFont(myModel.language.font);
+						
 						//chart.removeLegend();
 						panelChart.setChart(chart);
 												
@@ -495,8 +516,10 @@ public class frmTornadoDiagram {
 			
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final ProgressMonitor progress=new ProgressMonitor(frmTornadoDiagram, myModel.language.base.getString("menu.tornado_diagram"), myModel.language.message.getString("info.running"), 0, 100); //Tornado diagram, Running
-
+					//final ProgressMonitor progress=new ProgressMonitor(frmTornadoDiagram, myModel.language.base.getString("menu.tornado_diagram"), myModel.language.message.getString("info.running"), 0, 100); //Tornado diagram, Running
+					final frmProgressMonitor progress=new frmProgressMonitor(frmTornadoDiagram, myModel.language.base.getString("menu.tornado_diagram"), myModel.language.message.getString("info.running"), 0, 100, myModel.language); //Tornado diagram, Running
+					SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
+					
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{
@@ -533,8 +556,8 @@ public class frmTornadoDiagram {
 										}
 									}
 									
-									progress.setMillisToDecideToPopup(0);
-									progress.setMillisToPopup(0);
+									//progress.setMillisToDecideToPopup(0);
+									//progress.setMillisToPopup(0);
 									
 									long startTime=System.currentTimeMillis();
 									
@@ -723,6 +746,7 @@ public class frmTornadoDiagram {
 								myModel.validateModelObjects();
 								JOptionPane.showMessageDialog(frmTornadoDiagram, e1.getMessage());
 								e1.printStackTrace();
+								progress.close();
 								myModel.errorLog.recordError(e1);
 								frmTornadoDiagram.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 								btnRun.setEnabled(true);
@@ -753,7 +777,8 @@ public class frmTornadoDiagram {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
-			
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -762,7 +787,7 @@ public class frmTornadoDiagram {
 		
 	}
 
-	private void updateProgress(ProgressMonitor progress, int curProg, int numRuns, long startTime) {
+	private void updateProgress(frmProgressMonitor progress, int curProg, int numRuns, long startTime) {
 		double prog=(curProg/(numRuns*1.0))*100;
 		long remTime=(long) ((System.currentTimeMillis()-startTime)/prog); //Number of miliseconds per percent
 		remTime=(long) (remTime*(100-prog));

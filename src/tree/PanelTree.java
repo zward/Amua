@@ -162,34 +162,40 @@ public class PanelTree extends ModelPanel{
 		popup.add(mnAdd);
 
 		JMenuItem mntmDecision = new JMenuItem(myModel.language.base.getString("node.decision")); //Decision Node
+		mntmDecision.setFont(myModel.language.font);
 		mntmDecision.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(0);}});
 		mntmDecision.setIcon(new ScaledIcon("/images/decisionNode",16,16,16,true));
 		mntmDecision.setDisabledIcon(new ScaledIcon("/images/decisionNode",16,16,16,false));
 		mnAdd.add(mntmDecision);
 
 		JMenuItem mntmChance = new JMenuItem(myModel.language.base.getString("node.chance")); //Chance Node
+		mntmDecision.setFont(myModel.language.font);
 		mntmChance.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(1);}});
 		mntmChance.setIcon(new ScaledIcon("/images/chanceNode",16,16,16,true));
 		mntmChance.setDisabledIcon(new ScaledIcon("/images/chanceNode",16,16,16,false));
 		mnAdd.add(mntmChance);
 
 		JMenuItem mntmTerminal = new JMenuItem(myModel.language.base.getString("node.terminal")); //Terminal Node
+		mntmTerminal.setFont(myModel.language.font);
 		mntmTerminal.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addNode(2);}});
 		mntmTerminal.setIcon(new ScaledIcon("/images/terminalNode",16,16,16,true));
 		mntmTerminal.setDisabledIcon(new ScaledIcon("/images/terminalNode",16,16,16,false));
 		mnAdd.add(mntmTerminal);
 
 		mntmChangeType= new JMenuItem(myModel.language.base.getString("button.change_node_type")); //Change Node Type
+		mntmChangeType.setFont(myModel.language.font);
 		mntmChangeType.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {changeNodeType();}});
 		popup.add(mntmChangeType);
 
 		mntmUpdateVariable = new JMenuItem(myModel.language.base.getString("button.add_remove_var_updates")); //Add/Remove Variable Updates
+		mntmUpdateVariable.setFont(myModel.language.font);
 		mntmUpdateVariable.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveVarUpdates();}});
 		mntmUpdateVariable.setIcon(new ScaledIcon("/images/updateVariable",16,16,16,true));
 		mntmUpdateVariable.setDisabledIcon(new ScaledIcon("/images/updateVariable",16,16,16,false));
 		popup.add(mntmUpdateVariable);
 		
 		mntmShowCost= new JMenuItem(myModel.language.base.getString("button.add_remove_cost")); //Add/Remove Cost (One-time Event)
+		mntmShowCost.setFont(myModel.language.font);
 		mntmShowCost.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {addRemoveCost();}});
 		mntmShowCost.setIcon(new ScaledIcon("/images/cost",16,16,16,true));
 		mntmShowCost.setDisabledIcon(new ScaledIcon("/images/cost",16,16,16,false));
@@ -198,18 +204,21 @@ public class PanelTree extends ModelPanel{
 		popup.addSeparator();
 
 		final JMenuItem mntmCut = new JMenuItem(myModel.language.base.getString("menu.cut")); //Cut
+		mntmCut.setFont(myModel.language.font);
 		mntmCut.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {cutSubtree();}});
 		mntmCut.setIcon(new ScaledIcon("/images/cut",16,16,16,true));
 		mntmCut.setDisabledIcon(new ScaledIcon("/images/cut",16,16,16,false));
 		popup.add(mntmCut);
 
 		final JMenuItem mntmCopy = new JMenuItem(myModel.language.base.getString("menu.copy")); //Copy
+		mntmCopy.setFont(myModel.language.font);
 		mntmCopy.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {copySubtree();}});
 		mntmCopy.setIcon(new ScaledIcon("/images/copy",16,16,16,true));
 		mntmCopy.setDisabledIcon(new ScaledIcon("/images/copy",16,16,16,false));
 		popup.add(mntmCopy);
 
 		mntmPaste = new JMenuItem(myModel.language.base.getString("menu.paste")); //Paste
+		mntmPaste.setFont(myModel.language.font);
 		mntmPaste.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {pasteSubtree();}});
 		mntmPaste.setIcon(new ScaledIcon("/images/paste",16,16,16,true));
 		mntmPaste.setDisabledIcon(new ScaledIcon("/images/paste",16,16,16,false));
@@ -218,12 +227,14 @@ public class PanelTree extends ModelPanel{
 
 		popup.addSeparator();
 		mntmDelete= new JMenuItem(myModel.language.base.getString("button.delete")); //Delete
+		mntmDelete.setFont(myModel.language.font);
 		mntmDelete.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {deleteNode(true);}});
 		mntmDelete.setIcon(new ScaledIcon("/images/delete",16,16,16,true));
 		mntmDelete.setDisabledIcon(new ScaledIcon("/images/delete",16,16,16,false));
 		popup.add(mntmDelete);
 
 		mntmCollapse=new JMenuItem(myModel.language.base.getString("button.collapse_branch")); //Collapse Branch
+		mntmCollapse.setFont(myModel.language.font);
 		mntmCollapse.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent arg0) {collapseBranch();}});
 		popup.add(mntmCollapse);
 

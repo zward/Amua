@@ -71,12 +71,14 @@ public class frmAboutAmua {
 			frmAboutAmua.setIconImage(Toolkit.getDefaultToolkit().getImage(frmAboutAmua.class.getResource("/images/logo_128.png")));
 			frmAboutAmua.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmAboutAmua.setTitle(language.base.getString("menu.about_amua")); //About Amua
+			frmAboutAmua.setFont(language.font);
 			frmAboutAmua.setResizable(false);
 			frmAboutAmua.setBounds(100, 100, 500, 400);
 			frmAboutAmua.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmAboutAmua.getContentPane().setLayout(null);
 									
 			JButton btnOk = new JButton(language.base.getString("button.ok")); //OK
+			btnOk.setFont(language.font);
 			btnOk.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmAboutAmua.dispose();
@@ -93,6 +95,7 @@ public class frmAboutAmua {
 			txtrAmuaIsFree.setWrapStyleWord(true);
 			//Amua is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\r\n\r\nAmua is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\r\n\r\nYou should have received a copy of the GNU General Public License along with Amua.  If not, see <http://www.gnu.org/licenses/>.
 			txtrAmuaIsFree.setText(language.base.getString("gpl.gpl_text"));
+			txtrAmuaIsFree.setFont(language.font);
 			txtrAmuaIsFree.setLineWrap(true);
 			txtrAmuaIsFree.setEditable(false);
 			scrollPane_1.setViewportView(txtrAmuaIsFree);
@@ -108,7 +111,8 @@ public class frmAboutAmua {
 			frmAboutAmua.getContentPane().add(lblAmua);
 			
 			JLabel lblVersion = new JLabel(language.message.getString("info.version")+" "+version);
-			lblVersion.setFont(new Font("SansSerif", Font.PLAIN, 14));
+			//lblVersion.setFont(new Font("SansSerif", Font.PLAIN, 14));
+			lblVersion.setFont(language.font.deriveFont(14f));
 			lblVersion.setBounds(162, 54, 182, 16);
 			frmAboutAmua.getContentPane().add(lblVersion);
 			
@@ -130,10 +134,11 @@ public class frmAboutAmua {
 			frmAboutAmua.getContentPane().add(lblURL);
 			
 			JLabel lblGnuGeneralPublic = new JLabel(language.base.getString("gpl.gnu")+":"); //GNU General Public License
+			lblGnuGeneralPublic.setFont(language.font);
 			lblGnuGeneralPublic.setBounds(6, 126, 476, 16);
 			frmAboutAmua.getContentPane().add(lblGnuGeneralPublic);
 			
-			JLabel lblNewLabel = new JLabel("\u00A9 2017-2025 Zachary J. Ward");
+			JLabel lblNewLabel = new JLabel("\u00A9 2017-2026 Zachary J. Ward");
 			lblNewLabel.setBounds(162, 98, 182, 16);
 			frmAboutAmua.getContentPane().add(lblNewLabel);
 			

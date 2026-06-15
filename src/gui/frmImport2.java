@@ -112,12 +112,14 @@ public class frmImport2 {
 			frmImport2.setIconImage(Toolkit.getDefaultToolkit().getImage(frmImport2.class.getResource("/images/import_128.png")));
 			frmImport2.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmImport2.setTitle("Amua - "+myModel.language.base.getString("title.import_objects")); //Import Objects
+			frmImport2.setFont(myModel.language.font);
 			frmImport2.setResizable(false);
 			frmImport2.setBounds(100, 100, 582, 328);
 			frmImport2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frmImport2.getContentPane().setLayout(null);
 			
 			JLabel lblSelectAnExport = new JLabel(myModel.language.message.getString("ask.select_source")+":"); //Select source
+			lblSelectAnExport.setFont(myModel.language.font);
 			lblSelectAnExport.setBounds(12, 23, 146, 16);
 			frmImport2.getContentPane().add(lblSelectAnExport);
 			
@@ -126,12 +128,14 @@ public class frmImport2 {
 			frmImport2.getContentPane().add(scrollPane);
 			
 			textDescription = new JTextArea();
+			textDescription.setFont(myModel.language.font);
 			textDescription.setEditable(false);
 			textDescription.setLineWrap(true);
 			textDescription.setBounds(243, 41, 327, 146);
 			frmImport2.getContentPane().add(textDescription);
 						
 			final JList<String> list = new JList<String>();
+			list.setFont(myModel.language.font);
 			list.addListSelectionListener(new ListSelectionListener() {
 				public void valueChanged(ListSelectionEvent e) {
 					//updates description
@@ -159,6 +163,7 @@ public class frmImport2 {
 			scrollPane.setViewportView(list);
 			
 			JButton btnBrowse = new JButton(myModel.language.base.getString("button.browse")); //Browse
+			btnBrowse.setFont(myModel.language.font);
 			btnBrowse.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
@@ -170,8 +175,8 @@ public class frmImport2 {
 								fc=new JFileChooser(myModel.filepath);
 								fc.setFileFilter(new AmuaModelFilter(myModel.language));
 								fc.setAcceptAllFileFilterUsed(false);
-
 								fc.setDialogTitle(myModel.language.base.getString("title.import_objects")); //Import Objects
+								myModel.language.setFontRecursively(fc); //set font
 
 								int returnVal = fc.showDialog(frmImport2, myModel.language.base.getString("menu.import")); //Import
 								if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -201,8 +206,9 @@ public class frmImport2 {
 								fc=new JFileChooser(myModel.filepath);
 								fc.setFileFilter(new CSVFilter(myModel.language));
 								fc.setAcceptAllFileFilterUsed(false);
-
 								fc.setDialogTitle(myModel.language.base.getString("title.import_objects")); //Import Objects
+								myModel.language.setFontRecursively(fc); //set font
+								
 								int returnVal = fc.showOpenDialog(frmImport2);
 								if (returnVal == JFileChooser.APPROVE_OPTION) {
 									File file = fc.getSelectedFile();
@@ -223,6 +229,7 @@ public class frmImport2 {
 			frmImport2.getContentPane().add(btnBrowse);
 			
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmImport2.dispose();
@@ -232,21 +239,25 @@ public class frmImport2 {
 			frmImport2.getContentPane().add(btnCancel);
 			
 			JLabel lblNewLabel = new JLabel(myModel.language.base.getString("file.filepath")+":"); //Filepath
+			lblNewLabel.setFont(myModel.language.font);
 			lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblNewLabel.setBounds(6, 233, 96, 16);
 			frmImport2.getContentPane().add(lblNewLabel);
 			
 			textFilepath = new JTextField();
+			textFilepath.setFont(myModel.language.font);
 			textFilepath.setBounds(103, 227, 461, 28);
 			frmImport2.getContentPane().add(textFilepath);
 			textFilepath.setColumns(10);
 			
 			JLabel lblNewLabel_1 = new JLabel(myModel.language.base.getString("object.object_type")+":"); //Object Type
+			lblNewLabel_1.setFont(myModel.language.font);
 			lblNewLabel_1.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblNewLabel_1.setBounds(6, 261, 96, 16);
 			frmImport2.getContentPane().add(lblNewLabel_1);
 			
 			JComboBox comboBox = new JComboBox();
+			comboBox.setFont(myModel.language.font);
 			comboBox.setModel(new DefaultComboBoxModel(new String[] {
 					myModel.language.base.getString("object.parameters"), //Parameters
 					myModel.language.base.getString("object.variables"), //Variables
@@ -255,10 +266,12 @@ public class frmImport2 {
 			frmImport2.getContentPane().add(comboBox);
 			
 			JCheckBox chckbxOverwrite = new JCheckBox(myModel.language.base.getString("object.overwrite_current")); //Overwrite current objects
+			chckbxOverwrite.setFont(myModel.language.font);
 			chckbxOverwrite.setBounds(238, 260, 216, 18);
 			frmImport2.getContentPane().add(chckbxOverwrite);
 			
 			btnImport = new JButton(myModel.language.base.getString("button.import_csv")); //Import CSV
+			btnImport.setFont(myModel.language.font);
 			btnImport.setEnabled(false);
 			btnImport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -373,6 +386,7 @@ public class frmImport2 {
 			frmImport2.getContentPane().add(btnImport);
 			
 			JLabel lblDescription = new JLabel(myModel.language.base.getString("title.description")+":"); //Description
+			lblDescription.setFont(myModel.language.font);
 			lblDescription.setBounds(243, 23, 90, 16);
 			frmImport2.getContentPane().add(lblDescription);
 			

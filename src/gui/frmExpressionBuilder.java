@@ -19,16 +19,23 @@
 package gui;
 
 import javax.swing.JFrame;
+
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.ListCellRenderer;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 import base.AmuaModel;
 import main.StyledTextPane;
@@ -92,6 +99,7 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.setIconImage(Toolkit.getDefaultToolkit().getImage(frmExpressionBuilder.class.getResource("/images/formula_128.png")));
 			frmExpressionBuilder.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmExpressionBuilder.setTitle("Amua - "+myModel.language.base.getString("button.build_expression")); //Build Expression
+			frmExpressionBuilder.setFont(myModel.language.font);
 			frmExpressionBuilder.setResizable(false);
 			frmExpressionBuilder.setBounds(100, 100, 1000, 600);
 			frmExpressionBuilder.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -103,7 +111,11 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.getContentPane().add(scrollPane);
 			
 			listType = new JList<String>();
-			listType.setFont(new Font("SansSerif", Font.PLAIN, 12));
+			//listType.setFont(new Font("SansSerif", Font.PLAIN, 12));
+			listType.setFont(myModel.language.font);
+			listType.setSelectionBackground(new Color(57, 105, 138)); //grey-blue
+			listType.setSelectionForeground(Color.WHITE);
+			
 			listType.addListSelectionListener(new ListSelectionListener() {
 				public void valueChanged(ListSelectionEvent e) {
 					updateDescription=false;
@@ -116,7 +128,7 @@ public class frmExpressionBuilder {
 			});
 			
 			DefaultListModel<String> modelType= new DefaultListModel<String>();
-			modelType.addElement("<html><b><i>"+myModel.language.base.getString("object.model_objects")+"</i></b></html>"); //Model Objects
+			modelType.addElement(myModel.language.base.getString("object.model_objects")); //Model Objects (header)
 			modelType.addElement(myModel.language.base.getString("object.parameter")); //Parameter
 			modelType.addElement(myModel.language.base.getString("object.table")); //Table
 			modelType.addElement(myModel.language.base.getString("object.variable")); //Variable
@@ -124,28 +136,57 @@ public class frmExpressionBuilder {
 				modelType.addElement(myModel.language.base.getString("markov.markov")); //Markov
 			}
 			modelType.addElement("");
-			modelType.addElement("<html><b><i>"+myModel.language.math.getString("fx.functions")+"</i></b></html>"); //Functions
+			modelType.addElement(myModel.language.math.getString("fx.functions")); //Functions (header)
 			modelType.addElement(myModel.language.math.getString("const.constant")); //Constant
 			modelType.addElement(myModel.language.base.getString("table.distribution")); //Distribution
 			modelType.addElement(myModel.language.math.getString("fx.function")); //Function
 			modelType.addElement(myModel.language.math.getString("mat.matrix_function")); //Matrix Function
 			modelType.addElement("");
-			modelType.addElement("<html><b><i>"+myModel.language.math.getString("op.operators")+"</i></b></html>"); //Operators
+			modelType.addElement(myModel.language.math.getString("op.operators")); //Operators (header)
 			modelType.addElement(myModel.language.math.getString("op.logical_operator")); //Logical Operator
 			modelType.addElement(myModel.language.math.getString("op.operator")); //Operator
 			if(updateOperation){
 				modelType.addElement(myModel.language.math.getString("op.update_operator")); //Update Operator
 			}
 			
+			int header1=5;
+			int header2=11;
+			if(myModel.type==1) {
+				header1++; header2++;
+			}
+			final int fxIndex=header1;
+			final int opIndex=header2;
+			
 			listType.setModel(modelType);
 			listType.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			scrollPane.setViewportView(listType);
 			
+			//set fonts
+			final Font headerFont = myModel.language.font.deriveFont(Font.BOLD | Font.ITALIC);
+			final Font normalFont = myModel.language.font.deriveFont(Font.PLAIN);
+			listType.setCellRenderer(new DefaultListCellRenderer() {
+			    @Override
+			    public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			        JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			        label.setFont(normalFont);
+
+			        // Section headers: bold + italic
+			        if (index==0 || index==fxIndex || index==opIndex) {
+			            label.setFont(headerFont);
+			        }
+			        
+			        return label;
+			    }
+			});
+			
+			
 			JLabel lblDescription = new JLabel(myModel.language.base.getString("title.description")); //Description 
+			lblDescription.setFont(myModel.language.font);
 			lblDescription.setBounds(421, 10, 86, 16);
 			frmExpressionBuilder.getContentPane().add(lblDescription);
 			
 			JButton btnInsert = new JButton(myModel.language.base.getString("button.update_expression")); //Update Expression
+			btnInsert.setFont(myModel.language.font);
 			btnInsert.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try{
@@ -164,6 +205,7 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.getContentPane().add(btnInsert);
 			
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel 
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmExpressionBuilder.dispose();
@@ -177,11 +219,14 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.getContentPane().add(scrollPane_1);
 			
 			textPaneDescription = new JTextPane();
+			textPaneDescription.setFont(myModel.language.font);
+			StyleConstants.setFontFamily(textPaneDescription.getStyledDocument().getStyle(StyleContext.DEFAULT_STYLE), myModel.language.font.getFamily());
 			textPaneDescription.setContentType("text/html");
 			textPaneDescription.setEditable(false);
 			scrollPane_1.setViewportView(textPaneDescription);
 			
 			JLabel lblExpression = new JLabel(myModel.language.base.getString("object.expression")+":"); //Expression
+			lblExpression.setFont(myModel.language.font);
 			lblExpression.setBounds(12, 368, 90, 16);
 			frmExpressionBuilder.getContentPane().add(lblExpression);
 			
@@ -190,7 +235,8 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.getContentPane().add(scrollPane_2);
 			
 			textPaneExpression = new StyledTextPane(myModel, myModel.language);
-			textPaneExpression.setFont(new Font("Consolas", Font.PLAIN, 15));
+			//textPaneExpression.setFont(new Font("Consolas", Font.PLAIN, 15));
+			textPaneExpression.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
 			textPaneExpression.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent e) {
@@ -203,10 +249,12 @@ public class frmExpressionBuilder {
 			textPaneExpression.setText(targetPane.getText());
 			
 			JLabel lblType = new JLabel(myModel.language.base.getString("object.elements")); //Elements
+			lblType.setFont(myModel.language.font);
 			lblType.setBounds(12, 10, 55, 16);
 			frmExpressionBuilder.getContentPane().add(lblType);
 			
 			JLabel lblValues = new JLabel(myModel.language.analysis.getString("result.values")); //Values
+			lblValues.setFont(myModel.language.font);
 			lblValues.setBounds(220, 10, 55, 16);
 			frmExpressionBuilder.getContentPane().add(lblValues);
 			
@@ -232,7 +280,10 @@ public class frmExpressionBuilder {
 					}
 				}
 			});
-			listValue.setFont(new Font("Consolas", Font.PLAIN, 15));
+			//listValue.setFont(new Font("Consolas", Font.PLAIN, 15));
+			//listValue.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
+			listValue.setSelectionBackground(new Color(57, 105, 138)); //grey-blue
+			listValue.setSelectionForeground(Color.WHITE);
 			listValue.setModel(modelValue);
 			listValue.addListSelectionListener(new ListSelectionListener() {
 				public void valueChanged(ListSelectionEvent e) {
@@ -246,6 +297,7 @@ public class frmExpressionBuilder {
 			scrollPane_3.setViewportView(listValue);
 			
 			JButton btnInsertValue = new JButton(myModel.language.base.getString("button.insert_value")); //Insert Value
+			btnInsertValue.setFont(myModel.language.font);
 			btnInsertValue.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try{
@@ -262,6 +314,7 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.getContentPane().add(btnInsertValue);
 			
 			JButton btnEvaluate = new JButton(myModel.language.base.getString("button.evaluate")); //Evaluate
+			btnEvaluate.setFont(myModel.language.font);
 			btnEvaluate.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					evaluate();
@@ -271,6 +324,7 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.getContentPane().add(btnEvaluate);
 			
 			JLabel lblExpectedValue = new JLabel(myModel.language.base.getString("object.expected_value")+":"); //Expected Value
+			lblExpectedValue.setFont(myModel.language.font);
 			lblExpectedValue.setBounds(12, 474, 104, 16);
 			frmExpressionBuilder.getContentPane().add(lblExpectedValue);
 			
@@ -279,6 +333,8 @@ public class frmExpressionBuilder {
 			frmExpressionBuilder.getContentPane().add(scrollPane_4);
 			
 			textPaneValue = new JTextPane();
+			textPaneValue.setFont(myModel.language.font);
+			StyleConstants.setFontFamily(textPaneValue.getStyledDocument().getStyle(StyleContext.DEFAULT_STYLE), myModel.language.font.getFamily());
 			textPaneValue.setEditable(false);
 			scrollPane_4.setViewportView(textPaneValue);
 			
@@ -290,32 +346,59 @@ public class frmExpressionBuilder {
 	private void selectType(String type){
 		modelValue.clear();
 	
+		//set fonts
+		final Font headerFont = myModel.language.fontCode.deriveFont(Font.BOLD | Font.ITALIC, 15);
+		final Font normalFont = new Font("Consolas", Font.PLAIN, 15); //English only
+		
 		if(type.equals(myModel.language.base.getString("object.parameter"))) { //Parameter
+			listValue.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
+			listValue.setCellRenderer(new DefaultListCellRenderer());
 		    for(int p=0; p<myModel.parameters.size(); p++){
 		        modelValue.addElement(myModel.parameters.get(p).name);
 		    }
 		}
 		else if(type.equals(myModel.language.base.getString("object.table"))) { //Table
+			listValue.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
+			listValue.setCellRenderer(new DefaultListCellRenderer());
 			for(int p=0; p<myModel.tables.size(); p++){
 				modelValue.addElement(myModel.tables.get(p).name);
 			}
 		}
 		else if(type.equals(myModel.language.base.getString("object.variable"))) { //Variable
+			listValue.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
+			listValue.setCellRenderer(new DefaultListCellRenderer());
 			for(int p=0; p<myModel.variables.size(); p++){
 				modelValue.addElement(myModel.variables.get(p).name);
 			}
 		}
 		else if(type.equals(myModel.language.base.getString("markov.markov"))) { //Markov
+			listValue.setFont(new Font("Consolas", Font.PLAIN, 15)); //English only
+			listValue.setCellRenderer(new DefaultListCellRenderer());
 			modelValue.addElement("t");
 			modelValue.addElement("trace");
 		}
 		else if(type.equals(myModel.language.math.getString("const.constant"))) { //Constant
+			listValue.setFont(new Font("Consolas", Font.PLAIN, 15)); //English only
+			listValue.setCellRenderer(new DefaultListCellRenderer());
 			modelValue.addElement("e");
 			modelValue.addElement("inf");
 			modelValue.addElement("pi");
 		}
 		else if(type.equals(myModel.language.base.getString("table.distribution"))) { //Distribution
-			modelValue.addElement("<html><b><i>"+myModel.language.dist.getString("gen.discrete")+"</i></b></html>"); //Discrete
+			listValue.setCellRenderer(new DefaultListCellRenderer() {
+			    @Override
+			    public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			        JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			        label.setFont(normalFont);
+			        // Section headers: bold + italic
+			        if (index==0 || index==11 || index==32) {
+			            label.setFont(headerFont);
+			        }
+			        return label;
+			    }
+			});
+			
+			modelValue.addElement(myModel.language.dist.getString("gen.discrete")); //Discrete (0)
 			modelValue.addElement("Bern");
 			modelValue.addElement("Bin");
 			modelValue.addElement("Cat");
@@ -326,7 +409,7 @@ public class frmExpressionBuilder {
 			modelValue.addElement("Pois");
 			modelValue.addElement("Zipf");
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.dist.getString("gen.continuous")+"</i></b></html>"); //Continuous
+			modelValue.addElement(myModel.language.dist.getString("gen.continuous")); //Continuous (11)
 			modelValue.addElement("Beta");
 			modelValue.addElement("Cauchy");
 			modelValue.addElement("ChiSq");
@@ -347,13 +430,26 @@ public class frmExpressionBuilder {
 			modelValue.addElement("Unif");
 			modelValue.addElement("Weibull");
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.dist.getString("gen.multivariate")+"</i></b></html>"); //Multivariate
+			modelValue.addElement(myModel.language.dist.getString("gen.multivariate")); //Multivariate (32)
 			modelValue.addElement("Dir");
 			modelValue.addElement("MvNorm");
 			modelValue.addElement("Multi");
 		}
 		else if(type.equals(myModel.language.math.getString("fx.function"))) { //Function
-			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.bounding")+"</i></b></html>"); //Bounding
+			listValue.setCellRenderer(new DefaultListCellRenderer() {
+			    @Override
+			    public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			        JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			        label.setFont(normalFont);
+			        // Section headers: bold + italic
+			        if (index==0 || index==10 || index==16 || index==21 || index==29 || index==32 || index==37 || index==41 || index==49) {
+			            label.setFont(headerFont);
+			        }
+			        return label;
+			    }
+			});
+			
+			modelValue.addElement(myModel.language.math.getString("fx.bounding")); //Bounding (0)
 			modelValue.addElement("abs");
 			modelValue.addElement("bound");
 			modelValue.addElement("ceil");
@@ -364,20 +460,20 @@ public class frmExpressionBuilder {
 			modelValue.addElement("signum");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.combinatorial")+"</i></b></html>"); //Combinatorial
+			modelValue.addElement(myModel.language.math.getString("fx.combinatorial")); //Combinatorial (10)
 			modelValue.addElement("choose");
 			modelValue.addElement("fact");
 			modelValue.addElement("gamma");
 			modelValue.addElement("logGamma");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.error")+"</i></b></html>"); //Error
+			modelValue.addElement(myModel.language.math.getString("fx.error")); //Error (16)
 			modelValue.addElement("erf");
 			modelValue.addElement("invErf");
 			modelValue.addElement("probit");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.logarithmic")+"</i></b></html>"); //Logarithmic
+			modelValue.addElement(myModel.language.math.getString("fx.logarithmic")); //Logarithmic (21)
 			modelValue.addElement("exp");
 			modelValue.addElement("log");
 			modelValue.addElement("logb");
@@ -386,22 +482,22 @@ public class frmExpressionBuilder {
 			modelValue.addElement("logistic");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.logical")+"</i></b></html>"); //Logical
+			modelValue.addElement(myModel.language.math.getString("fx.logical")); //Logical (29)
 			modelValue.addElement("if");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.prob_rate")+"</i></b></html>"); //Probability/Rate
+			modelValue.addElement(myModel.language.math.getString("fx.prob_rate")); //Probability/Rate (32)
 			modelValue.addElement("probRescale");
 			modelValue.addElement("probToRate");
 			modelValue.addElement("rateToProb");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.roots")+"</i></b></html>"); //Roots
+			modelValue.addElement(myModel.language.math.getString("fx.roots")); //Roots (37)
 			modelValue.addElement("cbrt");
 			modelValue.addElement("sqrt");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.summary")+"</i></b></html>"); //Summary
+			modelValue.addElement(myModel.language.math.getString("fx.summary")); //Summary (41)
 			modelValue.addElement("mean");
 			modelValue.addElement("product");
 			modelValue.addElement("quantile");
@@ -410,7 +506,7 @@ public class frmExpressionBuilder {
 			modelValue.addElement("var");
 			
 			modelValue.addElement("");
-			modelValue.addElement("<html><b><i>"+myModel.language.math.getString("fx.trigonometric")+"</i></b></html>"); //Trigonometric
+			modelValue.addElement(myModel.language.math.getString("fx.trigonometric")); //Trigonometric (49)
 			modelValue.addElement("acos");
 			modelValue.addElement("asin");
 			modelValue.addElement("atan");
@@ -423,6 +519,8 @@ public class frmExpressionBuilder {
 			modelValue.addElement("tanh");
 		}
 		else if(type.equals(myModel.language.math.getString("mat.matrix_function"))) { //Matrix Function
+			listValue.setFont(new Font("Consolas", Font.PLAIN, 15)); //English only
+			listValue.setCellRenderer(new DefaultListCellRenderer());
 			modelValue.addElement("chol");
 			modelValue.addElement("det");
 			modelValue.addElement("diag");
@@ -441,6 +539,8 @@ public class frmExpressionBuilder {
 			modelValue.addElement("tr");
 		}
 		else if(type.equals(myModel.language.math.getString("op.logical_operator"))) { //Logical Operator
+			listValue.setFont(new Font("Consolas", Font.PLAIN, 15)); //English only
+			listValue.setCellRenderer(new DefaultListCellRenderer());
 			modelValue.addElement("==");
 			modelValue.addElement("!=");
 			modelValue.addElement("<");
@@ -452,6 +552,8 @@ public class frmExpressionBuilder {
 			modelValue.addElement("^|");
 		}
 		else if(type.equals(myModel.language.math.getString("op.operator"))) { //Operator
+			listValue.setFont(new Font("Consolas", Font.PLAIN, 15)); //English only
+			listValue.setCellRenderer(new DefaultListCellRenderer());
 			modelValue.addElement("+");
 			modelValue.addElement("-");
 			modelValue.addElement("*");
@@ -460,6 +562,8 @@ public class frmExpressionBuilder {
 			modelValue.addElement("%");
 		}
 		else if(type.equals(myModel.language.math.getString("op.update_operator"))) { //Update Operator
+			listValue.setFont(new Font("Consolas", Font.PLAIN, 15)); //English only
+			listValue.setCellRenderer(new DefaultListCellRenderer());
 			modelValue.addElement("=");
 			modelValue.addElement("++");
 			modelValue.addElement("--");
@@ -496,6 +600,9 @@ public class frmExpressionBuilder {
 				des="<html><b>"+myModel.language.base.getString("markov.markov_trace")+"</b><br>"; //Markov Trace
 				String strCycle=myModel.language.base.getString("markov.cycle").toLowerCase(myModel.language.locale);
 				String strColumn=myModel.language.base.getString("table.column").toLowerCase(myModel.language.locale);
+				strCycle="cycle"; //hard-code
+				strColumn="column"; //hard-code
+				
 				des+=MathUtils.consoleFont("<b><i>trace</i></b>["+strCycle+","+strColumn+"]")+": "+myModel.language.base.getString("markov.trace_desc")+"<br>"; //Returns the column trace value for the specified cycle
 				des+="<br><i>"+myModel.language.math.getString("fx.arguments")+"</i><br>"; //Arguments
 				des+=MathUtils.consoleFont(strCycle)+": "+myModel.language.base.getString("markov.arg_cycle")+"<br>"; //Cycle index, integer ≥0

@@ -115,6 +115,7 @@ public class frmDefineTable {
 			frmDefineTable.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineTable.class.getResource("/images/table_128.png")));
 			frmDefineTable.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineTable.setTitle("Amua - "+myModel.language.base.getString("title.define_table")); //Define Table
+			frmDefineTable.setFont(myModel.language.font);
 			frmDefineTable.setBounds(100, 100, 925, 600);
 			frmDefineTable.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			
@@ -126,6 +127,7 @@ public class frmDefineTable {
 			frmDefineTable.getContentPane().setLayout(gridBagLayout);
 
 			JLabel lblName = new JLabel(myModel.language.base.getString("object.name")+":"); //Name
+			lblName.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblName = new GridBagConstraints();
 			gbc_lblName.anchor = GridBagConstraints.EAST;
 			gbc_lblName.insets = new Insets(0, 0, 5, 5);
@@ -134,6 +136,7 @@ public class frmDefineTable {
 			frmDefineTable.getContentPane().add(lblName, gbc_lblName);
 
 			textName = new JTextField();
+			textName.setFont(myModel.language.font);
 			GridBagConstraints gbc_textName = new GridBagConstraints();
 			gbc_textName.fill = GridBagConstraints.HORIZONTAL;
 			gbc_textName.gridwidth = 3;
@@ -144,6 +147,7 @@ public class frmDefineTable {
 			textName.setColumns(10);
 
 			JLabel lblType = new JLabel(myModel.language.base.getString("table.table_type")+":"); //Table Type
+			lblType.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblType = new GridBagConstraints();
 			gbc_lblType.anchor = GridBagConstraints.EAST;
 			gbc_lblType.insets = new Insets(0, 0, 5, 5);
@@ -151,9 +155,11 @@ public class frmDefineTable {
 			gbc_lblType.gridy = 0;
 			frmDefineTable.getContentPane().add(lblType, gbc_lblType);
 
-			comboType = new JComboBox<String>();
 			lblExpectedValue = new JLabel(myModel.language.math.getString("sum.expected_value")+":"); //Expected Value
+			lblExpectedValue.setFont(myModel.language.font);
+			
 			btnEvaluate = new JButton(myModel.language.base.getString("button.evaluate")); //Evaluate
+			btnEvaluate.setFont(myModel.language.font);
 			btnEvaluate.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try{
@@ -181,6 +187,9 @@ public class frmDefineTable {
 					}
 				}
 			});
+			
+			comboType = new JComboBox<String>();
+			comboType.setFont(myModel.language.font);
 			comboType.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int selected=comboType.getSelectedIndex();
@@ -279,6 +288,8 @@ public class frmDefineTable {
 			tableInterpolation = new interpolateTable();
 			tableInterpolation.language=myModel.language;
 			scrollPane_2.setViewportView(tableInterpolation);
+			tableInterpolation.getTableHeader().setFont(myModel.language.font);
+			tableInterpolation.setFont(myModel.language.font);
 			tableInterpolation.setRowSelectionAllowed(false);
 			tableInterpolation.setShowVerticalLines(true);
 			tableInterpolation.setModel(new DefaultTableModel(
@@ -327,12 +338,14 @@ public class frmDefineTable {
 			frmDefineTable.getContentPane().add(toolBar, gbc_toolBar);
 
 			JButton btnImport = new JButton(myModel.language.base.getString("menu.import")); //Import
+			btnImport.setFont(myModel.language.font);
 			btnImport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
 						fc.setDialogTitle(myModel.language.base.getString("title.import_table")); //Import Table
 						fc.setApproveButtonText(myModel.language.base.getString("menu.import")); //Import
 						fc.setFileFilter(new CSVFilter(myModel.language));
+						myModel.language.setFontRecursively(fc); //set font
 
 						int returnVal = fc.showOpenDialog(frmDefineTable);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -409,13 +422,15 @@ public class frmDefineTable {
 			toolBar.add(btnPasteTable);
 			
 			JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
+			btnExport.setFont(myModel.language.font);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
 						fc.setDialogTitle(myModel.language.base.getString("title.export_table")); //Export Table
 						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
 						fc.setFileFilter(new CSVFilter(myModel.language));
-
+						myModel.language.setFontRecursively(fc); //set font
+						
 						int returnVal = fc.showSaveDialog(frmDefineTable);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
@@ -461,6 +476,7 @@ public class frmDefineTable {
 			toolBar.add(separator);
 
 			JLabel lblRows = new JLabel(" "+myModel.language.base.getString("table.rows")+":"); //Rows
+			lblRows.setFont(myModel.language.font);
 			toolBar.add(lblRows);
 
 			JButton btnAddRow = new JButton("");
@@ -506,6 +522,7 @@ public class frmDefineTable {
 			toolBar.add(separator_1);
 
 			JLabel lblCols = new JLabel(" "+myModel.language.base.getString("table.cols")+":"); //Cols
+			lblCols.setFont(myModel.language.font);
 			toolBar.add(lblCols);
 
 			JButton btnBtnaddcol = new JButton("");
@@ -611,6 +628,7 @@ public class frmDefineTable {
 			textNumCols.setColumns(2);
 
 			lblMethod = new JLabel(myModel.language.base.getString("table.lookup_method")+":"); //Lookup Method
+			lblMethod.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblMethod = new GridBagConstraints();
 			gbc_lblMethod.anchor = GridBagConstraints.EAST;
 			gbc_lblMethod.insets = new Insets(0, 0, 5, 5);
@@ -619,6 +637,7 @@ public class frmDefineTable {
 			frmDefineTable.getContentPane().add(lblMethod, gbc_lblMethod);
 			
 			comboLookupMethod = new JComboBox<String>();
+			comboLookupMethod.setFont(myModel.language.font);
 			comboLookupMethod.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					if(comboLookupMethod.getSelectedIndex()==1){ //Interpolate
@@ -661,10 +680,13 @@ public class frmDefineTable {
 			viewTable.setShowVerticalLines(true);
 			viewTable.setRowSelectionAllowed(false);
 			viewTable.getTableHeader().setReorderingAllowed(false);
+			viewTable.getTableHeader().setFont(myModel.language.font);
+			viewTable.setFont(myModel.language.font);
 			viewTable.setModel(model);
 			scrollPane.setViewportView(viewTable);
 
 			JLabel lblNotes = new JLabel(myModel.language.base.getString("menu.notes")+":"); //Notes
+			lblNotes.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblNotes = new GridBagConstraints();
 			gbc_lblNotes.anchor = GridBagConstraints.SOUTHEAST;
 			gbc_lblNotes.insets = new Insets(0, 0, 5, 5);
@@ -709,9 +731,11 @@ public class frmDefineTable {
 			frmDefineTable.getContentPane().add(scrollPane_1, gbc_scrollPane_1);
 
 			textNotes = new JTextArea();
+			textNotes.setFont(myModel.language.font);
 			scrollPane_1.setViewportView(textNotes);
 
 			JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
+			btnSave.setFont(myModel.language.font);
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
@@ -893,6 +917,7 @@ public class frmDefineTable {
 			frmDefineTable.getContentPane().add(btnSave, gbc_btnSave);
 
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmDefineTable.dispose();
@@ -1114,6 +1139,7 @@ class interpolateTable extends JTable{
 		if(column==1){
 			if(row==0){ //Interpolation method
 				final JComboBox<String> comboInterpolate = new JComboBox<String>();
+				comboInterpolate.setFont(language.font);
 				comboInterpolate.addItem(language.base.getString("table.linear")); //Linear
 				comboInterpolate.addItem(language.base.getString("table.cubic_splines")); //Cubic Splines
 				comboInterpolate.addActionListener(new ActionListener() {
@@ -1135,6 +1161,7 @@ class interpolateTable extends JTable{
 			}
 			else if(row==1){ //Boundary conditions
 				JComboBox<String> comboBoundary = new JComboBox<String>();
+				comboBoundary.setFont(language.font);
 				comboBoundary.addItem(language.base.getString("table.natural")); //Natural
 				comboBoundary.addItem(language.base.getString("table.clamped")); //Clamped
 				comboBoundary.addItem(language.base.getString("table.not_a_knot")); //Not-a-knot
@@ -1144,6 +1171,7 @@ class interpolateTable extends JTable{
 			}
 			else if(row==2){ //Extrapolate
 				JComboBox<String> comboExtrapolate= new JComboBox<String>();
+				comboExtrapolate.setFont(language.font);
 				comboExtrapolate.addItem(language.base.getString("button.no")); //No
 				comboExtrapolate.addItem(language.base.getString("button.yes")); //Yes
 				comboExtrapolate.addItem(language.base.getString("table.left_only")); //Left only

@@ -70,6 +70,7 @@ public class frmFindReplace {
 			frmFindReplace.setIconImage(Toolkit.getDefaultToolkit().getImage(frmFindReplace.class.getResource("/images/find_128.png")));
 			frmFindReplace.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmFindReplace.setTitle("Amua - "+myModel.language.base.getString("menu.find_replace")); //Find/Replace
+			frmFindReplace.setFont(myModel.language.font);
 			frmFindReplace.setResizable(false);
 			frmFindReplace.setBounds(100, 100, 336, 206);
 			frmFindReplace.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -81,6 +82,7 @@ public class frmFindReplace {
 			frmFindReplace.getContentPane().setLayout(gridBagLayout);
 
 			JLabel lblFind = new JLabel(myModel.language.base.getString("menu.find")+":");
+			lblFind.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblFind = new GridBagConstraints();
 			gbc_lblFind.anchor = GridBagConstraints.EAST;
 			gbc_lblFind.insets = new Insets(5, 5, 5, 0);
@@ -89,6 +91,7 @@ public class frmFindReplace {
 			frmFindReplace.getContentPane().add(lblFind, gbc_lblFind);
 
 			textFind = new JTextField();
+			textFind.setFont(myModel.language.font);
 			GridBagConstraints gbc_textFind = new GridBagConstraints();
 			gbc_textFind.anchor = GridBagConstraints.NORTH;
 			gbc_textFind.fill = GridBagConstraints.HORIZONTAL;
@@ -100,6 +103,7 @@ public class frmFindReplace {
 			textFind.setColumns(10);
 
 			textReplace = new JTextField();
+			textReplace.setFont(myModel.language.font);
 			GridBagConstraints gbc_textReplace = new GridBagConstraints();
 			gbc_textReplace.anchor = GridBagConstraints.NORTH;
 			gbc_textReplace.fill = GridBagConstraints.HORIZONTAL;
@@ -111,6 +115,7 @@ public class frmFindReplace {
 			textReplace.setColumns(10);
 
 			JLabel lblScope = new JLabel(myModel.language.base.getString("object.scope")+":");
+			lblScope.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblScope = new GridBagConstraints();
 			gbc_lblScope.anchor = GridBagConstraints.EAST;
 			gbc_lblScope.insets = new Insets(5, 5, 5, 5);
@@ -119,6 +124,7 @@ public class frmFindReplace {
 			frmFindReplace.getContentPane().add(lblScope, gbc_lblScope);
 
 			final JComboBox<String> comboScope = new JComboBox<String>();
+			comboScope.setFont(myModel.language.font);
 			if(myModel.type==0){ //Decision Tree
 				comboScope.setModel(new DefaultComboBoxModel<String>(new String[] {
 						myModel.language.base.getString("node.all"), //All
@@ -149,6 +155,7 @@ public class frmFindReplace {
 		
 			
 			JLabel lblReplace = new JLabel(myModel.language.base.getString("menu.replace")+":");
+			lblReplace.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblReplace = new GridBagConstraints();
 			gbc_lblReplace.anchor = GridBagConstraints.EAST;
 			gbc_lblReplace.insets = new Insets(5, 5, 5, 0);
@@ -156,9 +163,8 @@ public class frmFindReplace {
 			gbc_lblReplace.gridy = 1;
 			frmFindReplace.getContentPane().add(lblReplace, gbc_lblReplace);
 			
-			
-
 			JButton btnReplace = new JButton(myModel.language.base.getString("menu.replace")); //Replace
+			btnReplace.setFont(myModel.language.font);
 			btnReplace.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int scope=comboScope.getSelectedIndex();
@@ -206,6 +212,7 @@ public class frmFindReplace {
 			frmFindReplace.getContentPane().add(btnReplace, gbc_btnReplace);
 
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmFindReplace.dispose();

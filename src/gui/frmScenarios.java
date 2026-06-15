@@ -62,6 +62,7 @@ import math.Numeric;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
 import javax.swing.JToolBar;
 import javax.swing.JTabbedPane;
 import javax.swing.JList;
@@ -153,6 +154,7 @@ public class frmScenarios {
 		try{
 			frmScenarios = new JFrame();
 			frmScenarios.setTitle("Amua - "+myModel.language.base.getString("menu.scenarios")); //Scenarios
+			frmScenarios.setFont(myModel.language.font);
 			frmScenarios.setIconImage(Toolkit.getDefaultToolkit().getImage(frmScenarios.class.getResource("/images/scenario_128.png")));
 			frmScenarios.setBounds(100, 100, 1100, 500);
 			frmScenarios.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -282,6 +284,7 @@ public class frmScenarios {
 			toolBar.add(btnMoveDown);
 
 			JLabel lblSelectScenariosTo = new JLabel(myModel.language.message.getString("ask.select_scenarios")+":"); //Select Scenarios to Run
+			lblSelectScenariosTo.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblSelectScenariosTo = new GridBagConstraints();
 			gbc_lblSelectScenariosTo.anchor = GridBagConstraints.SOUTH;
 			gbc_lblSelectScenariosTo.insets = new Insets(0, 0, 5, 5);
@@ -290,6 +293,7 @@ public class frmScenarios {
 			frmScenarios.getContentPane().add(lblSelectScenariosTo, gbc_lblSelectScenariosTo);
 
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			tabbedPane.setFont(myModel.language.font);
 			GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 			gbc_tabbedPane.insets = new Insets(0, 0, 5, 0);
 			gbc_tabbedPane.gridheight = 2;
@@ -317,6 +321,7 @@ public class frmScenarios {
 			panel_2.setLayout(null);
 
 			comboGroup = new JComboBox();
+			comboGroup.setFont(myModel.language.font);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int selected=comboGroup.getSelectedIndex();
@@ -360,6 +365,8 @@ public class frmScenarios {
 			tableResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableResults.setShowVerticalLines(true);
 			tableResults.getTableHeader().setReorderingAllowed(false);
+			tableResults.getTableHeader().setFont(myModel.language.font);
+			tableResults.setFont(myModel.language.font);
 			tableResults.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			tableResults.setAutoCreateRowSorter(true);
 			scrollPaneResults.setViewportView(tableResults);
@@ -387,6 +394,8 @@ public class frmScenarios {
 			tableIndResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableIndResults.setShowVerticalLines(true);
 			tableIndResults.getTableHeader().setReorderingAllowed(false);
+			tableIndResults.getTableHeader().setFont(myModel.language.font);
+			tableIndResults.setFont(myModel.language.font);
 			tableIndResults.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			tableIndResults.setAutoCreateRowSorter(true);
 			scrollPane_1.setViewportView(tableIndResults);
@@ -404,6 +413,8 @@ public class frmScenarios {
 			tableSchedule.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableSchedule.setShowVerticalLines(true);
 			tableSchedule.getTableHeader().setReorderingAllowed(false);
+			tableSchedule.getTableHeader().setFont(myModel.language.font);
+			tableSchedule.setFont(myModel.language.font);
 			tableSchedule.setModel(modelSchedule);
 			tableSchedule.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			tableSchedule.addKeyListener(new KeyAdapter() {
@@ -450,12 +461,14 @@ public class frmScenarios {
 
 			listModelSchedule= new DefaultListModel<String>();
 			listSchedule = new JList<String>();
+			listSchedule.setFont(myModel.language.font);
 			listSchedule.setModel(listModelSchedule);
 			scrollPane.setViewportView(listSchedule);
 
 			
 
 			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
+			btnExport.setFont(myModel.language.font);
 			btnExport.setEnabled(false);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -466,7 +479,8 @@ public class frmScenarios {
 						
 						fc.setDialogTitle(myModel.language.base.getString("title.select_export_folder")); //Select Export Folder
 						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
-
+						myModel.language.setFontRecursively(fc); //set font
+						
 						int returnVal = fc.showSaveDialog(frmScenarios);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
@@ -589,6 +603,7 @@ public class frmScenarios {
 			panel_2.add(btnExport);
 
 			JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
+			btnSave.setFont(myModel.language.font);
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					myModel.saveSnapshot(myModel.language.base.getString("title.edit_scenarios")); //Add to undo stack (Edit Scenarios)
@@ -600,6 +615,7 @@ public class frmScenarios {
 			panel_2.add(btnSave);
 
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmScenarios.dispose();
@@ -609,10 +625,12 @@ public class frmScenarios {
 			panel_2.add(btnCancel);
 
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run")); //Run
+			btnRun.setFont(myModel.language.font);
 			btnRun.setBounds(524, 0, 100, 28);
 			panel_2.add(btnRun);
 			
 			chckbxExportIterations = new JCheckBox(myModel.language.base.getString("title.export_iterations")); //Export iterations
+			chckbxExportIterations.setFont(myModel.language.font);
 			chckbxExportIterations.setBounds(806, 5, 145, 18);
 			panel_2.add(chckbxExportIterations);
 			
@@ -621,8 +639,10 @@ public class frmScenarios {
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					btnExport.setEnabled(false);
-					final ProgressMonitor progress=new ProgressMonitor(frmScenarios, myModel.language.message.getString("info.running_scenarios"), myModel.language.message.getString("info.running"), 0, 100); //Running Scenarios, Running
-
+					//final ProgressMonitor progress=new ProgressMonitor(frmScenarios, myModel.language.message.getString("info.running_scenarios"), myModel.language.message.getString("info.running"), 0, 100); //Running Scenarios, Running
+					final frmProgressMonitor progress=new frmProgressMonitor(frmScenarios, myModel.language.message.getString("info.running_scenarios"), myModel.language.message.getString("info.running"), 0, 100, myModel.language); //Running Scenarios, Running
+					SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
+					
 					Thread SimThread = new Thread(){ //Non-UI
 						public void run(){
 							try{

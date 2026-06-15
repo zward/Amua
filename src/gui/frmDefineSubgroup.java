@@ -80,9 +80,11 @@ public class frmDefineSubgroup {
 			frmDefineSubgroup = new JDialog();
 			frmDefineSubgroup.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineSubgroup.setTitle("Amua - "+myModel.language.base.getString("title.define_subgroup")); //Define Subgroup
+			frmDefineSubgroup.setFont(myModel.language.font);
 			frmDefineSubgroup.setResizable(false);
 			frmDefineSubgroup.setBounds(100, 100, 415, 218);
 			frmDefineSubgroup.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			
 			GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.columnWidths = new int[]{24, 51, 118, 193, 0};
 			gridBagLayout.rowHeights = new int[]{28, 28, 79, 28, 0};
@@ -91,6 +93,7 @@ public class frmDefineSubgroup {
 			frmDefineSubgroup.getContentPane().setLayout(gridBagLayout);
 
 			JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
+			btnSave.setFont(myModel.language.font);
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					boolean proceed=true;
@@ -136,6 +139,7 @@ public class frmDefineSubgroup {
 			});
 
 			JLabel lblName = new JLabel(myModel.language.base.getString("object.name")+":");
+			lblName.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblName = new GridBagConstraints();
 			gbc_lblName.anchor = GridBagConstraints.EAST;
 			gbc_lblName.gridwidth = 2;
@@ -145,6 +149,7 @@ public class frmDefineSubgroup {
 			frmDefineSubgroup.getContentPane().add(lblName, gbc_lblName);
 
 			textName = new JTextField();
+			textName.setFont(myModel.language.font);
 			GridBagConstraints gbc_textName = new GridBagConstraints();
 			gbc_textName.anchor = GridBagConstraints.NORTH;
 			gbc_textName.fill = GridBagConstraints.HORIZONTAL;
@@ -180,6 +185,7 @@ public class frmDefineSubgroup {
 			toolBar.add(btnFx);
 
 			JLabel lblExpression = new JLabel(myModel.language.base.getString("object.expression")+":");
+			lblExpression.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblExpression = new GridBagConstraints();
 			gbc_lblExpression.gridwidth = 3;
 			gbc_lblExpression.anchor = GridBagConstraints.SOUTHWEST;
@@ -198,7 +204,8 @@ public class frmDefineSubgroup {
 			frmDefineSubgroup.getContentPane().add(scrollPane, gbc_scrollPane);
 
 			paneExpression=new StyledTextPane(myModel, myModel.language);
-			paneExpression.setFont(new Font("Consolas", Font.PLAIN,15));
+			//paneExpression.setFont(new Font("Consolas", Font.PLAIN,15));
+			paneExpression.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
 			scrollPane.setViewportView(paneExpression);
 			paneExpression.addKeyListener(new KeyAdapter() {
 				@Override
@@ -216,6 +223,7 @@ public class frmDefineSubgroup {
 			frmDefineSubgroup.getContentPane().add(btnSave, gbc_btnSave);
 
 			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
 			btnCancel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frmDefineSubgroup.dispose();

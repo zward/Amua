@@ -18,6 +18,12 @@
 
 package main;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class ConsoleTable{
@@ -27,11 +33,20 @@ public class ConsoleTable{
 	 * True=number (align right), False=text (alight left)
 	 */
 	boolean colTypes[];
+	Font curFont;
+	boolean monospaced;
 	
 	//Constructor
 	public ConsoleTable(Console console, boolean colTypes[]){
 		this.console=console;
 		this.colTypes=colTypes;
+		curFont=console.textConsole.getFont();
+		if(curFont.getFamily().contains("Consolas")) {
+			monospaced=true;
+		}
+		else {
+			monospaced=false;
+		}
 		rows=new ArrayList<String[]>();
 	}	
 	
@@ -39,7 +54,16 @@ public class ConsoleTable{
 		rows.add(row);
 	}
 	
-	public void print(){
+	public void print() {
+		if(monospaced==true) {
+			print_mono();
+		}
+		else {
+			print_pixels();
+		}
+	}
+	
+	private void print_mono(){
 		int numRows=rows.size();
 		int numCols=rows.get(0).length;
 		//get max column widths
@@ -55,7 +79,7 @@ public class ConsoleTable{
 		//headers
 		String row[]=rows.get(0);
 		for(int c=0; c<numCols; c++){
-			String text=align(row[c],colWidth[c],false);
+			String text=align_mono(row[c],colWidth[c],false);
 			if(c>0){console.print("\t");}
 			console.print(text);
 		}
@@ -72,7 +96,7 @@ public class ConsoleTable{
 		for(int r=1; r<numRows; r++){
 			row=rows.get(r);
 			for(int c=0; c<numCols; c++){
-				String text=align(row[c],colWidth[c],colTypes[c]);
+				String text=align_mono(row[c],colWidth[c],colTypes[c]);
 				if(c>0){console.print("\t");}
 				console.print(text);
 			}
@@ -80,7 +104,7 @@ public class ConsoleTable{
 		}
 	}
 	
-	private String align(String text, int targetLength, boolean number){
+	private String align_mono(String text, int targetLength, boolean number){
 		int curLength=text.length();
 		int diff=targetLength-curLength;
 		String pad="";
@@ -94,4 +118,106 @@ public class ConsoleTable{
 		
 		return(text);
 	}
+	
+	private void print_pixels(){ //print_px
+		int numRows=rows.size();
+		int numCols=rows.get(0).length;
+		
+		//get max column widths (pixels)
+		int colWidth[]=new int[numCols];
+		for(int r=0; r<numRows; r++){
+			String row[]=rows.get(r);
+			for(int c=0; c<numCols; c++){
+				String text=row[c]+" "; //pad with extra space to ensure tabs separate
+				colWidth[c]=Math.max(colWidth[c], getStringWidth(text)); //get pixel width
+			}
+		}
+		//print aligned columns
+		//headers
+		String row[]=rows.get(0);
+		for(int c=0; c<numCols; c++){
+			String text=align_px(row[c],colWidth[c],false);
+			if(c>0){console.print("\t");}
+			console.print(text);
+		}
+		console.print("\n");
+		//'---'
+		for(int c=0; c<numCols; c++){
+			String text=buildDashLine(colWidth[c]);
+			//for(int i=0; i<colWidth[c]; i++){text+="-";}
+			if(c>0){console.print("\t");}
+			console.print(text);
+		}
+		console.print("\n");
+		//rows
+		for(int r=1; r<numRows; r++){
+			row=rows.get(r);
+			for(int c=0; c<numCols; c++){
+				String text=align_px(row[c],colWidth[c],colTypes[c]);
+				if(c>0){console.print("\t");}
+				console.print(text);
+			}
+			console.print("\n");
+		}
+	}
+	
+	private int getStringWidth(String text) {
+        // Create a temporary Graphics2D just for measurement
+        BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = img.createGraphics();
+        try {
+            g2.setFont(curFont);
+            FontRenderContext frc = g2.getFontRenderContext();
+            TextLayout layout = new TextLayout(text, curFont, frc);
+            // layout.getAdvance() often matches what you want better than stringWidth
+            return Math.round(layout.getAdvance());
+        } finally {
+            g2.dispose();
+        }
+    }
+	
+
+    private String buildDashLine(int targetWidthPx) {
+        int dashWidth = getStringWidth("-");
+       // if (dashWidth <= 0) dashWidth = 1; // fallback
+
+        int count =  Math.max(1, targetWidthPx / dashWidth);
+        StringBuilder sb = new StringBuilder(count);
+        for (int i = 0; i < count; i++) sb.append('-');
+        return sb.toString();
+    }
+    
+    private String align_px(String text, int targetWidth, boolean number){
+    	if(text==null) {text="";}
+		int curWidth=getStringWidth(text);
+		int diff=targetWidth-curWidth;
+		
+		if(diff<=0) {
+			return(text); //already as wide as target
+		}
+		
+		int spaceW=getStringWidth(" ");
+		if(spaceW<=0) {
+			return(text); //return original text
+		}
+		
+		int spaceCount=Math.round((float)diff/spaceW);
+		if(spaceCount<0) {spaceCount=0;}
+		
+		StringBuilder pad = new StringBuilder(spaceCount);
+		for(int i=0; i<spaceCount; i++) {
+			pad.append(" ");
+		}
+		
+		if(number==false){ //text, align left
+			text+=pad;
+		}
+		else{ //number, align right
+			text=pad+text;
+		}
+		
+		return(text);
+	}
+	
+	
 }

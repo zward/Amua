@@ -33,7 +33,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
 import base.AmuaModel;
-
+import gui.frmProgressMonitor;
 import math.Interpreter;
 import math.MathUtils;
 import math.Numeric;
@@ -139,7 +139,7 @@ public class PSAResults{
 		results=new double[numStrat][numIterations];
 	}
 
-	public void runPSA(AmuaModel myModel, JFrame curFrm, boolean useSeed, int seed, ProgressMonitor progress) throws NumericException, Exception {
+	public void runPSA(AmuaModel myModel, JFrame curFrm, boolean useSeed, int seed, frmProgressMonitor progress) throws NumericException, Exception {
 
 		valid=true;
 
@@ -162,8 +162,8 @@ public class PSAResults{
 			}
 
 			progress.setMaximum(numIterations);
-			progress.setMillisToDecideToPopup(0);
-			progress.setMillisToPopup(0);
+			//progress.setMillisToDecideToPopup(0);
+			//progress.setMillisToPopup(0);
 
 			//Get orig values for all parameters
 			Numeric origValues[]=new Numeric[numParams];
@@ -197,7 +197,7 @@ public class PSAResults{
 				String minutes = Integer.toString((int)(remTime/60));
 				if(seconds.length()<2){seconds="0"+seconds;}
 				if(minutes.length()<2){minutes="0"+minutes;}
-				progress.setProgress(n);
+				progress.setProgress(n+1);
 				if(n>0) {
 					progress.setNote(myModel.language.message.getString("info.time_left")+": "+minutes+":"+seconds); //Time left
 				}
@@ -471,7 +471,7 @@ public class PSAResults{
 		}
 	}
 	
-	public void importResults(String path, AmuaModel myModel, JFrame curFrm, ProgressMonitor progress) throws IOException {
+	public void importResults(String path, AmuaModel myModel, JFrame curFrm, frmProgressMonitor progress) throws IOException {
 		valid=true;
 		
 		progress.setMaximum(numIterations);

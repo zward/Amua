@@ -48,6 +48,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -129,6 +131,7 @@ public class frmDefineScenario {
 			frmDefineScenario.setIconImage(Toolkit.getDefaultToolkit().getImage(frmDefineScenario.class.getResource("/images/scenario_128.png")));
 			frmDefineScenario.setModalityType(ModalityType.APPLICATION_MODAL);
 			frmDefineScenario.setTitle("Amua - "+myModel.language.base.getString("title.define_scenario")); //Define Scenario
+			frmDefineScenario.setFont(myModel.language.font);
 			frmDefineScenario.setResizable(false);
 			frmDefineScenario.setBounds(100, 100, 850, 499);
 			frmDefineScenario.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -140,6 +143,7 @@ public class frmDefineScenario {
 			frmDefineScenario.getContentPane().setLayout(gridBagLayout);
 
 			JLabel lblName = new JLabel(myModel.language.base.getString("object.scenario_name")+":");
+			lblName.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblName = new GridBagConstraints();
 			gbc_lblName.gridwidth = 2;
 			gbc_lblName.anchor = GridBagConstraints.EAST;
@@ -149,6 +153,7 @@ public class frmDefineScenario {
 			frmDefineScenario.getContentPane().add(lblName, gbc_lblName);
 
 			textName = new JTextField();
+			textName.setFont(myModel.language.font);
 			GridBagConstraints gbc_textName = new GridBagConstraints();
 			gbc_textName.fill = GridBagConstraints.HORIZONTAL;
 			gbc_textName.insets = new Insets(5, 5, 5, 5);
@@ -175,7 +180,8 @@ public class frmDefineScenario {
 			panel_2.setLayout(gbl_panel_2);
 
 			JLabel lblAnalysis = new JLabel(myModel.language.analysis.getString("gen.analysis")); //Analysis
-			lblAnalysis.setFont(new Font("SansSerif", Font.BOLD, 12));
+			//lblAnalysis.setFont(new Font("SansSerif", Font.BOLD, 12));
+			lblAnalysis.setFont(myModel.language.font.deriveFont(Font.BOLD, 12f));
 			GridBagConstraints gbc_lblAnalysis = new GridBagConstraints();
 			gbc_lblAnalysis.gridwidth = 2;
 			gbc_lblAnalysis.anchor = GridBagConstraints.NORTHWEST;
@@ -185,6 +191,7 @@ public class frmDefineScenario {
 			panel_2.add(lblAnalysis, gbc_lblAnalysis);
 
 			lblAnalysisType = new JLabel(myModel.language.base.getString("object.type")+":");
+			lblAnalysisType.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblAnalysisType = new GridBagConstraints();
 			gbc_lblAnalysisType.anchor = GridBagConstraints.WEST;
 			gbc_lblAnalysisType.insets = new Insets(0, 5, 5, 5);
@@ -199,12 +206,14 @@ public class frmDefineScenario {
 			types[3]=myModel.language.analysis.getString("cea.extended_cea"); //Extended Cost-Effectiveness Analysis (ECEA)
 			
 			comboAnalysis = new JComboBox<String>();
+			comboAnalysis.setFont(myModel.language.font);
 			comboAnalysis.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					setAnalysisType(comboAnalysis.getSelectedIndex());
 				}
 			});
 			comboAnalysis.setModel(new DefaultComboBoxModel(types));
+			
 			GridBagConstraints gbc_comboAnalysis = new GridBagConstraints();
 			gbc_comboAnalysis.anchor = GridBagConstraints.NORTH;
 			gbc_comboAnalysis.fill = GridBagConstraints.HORIZONTAL;
@@ -244,6 +253,8 @@ public class frmDefineScenario {
 			tableAnalysis.myModel=myModel;
 			tableAnalysis.tempDimInfo=myModel.dimInfo; //can't modify dimensions in scenarios
 			tableAnalysis.getTableHeader().setReorderingAllowed(false);
+			tableAnalysis.getTableHeader().setFont(myModel.language.font);
+			tableAnalysis.setFont(myModel.language.font);
 			tableAnalysis.setModel(modelAnalysis);
 			tableAnalysis.getColumnModel().getColumn(0).setPreferredWidth(170);
 			tableAnalysis.getColumnModel().getColumn(1).setPreferredWidth(170);
@@ -269,7 +280,8 @@ public class frmDefineScenario {
 			panel.setLayout(gbl_panel);
 
 			JLabel lblModelUncertainty = new JLabel(myModel.language.analysis.getString("sim.model_uncertainty")); //Model Uncertainty
-			lblModelUncertainty.setFont(new Font("SansSerif", Font.BOLD, 12));
+			//lblModelUncertainty.setFont(new Font("SansSerif", Font.BOLD, 12));
+			lblModelUncertainty.setFont(myModel.language.font.deriveFont(Font.BOLD, 12f));
 			GridBagConstraints gbc_lblModelUncertainty = new GridBagConstraints();
 			gbc_lblModelUncertainty.fill = GridBagConstraints.HORIZONTAL;
 			gbc_lblModelUncertainty.insets = new Insets(5, 5, 0, 5);
@@ -279,6 +291,7 @@ public class frmDefineScenario {
 			panel.add(lblModelUncertainty, gbc_lblModelUncertainty);
 
 			JLabel lblIterations = new JLabel(myModel.language.analysis.getString("sim.num_iterations")+":");
+			lblIterations.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblIterations = new GridBagConstraints();
 			gbc_lblIterations.anchor = GridBagConstraints.EAST;
 			gbc_lblIterations.insets = new Insets(5, 0, 0, 5);
@@ -297,8 +310,9 @@ public class frmDefineScenario {
 			textIterations.setColumns(10);
 
 			JLabel lblFirstorder = new JLabel(myModel.language.analysis.getString("sim.first_order")); //First-order
+			//lblFirstorder.setFont(new Font("SansSerif", Font.ITALIC, 11));
+			lblFirstorder.setFont(myModel.language.font.deriveFont(Font.ITALIC, 11f));
 			lblFirstorder.setHorizontalAlignment(SwingConstants.CENTER);
-			lblFirstorder.setFont(new Font("SansSerif", Font.ITALIC, 11));
 			GridBagConstraints gbc_lblFirstorder = new GridBagConstraints();
 			gbc_lblFirstorder.anchor = GridBagConstraints.NORTH;
 			gbc_lblFirstorder.fill = GridBagConstraints.HORIZONTAL;
@@ -309,7 +323,8 @@ public class frmDefineScenario {
 			panel.add(lblFirstorder, gbc_lblFirstorder);
 
 			chckbxSampleParameters = new JCheckBox(myModel.language.analysis.getString("sim.sample_parameters")); //Sample Parameters
-			chckbxSampleParameters.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			//chckbxSampleParameters.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			chckbxSampleParameters.setFont(myModel.language.font.deriveFont(Font.PLAIN, 11f));
 			chckbxSampleParameters.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
 					if(chckbxSampleParameters.isSelected()) {
@@ -337,7 +352,8 @@ public class frmDefineScenario {
 
 			JLabel lblSecondorder = new JLabel(myModel.language.analysis.getString("sim.second_order")); //Second-order
 			lblSecondorder.setHorizontalAlignment(SwingConstants.CENTER);
-			lblSecondorder.setFont(new Font("SansSerif", Font.ITALIC, 11));
+			//lblSecondorder.setFont(new Font("SansSerif", Font.ITALIC, 11));
+			lblSecondorder.setFont(myModel.language.font.deriveFont(Font.ITALIC, 11f));
 			GridBagConstraints gbc_lblSecondorder = new GridBagConstraints();
 			gbc_lblSecondorder.insets = new Insets(0, 0, 0, 0);
 			gbc_lblSecondorder.anchor = GridBagConstraints.NORTH;
@@ -348,7 +364,8 @@ public class frmDefineScenario {
 			panel.add(lblSecondorder, gbc_lblSecondorder);
 
 			JLabel lblCohortSize = new JLabel(myModel.language.analysis.getString("sim.cohort_size")+":"); //Cohort size
-			lblCohortSize.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			//lblCohortSize.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			lblCohortSize.setFont(myModel.language.font.deriveFont(Font.PLAIN, 11f));
 			GridBagConstraints gbc_lblCohortSize = new GridBagConstraints();
 			gbc_lblCohortSize.anchor = GridBagConstraints.EAST;
 			gbc_lblCohortSize.insets = new Insets(0, 5, 0, 5);
@@ -367,7 +384,8 @@ public class frmDefineScenario {
 
 			chckbxSeedParams = new JCheckBox(myModel.language.analysis.getString("sim.seed_param_rng")); //Seed Parameter RNG
 			chckbxSeedParams.setToolTipText(myModel.language.analysis.getString("sim.seed_param_rng"));
-			chckbxSeedParams.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			//chckbxSeedParams.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			chckbxSeedParams.setFont(myModel.language.font.deriveFont(Font.PLAIN, 11f));
 			chckbxSeedParams.setEnabled(false);
 			chckbxSeedParams.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
@@ -378,7 +396,8 @@ public class frmDefineScenario {
 
 			chckbxSeed1 = new JCheckBox(myModel.language.analysis.getString("sim.seed_rng")); //Seed RNG
 			chckbxSeed1.setToolTipText(myModel.language.analysis.getString("sim.seed_rng"));
-			chckbxSeed1.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			//chckbxSeed1.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			chckbxSeed1.setFont(myModel.language.font.deriveFont(Font.PLAIN, 11f));
 			chckbxSeed1.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					if(chckbxSeed1.isSelected()){textSeed1.setEnabled(true);}
@@ -409,8 +428,6 @@ public class frmDefineScenario {
 			panel.add(textSeedParams, gbc_textSeedParams);
 			textSeedParams.setColumns(10);
 
-
-
 			textSeed1 = new JTextField();
 			textSeed1.setEnabled(false);
 			textSeed1.setColumns(10);
@@ -423,7 +440,8 @@ public class frmDefineScenario {
 			panel.add(textSeed1, gbc_textSeed1);
 
 			chckbxUseParameterSets = new JCheckBox(myModel.language.analysis.getString("sim.use_param_sets")); //Use Parameter Sets
-			chckbxUseParameterSets.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			//chckbxUseParameterSets.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			chckbxUseParameterSets.setFont(myModel.language.font.deriveFont(Font.PLAIN, 11f));
 			chckbxUseParameterSets.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
 					if(chckbxUseParameterSets.isSelected()) {
@@ -487,7 +505,8 @@ public class frmDefineScenario {
 			toolBar.add(btnFx);
 
 			JLabel lblExpression = new JLabel(myModel.language.base.getString("object.object_updates")); //Object Updates
-			lblExpression.setFont(new Font("SansSerif", Font.BOLD, 12));
+			//lblExpression.setFont(new Font("SansSerif", Font.BOLD, 12));
+			lblExpression.setFont(myModel.language.font.deriveFont(Font.BOLD, 12f));
 			GridBagConstraints gbc_lblExpression = new GridBagConstraints();
 			gbc_lblExpression.gridwidth = 2;
 			gbc_lblExpression.anchor = GridBagConstraints.SOUTHWEST;
@@ -506,7 +525,8 @@ public class frmDefineScenario {
 			panel_1.add(scrollPane, gbc_scrollPane);
 
 			paneExpression=new StyledTextPane(myModel, myModel.language);
-			paneExpression.setFont(new Font("Consolas", Font.PLAIN,15));
+			//paneExpression.setFont(new Font("Consolas", Font.PLAIN,15));
+			paneExpression.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 15f));
 			scrollPane.setViewportView(paneExpression);
 
 			paneExpression.addKeyListener(new KeyAdapter() {
@@ -519,6 +539,7 @@ public class frmDefineScenario {
 			});
 
 			JButton btnEvaluate = new JButton(myModel.language.base.getString("button.evaluate"));
+			btnEvaluate.setFont(myModel.language.font);
 			GridBagConstraints gbc_btnEvaluate = new GridBagConstraints();
 			gbc_btnEvaluate.gridwidth = 2;
 			gbc_btnEvaluate.anchor = GridBagConstraints.NORTH;
@@ -542,10 +563,13 @@ public class frmDefineScenario {
 			panel_1.add(scrollPaneValue, gbc_scrollPaneValue);
 
 			paneValue = new JTextPane();
+			paneValue.setFont(myModel.language.font);
+			StyleConstants.setFontFamily(paneValue.getStyledDocument().getStyle(StyleContext.DEFAULT_STYLE), myModel.language.font.getFamily());
 			scrollPaneValue.setViewportView(paneValue);
 			paneValue.setEditable(false);
 
 			JLabel lblValue = new JLabel(myModel.language.math.getString("sum.expected_values")+":");
+			lblValue.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblValue = new GridBagConstraints();
 			gbc_lblValue.gridwidth = 2;
 			gbc_lblValue.anchor = GridBagConstraints.NORTHEAST;
@@ -570,6 +594,7 @@ public class frmDefineScenario {
 			panel_Markov.setLayout(gbl_panel_Markov);
 
 			chckbxDiscountRewards = new JCheckBox(myModel.language.analysis.getString("gen.discount_rewards")); //Discount Rewards
+			chckbxDiscountRewards.setFont(myModel.language.font);
 			chckbxDiscountRewards.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(chckbxDiscountRewards.isSelected()) {
@@ -592,7 +617,8 @@ public class frmDefineScenario {
 			panel_Markov.add(chckbxDiscountRewards, gbc_chckbxDiscountRewards);
 
 			lblMarkov = new JLabel(myModel.language.base.getString("markov.markov")); //Markov
-			lblMarkov.setFont(new Font("SansSerif", Font.BOLD, 12));
+			//lblMarkov.setFont(new Font("SansSerif", Font.BOLD, 12));
+			lblMarkov.setFont(myModel.language.fontCode.deriveFont(Font.BOLD, 12f));
 			GridBagConstraints gbc_lblMarkov = new GridBagConstraints();
 			gbc_lblMarkov.gridwidth = 2;
 			gbc_lblMarkov.anchor = GridBagConstraints.NORTH;
@@ -603,6 +629,7 @@ public class frmDefineScenario {
 			panel_Markov.add(lblMarkov, gbc_lblMarkov);
 
 			chckbxHalfcycleCorrection = new JCheckBox(myModel.language.analysis.getString("gen.half_cycle_correction"));
+			chckbxHalfcycleCorrection.setFont(myModel.language.font);
 			GridBagConstraints gbc_chckbxHalfcycleCorrection = new GridBagConstraints();
 			gbc_chckbxHalfcycleCorrection.anchor = GridBagConstraints.NORTHWEST;
 			gbc_chckbxHalfcycleCorrection.insets = new Insets(0, 5, 5, 0);
@@ -612,6 +639,7 @@ public class frmDefineScenario {
 			panel_Markov.add(chckbxHalfcycleCorrection, gbc_chckbxHalfcycleCorrection);
 
 			lblDiscountStartCycle = new JLabel(myModel.language.analysis.getString("gen.discount_start_cycle")+":");
+			lblDiscountStartCycle.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblDiscountStartCycle = new GridBagConstraints();
 			gbc_lblDiscountStartCycle.anchor = GridBagConstraints.EAST;
 			gbc_lblDiscountStartCycle.insets = new Insets(0, 0, 5, 5);
@@ -648,11 +676,12 @@ public class frmDefineScenario {
 				}
 			};
 			
-			
 			tableDiscount = new JTable();
 			tableDiscount.setModel(modelDiscount);
 			tableDiscount.setRowSelectionAllowed(false);
 			tableDiscount.getTableHeader().setReorderingAllowed(false);
+			tableDiscount.getTableHeader().setFont(myModel.language.font);
+			tableDiscount.setFont(myModel.language.font);
 			tableDiscount.putClientProperty("terminateEditOnFocusLost", true);
 			scrollPane_Discount.setViewportView(tableDiscount);
 
@@ -666,171 +695,175 @@ public class frmDefineScenario {
 			frmDefineScenario.getContentPane().add(scrollPane_1, gbc_scrollPane_1);
 
 			textNotes = new JTextArea();
+			textNotes.setFont(myModel.language.font);
 			scrollPane_1.setViewportView(textNotes);
 
 			JLabel lblNotes = new JLabel(myModel.language.base.getString("menu.notes")+":");
+			lblNotes.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblNotes = new GridBagConstraints();
 			gbc_lblNotes.anchor = GridBagConstraints.EAST;
 			gbc_lblNotes.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNotes.gridx = 0;
 			gbc_lblNotes.gridy = 3;
 			frmDefineScenario.getContentPane().add(lblNotes, gbc_lblNotes);
-						
-									JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
-									btnSave.addActionListener(new ActionListener() {
-										public void actionPerformed(ActionEvent e) {
-											boolean proceed=true;
-											//Ensure name is valid and unique
-											String testName=textName.getText();
-											String testNotes=textNotes.getText();
-											int testIterations=-1, testCohortSize=-1, testSeed1=-1, testSeed2=-1;
-											if(testName.length()==0){
-												JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.please_enter_name")); //Please enter a name!
-												proceed=false;
-											}
-											else{
-												//Ensure name is unique
-												boolean unique=true;
-												int i=0;
-												int numScenarios=schedule.scenarios.size();
-												while(unique==true && i<numScenarios){
-													if(i!=scenarioNum && schedule.scenarios.get(i).name.equals(testName)){unique=false;}
-													i++;
-												}
-												if(unique==false){
-													//[name] is already defined!
-													String msg=MessageFormat.format(myModel.language.message.getString("err.already_defined"), testName);
-													JOptionPane.showMessageDialog(frmDefineScenario, msg); 
-													proceed=false;
-												}
 
-												//Check iterations
-												try{
-													testIterations=Integer.parseInt(textIterations.getText());
-												} catch(Exception e1){
-													JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_num_iterations")); //Please enter a valid number of iterations!
-													proceed=false;
-												}
-												if(proceed && testIterations<=0){
-													JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_num_iterations")); //Please enter a valid number of iterations!
-													proceed=false;
-												}
+			JButton btnSave = new JButton(myModel.language.base.getString("menu.save")); //Save
+			btnSave.setFont(myModel.language.font);
+			btnSave.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					boolean proceed=true;
+					//Ensure name is valid and unique
+					String testName=textName.getText();
+					String testNotes=textNotes.getText();
+					int testIterations=-1, testCohortSize=-1, testSeed1=-1, testSeed2=-1;
+					if(testName.length()==0){
+						JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.please_enter_name")); //Please enter a name!
+						proceed=false;
+					}
+					else{
+						//Ensure name is unique
+						boolean unique=true;
+						int i=0;
+						int numScenarios=schedule.scenarios.size();
+						while(unique==true && i<numScenarios){
+							if(i!=scenarioNum && schedule.scenarios.get(i).name.equals(testName)){unique=false;}
+							i++;
+						}
+						if(unique==false){
+							//[name] is already defined!
+							String msg=MessageFormat.format(myModel.language.message.getString("err.already_defined"), testName);
+							JOptionPane.showMessageDialog(frmDefineScenario, msg); 
+							proceed=false;
+						}
 
-												//Check cohort size
-												try{
-													testCohortSize=Integer.parseInt(textCohortSize.getText());
-												}catch(Exception e1){
-													if(myModel.simType==0){JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_cohort_size"));} //Please enter a valid cohort size!
-													else if(myModel.simType==1){JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_num_sim"));} //Please enter a valid # of simulations!
-													proceed=false;
-												}
-												if(proceed && testCohortSize<=0){
-													if(myModel.simType==0){JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_cohort_size"));} //Please enter a valid cohort size!
-													else if(myModel.simType==1){JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_num_sim"));} //Please enter a valid # of simulations!
-													proceed=false;
-												}
+						//Check iterations
+						try{
+							testIterations=Integer.parseInt(textIterations.getText());
+						} catch(Exception e1){
+							JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_num_iterations")); //Please enter a valid number of iterations!
+							proceed=false;
+						}
+						if(proceed && testIterations<=0){
+							JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_num_iterations")); //Please enter a valid number of iterations!
+							proceed=false;
+						}
+
+						//Check cohort size
+						try{
+							testCohortSize=Integer.parseInt(textCohortSize.getText());
+						}catch(Exception e1){
+							if(myModel.simType==0){JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_cohort_size"));} //Please enter a valid cohort size!
+							else if(myModel.simType==1){JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_num_sim"));} //Please enter a valid # of simulations!
+							proceed=false;
+						}
+						if(proceed && testCohortSize<=0){
+							if(myModel.simType==0){JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_cohort_size"));} //Please enter a valid cohort size!
+							else if(myModel.simType==1){JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_num_sim"));} //Please enter a valid # of simulations!
+							proceed=false;
+						}
 
 
-												//check seeds
-												if(chckbxSeed1.isSelected()){
-													try{
-														testSeed1=Integer.parseInt(textSeed1.getText());
-													} catch(Exception e1){
-														JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_seed")); //Please enter a valid seed!
-														proceed=false;
-													}
-												}
-												if(chckbxSeedParams.isSelected()){
-													try{
-														testSeed2=Integer.parseInt(textSeedParams.getText());
-													} catch(Exception e1){
-														JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_param_seed")); //Please enter a valid parameter seed!
-														proceed=false;
-													}
-												}
+						//check seeds
+						if(chckbxSeed1.isSelected()){
+							try{
+								testSeed1=Integer.parseInt(textSeed1.getText());
+							} catch(Exception e1){
+								JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_seed")); //Please enter a valid seed!
+								proceed=false;
+							}
+						}
+						if(chckbxSeedParams.isSelected()){
+							try{
+								testSeed2=Integer.parseInt(textSeedParams.getText());
+							} catch(Exception e1){
+								JOptionPane.showMessageDialog(frmDefineScenario, myModel.language.message.getString("err.valid_param_seed")); //Please enter a valid parameter seed!
+								proceed=false;
+							}
+						}
 
-											}
+					}
 
-											//analysis
-											if(proceed==true) {
-												proceed=saveAnalysisSettings();
-											}
-											if(proceed==true) {
-												proceed=saveMarkovSettings();
-											}
+					//analysis
+					if(proceed==true) {
+						proceed=saveAnalysisSettings();
+					}
+					if(proceed==true) {
+						proceed=saveMarkovSettings();
+					}
 
-											if(proceed==true){
-												boolean sampleParams=chckbxSampleParameters.isSelected();
+					if(proceed==true){
+						boolean sampleParams=chckbxSampleParameters.isSelected();
 
-												//Evaluate updates
-												String testExp=paneExpression.getText();
-												proceed=evaluateUpdates();
+						//Evaluate updates
+						String testExp=paneExpression.getText();
+						proceed=evaluateUpdates();
 
-												if(proceed==true){ //save
-													scenario.name=testName;
-													//uncertainty
-													scenario.numIterations=testIterations;
-													scenario.cohortSize=testCohortSize;
-													scenario.crn1=chckbxSeed1.isSelected();
-													scenario.seed1=testSeed1;
-													scenario.sampleParams=sampleParams;
-													scenario.crn2=chckbxSeedParams.isSelected();
-													scenario.seed2=testSeed2;
-													scenario.useParamSets=chckbxUseParameterSets.isSelected();
+						if(proceed==true){ //save
+							scenario.name=testName;
+							//uncertainty
+							scenario.numIterations=testIterations;
+							scenario.cohortSize=testCohortSize;
+							scenario.crn1=chckbxSeed1.isSelected();
+							scenario.seed1=testSeed1;
+							scenario.sampleParams=sampleParams;
+							scenario.crn2=chckbxSeedParams.isSelected();
+							scenario.seed2=testSeed2;
+							scenario.useParamSets=chckbxUseParameterSets.isSelected();
 
-													//analysis
-													scenario.analysisType=testAnalysisType;
-													scenario.objective=testObjective;
-													scenario.objectiveDim=testObjectiveDim;
-													scenario.costDim=testCostDim;
-													scenario.effectDim=testEffectDim;
-													scenario.WTP=testWTP;
-													scenario.baseScenario=testBaseStrategy;
-													scenario.extendedDim=testExtendedDim;
+							//analysis
+							scenario.analysisType=testAnalysisType;
+							scenario.objective=testObjective;
+							scenario.objectiveDim=testObjectiveDim;
+							scenario.costDim=testCostDim;
+							scenario.effectDim=testEffectDim;
+							scenario.WTP=testWTP;
+							scenario.baseScenario=testBaseStrategy;
+							scenario.extendedDim=testExtendedDim;
 
-													//markov
-													scenario.halfCycleCorrection=testHalfCycleCorrection;
-													scenario.discountRewards=testDiscountRewards;
-													scenario.discountRates=testDiscountRates;
-													scenario.discountStartCycle=testDiscountStartCycle;
+							//markov
+							scenario.halfCycleCorrection=testHalfCycleCorrection;
+							scenario.discountRewards=testDiscountRewards;
+							scenario.discountRates=testDiscountRates;
+							scenario.discountStartCycle=testDiscountStartCycle;
 
-													scenario.objectUpdates=testExp;
-													scenario.notes=testNotes;
+							scenario.objectUpdates=testExp;
+							scenario.notes=testNotes;
 
-													if(scenarioNum==-1){schedule.scenarios.add(scenario);}
-													schedule.updateScenarios();
+							if(scenarioNum==-1){schedule.scenarios.add(scenario);}
+							schedule.updateScenarios();
 
-													frmDefineScenario.dispose();
-												}
-											}
-										}
-									});
-									
-									GridBagConstraints gbc_btnSave = new GridBagConstraints();
-									gbc_btnSave.anchor = GridBagConstraints.NORTHEAST;
-									gbc_btnSave.insets = new Insets(0, 5, 0, 5);
-									gbc_btnSave.gridx = 3;
-									gbc_btnSave.gridy = 4;
-									frmDefineScenario.getContentPane().add(btnSave, gbc_btnSave);
-						
-									JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
-									btnCancel.addActionListener(new ActionListener() {
-										public void actionPerformed(ActionEvent e) {
-											frmDefineScenario.dispose();
-										}
-									});
-									
-									GridBagConstraints gbc_btnCancel = new GridBagConstraints();
-									gbc_btnCancel.anchor = GridBagConstraints.NORTHWEST;
-									gbc_btnCancel.insets = new Insets(0, 5, 0, 5);
-									gbc_btnCancel.gridx = 4;
-									gbc_btnCancel.gridy = 4;
-									frmDefineScenario.getContentPane().add(btnCancel, gbc_btnCancel);
+							frmDefineScenario.dispose();
+						}
+					}
+				}
+			});
+
+			GridBagConstraints gbc_btnSave = new GridBagConstraints();
+			gbc_btnSave.anchor = GridBagConstraints.NORTHEAST;
+			gbc_btnSave.insets = new Insets(0, 5, 0, 5);
+			gbc_btnSave.gridx = 3;
+			gbc_btnSave.gridy = 4;
+			frmDefineScenario.getContentPane().add(btnSave, gbc_btnSave);
+
+			JButton btnCancel = new JButton(myModel.language.base.getString("button.cancel")); //Cancel
+			btnCancel.setFont(myModel.language.font);
+			btnCancel.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frmDefineScenario.dispose();
+				}
+			});
+
+			GridBagConstraints gbc_btnCancel = new GridBagConstraints();
+			gbc_btnCancel.anchor = GridBagConstraints.NORTHWEST;
+			gbc_btnCancel.insets = new Insets(0, 5, 0, 5);
+			gbc_btnCancel.gridx = 4;
+			gbc_btnCancel.gridy = 4;
+			frmDefineScenario.getContentPane().add(btnCancel, gbc_btnCancel);
 			if(myModel.simType==1){lblCohortSize.setText(myModel.language.analysis.getString("sim.num_simulations")+":");}
 			if(myModel.parameterSets==null) {
 				chckbxUseParameterSets.setEnabled(false);
 			}
-			
+
 
 		} catch (Exception ex){
 			ex.printStackTrace();

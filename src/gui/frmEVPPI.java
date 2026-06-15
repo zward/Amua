@@ -59,11 +59,14 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Document;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
@@ -157,6 +160,7 @@ public class frmEVPPI {
 		try{
 			frmEVPPI = new JFrame();
 			frmEVPPI.setTitle("Amua - "+myModel.language.analysis.getString("voi.evppi_full"));
+			frmEVPPI.setFont(myModel.language.font);
 			frmEVPPI.setIconImage(Toolkit.getDefaultToolkit().getImage(frmEVPPI.class.getResource("/images/evppi_128.png")));
 			frmEVPPI.setBounds(100, 100, 1000, 600);
 			frmEVPPI.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -228,6 +232,7 @@ public class frmEVPPI {
 			}
 
 			JButton btnSelectAll = new JButton(myModel.language.base.getString("button.select_all")); //Select All
+			btnSelectAll.setFont(myModel.language.font);
 			btnSelectAll.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(btnSelectAll.getText().matches(myModel.language.base.getString("button.deselect_all"))) { //De-Select All
@@ -264,6 +269,8 @@ public class frmEVPPI {
 			tableParams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			tableParams.setShowVerticalLines(true);
 			tableParams.getTableHeader().setReorderingAllowed(false);
+			tableParams.getTableHeader().setFont(myModel.language.font);
+			tableParams.setFont(myModel.language.font);
 			//tableParams.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 			tableParams.setModel(modelParams);
 			tableParams.getColumnModel().getColumn(0).setPreferredWidth(10);
@@ -286,7 +293,6 @@ public class frmEVPPI {
 			gbl_panel_2.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 			gbl_panel_2.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 			panel_2.setLayout(gbl_panel_2);
-
 			
 
 			String methods[]=new String[2];
@@ -294,6 +300,7 @@ public class frmEVPPI {
 			methods[1]=myModel.language.analysis.getString("voi.bins"); //Bins
 			
 			JLabel lblNewLabel = new JLabel(myModel.language.analysis.getString("calib.method")+":");
+			lblNewLabel.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.EAST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
@@ -302,6 +309,7 @@ public class frmEVPPI {
 			panel_2.add(lblNewLabel, gbc_lblNewLabel);
 			
 			comboMethod = new JComboBox();
+			comboMethod.setFont(myModel.language.font);
 			comboMethod.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int method=comboMethod.getSelectedIndex();
@@ -316,7 +324,6 @@ public class frmEVPPI {
 
 				}
 			});
-			
 			comboMethod.setModel(new DefaultComboBoxModel(methods));
 			
 			GridBagConstraints gbc_comboMethod = new GridBagConstraints();
@@ -329,6 +336,7 @@ public class frmEVPPI {
 			panel_2.add(comboMethod, gbc_comboMethod);
 
 			JLabel lblSource = new JLabel(myModel.language.analysis.getString("gen.source")+":");
+			lblSource.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblSource = new GridBagConstraints();
 			gbc_lblSource.anchor = GridBagConstraints.EAST;
 			gbc_lblSource.insets = new Insets(0, 0, 5, 5);
@@ -341,6 +349,7 @@ public class frmEVPPI {
 			source[1]=myModel.language.analysis.getString("voi.import_psa_results"); //Import PSA Results
 			
 			comboSource = new JComboBox();
+			comboSource.setFont(myModel.language.font);
 			comboSource.setModel(new DefaultComboBoxModel(source));
 			GridBagConstraints gbc_comboSource = new GridBagConstraints();
 			gbc_comboSource.fill = GridBagConstraints.HORIZONTAL;
@@ -351,6 +360,7 @@ public class frmEVPPI {
 			panel_2.add(comboSource, gbc_comboSource);
 
 			JButton btnRun = new JButton(myModel.language.base.getString("menu.run"));
+			btnRun.setFont(myModel.language.font);
 			GridBagConstraints gbc_btnRun = new GridBagConstraints();
 			gbc_btnRun.anchor = GridBagConstraints.NORTH;
 			gbc_btnRun.fill = GridBagConstraints.HORIZONTAL;
@@ -360,7 +370,10 @@ public class frmEVPPI {
 			panel_2.add(btnRun, gbc_btnRun);
 			
 			final JButton btnExport = new JButton(myModel.language.base.getString("menu.export")); //Export
+			btnExport.setFont(myModel.language.font);
+			
 			JButton btnCopy = new JButton(myModel.language.base.getString("menu.copy")); //Copy
+			btnCopy.setFont(myModel.language.font);
 			
 			btnRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -390,8 +403,10 @@ public class frmEVPPI {
 					final int source=comboSource.getSelectedIndex();
 
 					if(runVOI) {
-						final ProgressMonitor progress=new ProgressMonitor(frmEVPPI, myModel.language.analysis.getString("voi.evppi"), myModel.language.message.getString("info.sampling"), 0, 100); //EVPPI, Sampling
-
+						//final ProgressMonitor progress=new ProgressMonitor(frmEVPPI, myModel.language.analysis.getString("voi.evppi"), myModel.language.message.getString("info.sampling"), 0, 100); //EVPPI, Sampling
+						final frmProgressMonitor progress=new frmProgressMonitor(frmEVPPI, myModel.language.analysis.getString("voi.evppi"), myModel.language.message.getString("info.sampling"), 0, 100, myModel.language); //EVPPI, Sampling
+						SwingUtilities.invokeLater(progress::show);  //dialog is created/shown on EDT
+						
 						Thread SimThread = new Thread(){ //Non-UI
 							public void run(){
 								try{
@@ -420,6 +435,7 @@ public class frmEVPPI {
 											fc.setDialogTitle(myModel.language.analysis.getString("voi.import_psa_results")); //Import PSA Results
 											fc.setApproveButtonText(myModel.language.base.getString("menu.import")); //Import
 											fc.setFileFilter(new CSVFilter(myModel.language));
+											myModel.language.setFontRecursively(fc); //set font
 
 											int returnVal = fc.showOpenDialog(frmEVPPI);
 											if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -471,6 +487,7 @@ public class frmEVPPI {
 											fc.setDialogTitle(myModel.language.analysis.getString("voi.import_psa_results")); //Import PSA Results
 											fc.setApproveButtonText(myModel.language.base.getString("menu.import")); //Import
 											fc.setFileFilter(new CSVFilter(myModel.language));
+											myModel.language.setFontRecursively(fc); //set font
 
 											int returnVal = fc.showOpenDialog(frmEVPPI);
 											if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -536,9 +553,17 @@ public class frmEVPPI {
 											numDecimals=myModel.dimInfo.decimals[myModel.dimInfo.costDim];
 										}
 
+										String pad="";
+										if(textEVPI.getFont().getFamily().contains("Consolas")) { //monospaced
+											pad="";
+										}
+										else {
+											pad="&nbsp;";
+										}
+										
 										//evppi table
 										strReport+=("<table>");
-										strReport+=("<caption>"+myModel.language.analysis.getString("voi_evppi_full")+"</caption>"); //Expected Value of Partial Perfect Information
+										strReport+=("<caption>"+myModel.language.analysis.getString("voi.evppi_full")+"</caption>"); //Expected Value of Partial Perfect Information
 										strReport+=("<tr><th>"+myModel.language.base.getString("object.parameter")+"</th>" //Parameter
 												+ "<th>"+myModel.language.base.getString("object.expression")+"</th>" //Expression
 												+ "<th>"+myModel.language.analysis.getString("voi.evppi")+"</th></tr>"); //EVPPI
@@ -547,16 +572,16 @@ public class frmEVPPI {
 												Parameter curParam=myModel.parameters.get(p);
 												int curDim=paramDims[p];
 												if(curDim==1) { //scalar
-													strReport+=("<tr><td>"+curParam.name+"</td>");
-													strReport+=("<td>"+curParam.expression+"</td>");
-													strReport+=("<td align=\"right\">"+MathUtils.round(evppi.evppi[p][0],numDecimals)+"</td></tr>");
+													strReport+=("<tr><td>"+curParam.name+pad+"</td>");
+													strReport+=("<td>"+curParam.expression+pad+"</td>");
+													strReport+=("<td align=\"right\">"+MathUtils.round(evppi.evppi[p][0],numDecimals)+pad+"</td></tr>");
 												}
 												else { //matrix
 													Numeric val=curParam.value;
 													for(int z=0; z<curDim; z++) {
-														strReport+=("<tr><td>"+curParam.name+val.getDimLbl(z)+"</td>");
-														strReport+=("<td>"+curParam.expression+"</td>");
-														strReport+=("<td align=\"right\">"+MathUtils.round(evppi.evppi[p][z],numDecimals)+"</td></tr>");
+														strReport+=("<tr><td>"+curParam.name+val.getDimLbl(z)+pad+"</td>");
+														strReport+=("<td>"+curParam.expression+pad+"</td>");
+														strReport+=("<td align=\"right\">"+MathUtils.round(evppi.evppi[p][z],numDecimals)+pad+"</td></tr>");
 													}
 												}
 											}
@@ -625,6 +650,7 @@ public class frmEVPPI {
 			});
 
 			lblOuter = new JLabel(myModel.language.analysis.getString("voi.num_outer")+":");
+			lblOuter.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblOuter = new GridBagConstraints();
 			gbc_lblOuter.anchor = GridBagConstraints.EAST;
 			gbc_lblOuter.insets = new Insets(0, 0, 5, 5);
@@ -653,7 +679,7 @@ public class frmEVPPI {
 						JFileChooser fc=new JFileChooser(myModel.filepath);
 						fc.setAcceptAllFileFilterUsed(false);
 						fc.setFileFilter(new CSVFilter(myModel.language));
-
+						
 						int tabIndex=tabbedPane.getSelectedIndex();
 						if(tabIndex==1) {
 							fc.setDialogTitle(myModel.language.analysis.getString("voi.export_evppi_bin_results")); //Export EVPPI Bin Results
@@ -662,7 +688,8 @@ public class frmEVPPI {
 							fc.setDialogTitle(myModel.language.base.getString("title.export_psa_results")); //Export PSA Results
 						}
 						fc.setApproveButtonText(myModel.language.base.getString("menu.export")); //Export
-
+						myModel.language.setFontRecursively(fc); //set font
+						
 						int returnVal = fc.showSaveDialog(frmEVPPI);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
@@ -792,6 +819,7 @@ public class frmEVPPI {
 			});
 
 			chckbxSeed = new JCheckBox(myModel.language.analysis.getString("sim.seed")); //Seed
+			chckbxSeed.setFont(myModel.language.font);
 			chckbxSeed.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(chckbxSeed.isSelected()){textSeed.setEnabled(true);}
@@ -823,6 +851,7 @@ public class frmEVPPI {
 			panel_2.add(btnExport, gbc_btnExport);
 
 			lblInner = new JLabel(myModel.language.analysis.getString("voi.num_inner")+":");
+			lblInner.setFont(myModel.language.font);
 			GridBagConstraints gbc_lblInner = new GridBagConstraints();
 			gbc_lblInner.anchor = GridBagConstraints.EAST;
 			gbc_lblInner.insets = new Insets(0, 0, 0, 5);
@@ -844,6 +873,7 @@ public class frmEVPPI {
 			
 			
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			tabbedPane.setFont(myModel.language.font);
 			tabbedPane.addChangeListener(new ChangeListener() {
 				public void stateChanged(ChangeEvent arg0) {
 					int index=tabbedPane.getSelectedIndex();
@@ -900,7 +930,9 @@ public class frmEVPPI {
 			panelEVPPI.add(scrollPane, gbc_scrollPane);
 
 			textEVPI = new JTextPane();
-			textEVPI.setFont(new Font("Consolas", Font.PLAIN, 14));
+			//textEVPI.setFont(new Font("Consolas", Font.PLAIN, 14));
+			textEVPI.setFont(myModel.language.fontCode.deriveFont(Font.PLAIN, 14f));
+			StyleConstants.setFontFamily(textEVPI.getStyledDocument().getStyle(StyleContext.DEFAULT_STYLE), myModel.language.font.getFamily());
 			textEVPI.setContentType("text/html");
 			textEVPI.setEditable(false);
 			scrollPane.setViewportView(textEVPI);
@@ -924,6 +956,10 @@ public class frmEVPPI {
 			marker.setPaint(Color.black);
 			chartEVPPI_Bins.getXYPlot().addDomainMarker(marker);
 			chartEVPPI_Bins.getXYPlot().addRangeMarker(marker);
+			//font
+			chartEVPPI_Bins.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartEVPPI_Bins.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartEVPPI_Bins.getLegend().setItemFont(myModel.language.font);
 
 			ChartPanel panelChartEVPPI_Bins = new ChartPanel(chartEVPPI_Bins,false);
 			GridBagConstraints gbc_panelChartEVPPI_Bins = new GridBagConstraints();
@@ -942,7 +978,8 @@ public class frmEVPPI {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
-
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 
 			JPanel panelResults = new JPanel();
 			tabbedPane.addTab(myModel.language.analysis.getString("result.results"), null, panelResults, null); //Results
@@ -960,6 +997,10 @@ public class frmEVPPI {
 			//Draw axes
 			chartResults.getXYPlot().addDomainMarker(marker);
 			chartResults.getXYPlot().addRangeMarker(marker);
+			//font
+			chartResults.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartResults.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartResults.getLegend().setItemFont(myModel.language.font);
 
 			ChartPanel panelChartResults = new ChartPanel(chartResults,false);
 			GridBagConstraints gbc_panelChartResults = new GridBagConstraints();
@@ -980,9 +1021,11 @@ public class frmEVPPI {
 				}
 			});
 			popup.insert(mntmChangeColorStrat, 0);
-
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
 
 			comboResults = new JComboBox<String>();
+			comboResults.setFont(myModel.language.font);
 			comboResults.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateResultsChart();
@@ -990,6 +1033,7 @@ public class frmEVPPI {
 			});
 
 			comboDimensions = new JComboBox<String>(new DefaultComboBoxModel<String>(outcomes));
+			comboDimensions.setFont(myModel.language.font);
 			comboDimensions.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateResultsChart();
@@ -1018,6 +1062,7 @@ public class frmEVPPI {
 			panelResults.add(comboResults, gbc_comboResults);
 
 			comboGroup = new JComboBox<String>();
+			comboGroup.setFont(myModel.language.font);
 			comboGroup.setVisible(false);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -1068,12 +1113,14 @@ public class frmEVPPI {
 			for(int v=0; v<numParams; v++){listModelParams.addElement(paramNames[v]);}
 
 			listParams = new JList<String>(listModelParams);
+			listParams.setFont(myModel.language.font);
 			scrollPaneSelectParams.setViewportView(listParams);
 			int selectedIndices[]=new int[numParams];
 			for(int v=0; v<numParams; v++){selectedIndices[v]=v;}
 			listParams.setSelectedIndices(selectedIndices); //Select all
 
 			JButton btnUpdateChart = new JButton(myModel.language.base.getString("plot.update_plot")); //Update Plot
+			btnUpdateChart.setFont(myModel.language.font);
 			btnUpdateChart.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateParamChart();
@@ -1086,6 +1133,7 @@ public class frmEVPPI {
 			panel_3.add(btnUpdateChart, gbc_btnUpdateChart);
 
 			comboParams = new JComboBox<String>();
+			comboParams.setFont(myModel.language.font);
 			//comboParams.setModel(new DefaultComboBoxModel<String>(new String[] {"Density","Histogram","Cumulative Distribution","Quantiles","Iteration"}));
 			comboParams.setModel(new DefaultComboBoxModel<String>(plotType));
 			GridBagConstraints gbc_comboParams = new GridBagConstraints();
@@ -1101,6 +1149,10 @@ public class frmEVPPI {
 			//Draw axes
 			chartParams.getXYPlot().addDomainMarker(marker);
 			chartParams.getXYPlot().addRangeMarker(marker);
+			//font
+			chartParams.getXYPlot().getDomainAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartParams.getXYPlot().getRangeAxis().setLabelFont(myModel.language.font.deriveFont(Font.BOLD, 14f));
+			chartParams.getLegend().setItemFont(myModel.language.font);
 
 			ChartPanel panelChartParams = new ChartPanel(chartParams,false);
 			GridBagConstraints gbc_panelChartParams = new GridBagConstraints();
@@ -1119,6 +1171,9 @@ public class frmEVPPI {
 				}
 			});
 			popup.insert(mntmChangeColorParams, 0);
+			myModel.language.installMenuFontUpdater(popup); //set font
+			myModel.language.setChartPropertiesFont(popup, 1);
+
 
 			if(myModel.simType==1 && myModel.reportSubgroups){
 				int numGroups=myModel.subgroupNames.size();

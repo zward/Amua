@@ -50,6 +50,8 @@ import markov.MarkovTrace;
 
 import javax.swing.border.LineBorder;
 import java.awt.Color;
+import java.awt.Font;
+
 import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -114,6 +116,7 @@ public class frmTrace {
 		try{
 			frmTrace = new JFrame();
 			frmTrace.setTitle("Amua - "+language.base.getString("markov.markov_trace")+": "+traceOverall.traceName); //Markov Trace
+			frmTrace.setFont(language.font);
 			frmTrace.setIconImage(Toolkit.getDefaultToolkit().getImage(frmTrace.class.getResource("/images/logo_128.png")));
 			frmTrace.setBounds(100, 100, 1000, 600);
 			frmTrace.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -130,6 +133,10 @@ public class frmTrace {
 			chartTrace = ChartFactory.createScatterPlot(null, "t", language.analysis.getString("result.prev_t"), //Prev(t) 
 					dataTrace, PlotOrientation.VERTICAL, true, false, false); 
 			chartTrace.getXYPlot().setBackgroundPaint(new Color(1,1,1,1));
+			//font
+			chartTrace.getXYPlot().getDomainAxis().setLabelFont(language.font.deriveFont(Font.BOLD, 14f));
+			chartTrace.getXYPlot().getRangeAxis().setLabelFont(language.font.deriveFont(Font.BOLD, 14f));
+			chartTrace.getLegend().setItemFont(language.font);
 			
 			JPanel panel = new JPanel();
 			panel.setLayout(null);
@@ -141,11 +148,13 @@ public class frmTrace {
 			frmTrace.getContentPane().add(panel, gbc_panel);
 			
 			JLabel lblNewLabel = new JLabel(language.base.getString("button.plot")+":"); //Plot
+			lblNewLabel.setFont(language.font);
 			lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblNewLabel.setBounds(5, 6, 62, 16);
 			panel.add(lblNewLabel);
 			
 			comboPlot = new JComboBox();
+			comboPlot.setFont(language.font);
 			comboPlot.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					updateChart(comboPlot.getSelectedIndex());
@@ -166,12 +175,14 @@ public class frmTrace {
 			panel.add(comboPlot);
 			
 			JLabel lblGroup = new JLabel(language.analysis.getString("result.group")+":"); //Group
+			lblGroup.setFont(language.font);
 			lblGroup.setHorizontalAlignment(SwingConstants.RIGHT);
 			lblGroup.setVisible(false);
 			lblGroup.setBounds(252, 6, 73, 16);
 			panel.add(lblGroup);
 			
 			comboGroup = new JComboBox();
+			comboGroup.setFont(language.font);
 			comboGroup.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int selected=comboGroup.getSelectedIndex();
@@ -248,6 +259,8 @@ public class frmTrace {
 				}
 			});
 			popup.insert(mntmChangeColor, 0);
+			language.installMenuFontUpdater(popup); //set font
+			language.setChartPropertiesFont(popup, 1);
 			
 			JToolBar toolBar = new JToolBar();
 			toolBar.setFloatable(false);
@@ -260,6 +273,7 @@ public class frmTrace {
 			frmTrace.getContentPane().add(toolBar, gbc_toolBar);
 			
 			JButton btnExport = new JButton(language.base.getString("menu.export")); //Export
+			btnExport.setFont(language.font);
 			btnExport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
@@ -267,7 +281,8 @@ public class frmTrace {
 						fc.setDialogTitle(language.base.getString("title.export_trace")); //Export Trace
 						fc.setApproveButtonText(language.base.getString("menu.export")); //Export
 						fc.setFileFilter(new CSVFilter(language));
-
+						language.setFontRecursively(fc); //set font
+						
 						int returnVal = fc.showOpenDialog(frmTrace);
 						if (returnVal == JFileChooser.APPROVE_OPTION) {
 							File file = fc.getSelectedFile();
@@ -307,6 +322,7 @@ public class frmTrace {
 			toolBar.add(btnExport);
 			
 			JButton btnCopy = new JButton(language.base.getString("menu.copy")); //Copy
+			btnCopy.setFont(language.font);
 			btnCopy.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int numCol=curTrace.modelTraceRounded.getColumnCount();
@@ -347,6 +363,8 @@ public class frmTrace {
 			table.setModel(curTrace.modelTraceRounded);
 			table.setShowVerticalLines(true);
 			table.getTableHeader().setReorderingAllowed(false);
+			table.getTableHeader().setFont(language.font);
+			//table.setFont(language.font);
 			scrollPane.setViewportView(table);
 			
 			
